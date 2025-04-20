@@ -1,0 +1,20 @@
+{
+  "name": "@agentos/playground",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w",
+    "lint": "eslint src --ext .ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@agentos/core": "workspace:*",
+    "@agentos/shared": "workspace:*",
+    "@agentos/llm-bridge": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.11.19"
+  }
+} 

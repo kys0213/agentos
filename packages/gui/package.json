@@ -1,0 +1,27 @@
+{
+  "name": "@agentos/gui",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc && electron-builder",
+    "dev": "concurrently \"tsc -w\" \"electron .\"",
+    "lint": "eslint src --ext .ts,.tsx",
+    "start": "electron ."
+  },
+  "dependencies": {
+    "@agentos/core": "workspace:*",
+    "@agentos/shared": "workspace:*",
+    "electron-store": "^8.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "concurrently": "^8.2.2"
+  }
+} 
