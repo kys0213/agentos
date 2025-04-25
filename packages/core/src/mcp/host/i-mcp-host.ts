@@ -1,7 +1,8 @@
 import { Preset } from '../../preset/preset';
-import { McpSession } from './mcp-session';
+import { ChatSession } from '../../session/chat-session';
 
 export interface IMcpHost {
-  use(): Promise<McpSession>;
-  use(preset: Preset): Promise<McpSession>;
+  use(): Promise<ChatSession>;
+  use(session: string): Promise<ChatSession>;
+  use(preset: Preset): Promise<ChatSession>;
 }
