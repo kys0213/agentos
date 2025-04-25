@@ -42,9 +42,7 @@ export class Mcp extends EventEmitter {
       version: config.version,
     });
 
-    const mcp = new Mcp(client, transport, config);
-
-    return mcp;
+    return new Mcp(client, transport, config);
   }
 
   async descriptionForLLM(): Promise<string> {
@@ -104,6 +102,7 @@ export class Mcp extends EventEmitter {
         signal: this.abortController?.signal,
       }
     );
+
     return resource.contents;
   }
 
@@ -169,7 +168,7 @@ export class Mcp extends EventEmitter {
       maxTotalTimeout: this.config.network?.maxTotalTimeout,
     });
 
-    this.emit(McpEvent.CONNECTED);
+    this.emit(McpEvent.CONNECTED, undefined);
   }
 
   async disconnect() {
@@ -180,7 +179,7 @@ export class Mcp extends EventEmitter {
     try {
       await this.client.close();
 
-      this.emit(McpEvent.DISCONNECTED);
+      this.emit(McpEvent.DISCONNECTED, undefined);
 
       if (this.abortController?.signal.aborted) {
         return;
