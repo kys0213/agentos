@@ -9,20 +9,24 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "lint": "eslint src --ext .ts",
-    "test": "jest",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "dependencies": {
-    "@agentos/shared": "workspace:*",
     "@agentos/llm-bridge-spec": "workspace:*",
-    "openai": "^4.28.0"
+    "@agentos/shared": "workspace:*",
+    "json-schema-to-zod": "^2.6.1",
+    "openai": "^4.28.0",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.12",
+    "@agentos/llama3-llm-bridge": "workspace:*",
     "@types/node": "^22.14.1",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.1.2",
+    "@vitest/coverage-v8": "^1.0.0",
+    "tsup": "^8.0.0",
     "typescript": "^5.3.3",
-    "tsup": "^8.0.0"
+    "vitest": "^1.0.0"
   }
 }
