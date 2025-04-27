@@ -12,11 +12,12 @@
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
     "tsup": "^8.0.0",
-    "@types/node": "^20.0.0"
+    "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@agentos/llm-bridge-spec": "link:",
     "@types/node": "^20.0.0"
   }
 }
