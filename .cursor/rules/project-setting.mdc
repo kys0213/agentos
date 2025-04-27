@@ -1,0 +1,12 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+## 프로젝트 환경 셋팅
+
+- typescript 5.x 이상
+- pnpm monorepo
+- node 22 버전 이상
+- vite test 사용
+- 표현계층 ( cli / gui ) 를 제외하고는 build 시 cjs/esm 모두 지원해야함.
