@@ -7,5 +7,6 @@ export interface Preset {
   version: string;
   systemPrompt: string;
   enabledMcps: string[];
-  llmBridge: string;
+  llmBridgeName: string;
+  llmBridgeConfig: Record<string, any>;
 }
