@@ -11,25 +11,29 @@ import { FileBasedSessionStorage } from './file-based-session-storage';
 
 import { FileBasedSessionMetadata } from './file-based-session.metadata';
 
+/**
+ * The file based chat session
+ * @TODO recentMessages 저장 시점 및 페이징 처리 로직 추가
+ */
 export class FileBasedChatSession implements ChatSession {
   constructor(
     public readonly sessionId: string,
     private readonly storage: FileBasedSessionStorage,
-    private readonly metadata: FileBasedSessionMetadata
+    private readonly metadata: FileBasedSessionMetadata,
+    private readonly historyCompressor: CompressStrategy,
+    private readonly titleCompressor?: CompressStrategy
   ) {}
 
   get preset(): Preset | undefined {
     return this.metadata.preset;
   }
 
-  async save(): Promise<void> {
-    this.metadata.updatedAt = new Date();
+  get title(): string | undefined {
+    return this.metadata.title;
+  }
 
-    await this.storage.saveSessionMetadata(this.sessionId, this.metadata);
-
-    if (this.metadata.recentMessages.length > 0) {
-      await this.storage.saveMessageHistories(this.sessionId, this.metadata.recentMessages);
-    }
+  set title(title: string | undefined) {
+    this.metadata.title = title;
   }
 
   async sumUsage(usage: LlmUsage): Promise<void> {
@@ -38,31 +42,41 @@ export class FileBasedChatSession implements ChatSession {
     this.metadata.totalUsage.completionTokens += usage.completionTokens;
   }
 
-  async compress(strategy: CompressStrategy): Promise<void> {
-    if (this.metadata.recentMessages.length === 0) {
-      return;
+  async commit(): Promise<void> {
+    if (this.metadata.recentMessages.length > 0) {
+      const first = this.metadata.recentMessages[0];
+      const compressed = await this.historyCompressor.compress(this.metadata.recentMessages);
+
+      this.metadata.latestCheckpoint = {
+        checkpointId: uuid(),
+        message: {
+          messageId: this.nextMessageId(),
+          createdAt: new Date(),
+          ...compressed.summary,
+        },
+        createdAt: new Date(),
+        coveringUpTo: first.createdAt,
+      };
+
+      await this.storage.saveCheckpoint(this.sessionId, this.metadata.latestCheckpoint);
+      await this.storage.saveMessageHistories(this.sessionId, this.metadata.recentMessages);
+      this.metadata.recentMessages = [];
     }
 
-    const message = this.metadata.recentMessages[0];
+    this.metadata.updatedAt = new Date();
 
-    const compressed = await strategy.compress(this.metadata.recentMessages);
+    if (!this.metadata.title && this.titleCompressor) {
+      const userMessage = this.metadata.recentMessages.find((message) => message.role === 'user');
 
-    await this.storage.saveMessageHistories(this.sessionId, this.metadata.recentMessages);
+      if (userMessage) {
+        const { summary } = await this.titleCompressor.compress([userMessage]);
 
-    this.metadata.recentMessages = [];
+        this.metadata.title =
+          summary.content.contentType === 'text' ? summary.content.value : undefined;
+      }
+    }
 
-    this.metadata.latestCheckpoint = {
-      checkpointId: uuid(),
-      message: {
-        messageId: this.nextMessageId(),
-        createdAt: new Date(),
-        ...compressed,
-      },
-      createdAt: new Date(),
-      upToCreatedAt: message.createdAt,
-    };
-
-    await this.storage.saveCheckpoint(this.sessionId, this.metadata.latestCheckpoint);
+    await this.storage.saveSessionMetadata(this.sessionId, this.metadata);
   }
 
   private nextMessageId(): string {
@@ -100,7 +114,7 @@ export class FileBasedChatSession implements ChatSession {
         break;
       }
 
-      if (cursor && history.messageId < cursor) {
+      if (cursor && Number(history.messageId) < Number(cursor)) {
         break;
       }
     }

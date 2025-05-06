@@ -102,7 +102,7 @@ describe('FileBasedSessionStorage E2E', () => {
           },
         },
         createdAt: new Date(),
-        upToCreatedAt: new Date(),
+        coveringUpTo: new Date(),
       };
 
       await initMetadata(sessionId);

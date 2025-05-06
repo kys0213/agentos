@@ -15,11 +15,11 @@ export interface ChatManager {
   create(options?: ChatCreateOptions): Promise<ChatSession>;
 
   /**
-   * Use a chat session
+   * Load a chat session
    * @param options - The options for the chat session
-   * @returns The used chat session
+   * @returns The loaded chat session
    */
-  use(options: ChatUseOptions): Promise<ChatSession>;
+  load(options: ChatLoadOptions): Promise<ChatSession>;
 
   /**
    * List all chat sessions
@@ -33,10 +33,13 @@ export interface ChatCreateOptions {
   preset?: Preset;
 }
 
-export interface ChatUseOptions {
+export interface ChatLoadOptions {
   sessionId: string;
 }
 
+/**
+ * A lightweight summary of a session for listing
+ */
 export interface ChatSessionDescription {
   id: string;
   title: string;
