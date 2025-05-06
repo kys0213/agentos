@@ -4,13 +4,6 @@
     "outDir": "./dist",
     "rootDir": "./src"
   },
-  "include": [
-    "src/**/*",
-    "../llm-bridge-runner/src/loader/dependecy",
-    "../llm-bridge-runner/src/registry/in-memory/in-memory-llm-bridge.registry.ts",
-    "../llm-bridge-runner/src/llm-bridge.bootstrap.ts",
-    "../llm-bridge-runner/src/llm-bridge.loader.ts",
-    "../llm-bridge-runner/src/llm-bridge.registry.ts"
-  ],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
