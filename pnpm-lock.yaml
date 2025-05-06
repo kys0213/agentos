@@ -128,11 +128,10 @@ importers:
         version: 5.8.3
 
   packages/llm-bridge-runner:
-    dependencies:
-      '@agentos/core':
-        specifier: workspace:*
-        version: link:../core
     devDependencies:
+      '@agentos/core':
+        specifier: workspace:^
+        version: link:../core
       '@types/jest':
         specifier: ^29.5.12
         version: 29.5.14
