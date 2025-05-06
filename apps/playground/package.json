@@ -10,11 +10,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@agentos/core": "workspace:*",
-    "@agentos/shared": "workspace:*"
+    "@agentos/core": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
-    "@types/node": "^20.11.19"
+    "@types/node": "^20.11.19",
+    "typescript": "^5.3.3"
   }
 }

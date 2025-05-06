@@ -35,9 +35,6 @@ importers:
       '@agentos/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@agentos/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
     devDependencies:
       '@types/node':
         specifier: ^20.11.19
@@ -51,9 +48,6 @@ importers:
       '@agentos/core':
         specifier: workspace:*
         version: link:../core
-      '@agentos/shared':
-        specifier: workspace:*
-        version: link:../shared
       chalk:
         specifier: ^4.1.2
         version: 4.1.2
@@ -70,15 +64,9 @@ importers:
 
   packages/core:
     dependencies:
-      '@agentos/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@modelcontextprotocol/sdk':
         specifier: ^1.10.1
         version: 1.10.1
-      llm-bridge-spec:
-        specifier: ^1.0.0
-        version: 1.0.0
       node:
         specifier: ^23.11.0
         version: 23.11.0
@@ -95,6 +83,9 @@ importers:
       jest-mock-extended:
         specifier: 4.0.0-beta1
         version: 4.0.0-beta1(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.17.30))(typescript@5.8.3)
+      llm-bridge-spec:
+        specifier: ^1
+        version: 1.0.1
       ts-jest:
         specifier: ^29.1.2
         version: 29.3.2(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0(@types/node@20.17.30))(typescript@5.8.3)
@@ -107,9 +98,6 @@ importers:
       '@agentos/core':
         specifier: workspace:*
         version: link:../core
-      '@agentos/shared':
-        specifier: workspace:*
-        version: link:../shared
       electron-store:
         specifier: ^8.1.0
         version: 8.2.0
@@ -139,23 +127,32 @@ importers:
         specifier: ^5.3.3
         version: 5.8.3
 
-  packages/shared:
+  packages/llm-bridge-runner:
     devDependencies:
+      '@agentos/core':
+        specifier: workspace:^
+        version: link:../core
       '@types/jest':
         specifier: ^29.5.12
         version: 29.5.14
       '@types/node':
-        specifier: ^20.17.30
+        specifier: ^20.11.24
         version: 20.17.30
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@20.17.30)
-      ts-jest:
-        specifier: ^29.1.2
-        version: 29.3.2(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0(@types/node@20.17.30))(typescript@5.8.3)
+      llm-bridge-spec:
+        specifier: ^1
+        version: 1.0.1
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.10
       typescript:
         specifier: ^5.3.3
         version: 5.8.3
+      zod:
+        specifier: ^3
+        version: 3.24.4
 
 packages:
 
@@ -1948,8 +1945,8 @@ packages:
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
 
-  llm-bridge-spec@1.0.0:
-    resolution: {integrity: sha512-F80pjWeC0hoCFksw0K85+fEKl/LZx4cXuDfh5t6TYikraR5gq11Pa+ep8ISyLzSPl7AjLTztIk93IzHn72Ah1A==}
+  llm-bridge-spec@1.0.1:
+    resolution: {integrity: sha512-GsVURNIxl28jJdhK5A76sq0TNRvEkwzzj4SSGuE6a+oSYmC/ymmdiVpocRL0xgzdrnV9iM3WR1AfjO7pDYn3uA==}
 
   locate-path@3.0.0:
     resolution: {integrity: sha512-7AO748wWnIhNqAuaty2ZWHkQHRSNfPVIsPIfwEOWO22AmaoVrWavlOcMR5nzTLNYvp36X220/maaRsrec1G65A==}
@@ -2430,6 +2427,10 @@ packages:
     deprecated: Rimraf versions prior to v4 are no longer supported
     hasBin: true
 
+  rimraf@5.0.10:
+    resolution: {integrity: sha512-l0OE8wL34P4nJH/H2ffoaniAokM2qSmrtXHmlpvYr5AVVX8msAyW0l8NVJFDxlSK4u3Uh/f41cQheDVdnYijwQ==}
+    hasBin: true
+
   roarr@2.15.4:
     resolution: {integrity: sha512-CHhPh+UNHD2GTXNYhPWLnU8ONHdI+5DI+4EYIAOaiD63rHeYlZvyh8P+in5999TTSFgUYuKUAjzRI4mdh/p+2A==}
     engines: {node: '>=8.0'}
@@ -2863,8 +2864,8 @@ packages:
     peerDependencies:
       zod: ^3.24.1
 
-  zod@3.24.3:
-    resolution: {integrity: sha512-HhY1oqzWCQWuUqvBFnsyrtZRhyPeR7SUGv+C4+MsisMuVfSPx8HpwWqH8tRahSlt6M3PiFAcoeFhZAqIXTxoSg==}
+  zod@3.24.4:
+    resolution: {integrity: sha512-OdqJE9UDRPwWsrHjLN2F8bPxvwJBK22EHLWtanu0LSYr5YqzsaaW3RMgmjwr8Rypg5k+meEJdSPXJZXE/yqOMg==}
 
 snapshots:
 
@@ -3378,8 +3379,8 @@ snapshots:
       express-rate-limit: 7.5.0(express@5.1.0)
       pkce-challenge: 5.0.0
       raw-body: 3.0.0
-      zod: 3.24.3
-      zod-to-json-schema: 3.24.5(zod@3.24.3)
+      zod: 3.24.4
+      zod-to-json-schema: 3.24.5(zod@3.24.4)
     transitivePeerDependencies:
       - supports-color
 
@@ -5270,7 +5271,7 @@ snapshots:
 
   lines-and-columns@1.2.4: {}
 
-  llm-bridge-spec@1.0.0: {}
+  llm-bridge-spec@1.0.1: {}
 
   locate-path@3.0.0:
     dependencies:
@@ -5674,6 +5675,10 @@ snapshots:
   rimraf@3.0.2:
     dependencies:
       glob: 7.2.3
+
+  rimraf@5.0.10:
+    dependencies:
+      glob: 10.4.5
 
   roarr@2.15.4:
     dependencies:
@@ -6109,8 +6114,8 @@ snapshots:
       compress-commons: 4.1.2
       readable-stream: 3.6.2
 
-  zod-to-json-schema@3.24.5(zod@3.24.3):
+  zod-to-json-schema@3.24.5(zod@3.24.4):
     dependencies:
-      zod: 3.24.3
+      zod: 3.24.4
 
-  zod@3.24.3: {}
+  zod@3.24.4: {}

@@ -1,0 +1,28 @@
+{
+  "name": "@agentos/llm-bridge-runner",
+  "version": "0.1.0",
+  "description": "LLM Bridge Runner for AgentOS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "@agentos/core": "workspace:^",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.24",
+    "jest": "^29.7.0",
+    "llm-bridge-spec": "^1",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3",
+    "zod": "^3"
+  },
+  "peerDependencies": {
+    "@agentos/core": "workspace:^",
+    "llm-bridge-spec": "^1",
+    "zod": "^3"
+  }
+}
