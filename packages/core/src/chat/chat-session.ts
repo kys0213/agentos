@@ -1,4 +1,4 @@
-import { LlmUsage, Message } from 'llm-bridge-spec';
+import { ChatMessage, LlmUsage, Message } from 'llm-bridge-spec';
 import { CursorPagination, CursorPaginationResult } from '../common/pagination/cursor-pagination';
 import { Preset } from '../preset/preset';
 import { ChatSessionMetadata } from './chat-session-metata';
@@ -18,6 +18,11 @@ export interface ChatSession {
   preset?: Preset;
 
   /**
+   * The title of the chat session
+   */
+  title?: string;
+
+  /**
    * Append a message to the chat session
    * @param message - The message to append
    */
@@ -28,11 +33,6 @@ export interface ChatSession {
    * @param usage - The usage to append
    */
   sumUsage(usage: LlmUsage): Promise<void>;
-
-  /**
-   * Compress the chat session
-   */
-  compress(strategy: CompressStrategy): Promise<void>;
 
   /**
    * Get the history of the chat session
@@ -56,9 +56,9 @@ export interface ChatSession {
   getMetadata(): Promise<Readonly<ChatSessionMetadata>>;
 
   /**
-   * Save the chat session
+   * Commit the chat session
    */
-  save(): Promise<void>;
+  commit(): Promise<void>;
 }
 
 /**
@@ -83,7 +83,7 @@ export interface Checkpoint {
   /**
    * The up to created at of the checkpoint
    */
-  upToCreatedAt: Date;
+  coveringUpTo: Date;
 }
 
 /**
@@ -104,5 +104,14 @@ export interface CompressStrategy {
    * @param messages - The messages to compress
    * @returns The compressed messages
    */
-  compress(messages: MessageHistory[]): Promise<Message>;
+  compress(messages: MessageHistory[]): Promise<CompressionResult>;
+}
+
+/**
+ * The result of the compression
+ */
+export interface CompressionResult {
+  summary: ChatMessage;
+  compressedCount: number;
+  discardedMessages?: string[];
 }

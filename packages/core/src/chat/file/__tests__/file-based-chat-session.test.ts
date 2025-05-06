@@ -1,6 +1,6 @@
 import { mock } from 'jest-mock-extended';
 import { LlmUsage, Message } from 'llm-bridge-spec';
-import { Checkpoint } from '../../chat-session';
+import { Checkpoint, CompressStrategy } from '../../chat-session';
 import { FileBasedChatSession } from '../file-based-chat-session';
 import { FileBasedSessionStorage } from '../file-based-session-storage';
 import { FileBasedSessionMetadata } from '../file-based-session.metadata';
@@ -9,9 +9,34 @@ describe('FileBasedChatSession', () => {
   let session: FileBasedChatSession;
   let mockStorage: jest.Mocked<FileBasedSessionStorage>;
   let mockPreset: FileBasedSessionMetadata;
+  let mockTitleCompressor: jest.Mocked<CompressStrategy>;
+  let mockHistoryCompressor: jest.Mocked<CompressStrategy>;
 
   beforeEach(() => {
     mockStorage = mock<FileBasedSessionStorage>();
+    mockTitleCompressor = mock<CompressStrategy>();
+    mockTitleCompressor.compress.mockResolvedValue({
+      summary: {
+        role: 'system',
+        content: {
+          contentType: 'text',
+          value: 'compressed message',
+        },
+      },
+      compressedCount: 1,
+    });
+
+    mockHistoryCompressor = mock<CompressStrategy>();
+    mockHistoryCompressor.compress.mockResolvedValue({
+      summary: {
+        role: 'system',
+        content: {
+          contentType: 'text',
+          value: 'compressed message',
+        },
+      },
+      compressedCount: 1,
+    });
 
     mockPreset = {
       preset: {
@@ -41,7 +66,13 @@ describe('FileBasedChatSession', () => {
       latestCheckpoint: undefined,
     };
 
-    session = new FileBasedChatSession('test-session', mockStorage, mockPreset);
+    session = new FileBasedChatSession(
+      'test-session',
+      mockStorage,
+      mockPreset,
+      mockHistoryCompressor,
+      mockTitleCompressor
+    );
   });
 
   describe('save', () => {
@@ -55,7 +86,7 @@ describe('FileBasedChatSession', () => {
       };
 
       await session.appendMessage(testMessage);
-      await session.save();
+      await session.commit();
 
       expect(mockStorage.saveSessionMetadata).toHaveBeenCalledWith(
         'test-session',
@@ -85,16 +116,6 @@ describe('FileBasedChatSession', () => {
 
   describe('compress', () => {
     it('메시지 히스토리를 압축하고 체크포인트를 생성해야 한다', async () => {
-      const mockStrategy = {
-        compress: jest.fn().mockResolvedValue({
-          role: 'assistant',
-          content: {
-            contentType: 'text',
-            value: 'compressed message',
-          },
-        }),
-      };
-
       const testMessage: Message = {
         role: 'user',
         content: {
@@ -104,7 +125,7 @@ describe('FileBasedChatSession', () => {
       };
 
       await session.appendMessage(testMessage);
-      await session.compress(mockStrategy);
+      await session.commit();
 
       expect(mockStorage.saveMessageHistories).toHaveBeenCalled();
       expect(mockStorage.saveCheckpoint).toHaveBeenCalled();
@@ -149,7 +170,7 @@ describe('FileBasedChatSession', () => {
           },
         },
         createdAt: new Date(),
-        upToCreatedAt: new Date(),
+        coveringUpTo: new Date(),
       };
 
       mockStorage.getCheckpoint.mockResolvedValue(mockCheckpoint);
