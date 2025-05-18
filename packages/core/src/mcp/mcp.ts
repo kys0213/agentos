@@ -1,18 +1,22 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio';
 import { Transport } from '@modelcontextprotocol/sdk/shared/transport';
 import {
+  AudioContent,
+  ImageContent,
   Prompt,
-  Resource,
-  ServerCapabilities,
-  Tool,
-  ResourceContents,
   PromptMessage,
+  Resource,
+  ResourceContents,
+  ServerCapabilities,
+  TextContent,
+  Tool,
 } from '@modelcontextprotocol/sdk/types';
-import { StdioMcpConfig } from './mcp-config';
 import EventEmitter from 'node:events';
-import { McpEvent, McpEventMap } from './mcp-event';
+import { Scheduler } from '../common/scheduler/scheduler';
 import { safeZone } from '../common/utils/safeZone';
+import { McpConfig } from './mcp-config';
+import { McpEvent, McpEventMap } from './mcp-event';
+import { McpTransportFactory } from './mcp-transport.factory';
 
 /**
  * mcp is a client for the MCP protocol.
@@ -20,29 +24,60 @@ import { safeZone } from '../common/utils/safeZone';
  */
 export class Mcp extends EventEmitter {
   private abortController: AbortController | null = null;
+  private lastUsedTime: number = 0;
+  private scheduler?: Scheduler;
+
+  private tools: Tool[] = [];
+  private prompts: Prompt[] = [];
+  private resources: Resource[] = [];
 
   constructor(
     private readonly client: Client,
     private readonly transport: Transport,
-    private readonly config: StdioMcpConfig
+    private readonly config: McpConfig
   ) {
     super();
   }
 
-  static create(config: StdioMcpConfig) {
-    const transport = new StdioClientTransport({
-      command: config.command,
-      args: config.args,
-      env: config.env,
-      cwd: config.cwd,
-    });
+  static create(config: McpConfig) {
+    const transport = McpTransportFactory.create(config);
 
     const client = new Client({
       name: config.name,
       version: config.version,
     });
 
-    return new Mcp(client, transport, config);
+    const mcp = new Mcp(client, transport, config);
+
+    return mcp;
+  }
+
+  get name() {
+    const serverVersion = this.client.getServerVersion();
+
+    if (!serverVersion) {
+      return this.config.name;
+    }
+
+    return serverVersion.name;
+  }
+
+  get version() {
+    const serverVersion = this.client.getServerVersion();
+
+    if (!serverVersion) {
+      return this.config.version;
+    }
+
+    return serverVersion.version;
+  }
+
+  get instructions() {
+    return this.client.getInstructions();
+  }
+
+  get serverVersion() {
+    return this.client.getServerVersion();
   }
 
   async descriptionForLLM(): Promise<string> {
@@ -60,9 +95,7 @@ export class Mcp extends EventEmitter {
   }
 
   async getServerCapabilities(): Promise<ServerCapabilities | undefined> {
-    const capabilities = await this.client.getServerCapabilities();
-
-    return capabilities;
+    return this.client.getServerCapabilities();
   }
 
   async invokeTool(
@@ -71,6 +104,9 @@ export class Mcp extends EventEmitter {
   ): Promise<InvokeToolResult> {
     let freshResumptionToken: string | undefined;
 
+    await this.connectIfNotConnected();
+    this.updateLastUsedTime();
+
     const result = await this.client.callTool(
       {
         name: this.removePrefix(tool.name),
@@ -78,8 +114,8 @@ export class Mcp extends EventEmitter {
       },
       undefined,
       {
-        timeout: this.config.network?.timeout,
-        maxTotalTimeout: this.config.network?.maxTotalTimeout,
+        timeout: this.config.network?.timeoutMs,
+        maxTotalTimeout: this.config.network?.maxTotalTimeoutMs,
         resetTimeoutOnProgress: true,
         signal: this.abortController?.signal,
         onprogress: (progress) => {
@@ -90,15 +126,26 @@ export class Mcp extends EventEmitter {
       }
     );
 
-    return { result, resumptionToken: freshResumptionToken };
+    if (result.isError) {
+      throw new Error('Tool call failed reason: ' + result.content);
+    }
+
+    return {
+      isError: result.isError == true,
+      contents: Array.isArray(result.content) ? result.content : [result.content],
+      resumptionToken: freshResumptionToken,
+    };
   }
 
   async getResource(uri: string): Promise<ResourceContents[]> {
+    await this.connectIfNotConnected();
+    this.updateLastUsedTime();
+
     const resource = await this.client.readResource(
       { uri },
       {
-        timeout: this.config.network?.timeout,
-        maxTotalTimeout: this.config.network?.maxTotalTimeout,
+        timeout: this.config.network?.timeoutMs,
+        maxTotalTimeout: this.config.network?.maxTotalTimeoutMs,
         signal: this.abortController?.signal,
       }
     );
@@ -107,11 +154,14 @@ export class Mcp extends EventEmitter {
   }
 
   async getPrompt(name: string, input?: Record<string, string>): Promise<PromptMessage[]> {
+    await this.connectIfNotConnected();
+    this.updateLastUsedTime();
+
     const result = await this.client.getPrompt(
       { name: this.removePrefix(name), arguments: input },
       {
-        timeout: this.config.network?.timeout,
-        maxTotalTimeout: this.config.network?.maxTotalTimeout,
+        timeout: this.config.network?.timeoutMs,
+        maxTotalTimeout: this.config.network?.maxTotalTimeoutMs,
         signal: this.abortController?.signal,
       }
     );
@@ -120,21 +170,54 @@ export class Mcp extends EventEmitter {
   }
 
   async getPrompts(): Promise<Prompt[]> {
+    if (this.prompts.length > 0) {
+      return this.prompts;
+    }
+
+    await this.connectIfNotConnected();
+    this.updateLastUsedTime();
     // TODO 페이징 처리 고민
     const { prompts } = await this.client.listPrompts();
-    return prompts.map((prompt) => this.appendPrefix(prompt));
+
+    const promptWithPrefix = prompts.map((prompt) => this.appendPrefix(prompt));
+
+    return promptWithPrefix;
+  }
+
+  async getTool(name: string): Promise<Tool | undefined> {
+    const tools = await this.getTools();
+
+    return tools.find((tool) => tool.name === name);
   }
 
   async getTools(): Promise<Tool[]> {
+    if (this.tools.length > 0) {
+      return this.tools;
+    }
+
+    await this.connectIfNotConnected();
+    this.updateLastUsedTime();
     // TODO 페이징 처리 고민
     const { tools } = await this.client.listTools();
-    return tools.map((tool) => this.appendPrefix(tool));
+
+    const toolWithPrefix = tools.map((tool) => this.appendPrefix(tool));
+
+    return toolWithPrefix;
   }
 
   async getResources(): Promise<Resource[]> {
+    if (this.resources.length > 0) {
+      return this.resources;
+    }
+
+    await this.connectIfNotConnected();
+    this.updateLastUsedTime();
     // TODO 페이징 처리 고민
     const { resources } = await this.client.listResources();
-    return resources.map((resource) => this.appendPrefix(resource));
+
+    const resourceWithPrefix = resources.map((resource) => this.appendPrefix(resource));
+
+    return resourceWithPrefix;
   }
 
   private appendPrefix<T extends { name: string }>(value: T): T {
@@ -164,16 +247,22 @@ export class Mcp extends EventEmitter {
 
     await this.client.connect(this.transport, {
       signal: this.abortController.signal,
-      timeout: this.config.network?.timeout,
-      maxTotalTimeout: this.config.network?.maxTotalTimeout,
+      timeout: this.config.network?.timeoutMs,
+      maxTotalTimeout: this.config.network?.maxTotalTimeoutMs,
     });
 
     this.emit(McpEvent.CONNECTED, undefined);
+
+    this.registerMaxIdleTimeoutScheduler();
   }
 
   async disconnect() {
     if (!this.isConnected()) {
       return;
+    }
+
+    if (this.scheduler && this.scheduler.isRunning()) {
+      this.scheduler.stop();
     }
 
     try {
@@ -188,6 +277,9 @@ export class Mcp extends EventEmitter {
       this.abortController?.abort();
     } finally {
       this.abortController = null;
+      this.tools.length = 0;
+      this.prompts.length = 0;
+      this.resources.length = 0;
     }
   }
 
@@ -207,12 +299,35 @@ export class Mcp extends EventEmitter {
     return super.on(key, handler);
   }
 
-  private async healthCheck() {
-    await this.client.ping();
+  private async connectIfNotConnected() {
+    if (!this.isConnected()) {
+      await this.connect();
+    }
+  }
+
+  private registerMaxIdleTimeoutScheduler() {
+    const maxConnectionIdleTimeoutMs = this.config.network?.maxConnectionIdleTimeoutMs;
+
+    if (maxConnectionIdleTimeoutMs) {
+      this.scheduler = Scheduler.create(Math.min(maxConnectionIdleTimeoutMs, 10000));
+
+      this.scheduler.start(async () => {
+        if (this.lastUsedTime + maxConnectionIdleTimeoutMs < Date.now()) {
+          await this.safeDisconnect();
+        }
+      });
+    }
+  }
+
+  private updateLastUsedTime() {
+    this.lastUsedTime = Date.now();
   }
 }
 
+export type McpContent = TextContent | ImageContent | AudioContent;
+
 export type InvokeToolResult = {
-  result: Record<string, unknown>;
+  isError: boolean;
+  contents: Array<McpContent>;
   resumptionToken?: string;
 };

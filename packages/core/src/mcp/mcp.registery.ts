@@ -1,3 +1,4 @@
+import { Tool } from '@modelcontextprotocol/sdk/types';
 import { Mcp } from './mcp';
 import { StdioMcpConfig } from './mcp-config';
 
@@ -15,6 +16,45 @@ export class McpRegistry {
     this.onUnregisterFunctions.push(fn);
   }
 
+  async getAll(): Promise<Mcp[]> {
+    return Array.from(this.storage.values());
+  }
+
+  async getTool(name: string): Promise<{ mcp: Mcp; tool: Tool } | null> {
+    const { mcpName, toolName } = this.parseMcpAndToolName(name);
+
+    if (!toolName) {
+      return null;
+    }
+
+    const mcp = await this.get(mcpName);
+
+    if (!mcp) {
+      return null;
+    }
+
+    const tool = await mcp.getTool(toolName);
+
+    if (!tool) {
+      return null;
+    }
+
+    return {
+      mcp,
+      tool,
+    };
+  }
+
+  async getToolOrThrow(name: string) {
+    const result = await this.getTool(name);
+
+    if (!result) {
+      throw new Error(`Tool ${name} not found`);
+    }
+
+    return result;
+  }
+
   async register(config: StdioMcpConfig) {
     const mcp = Mcp.create(config);
 
@@ -22,17 +62,29 @@ export class McpRegistry {
 
     this.storage.set(config.name, mcp);
 
-    for (const fn of this.onRegisterFunctions) {
-      fn(mcp);
+    for (const onRegister of this.onRegisterFunctions) {
+      onRegister(mcp);
     }
   }
 
-  get(name: McpName) {
-    return this.storage.get(name);
+  async get(name: McpName) {
+    const mcp = this.storage.get(name);
+
+    if (!mcp) {
+      return null;
+    }
+
+    if (mcp.isConnected()) {
+      return mcp;
+    }
+
+    await mcp.connect();
+
+    return mcp;
   }
 
-  getOrThrow(name: McpName) {
-    const mcp = this.get(name);
+  async getOrThrow(name: McpName) {
+    const mcp = await this.get(name);
 
     if (!mcp) {
       throw new Error(`Mcp ${name} is not registered`);
@@ -46,7 +98,7 @@ export class McpRegistry {
   }
 
   async unregister(name: McpName) {
-    const mcp = this.get(name);
+    const mcp = await this.get(name);
 
     if (!mcp) {
       return;
@@ -56,8 +108,8 @@ export class McpRegistry {
 
     this.storage.delete(name);
 
-    for (const fn of this.onUnregisterFunctions) {
-      fn(mcp);
+    for (const onUnregister of this.onUnregisterFunctions) {
+      onUnregister(mcp);
     }
 
     return result;
@@ -67,6 +119,19 @@ export class McpRegistry {
     await Promise.all(Array.from(this.storage.values()).map((mcp) => mcp.safeDisconnect()));
 
     this.storage.clear();
+  }
+
+  private parseMcpAndToolName(name: string) {
+    const index = name.indexOf('.');
+
+    if (index === -1) {
+      return { mcpName: name, toolName: null };
+    }
+
+    const mcpName = name.substring(0, index);
+    const toolName = name.substring(index + 1);
+
+    return { mcpName, toolName };
   }
 }
 

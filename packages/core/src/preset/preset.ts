@@ -6,7 +6,15 @@ export interface Preset {
   updatedAt: Date;
   version: string;
   systemPrompt: string;
-  enabledMcps: string[];
+  enabledMcps?: EnabledMcp[];
   llmBridgeName: string;
   llmBridgeConfig: Record<string, any>;
+}
+
+export interface EnabledMcp {
+  name: string;
+  version?: string;
+  enabledTools: string[];
+  enabledResources: string[];
+  enabledPrompts: string[];
 }

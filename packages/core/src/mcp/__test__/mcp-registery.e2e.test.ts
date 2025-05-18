@@ -5,14 +5,15 @@ describe('McpRegistry', () => {
     const registry = new McpRegistry();
 
     await registry.register({
+      type: 'stdio',
       name: 'filesystem',
       version: '1.0.0',
       command: 'npx',
       args: ['-y', '@modelcontextprotocol/server-filesystem', '/Users/irene/Desktop'],
     });
 
-    const mcp = registry.getOrThrow('filesystem');
-    const tools = await mcp?.getTools();
+    const mcp = await registry.getOrThrow('filesystem');
+    const tools = await mcp.getTools();
     expect(mcp).toBeDefined();
     expect(tools.length).toBeGreaterThan(0);
     expect(tools[0].name).toContain('filesystem');
@@ -24,6 +25,6 @@ describe('McpRegistry', () => {
     console.log(description);
 
     await registry.unregister('filesystem');
-    expect(registry.get('filesystem')).toBeUndefined();
+    expect(await registry.get('filesystem')).toBeNull();
   });
 });

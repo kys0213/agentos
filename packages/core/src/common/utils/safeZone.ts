@@ -26,7 +26,7 @@ export function safeZone<T>(fn: () => T | Promise<T>): Promise<Result<T>> | Resu
   }
 }
 
-function isPromise<T>(value: T | Promise<T>): value is Promise<T> {
+export function isPromise<T>(value: T | Promise<T>): value is Promise<T> {
   return value instanceof Promise;
 }
 
