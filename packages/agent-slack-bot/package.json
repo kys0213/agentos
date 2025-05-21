@@ -1,0 +1,23 @@
+{
+  "name": "@agentos/agent-slack-bot",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w",
+    "lint": "eslint src --ext .ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@agentos/core": "workspace:*",
+    "@agentos/llm-bridge-runner": "workspace:*",
+    "llm-bridge-spec": "^1.0.2",
+    "@slack/bolt": "^3.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "typescript": "^5.3.3"
+  }
+}
