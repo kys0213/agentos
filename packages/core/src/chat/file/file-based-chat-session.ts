@@ -108,13 +108,13 @@ export class FileBasedChatSession implements ChatSession {
     const buffer: MessageHistory[] = [];
 
     for await (const history of this.storage.read(this.sessionId)) {
+      if (cursor && Number(history.messageId) <= Number(cursor)) {
+        continue;
+      }
+
       buffer.push(history);
 
       if (buffer.length >= limit) {
-        break;
-      }
-
-      if (cursor && Number(history.messageId) < Number(cursor)) {
         break;
       }
     }
