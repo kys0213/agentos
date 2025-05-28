@@ -154,6 +154,48 @@ describe('FileBasedChatSession', () => {
       const result = await session.getHistories();
       expect(result.items).toContainEqual(mockHistory);
     });
+
+    it('cursor와 limit을 사용해 페이지네이션을 적용해야 한다', async () => {
+      const histories = [
+        {
+          messageId: '1',
+          createdAt: new Date(),
+          role: 'user',
+          content: { contentType: 'text', value: 'm1' },
+        },
+        {
+          messageId: '2',
+          createdAt: new Date(),
+          role: 'assistant',
+          content: { contentType: 'text', value: 'm2' },
+        },
+        {
+          messageId: '3',
+          createdAt: new Date(),
+          role: 'user',
+          content: { contentType: 'text', value: 'm3' },
+        },
+        {
+          messageId: '4',
+          createdAt: new Date(),
+          role: 'assistant',
+          content: { contentType: 'text', value: 'm4' },
+        },
+      ];
+
+      mockStorage.read.mockImplementation(async function* () {
+        for (const h of histories) {
+          yield h;
+        }
+      });
+
+      const result = await session.getHistories({ cursor: '1', limit: 2 });
+
+      expect(result.items).toHaveLength(2);
+      expect(result.items[0]).toEqual(histories[1]);
+      expect(result.items[1]).toEqual(histories[2]);
+      expect(result.nextCursor).toBe('3');
+    });
   });
 
   describe('getCheckpoints', () => {
