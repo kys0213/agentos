@@ -3,6 +3,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { Agent } from '@agentos/core';
+import { interactiveChat, listSessions } from './chat';
 
 const program = new Command();
 
@@ -27,4 +28,31 @@ program
     }
   });
 
+const chat = program.command('chat').description('Chat commands');
+
+chat
+  .command('new')
+  .description('Start a new interactive chat session')
+  .action(async () => {
+    try {
+      await interactiveChat();
+    } catch (error) {
+      console.error(chalk.red('Error:'), error);
+      process.exit(1);
+    }
+  });
+
+chat
+  .command('list')
+  .description('List previous chat sessions')
+  .action(async () => {
+    try {
+      await listSessions();
+    } catch (error) {
+      console.error(chalk.red('Error:'), error);
+      process.exit(1);
+    }
+  });
+
 program.parse();
+
