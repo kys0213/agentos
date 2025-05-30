@@ -3,6 +3,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { Agent } from '@agentos/core';
+import { interactiveChat } from './chat';
 
 const program = new Command();
 
@@ -21,6 +22,18 @@ program
       await agent.initialize();
       const result = await agent.execute(task);
       console.log(chalk.green('Result:'), result);
+    } catch (error) {
+      console.error(chalk.red('Error:'), error);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('chat')
+  .description('Start an interactive chat session')
+  .action(async () => {
+    try {
+      await interactiveChat();
     } catch (error) {
       console.error(chalk.red('Error:'), error);
       process.exit(1);
