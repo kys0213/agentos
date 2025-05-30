@@ -11,7 +11,9 @@ packages/
 ├── core/                # agent interfaces and file‑based implementations
 ├── cli/                 # command line interface (work in progress)
 ├── gui/                 # Electron + React GUI (work in progress)
-└── llm-bridge-runner/   # runtime loader for LLM bridges
+├── llm-bridge-runner/   # runtime loader for LLM bridges
+└── agent-slack-bot/     # Slack bot using Bolt
+
 apps/
 └── playground/          # sandbox application
 ```
