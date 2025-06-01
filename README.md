@@ -36,10 +36,17 @@ package that implements the same interfaces (for example
 
 ### CLI and GUI
 
-The `cli` package provides a small command line application using
+The `cli` package provides a command line application using
 [`commander`](https://github.com/tj/commander.js) and
-[`chalk`](https://github.com/chalk/chalk`). It currently supports a simple
-`agentos run` command.
+[`chalk`](https://github.com/chalk/chalk`).
+Available commands include:
+
+```bash
+agentos run <task>        # run an agent once
+agentos chat              # start an interactive chat session
+agentos sessions          # browse session list
+agentos history <id>      # browse conversation history for a session
+```
 
 The `gui` package is an Electron application with a React renderer. It shows a
 basic window that can execute a task via the core library. Both packages are
