@@ -4,6 +4,8 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { Agent } from '@agentos/core';
 import { interactiveChat } from './chat';
+import { browseHistory } from './history';
+import { browseSessions } from './sessions';
 
 const program = new Command();
 
@@ -34,6 +36,31 @@ program
   .action(async () => {
     try {
       await interactiveChat();
+    } catch (error) {
+      console.error(chalk.red('Error:'), error);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('history')
+  .description('Browse chat history for a session')
+  .argument('<sessionId>', 'Session ID to load')
+  .action(async (sessionId: string) => {
+    try {
+      await browseHistory(sessionId);
+    } catch (error) {
+      console.error(chalk.red('Error:'), error);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('sessions')
+  .description('Browse previous chat sessions')
+  .action(async () => {
+    try {
+      await browseSessions();
     } catch (error) {
       console.error(chalk.red('Error:'), error);
       process.exit(1);

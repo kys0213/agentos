@@ -11,6 +11,7 @@ export async function interactiveChat() {
 
   console.log('Type your message. Enter "exit" to quit.');
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const input = await rl.question('You: ');
     if (input.trim().toLowerCase() === 'exit') {
