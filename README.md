@@ -41,6 +41,20 @@ The `cli` package provides a small command line application using
 [`chalk`](https://github.com/chalk/chalk`). It currently supports a simple
 `agentos run` command.
 
+The CLI also exposes a small helper called `user-input-stream` for building
+interactive flows. Handlers can be registered with regular expressions and will
+be triggered when the user's input matches:
+
+```ts
+import { createUserInputStream } from '@agentos/cli/dist/utils/user-input-stream';
+
+const stream = createUserInputStream({ prompt: '> ' })
+  .on(/^hello$/, () => console.log('hi'))
+  .build();
+
+await stream.run(); // resolves when the user types "quit"
+```
+
 The `gui` package is an Electron application with a React renderer. It shows a
 basic window that can execute a task via the core library. Both packages are
 early prototypes and will evolve as the project grows.
