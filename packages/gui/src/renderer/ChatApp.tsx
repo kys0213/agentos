@@ -66,7 +66,9 @@ const ChatApp: React.FC = () => {
           style={{ width: '80%' }}
           disabled={busy}
         />
-        <button onClick={handleSend} disabled={busy}>Send</button>
+        <button onClick={handleSend} disabled={busy}>
+          Send
+        </button>
       </div>
     </div>
   );
