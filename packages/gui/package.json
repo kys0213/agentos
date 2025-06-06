@@ -7,7 +7,8 @@
     "build": "tsc && electron-builder",
     "dev": "concurrently \"tsc -w\" \"electron .\"",
     "lint": "eslint src --ext .ts,.tsx",
-    "start": "electron ."
+    "start": "electron .",
+    "test": "jest"
   },
   "dependencies": {
     "@agentos/core": "workspace:*",

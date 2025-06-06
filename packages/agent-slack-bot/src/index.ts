@@ -1,4 +1,4 @@
-import { App } from '@slack/bolt';
+import { App, GenericMessageEvent } from '@slack/bolt';
 import { McpRegistry } from '@agentos/core';
 import { InMemoryLlmBridgeRegistry } from '@agentos/llm-bridge-runner';
 import { Message } from 'llm-bridge-spec';
@@ -8,8 +8,12 @@ const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET || '',
 });
 
+function isGenericMessageEvent(msg: unknown): msg is GenericMessageEvent {
+  return !!msg && typeof (msg as GenericMessageEvent).text === 'string';
+}
+
 app.message(async ({ message, say }) => {
-  const text = (message as any).text ?? '';
+  const text = isGenericMessageEvent(message) ? message.text : '';
 
   // Placeholder: initialize AgentOS components
   const mcpRegistry = new McpRegistry();
