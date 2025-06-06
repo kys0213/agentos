@@ -28,8 +28,9 @@ export async function interactiveChat() {
       content: { contentType: 'text', value: `Echo: ${input}` },
     };
     await session.appendMessage(assistantMessage);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    console.log('Assistant:', (assistantMessage.content as any).value);
+    if (assistantMessage.content.contentType === 'text') {
+      console.log('Assistant:', assistantMessage.content.value);
+    }
   }
 
   await session.commit();

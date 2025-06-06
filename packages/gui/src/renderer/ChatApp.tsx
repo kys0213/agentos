@@ -1,22 +1,23 @@
 import React from 'react';
-import { EchoAgent } from './EchoAgent';
+import { BridgeManager } from './BridgeManager';
+import EchoBridge from './bridges/EchoBridge';
+import ReverseBridge from './bridges/ReverseBridge';
 
 interface Message {
   sender: 'user' | 'agent';
   text: string;
 }
 
+const manager = new BridgeManager();
+manager.register('echo', new EchoBridge());
+manager.register('reverse', new ReverseBridge());
+
 const ChatApp: React.FC = () => {
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [input, setInput] = React.useState('');
   const [busy, setBusy] = React.useState(false);
-  const agentRef = React.useRef<EchoAgent>();
+  const [bridgeId, setBridgeId] = React.useState(manager.getCurrentId()!);
   const endRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    agentRef.current = new EchoAgent();
-    agentRef.current.initialize().catch((err) => console.error(err));
-  }, []);
 
   React.useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -31,8 +32,12 @@ const ChatApp: React.FC = () => {
 
     try {
       setBusy(true);
-      const response = await agentRef.current!.execute(trimmed);
-      setMessages((prev) => [...prev, { sender: 'agent', text: response }]);
+      const llmResponse = await manager
+        .getCurrentBridge()
+        .invoke({ messages: [{ role: 'user', content: { contentType: 'text', value: trimmed } }] });
+      const content = llmResponse.content;
+      const text = content.contentType === 'text' ? String(content.value) : '';
+      setMessages((prev) => [...prev, { sender: 'agent', text }]);
     } catch (error) {
       console.error('Error:', error);
       setMessages((prev) => [...prev, { sender: 'agent', text: 'Error executing task' }]);
@@ -43,6 +48,24 @@ const ChatApp: React.FC = () => {
 
   return (
     <div>
+      <div style={{ marginBottom: '8px' }}>
+        <label htmlFor="bridge">LLM Bridge: </label>
+        <select
+          id="bridge"
+          value={bridgeId}
+          onChange={async (e) => {
+            const id = e.target.value;
+            await manager.switchBridge(id);
+            setBridgeId(id);
+          }}
+        >
+          {manager.getBridgeIds().map((id) => (
+            <option key={id} value={id}>
+              {id}
+            </option>
+          ))}
+        </select>
+      </div>
       <div style={{ height: '400px', overflowY: 'auto', border: '1px solid #ccc', padding: '8px' }}>
         {messages.map((m, idx) => (
           <div key={idx} style={{ marginBottom: '8px' }}>
@@ -66,7 +89,9 @@ const ChatApp: React.FC = () => {
           style={{ width: '80%' }}
           disabled={busy}
         />
-        <button onClick={handleSend} disabled={busy}>Send</button>
+        <button onClick={handleSend} disabled={busy}>
+          Send
+        </button>
       </div>
     </div>
   );
