@@ -24,5 +24,5 @@
     "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "arrow-parens": ["error", "always"]
   },
-  "ignorePatterns": ["dist", "node_modules", "*.js"]
+  "ignorePatterns": ["dist", "node_modules", "*.js", "**/__tests__/**"]
 }
