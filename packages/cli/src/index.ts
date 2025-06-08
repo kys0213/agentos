@@ -2,9 +2,10 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { Agent } from '@agentos/core';
+import { SimpleAgent } from '@agentos/core';
 import { interactiveChat } from './chat';
-import { browseHistory, browseSessions } from './browse';
+import { browseHistory } from './history';
+import { browseSessions } from './sessions';
 
 const program = new Command();
 
@@ -15,18 +16,7 @@ program
   .description('Run an agent')
   .argument('<task>', 'Task to execute')
   .action(async (task: string) => {
-    try {
-      const agent = new Agent({
-        name: 'default',
-        version: '1.0.0',
-      });
-      await agent.initialize();
-      const result = await agent.execute(task);
-      console.log(chalk.green('Result:'), result);
-    } catch (error) {
-      console.error(chalk.red('Error:'), error);
-      process.exit(1);
-    }
+    console.log(chalk.yellow('run command not implemented'), task);
   });
 
 program
@@ -56,7 +46,7 @@ program
 
 program
   .command('sessions')
-  .description('Browse available sessions')
+  .description('Browse previous chat sessions')
   .action(async () => {
     try {
       await browseSessions();
