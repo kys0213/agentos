@@ -36,10 +36,17 @@ package that implements the same interfaces (for example
 
 ### CLI and GUI
 
-The `cli` package provides a small command line application using
+The `cli` package provides a command line application using
 [`commander`](https://github.com/tj/commander.js) and
-[`chalk`](https://github.com/chalk/chalk`). It currently supports a simple
-`agentos run` command.
+[`chalk`](https://github.com/chalk/chalk`).
+Available commands include:
+
+```bash
+agentos run <task>        # run an agent once
+agentos chat              # start an interactive chat session
+agentos history <id>      # show conversation history for a session
+agentos sessions          # browse existing sessions
+```
 
 The CLI also exposes a small helper called `user-input-stream` for building
 interactive flows. Handlers can be registered with regular expressions and will
