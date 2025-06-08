@@ -4,7 +4,8 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { Agent } from '@agentos/core';
 import { interactiveChat } from './chat';
-import { browseHistory, browseSessions } from './browse';
+import { browseHistory } from './history';
+import { browseSessions } from './sessions';
 
 const program = new Command();
 
@@ -56,7 +57,7 @@ program
 
 program
   .command('sessions')
-  .description('Browse available sessions')
+  .description('Browse previous chat sessions')
   .action(async () => {
     try {
       await browseSessions();

@@ -44,8 +44,8 @@ Available commands include:
 ```bash
 agentos run <task>        # run an agent once
 agentos chat              # start an interactive chat session
-agentos sessions          # browse session list
-agentos history <id>      # browse conversation history for a session
+agentos history <id>      # show conversation history for a session
+agentos sessions          # browse existing sessions
 ```
 
 The `gui` package is an Electron application with a React renderer. It shows a
