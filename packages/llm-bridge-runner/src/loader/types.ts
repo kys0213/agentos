@@ -11,3 +11,7 @@ export interface LlmBridgeBootstrap {
 
   create<T extends Record<string, any>>(config: T): Promise<LlmBridge>;
 }
+
+export interface FileLlmBridgeLoader extends LlmBridgeLoader {
+  loadFromPath(filePath: string): Promise<LlmBridgeBootstrap>;
+}
