@@ -1,10 +1,8 @@
 import readline from 'node:readline/promises';
 import chalk from 'chalk';
 import { ChatManager, ChatSessionDescription, MessageHistory } from '@agentos/core';
-import { createManager } from './chat-manager';
 
-export async function browseSessions(): Promise<void> {
-  const manager: ChatManager = createManager();
+export async function browseSessions(manager: ChatManager): Promise<void> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
   let cursor: string | undefined;
@@ -51,7 +49,7 @@ export async function browseSessions(): Promise<void> {
     } else {
       const num = Number(input);
       if (!Number.isNaN(num) && num > 0 && num <= page.length) {
-        await browseHistory(page[num - 1].id, rl);
+        await browseHistory(manager, page[num - 1].id, rl);
       } else {
         console.log('Invalid input');
       }
@@ -62,10 +60,10 @@ export async function browseSessions(): Promise<void> {
 }
 
 export async function browseHistory(
+  manager: ChatManager,
   sessionId: string,
   rlParam?: readline.Interface
 ): Promise<void> {
-  const manager: ChatManager = createManager();
   const session = await manager.load({ sessionId });
   const rl = rlParam ?? readline.createInterface({ input: process.stdin, output: process.stdout });
 

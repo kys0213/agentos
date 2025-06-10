@@ -1,11 +1,9 @@
 import chalk from 'chalk';
 import readline from 'node:readline/promises';
 import { ChatManager, MessageHistory } from '@agentos/core';
-import { createManager } from './chat-manager';
 import { paginate } from './pagination';
 
-export async function browseHistory(sessionId: string): Promise<void> {
-  const manager: ChatManager = createManager();
+export async function browseHistory(manager: ChatManager, sessionId: string): Promise<void> {
   const session = await manager.load({ sessionId });
 
   const rl = readline.createInterface({

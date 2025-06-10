@@ -1,10 +1,8 @@
 import { Message } from 'llm-bridge-spec';
 import { ChatManager } from '@agentos/core';
-import { createManager } from './chat-manager';
 import { createUserInputStream } from './utils/user-input-stream';
 
-export async function interactiveChat() {
-  const manager: ChatManager = createManager();
+export async function interactiveChat(manager: ChatManager) {
   const session = await manager.create();
 
   console.log('Type your message. Enter "quit" to exit. Use "history" to view messages.');

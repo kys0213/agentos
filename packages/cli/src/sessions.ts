@@ -1,11 +1,9 @@
 import readline from 'node:readline/promises';
 import chalk from 'chalk';
 import { ChatManager } from '@agentos/core';
-import { createManager } from './chat-manager';
 import { browseHistory } from './history';
 
-export async function browseSessions(): Promise<void> {
-  const manager: ChatManager = createManager();
+export async function browseSessions(manager: ChatManager): Promise<void> {
   const { items } = await manager.list();
   const pageSize = 10;
   const pages = Math.ceil(items.length / pageSize);
@@ -42,7 +40,7 @@ export async function browseSessions(): Promise<void> {
       const num = parseInt(input, 10);
       if (!Number.isNaN(num) && num >= 1 && num <= page.length) {
         const session = page[num - 1];
-        await browseHistory(session.id);
+        await browseHistory(manager, session.id);
       }
     }
   }
