@@ -2,7 +2,6 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { SimpleAgent } from '@agentos/core';
 import { interactiveChat } from './chat';
 import { browseHistory } from './history';
 import { browseSessions } from './sessions';

@@ -15,7 +15,11 @@ export async function browseSessions(): Promise<void> {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     if (!pages[pageIndex]) {
-      const { items, nextCursor } = await manager.list({ cursor, limit: 5 });
+      const { items, nextCursor } = await manager.list({
+        cursor: cursor ?? '',
+        limit: 5,
+        direction: 'forward',
+      });
       pages[pageIndex] = items;
       cursors[pageIndex + 1] = nextCursor || undefined;
     }
@@ -66,14 +70,18 @@ export async function browseHistory(
   const rl = rlParam ?? readline.createInterface({ input: process.stdin, output: process.stdout });
 
   let cursor: string | undefined;
-  const pages: MessageHistory[][] = [];
+  const pages: Readonly<MessageHistory>[][] = [];
   const cursors: (string | undefined)[] = [];
   let pageIndex = 0;
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
     if (!pages[pageIndex]) {
-      const { items, nextCursor } = await session.getHistories({ cursor, limit: 5 });
+      const { items, nextCursor } = await session.getHistories({
+        cursor: cursor ?? '',
+        limit: 5,
+        direction: 'forward',
+      });
       pages[pageIndex] = items;
       cursors[pageIndex + 1] = nextCursor || undefined;
     }
@@ -81,7 +89,10 @@ export async function browseHistory(
 
     console.log(chalk.yellow(`\nHistory (page ${pageIndex + 1})`));
     for (const message of page) {
-      const content = message.content.contentType === 'text' ? message.content.value : '[non-text]';
+      const content =
+        !Array.isArray(message.content) && message.content.contentType === 'text'
+          ? message.content.value
+          : '[non-text]';
       const time = message.createdAt.toISOString();
       console.log(`${chalk.gray('[' + time + ']')} ${chalk.cyan(message.role)}: ${content}`);
     }

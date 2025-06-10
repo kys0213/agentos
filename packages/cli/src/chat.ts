@@ -13,8 +13,10 @@ export async function interactiveChat() {
     .on(/^history$/i, async () => {
       const { items } = await session.getHistories();
       for (const msg of items) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const text = (msg.content as any).value;
+        const text =
+          !Array.isArray(msg.content) && msg.content.contentType === 'text'
+            ? msg.content.value
+            : '[non-text]';
         console.log(`${msg.role}: ${text}`);
       }
     })
@@ -31,8 +33,11 @@ export async function interactiveChat() {
         content: { contentType: 'text', value: `Echo: ${input}` },
       };
       await session.appendMessage(assistantMessage);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      console.log('Assistant:', (assistantMessage.content as any).value);
+      const text =
+        !Array.isArray(assistantMessage.content) && assistantMessage.content.contentType === 'text'
+          ? assistantMessage.content.value
+          : '[non-text]';
+      console.log('Assistant:', text);
     });
 
   const stream = builder.build();

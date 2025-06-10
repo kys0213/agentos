@@ -19,7 +19,7 @@ export async function browseSessions(): Promise<void> {
     const end = start + pageSize;
     const page = items.slice(start, end);
     console.log(chalk.yellow(`\n-- Sessions Page ${pageIndex + 1}/${pages} --`));
-    page.forEach((s, idx) => {
+    page.forEach((s: (typeof items)[number], idx: number) => {
       const title = s.title || '(no title)';
       const time = s.updatedAt.toISOString();
       console.log(`${idx + 1}. [${time}] ${s.id} - ${title}`);
