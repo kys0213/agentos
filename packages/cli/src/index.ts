@@ -5,8 +5,10 @@ import chalk from 'chalk';
 import { interactiveChat } from './chat';
 import { browseHistory } from './history';
 import { browseSessions } from './sessions';
+import { bootstrap } from './bootstrap';
 
 const program = new Command();
+const { chatManager } = bootstrap();
 
 program.name('agentos').description('CLI for AgentOS').version('1.0.0');
 
@@ -23,7 +25,7 @@ program
   .description('Start an interactive chat session')
   .action(async () => {
     try {
-      await interactiveChat();
+      await interactiveChat(chatManager);
     } catch (error) {
       console.error(chalk.red('Error:'), error);
       process.exit(1);
@@ -36,7 +38,7 @@ program
   .argument('<sessionId>', 'Session ID to load')
   .action(async (sessionId: string) => {
     try {
-      await browseHistory(sessionId);
+      await browseHistory(chatManager, sessionId);
     } catch (error) {
       console.error(chalk.red('Error:'), error);
       process.exit(1);
@@ -48,7 +50,7 @@ program
   .description('Browse previous chat sessions')
   .action(async () => {
     try {
-      await browseSessions();
+      await browseSessions(chatManager);
     } catch (error) {
       console.error(chalk.red('Error:'), error);
       process.exit(1);
