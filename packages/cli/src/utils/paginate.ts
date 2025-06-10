@@ -1,13 +1,13 @@
-import { CursorPaginationResult } from '@agentos/core';
+import { PaginationResult } from '../pagination';
 
 /**
  * Generic async generator for cursor pagination.
  * `fetch` should accept an optional cursor and return a page of items.
  */
 export async function* paginate<T>(
-  fetch: (cursor?: string) => Promise<CursorPaginationResult<T>>,
+  fetch: (cursor?: string) => Promise<PaginationResult<T>>,
   startCursor?: string
-): AsyncGenerator<CursorPaginationResult<T>> {
+): AsyncGenerator<PaginationResult<T>> {
   let cursor = startCursor;
   while (true) {
     const page = await fetch(cursor);

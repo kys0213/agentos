@@ -13,9 +13,15 @@ export async function browseHistory(sessionId: string): Promise<void> {
     output: process.stdout,
   });
 
-  const iterator = paginate((cursor?: string) => session.getHistories({ cursor, limit: 20 }));
+  const iterator = paginate<Readonly<MessageHistory>>(async (cursor?: string) =>
+    session.getHistories({
+      cursor: cursor ?? '',
+      limit: 20,
+      direction: 'forward',
+    })
+  );
 
-  const pages: MessageHistory[][] = [];
+  const pages: Readonly<MessageHistory>[][] = [];
   let pageIndex = 0;
 
   const loadNext = async () => {
@@ -38,7 +44,10 @@ export async function browseHistory(sessionId: string): Promise<void> {
     console.log(chalk.yellow(`\n-- Messages Page ${pageIndex + 1} --`));
     const page = pages[pageIndex];
     for (const message of page) {
-      const content = message.content.contentType === 'text' ? message.content.value : '[non-text]';
+      const content =
+        !Array.isArray(message.content) && message.content.contentType === 'text'
+          ? message.content.value
+          : '[non-text]';
       const time = message.createdAt.toISOString();
       console.log(`${chalk.gray('[' + time + ']')} ${chalk.cyan(message.role)}: ${content}`);
     }
