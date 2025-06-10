@@ -3,7 +3,12 @@ import { LlmBridge, LlmBridgePrompt, LlmBridgeResponse, LlmMetadata } from 'llm-
 export default class EchoBridge implements LlmBridge {
   async invoke(prompt: LlmBridgePrompt): Promise<LlmBridgeResponse> {
     const last = prompt.messages[prompt.messages.length - 1];
-    const text = last && last.content.contentType === 'text' ? last.content.value : '';
+    const content = last
+      ? Array.isArray(last.content)
+        ? last.content[0]
+        : last.content
+      : undefined;
+    const text = content && content.contentType === 'text' ? String(content.value) : '';
     return {
       content: { contentType: 'text', value: `Echo: ${text}` },
     };

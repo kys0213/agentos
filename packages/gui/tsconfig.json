@@ -3,7 +3,11 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "lib": ["ES2020", "DOM"],
+    "paths": {
+      "llm-bridge-spec": ["../core/node_modules/llm-bridge-spec"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
