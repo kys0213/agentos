@@ -8,6 +8,8 @@ export interface UserInputStreamOptions {
   input?: Readable;
   /** Output stream. Defaults to process.stdout. */
   output?: Writable;
+  /** Patterns that trigger exit when matched. Defaults to /^(quit|exit)$/i. */
+  quitPatterns?: RegExp[];
 }
 
 export type InputCallback = (match: RegExpMatchArray) => void | Promise<void>;
@@ -23,7 +25,11 @@ interface Matcher {
  */
 export class UserInputStreamBuilder {
   private matchers: Matcher[] = [];
-  constructor(private readonly options: UserInputStreamOptions = {}) {}
+  private quitPatterns: RegExp[];
+
+  constructor(private readonly options: UserInputStreamOptions = {}) {
+    this.quitPatterns = options.quitPatterns?.slice() ?? [/^(quit|exit)$/i];
+  }
 
   /**
    * Register a pattern and its handler.
@@ -35,8 +41,18 @@ export class UserInputStreamBuilder {
     return this;
   }
 
+  /**
+   * Register an additional command that will exit the input loop when entered.
+   * @param pattern Command string or RegExp to match
+   */
+  quit(pattern: string | RegExp): this {
+    const regex = typeof pattern === 'string' ? new RegExp(`^${pattern}$`, 'i') : pattern;
+    this.quitPatterns.push(regex);
+    return this;
+  }
+
   build(): UserInputStream {
-    return new UserInputStream(this.matchers, this.options);
+    return new UserInputStream(this.matchers, { ...this.options, quitPatterns: this.quitPatterns });
   }
 }
 
@@ -50,12 +66,14 @@ export class UserInputStream {
   private readonly input: Readable;
   private readonly output: Writable;
   private readonly matchers: Matcher[];
+  private readonly quitPatterns: RegExp[];
 
   constructor(matchers: Matcher[], options: UserInputStreamOptions = {}) {
     this.matchers = matchers;
     this.prompt = options.prompt ?? '> ';
     this.input = options.input ?? process.stdin;
     this.output = options.output ?? process.stdout;
+    this.quitPatterns = options.quitPatterns ?? [/^(quit|exit)$/i];
   }
 
   async run(): Promise<void> {
@@ -68,7 +86,7 @@ export class UserInputStream {
       for (;;) {
         const line = await rl.question(this.prompt);
         const trimmed = line.trim();
-        if (/^(quit|exit)$/i.test(trimmed)) {
+        if (this.quitPatterns.some((p) => p.test(trimmed))) {
           break;
         }
 

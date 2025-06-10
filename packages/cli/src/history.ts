@@ -1,16 +1,10 @@
 import chalk from 'chalk';
-import readline from 'node:readline/promises';
 import { ChatManager, MessageHistory } from '@agentos/core';
 import { paginate } from './pagination';
+import { createUserInputStream } from './utils/user-input-stream';
 
 export async function browseHistory(manager: ChatManager, sessionId: string): Promise<void> {
   const session = await manager.load({ sessionId });
-
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
   const iterator = paginate<Readonly<MessageHistory>>(async (cursor?: string) =>
     session.getHistories({
       cursor: cursor ?? '',
@@ -33,12 +27,10 @@ export async function browseHistory(manager: ChatManager, sessionId: string): Pr
 
   if (!(await loadNext())) {
     console.log('No messages.');
-    rl.close();
     return;
   }
 
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
+  const showPage = () => {
     console.log(chalk.yellow(`\n-- Messages Page ${pageIndex + 1} --`));
     const page = pages[pageIndex];
     for (const message of page) {
@@ -49,26 +41,32 @@ export async function browseHistory(manager: ChatManager, sessionId: string): Pr
       const time = message.createdAt.toISOString();
       console.log(`${chalk.gray('[' + time + ']')} ${chalk.cyan(message.role)}: ${content}`);
     }
+  };
 
-    const input = await rl.question('(n)ext, (p)rev, (q)uit: ');
-    if (input === 'n') {
+  const stream = createUserInputStream({ prompt: '(n)ext, (p)rev, (q)uit: ' })
+    .quit('q')
+    .on(/^n$/i, async () => {
       if (pageIndex + 1 < pages.length) {
         pageIndex++;
       } else if (await loadNext()) {
         pageIndex++;
       } else {
         console.log('No next page.');
+        return;
       }
-    } else if (input === 'p') {
+      showPage();
+    })
+    .on(/^p$/i, async () => {
       if (pageIndex > 0) {
         pageIndex--;
+        showPage();
       }
-    } else if (input === 'q') {
-      break;
-    }
-  }
+    })
+    .build();
 
-  rl.close();
+  showPage();
+
+  await stream.run();
 }
 
 export const showHistory = browseHistory;
