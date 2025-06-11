@@ -3,16 +3,21 @@ export interface PaginationResult<T> {
   nextCursor?: string;
 }
 
+export interface Page<T> {
+  items: T[];
+  startCursor?: string;
+  nextCursor?: string;
+}
+
 export async function* paginate<T>(
-  fetch: (cursor?: string) => Promise<PaginationResult<T>>
-): AsyncGenerator<T[]> {
-  let cursor: string | undefined;
+  fetch: (cursor?: string) => Promise<PaginationResult<T>>,
+  startCursor?: string
+): AsyncGenerator<Page<T>> {
+  let cursor = startCursor;
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const { items, nextCursor } = await fetch(cursor);
-    if (items.length) {
-      yield items;
-    }
+    yield { items, startCursor: cursor, nextCursor };
     if (!nextCursor) {
       break;
     }
