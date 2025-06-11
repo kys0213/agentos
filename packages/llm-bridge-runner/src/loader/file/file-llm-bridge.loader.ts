@@ -16,7 +16,7 @@ export class LocalFileLlmBridgeLoader implements FileLlmBridgeLoader {
     return new DependencyLlmBridgeBootstrap(loaded);
   }
 
-  private async loadLlmBridgeFromPath(filePath: string): Promise<LoadedLlmBridge> {
+  private async loadLlmBridgeFromPath(filePath: string): Promise<FileLoadedLlmBridge> {
     const mod = (await import(pathToFileURL(filePath).href)) as {
       manifest: () => LlmManifest;
       default: LlmBridgeConstructor<any[]>;
@@ -30,7 +30,7 @@ export class LocalFileLlmBridgeLoader implements FileLlmBridgeLoader {
   }
 }
 
-export type LoadedLlmBridge = {
+export type FileLoadedLlmBridge = {
   manifest: LlmManifest;
   configSchema: ReturnType<typeof parseLlmBridgeConfig>;
   ctor: LlmBridgeConstructor<any[]>;

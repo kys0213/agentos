@@ -8,7 +8,7 @@ import { browseSessions } from './sessions';
 import { bootstrap } from './bootstrap';
 
 const program = new Command();
-const { chatManager } = bootstrap();
+const { chatManager, llmBridge } = await bootstrap();
 
 program.name('agentos').description('CLI for AgentOS').version('1.0.0');
 
@@ -25,7 +25,7 @@ program
   .description('Start an interactive chat session')
   .action(async () => {
     try {
-      await interactiveChat(chatManager);
+      await interactiveChat(chatManager, llmBridge);
     } catch (error) {
       console.error(chalk.red('Error:'), error);
       process.exit(1);
