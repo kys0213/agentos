@@ -22,18 +22,18 @@ export function createChatManager(): ChatManager;
 
 ## Todo
 
-- [ ] Add `NoopCompressor` and `createChatManager` in renderer code.
-- [ ] Update `ChatApp` to persist messages via a `ChatSession`.
-- [ ] Fetch session list and display in a sidebar with open/new actions.
-- [ ] Load selected session history using `ChatSession.getHistories`.
-- [ ] Run `pnpm lint` and `pnpm test`.
-- [ ] Extract sidebar rendering into a new `ChatSidebar` component.
+- [x] Add `NoopCompressor` and `createChatManager` in renderer code.
+- [x] Update `ChatApp` to persist messages via a `ChatSession`.
+- [x] Fetch session list and display in a sidebar with open/new actions.
+- [x] Load selected session history using `ChatSession.getHistories`.
+- [x] Run `pnpm lint` and `pnpm test`.
+- [x] Extract sidebar rendering into a new `ChatSidebar` component.
 
 ## Steps
 
-1. Implement `NoopCompressor` and `createChatManager` similar to CLI's factory.
-2. Refactor `ChatApp` to create a manager and a session on mount.
-3. Add sidebar UI to list sessions and switch between them; load history when switching.
-4. Append and commit messages to the active session when chatting.
-5. Split out `ChatSidebar` component to keep `ChatApp` manageable.
-6. Update tests if needed and run lint/tests.
+1. Implement `NoopCompressor` and `createChatManager` similar to CLI's factory. ✅
+2. Refactor `ChatApp` to create a manager and a session on mount. ✅
+3. Add sidebar UI to list sessions and switch between them; load history when switching. ✅
+4. Append and commit messages to the active session when chatting. ✅
+5. Split out `ChatSidebar` component to keep `ChatApp` manageable. ✅
+6. Update tests if needed and run lint/tests. ✅
