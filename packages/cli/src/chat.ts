@@ -1,9 +1,10 @@
-import { Message } from 'llm-bridge-spec';
-import { ChatManager } from '@agentos/core';
+import { Message, UserMessage, LlmBridge } from 'llm-bridge-spec';
+import { ChatManager, SimpleAgent, McpRegistry } from '@agentos/core';
 import { createUserInputStream } from './utils/user-input-stream';
 
-export async function interactiveChat(manager: ChatManager) {
+export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge) {
   const session = await manager.create();
+  const agent = new SimpleAgent(llmBridge, session, new McpRegistry());
 
   console.log('Type your message. Enter "quit" to exit. Use "history" to view messages.');
 
@@ -20,17 +21,12 @@ export async function interactiveChat(manager: ChatManager) {
     })
     .on(/^(.+)$/s, async (match) => {
       const input = match[1];
-      const userMessage: Message = {
+      const userMessage: UserMessage = {
         role: 'user',
         content: { contentType: 'text', value: input },
       };
-      await session.appendMessage(userMessage);
-
-      const assistantMessage: Message = {
-        role: 'assistant',
-        content: { contentType: 'text', value: `Echo: ${input}` },
-      };
-      await session.appendMessage(assistantMessage);
+      const messages = await agent.run([userMessage]);
+      const assistantMessage = messages[messages.length - 1];
       const text =
         !Array.isArray(assistantMessage.content) && assistantMessage.content.contentType === 'text'
           ? assistantMessage.content.value
