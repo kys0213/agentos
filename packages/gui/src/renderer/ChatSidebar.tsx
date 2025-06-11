@@ -23,7 +23,9 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ sessions, currentSessionId, o
               marginBottom: '4px',
             }}
           >
-            {s.title || '(no title)'}
+            <div>{s.title || '(no title)'}</div>
+            <div style={{ fontSize: '0.8em', color: '#666' }}>{s.id}</div>
+            <div style={{ fontSize: '0.8em', color: '#666' }}>{s.updatedAt.toLocaleString()}</div>
           </div>
         ))}
       </div>
