@@ -46,6 +46,7 @@ agentos run <task>        # run an agent once
 agentos chat              # start an interactive chat session
 agentos history <id>      # show conversation history for a session
 agentos sessions          # browse existing sessions
+# optional: set AGENTOS_PAGE_CACHE_SIZE to limit cached pages (default 5)
 ```
 
 The CLI also exposes a small helper called `user-input-stream` for building

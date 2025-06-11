@@ -1,38 +1,76 @@
 import chalk from 'chalk';
 import { ChatManager, ChatSessionDescription, MessageHistory } from '@agentos/core';
-import { paginate } from './pagination';
+import { Page } from './pagination';
+import { PageCache } from './page-cache';
 import { createUserInputStream } from './utils/user-input-stream';
 
 export async function browseSessions(manager: ChatManager): Promise<void> {
-  const iterator = paginate<ChatSessionDescription>(async (cursor?: string) =>
-    manager.list({
-      cursor: cursor ?? '',
-      limit: 5,
-      direction: 'forward',
-    })
-  );
+  const pageSize = 5;
+  const cacheSize = parseInt(process.env.AGENTOS_PAGE_CACHE_SIZE ?? '5', 10);
 
-  const pages: ChatSessionDescription[][] = [];
-  let pageIndex = 0;
+  const fetchPage = async (cursor?: string) =>
+    manager.list({ cursor: cursor ?? '', limit: pageSize, direction: 'forward' });
 
-  const loadNext = async () => {
-    const { value, done } = await iterator.next();
-    if (done || !value) {
-      return false;
+  const cache = new PageCache<Page<ChatSessionDescription>>(cacheSize);
+  const cursors = new Map<number, string | undefined>();
+  let lastLoaded = -1;
+  let nextCursor: string | undefined = '';
+
+  const ensurePage = async (index: number): Promise<Page<ChatSessionDescription> | undefined> => {
+    const cached = cache.get(index);
+    if (cached) {
+      return cached;
     }
-    pages.push(value);
-    return true;
+
+    if (index <= lastLoaded) {
+      const start = cursors.get(index);
+      const result = await fetchPage(start);
+      const page: Page<ChatSessionDescription> = {
+        items: result.items,
+        startCursor: start,
+        nextCursor: result.nextCursor,
+      };
+      cache.set(index, page, start);
+      cursors.set(index + 1, result.nextCursor);
+      return page;
+    }
+
+    while (lastLoaded < index) {
+      const start = nextCursor;
+      const result = await fetchPage(start);
+      if (!result.items.length && !result.nextCursor) {
+        return undefined;
+      }
+      lastLoaded++;
+      const page: Page<ChatSessionDescription> = {
+        items: result.items,
+        startCursor: start,
+        nextCursor: result.nextCursor,
+      };
+      cache.set(lastLoaded, page, start);
+      cursors.set(lastLoaded, start);
+      nextCursor = result.nextCursor;
+      cursors.set(lastLoaded + 1, nextCursor);
+    }
+
+    return cache.get(index);
   };
 
-  if (!(await loadNext())) {
+  if (!(await ensurePage(0))) {
     console.log('No sessions.');
     return;
   }
 
-  const showPage = () => {
-    const page = pages[pageIndex];
+  let pageIndex = 0;
+
+  const showPage = async () => {
+    const page = await ensurePage(pageIndex);
+    if (!page) {
+      console.log('No sessions.');
+      return;
+    }
     console.log(chalk.green(`\nSessions (page ${pageIndex + 1})`));
-    page.forEach((s, i) => {
+    page.items.forEach((s, i) => {
       const title = s.title ? `${s.title} - ` : '';
       console.log(`${i + 1}. ${title}${s.id}`);
     });
@@ -43,68 +81,101 @@ export async function browseSessions(manager: ChatManager): Promise<void> {
   })
     .quit('q')
     .on(/^n$/i, async () => {
-      if (pageIndex + 1 < pages.length) {
-        pageIndex++;
-      } else if (await loadNext()) {
-        pageIndex++;
-      } else {
+      const nextPage = await ensurePage(pageIndex + 1);
+      if (!nextPage) {
         console.log('No next page.');
         return;
       }
-      showPage();
+      pageIndex++;
+      await showPage();
     })
     .on(/^p$/i, async () => {
       if (pageIndex > 0) {
         pageIndex--;
-        showPage();
+        await showPage();
       }
     })
     .on(/^(\d+)$/i, async (m) => {
       const num = parseInt(m[1], 10);
-      const page = pages[pageIndex];
-      if (!Number.isNaN(num) && num >= 1 && num <= page.length) {
-        await browseHistory(manager, page[num - 1].id);
-        showPage();
+      const page = await ensurePage(pageIndex);
+      if (page && !Number.isNaN(num) && num >= 1 && num <= page.items.length) {
+        await browseHistory(manager, page.items[num - 1].id);
+        await showPage();
       }
     })
     .build();
 
-  showPage();
+  await showPage();
 
   await stream.run();
 }
 
 export async function browseHistory(manager: ChatManager, sessionId: string): Promise<void> {
+  const pageSize = 5;
+  const cacheSize = parseInt(process.env.AGENTOS_PAGE_CACHE_SIZE ?? '5', 10);
+
   const session = await manager.load({ sessionId });
-  const iterator = paginate<Readonly<MessageHistory>>(async (cursor?: string) =>
-    session.getHistories({
-      cursor: cursor ?? '',
-      limit: 5,
-      direction: 'forward',
-    })
-  );
 
-  const pages: Readonly<MessageHistory>[][] = [];
-  let pageIndex = 0;
+  const fetchPage = async (cursor?: string) =>
+    session.getHistories({ cursor: cursor ?? '', limit: pageSize, direction: 'forward' });
 
-  const loadNext = async () => {
-    const { value, done } = await iterator.next();
-    if (done || !value) {
-      return false;
+  const cache = new PageCache<Page<Readonly<MessageHistory>>>(cacheSize);
+  const cursors = new Map<number, string | undefined>();
+  let lastLoaded = -1;
+  let nextCursor: string | undefined = '';
+
+  const ensurePage = async (index: number): Promise<Page<Readonly<MessageHistory>> | undefined> => {
+    const cached = cache.get(index);
+    if (cached) {
+      return cached;
     }
-    pages.push(value);
-    return true;
+
+    if (index <= lastLoaded) {
+      const start = cursors.get(index);
+      const result = await fetchPage(start);
+      const page: Page<Readonly<MessageHistory>> = {
+        items: result.items,
+        startCursor: start,
+        nextCursor: result.nextCursor,
+      };
+      cache.set(index, page, start);
+      cursors.set(index + 1, result.nextCursor);
+      return page;
+    }
+
+    while (lastLoaded < index) {
+      const start = nextCursor;
+      const result = await fetchPage(start);
+      if (!result.items.length && !result.nextCursor) {
+        return undefined;
+      }
+      lastLoaded++;
+      const page: Page<Readonly<MessageHistory>> = {
+        items: result.items,
+        startCursor: start,
+        nextCursor: result.nextCursor,
+      };
+      cache.set(lastLoaded, page, start);
+      cursors.set(lastLoaded, start);
+      nextCursor = result.nextCursor;
+      cursors.set(lastLoaded + 1, nextCursor);
+    }
+
+    return cache.get(index);
   };
 
-  if (!(await loadNext())) {
+  if (!(await ensurePage(0))) {
     console.log('No messages.');
     return;
   }
 
-  const showPage = () => {
+  let pageIndex = 0;
+
+  const showPage = async () => {
     console.log(chalk.yellow(`\nHistory (page ${pageIndex + 1})`));
-    const page = pages[pageIndex];
-    for (const message of page) {
+    const page = await ensurePage(pageIndex);
+    if (!page) return;
+    for (const message of page.items) {
       const content =
         !Array.isArray(message.content) && message.content.contentType === 'text'
           ? message.content.value
@@ -117,25 +188,23 @@ export async function browseHistory(manager: ChatManager, sessionId: string): Pr
   const stream = createUserInputStream({ prompt: '(n)ext, (p)rev, (q)uit: ' })
     .quit('q')
     .on(/^n$/i, async () => {
-      if (pageIndex + 1 < pages.length) {
-        pageIndex++;
-      } else if (await loadNext()) {
-        pageIndex++;
-      } else {
+      const nextPage = await ensurePage(pageIndex + 1);
+      if (!nextPage) {
         console.log('No next page.');
         return;
       }
-      showPage();
+      pageIndex++;
+      await showPage();
     })
     .on(/^p$/i, async () => {
       if (pageIndex > 0) {
         pageIndex--;
-        showPage();
+        await showPage();
       }
     })
     .build();
 
-  showPage();
+  await showPage();
 
   await stream.run();
 }
