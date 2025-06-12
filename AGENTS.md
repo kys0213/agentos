@@ -14,6 +14,8 @@ Welcome to the AgentOS repository. This file summarizes key resources and comman
 - Build all packages: `pnpm build`
 - Run tests: `pnpm test`
 
+Additional design documents for each package live under `packages/<name>/docs`.
+
 ## 문제 해결 원칙 (Problem-Solving Principles)
 
 1. **단순함 우선(Simple is best)**  

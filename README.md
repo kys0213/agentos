@@ -18,6 +18,8 @@ apps/
 └── playground/          # sandbox application
 ```
 
+Additional design documents for each package live under `packages/<name>/docs`.
+
 ### Core
 
 `core` exposes the main abstractions used throughout the project:
