@@ -5,6 +5,7 @@ import ReverseBridge from './bridges/ReverseBridge';
 import { ChatManager, ChatSession, ChatSessionDescription, MessageHistory } from '@agentos/core';
 import { createChatManager } from './chat-manager';
 import ChatSidebar from './ChatSidebar';
+import ChatTabs from './ChatTabs';
 
 interface Message {
   sender: 'user' | 'agent';
@@ -24,6 +25,8 @@ const ChatApp: React.FC = () => {
   const [bridgeId, setBridgeId] = React.useState(manager.getCurrentId()!);
   const [sessions, setSessions] = React.useState<ChatSessionDescription[]>([]);
   const [session, setSession] = React.useState<ChatSession | null>(null);
+  const [openTabIds, setOpenTabIds] = React.useState<string[]>([]);
+  const [activeTabId, setActiveTabId] = React.useState<string>('');
   const endRef = React.useRef<HTMLDivElement>(null);
 
   const refreshSessions = React.useCallback(async () => {
@@ -61,6 +64,8 @@ const ChatApp: React.FC = () => {
               : '',
         }))
       );
+      setOpenTabIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+      setActiveTabId(id);
     },
     [loadHistories]
   );
@@ -69,6 +74,8 @@ const ChatApp: React.FC = () => {
     const newS = await chatManager.create();
     setSession(newS);
     setMessages([]);
+    setOpenTabIds((prev) => [...prev, newS.sessionId]);
+    setActiveTabId(newS.sessionId);
     await refreshSessions();
   }, [refreshSessions]);
 
@@ -80,6 +87,8 @@ const ChatApp: React.FC = () => {
     const init = async () => {
       const newSession = await chatManager.create();
       setSession(newSession);
+      setOpenTabIds([newSession.sessionId]);
+      setActiveTabId(newSession.sessionId);
       await refreshSessions();
     };
     void init();
@@ -128,11 +137,19 @@ const ChatApp: React.FC = () => {
     <div style={{ display: 'flex', height: '100%' }}>
       <ChatSidebar
         sessions={sessions}
-        currentSessionId={session?.sessionId}
+        currentSessionId={activeTabId || session?.sessionId}
         onNew={startNewSession}
         onOpen={openSession}
       />
       <div style={{ flex: 1, padding: '8px' }}>
+        <ChatTabs
+          tabs={openTabIds.map((id) => ({
+            id,
+            title: sessions.find((s) => s.id === id)?.title || id,
+          }))}
+          activeTabId={activeTabId}
+          onSelect={openSession}
+        />
         <div style={{ marginBottom: '8px' }}>
           <label htmlFor="bridge">LLM Bridge: </label>
           <select
