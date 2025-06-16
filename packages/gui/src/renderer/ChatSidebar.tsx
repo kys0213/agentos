@@ -6,12 +6,22 @@ interface ChatSidebarProps {
   currentSessionId?: string;
   onNew: () => void;
   onOpen: (id: string) => void;
+  onShowMcps: () => void;
 }
 
-const ChatSidebar: React.FC<ChatSidebarProps> = ({ sessions, currentSessionId, onNew, onOpen }) => {
+const ChatSidebar: React.FC<ChatSidebarProps> = ({
+  sessions,
+  currentSessionId,
+  onNew,
+  onOpen,
+  onShowMcps,
+}) => {
   return (
     <div style={{ width: '250px', borderRight: '1px solid #ccc', padding: '8px' }}>
       <button onClick={onNew}>New Chat</button>
+      <button onClick={onShowMcps} style={{ marginTop: '8px' }}>
+        MCPs
+      </button>
       <div style={{ marginTop: '8px' }}>
         {sessions.map((s) => (
           <div
