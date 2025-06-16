@@ -1,4 +1,8 @@
 export interface Preset {
+  /**
+   * Internal unique identifier for the preset
+   */
+  id: string;
   name: string;
   description: string;
   author: string;
