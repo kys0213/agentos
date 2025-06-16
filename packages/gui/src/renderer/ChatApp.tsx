@@ -2,10 +2,20 @@ import React from 'react';
 import { BridgeManager } from './BridgeManager';
 import EchoBridge from './bridges/EchoBridge';
 import ReverseBridge from './bridges/ReverseBridge';
-import { ChatManager, ChatSession, ChatSessionDescription, MessageHistory } from '@agentos/core';
+import {
+  ChatManager,
+  ChatSession,
+  ChatSessionDescription,
+  MessageHistory,
+  Mcp,
+  McpConfig,
+} from '@agentos/core';
 import { createChatManager } from './chat-manager';
 import ChatSidebar from './ChatSidebar';
 import ChatTabs from './ChatTabs';
+import McpSettings from './McpSettings';
+import { McpConfigStore } from './mcp-config-store';
+import { loadMcpFromStore } from './mcp-loader';
 
 interface Message {
   sender: 'user' | 'agent';
@@ -17,6 +27,7 @@ manager.register('echo', new EchoBridge());
 manager.register('reverse', new ReverseBridge());
 
 const chatManager: ChatManager = createChatManager();
+const mcpConfigStore = new McpConfigStore();
 
 const ChatApp: React.FC = () => {
   const [messages, setMessages] = React.useState<Message[]>([]);
@@ -27,7 +38,22 @@ const ChatApp: React.FC = () => {
   const [session, setSession] = React.useState<ChatSession | null>(null);
   const [openTabIds, setOpenTabIds] = React.useState<string[]>([]);
   const [activeTabId, setActiveTabId] = React.useState<string>('');
+  const [showSettings, setShowSettings] = React.useState(false);
+  const [mcp, setMcp] = React.useState<Mcp | undefined>(undefined);
   const endRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const loaded = loadMcpFromStore(mcpConfigStore);
+    if (loaded) {
+      setMcp(loaded);
+    }
+  }, []);
+
+  const handleSaveMcp = (config: McpConfig) => {
+    mcpConfigStore.set(config);
+    setMcp(Mcp.create(config));
+    setShowSettings(false);
+  };
 
   const refreshSessions = React.useCallback(async () => {
     const { items } = await chatManager.list();
@@ -142,6 +168,10 @@ const ChatApp: React.FC = () => {
         onOpen={openSession}
       />
       <div style={{ flex: 1, padding: '8px' }}>
+        <button onClick={() => setShowSettings(true)} style={{ marginBottom: '8px' }}>
+          MCP Settings
+        </button>
+        {showSettings && <McpSettings initial={mcpConfigStore.get()} onSave={handleSaveMcp} />}
         <ChatTabs
           tabs={openTabIds.map((id) => ({
             id,
