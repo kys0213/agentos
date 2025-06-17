@@ -14,6 +14,7 @@ import { createChatManager } from './chat-manager';
 import ChatSidebar from './ChatSidebar';
 import ChatTabs from './ChatTabs';
 import McpSettings from './McpSettings';
+import McpList from './McpList';
 import { McpConfigStore } from './mcp-config-store';
 import { loadMcpFromStore } from './mcp-loader';
 
@@ -39,6 +40,7 @@ const ChatApp: React.FC = () => {
   const [openTabIds, setOpenTabIds] = React.useState<string[]>([]);
   const [activeTabId, setActiveTabId] = React.useState<string>('');
   const [showSettings, setShowSettings] = React.useState(false);
+  const [showMcpList, setShowMcpList] = React.useState(false);
   const [mcp, setMcp] = React.useState<Mcp | undefined>(undefined);
   const endRef = React.useRef<HTMLDivElement>(null);
 
@@ -166,8 +168,15 @@ const ChatApp: React.FC = () => {
         currentSessionId={activeTabId || session?.sessionId}
         onNew={startNewSession}
         onOpen={openSession}
+        onShowMcps={() => setShowMcpList(true)}
       />
       <div style={{ flex: 1, padding: '8px' }}>
+        {showMcpList && (
+          <McpList
+            mcps={mcpConfigStore.get() ? [mcpConfigStore.get() as McpConfig] : []}
+            onClose={() => setShowMcpList(false)}
+          />
+        )}
         <button onClick={() => setShowSettings(true)} style={{ marginBottom: '8px' }}>
           MCP Settings
         </button>
