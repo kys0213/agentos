@@ -15,3 +15,4 @@ export * from './mcp/mcp.registery';
 
 export * from './preset/preset';
 export * from './preset/preset.repository';
+export * from './preset/file-based-preset.repository';

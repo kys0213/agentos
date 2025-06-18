@@ -15,6 +15,7 @@ import ChatSidebar from './ChatSidebar';
 import ChatTabs from './ChatTabs';
 import McpSettings from './McpSettings';
 import McpList from './McpList';
+import SettingsMenu from './SettingsMenu';
 import { McpConfigStore } from './mcp-config-store';
 import { loadMcpFromStore } from './mcp-loader';
 
@@ -181,6 +182,7 @@ const ChatApp: React.FC = () => {
           MCP Settings
         </button>
         {showSettings && <McpSettings initial={mcpConfigStore.get()} onSave={handleSaveMcp} />}
+        <SettingsMenu />
         <ChatTabs
           tabs={openTabIds.map((id) => ({
             id,
