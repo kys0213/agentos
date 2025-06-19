@@ -40,6 +40,7 @@ describe('FileBasedChatSession', () => {
 
     mockPreset = {
       preset: {
+        id: 'preset-1',
         name: 'Test Preset',
         description: 'Test Description',
         author: 'Test Author',
@@ -219,6 +220,17 @@ describe('FileBasedChatSession', () => {
 
       const result = await session.getCheckpoints();
       expect(result.items).toContainEqual(mockCheckpoint);
+    });
+  });
+
+  describe('preset setter', () => {
+    it('세션 프리셋을 변경하고 저장해야 한다', async () => {
+      session.preset = undefined;
+      await session.commit();
+      expect(mockStorage.saveSessionMetadata).toHaveBeenCalledWith(
+        'test-session',
+        expect.objectContaining({ preset: undefined })
+      );
     });
   });
 });
