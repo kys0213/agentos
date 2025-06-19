@@ -7,7 +7,6 @@ import {
   ChatSession,
   ChatSessionDescription,
   MessageHistory,
-  Mcp,
   McpConfig,
 } from '@agentos/core';
 import { createChatManager } from './chat-manager';
@@ -20,6 +19,7 @@ import { McpConfigStore } from './mcp-config-store';
 import { loadMcpFromStore } from './mcp-loader';
 import PresetSelector from './PresetSelector';
 import { Preset, loadPresets, PresetStore } from './preset-store';
+import { LlmBridgeStore } from './llm-bridge-store';
 
 interface Message {
   sender: 'user' | 'agent';
@@ -33,11 +33,18 @@ manager.register('reverse', new ReverseBridge());
 const chatManager: ChatManager = createChatManager();
 const mcpConfigStore = new McpConfigStore();
 const presetStore = new PresetStore();
+const bridgeStore = new LlmBridgeStore();
+
+for (const b of bridgeStore.list()) {
+  const BridgeCtor = b.type === 'echo' ? EchoBridge : ReverseBridge;
+  manager.register(b.id, new BridgeCtor());
+}
 
 const ChatApp: React.FC = () => {
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [input, setInput] = React.useState('');
   const [busy, setBusy] = React.useState(false);
+  const [bridgesVersion, setBridgesVersion] = React.useState(0);
   const [bridgeId, setBridgeId] = React.useState(manager.getCurrentId()!);
   const [sessions, setSessions] = React.useState<ChatSessionDescription[]>([]);
   const [session, setSession] = React.useState<ChatSession | null>(null);
@@ -45,15 +52,15 @@ const ChatApp: React.FC = () => {
   const [activeTabId, setActiveTabId] = React.useState<string>('');
   const [showSettings, setShowSettings] = React.useState(false);
   const [showMcpList, setShowMcpList] = React.useState(false);
-  const [mcp, setMcp] = React.useState<Mcp | undefined>(undefined);
   const [presets, setPresets] = React.useState<Preset[]>([]);
   const [presetId, setPresetId] = React.useState<string>('');
   const endRef = React.useRef<HTMLDivElement>(null);
+  const bridgeIds = React.useMemo(() => manager.getBridgeIds(), [bridgesVersion]);
 
   React.useEffect(() => {
     const loaded = loadMcpFromStore(mcpConfigStore);
     if (loaded) {
-      setMcp(loaded);
+      // MCP loaded but not used
     }
   }, []);
 
@@ -65,7 +72,6 @@ const ChatApp: React.FC = () => {
 
   const handleSaveMcp = (config: McpConfig) => {
     mcpConfigStore.set(config);
-    setMcp(Mcp.create(config));
     setShowSettings(false);
   };
 
@@ -147,7 +153,6 @@ const ChatApp: React.FC = () => {
     };
     void init();
     // run once after presets loaded
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshSessions, presets]);
 
   const handleSend = async () => {
@@ -209,7 +214,11 @@ const ChatApp: React.FC = () => {
           MCP Settings
         </button>
         {showSettings && <McpSettings initial={mcpConfigStore.get()} onSave={handleSaveMcp} />}
-        <SettingsMenu />
+        <SettingsMenu
+          bridgeStore={bridgeStore}
+          manager={manager}
+          onBridgesChange={() => setBridgesVersion((v) => v + 1)}
+        />
         <ChatTabs
           tabs={openTabIds.map((id) => ({
             id,
@@ -229,17 +238,13 @@ const ChatApp: React.FC = () => {
               setBridgeId(id);
             }}
           >
-            {manager.getBridgeIds().map((id) => (
+            {bridgeIds.map((id) => (
               <option key={id} value={id}>
                 {id}
               </option>
             ))}
           </select>
-          <PresetSelector
-            presets={presets}
-            value={presetId}
-            onChange={handleChangePreset}
-          />
+          <PresetSelector presets={presets} value={presetId} onChange={handleChangePreset} />
         </div>
         <div
           style={{
