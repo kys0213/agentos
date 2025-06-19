@@ -43,8 +43,7 @@ const PresetManager: React.FC = () => {
       <ul>
         {presets.map((p) => (
           <li key={p.id}>
-            {p.name}{' '}
-            <button onClick={() => handleDelete(p.id)}>Delete</button>
+            {p.name} <button onClick={() => handleDelete(p.id)}>Delete</button>
           </li>
         ))}
       </ul>
