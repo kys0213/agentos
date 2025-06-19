@@ -28,6 +28,10 @@ export class FileBasedChatSession implements ChatSession {
     return this.metadata.preset;
   }
 
+  set preset(preset: Preset | undefined) {
+    this.metadata.preset = preset;
+  }
+
   get title(): string | undefined {
     return this.metadata.title;
   }

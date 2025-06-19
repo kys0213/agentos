@@ -18,6 +18,8 @@ import McpList from './McpList';
 import SettingsMenu from './SettingsMenu';
 import { McpConfigStore } from './mcp-config-store';
 import { loadMcpFromStore } from './mcp-loader';
+import PresetSelector from './PresetSelector';
+import { Preset, loadPresets, PresetStore } from './preset-store';
 
 interface Message {
   sender: 'user' | 'agent';
@@ -30,6 +32,7 @@ manager.register('reverse', new ReverseBridge());
 
 const chatManager: ChatManager = createChatManager();
 const mcpConfigStore = new McpConfigStore();
+const presetStore = new PresetStore();
 
 const ChatApp: React.FC = () => {
   const [messages, setMessages] = React.useState<Message[]>([]);
@@ -43,6 +46,8 @@ const ChatApp: React.FC = () => {
   const [showSettings, setShowSettings] = React.useState(false);
   const [showMcpList, setShowMcpList] = React.useState(false);
   const [mcp, setMcp] = React.useState<Mcp | undefined>(undefined);
+  const [presets, setPresets] = React.useState<Preset[]>([]);
+  const [presetId, setPresetId] = React.useState<string>('');
   const endRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -50,6 +55,12 @@ const ChatApp: React.FC = () => {
     if (loaded) {
       setMcp(loaded);
     }
+  }, []);
+
+  React.useEffect(() => {
+    loadPresets(presetStore).then((list) => {
+      setPresets(list);
+    });
   }, []);
 
   const handleSaveMcp = (config: McpConfig) => {
@@ -84,6 +95,7 @@ const ChatApp: React.FC = () => {
       const loaded = await chatManager.load({ sessionId: id });
       const histories = await loadHistories(loaded);
       setSession(loaded);
+      setPresetId(loaded.preset?.id ?? '');
       setMessages(
         histories.map((h) => ({
           sender: h.role === 'user' ? 'user' : 'agent',
@@ -100,13 +112,24 @@ const ChatApp: React.FC = () => {
   );
 
   const startNewSession = React.useCallback(async () => {
-    const newS = await chatManager.create();
+    const preset = presets.find((p) => p.id === presetId);
+    const newS = await chatManager.create({ preset });
     setSession(newS);
     setMessages([]);
     setOpenTabIds((prev) => [...prev, newS.sessionId]);
     setActiveTabId(newS.sessionId);
     await refreshSessions();
-  }, [refreshSessions]);
+  }, [refreshSessions, presets, presetId]);
+
+  const handleChangePreset = async (id: string) => {
+    setPresetId(id);
+    const preset = presets.find((p) => p.id === id);
+    if (session) {
+      session.preset = preset;
+      await session.commit();
+      await refreshSessions();
+    }
+  };
 
   React.useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -114,14 +137,18 @@ const ChatApp: React.FC = () => {
 
   React.useEffect(() => {
     const init = async () => {
-      const newSession = await chatManager.create();
+      const preset = presets.find((p) => p.id === presetId);
+      const newSession = await chatManager.create({ preset });
       setSession(newSession);
       setOpenTabIds([newSession.sessionId]);
       setActiveTabId(newSession.sessionId);
+      setPresetId(preset?.id ?? '');
       await refreshSessions();
     };
     void init();
-  }, []);
+    // run once after presets loaded
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshSessions, presets]);
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -208,6 +235,11 @@ const ChatApp: React.FC = () => {
               </option>
             ))}
           </select>
+          <PresetSelector
+            presets={presets}
+            value={presetId}
+            onChange={handleChangePreset}
+          />
         </div>
         <div
           style={{
