@@ -2,13 +2,7 @@ import React from 'react';
 import { BridgeManager } from './BridgeManager';
 import EchoBridge from './bridges/EchoBridge';
 import ReverseBridge from './bridges/ReverseBridge';
-import {
-  ChatManager,
-  ChatSession,
-  ChatSessionDescription,
-  MessageHistory,
-  McpConfig,
-} from '@agentos/core';
+import { ChatManager, ChatSessionDescription, McpConfig } from '@agentos/core';
 import { createChatManager } from './chat-manager';
 import ChatSidebar from './ChatSidebar';
 import ChatTabs from './ChatTabs';
@@ -20,11 +14,9 @@ import { loadMcpFromStore } from './mcp-loader';
 import PresetSelector from './PresetSelector';
 import { Preset, loadPresets, PresetStore } from './preset-store';
 import { LlmBridgeStore } from './llm-bridge-store';
-
-interface Message {
-  sender: 'user' | 'agent';
-  text: string;
-}
+import ChatMessageList from './ChatMessageList';
+import ChatInput from './ChatInput';
+import useChatSession from './useChatSession';
 
 const manager = new BridgeManager();
 manager.register('echo', new EchoBridge());
@@ -41,21 +33,21 @@ for (const b of bridgeStore.list()) {
 }
 
 const ChatApp: React.FC = () => {
-  const [messages, setMessages] = React.useState<Message[]>([]);
-  const [input, setInput] = React.useState('');
   const [busy, setBusy] = React.useState(false);
   const [bridgesVersion, setBridgesVersion] = React.useState(0);
   const [bridgeId, setBridgeId] = React.useState(manager.getCurrentId()!);
   const [sessions, setSessions] = React.useState<ChatSessionDescription[]>([]);
-  const [session, setSession] = React.useState<ChatSession | null>(null);
   const [openTabIds, setOpenTabIds] = React.useState<string[]>([]);
   const [activeTabId, setActiveTabId] = React.useState<string>('');
   const [showSettings, setShowSettings] = React.useState(false);
   const [showMcpList, setShowMcpList] = React.useState(false);
   const [presets, setPresets] = React.useState<Preset[]>([]);
   const [presetId, setPresetId] = React.useState<string>('');
-  const endRef = React.useRef<HTMLDivElement>(null);
   const bridgeIds = React.useMemo(() => manager.getBridgeIds(), [bridgesVersion]);
+  const { session, messages, openSession, startNewSession, send } = useChatSession(
+    chatManager,
+    manager
+  );
 
   React.useEffect(() => {
     const loaded = loadMcpFromStore(mcpConfigStore);
@@ -80,52 +72,23 @@ const ChatApp: React.FC = () => {
     setSessions(items);
   }, []);
 
-  const loadHistories = React.useCallback(async (s: ChatSession) => {
-    const all: MessageHistory[] = [];
-    let cursor = '';
-    for (;;) {
-      const { items, nextCursor } = await s.getHistories({
-        cursor,
-        limit: 20,
-        direction: 'forward',
-      });
-      all.push(...items);
-      if (!nextCursor || items.length === 0) break;
-      cursor = nextCursor;
-    }
-    return all;
-  }, []);
-
-  const openSession = React.useCallback(
+  const handleOpenSession = React.useCallback(
     async (id: string) => {
-      const loaded = await chatManager.load({ sessionId: id });
-      const histories = await loadHistories(loaded);
-      setSession(loaded);
+      const loaded = await openSession(id);
       setPresetId(loaded.preset?.id ?? '');
-      setMessages(
-        histories.map((h) => ({
-          sender: h.role === 'user' ? 'user' : 'agent',
-          text:
-            !Array.isArray(h.content) && h.content.contentType === 'text'
-              ? String(h.content.value)
-              : '',
-        }))
-      );
       setOpenTabIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
       setActiveTabId(id);
     },
-    [loadHistories]
+    [openSession]
   );
 
-  const startNewSession = React.useCallback(async () => {
+  const handleStartNewSession = React.useCallback(async () => {
     const preset = presets.find((p) => p.id === presetId);
-    const newS = await chatManager.create({ preset });
-    setSession(newS);
-    setMessages([]);
+    const newS = await startNewSession(preset);
     setOpenTabIds((prev) => [...prev, newS.sessionId]);
     setActiveTabId(newS.sessionId);
     await refreshSessions();
-  }, [refreshSessions, presets, presetId]);
+  }, [startNewSession, refreshSessions, presets, presetId]);
 
   const handleChangePreset = async (id: string) => {
     setPresetId(id);
@@ -138,57 +101,18 @@ const ChatApp: React.FC = () => {
   };
 
   React.useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  React.useEffect(() => {
-    const init = async () => {
-      const preset = presets.find((p) => p.id === presetId);
-      const newSession = await chatManager.create({ preset });
-      setSession(newSession);
-      setOpenTabIds([newSession.sessionId]);
-      setActiveTabId(newSession.sessionId);
-      setPresetId(preset?.id ?? '');
-      await refreshSessions();
-    };
-    void init();
-    // run once after presets loaded
-  }, [refreshSessions, presets]);
-
-  const handleSend = async () => {
-    const trimmed = input.trim();
-    if (!trimmed) return;
-
-    setMessages((prev) => [...prev, { sender: 'user', text: trimmed }]);
-    setInput('');
-
-    if (session) {
-      await session.appendMessage({
-        role: 'user',
-        content: { contentType: 'text', value: trimmed },
-      });
+    if (presets.length > 0 && !session) {
+      void handleStartNewSession();
     }
+  }, [handleStartNewSession, presets, session]);
 
+  const handleSend = async (text: string) => {
     try {
       setBusy(true);
-      const llmResponse = await manager
-        .getCurrentBridge()
-        .invoke({ messages: [{ role: 'user', content: { contentType: 'text', value: trimmed } }] });
-      const content = llmResponse.content;
-      const text = content.contentType === 'text' ? String(content.value) : '';
-      setMessages((prev) => [...prev, { sender: 'agent', text }]);
-
-      if (session) {
-        await session.appendMessage({
-          role: 'assistant',
-          content: { contentType: 'text', value: text },
-        });
-        await session.commit();
-        await refreshSessions();
-      }
+      await send(text);
+      await refreshSessions();
     } catch (error) {
       console.error('Error:', error);
-      setMessages((prev) => [...prev, { sender: 'agent', text: 'Error executing task' }]);
     } finally {
       setBusy(false);
     }
@@ -199,8 +123,8 @@ const ChatApp: React.FC = () => {
       <ChatSidebar
         sessions={sessions}
         currentSessionId={activeTabId || session?.sessionId}
-        onNew={startNewSession}
-        onOpen={openSession}
+        onNew={handleStartNewSession}
+        onOpen={handleOpenSession}
         onShowMcps={() => setShowMcpList(true)}
       />
       <div style={{ flex: 1, padding: '8px' }}>
@@ -225,7 +149,7 @@ const ChatApp: React.FC = () => {
             title: sessions.find((s) => s.id === id)?.title || id,
           }))}
           activeTabId={activeTabId}
-          onSelect={openSession}
+          onSelect={handleOpenSession}
         />
         <div style={{ marginBottom: '8px' }}>
           <label htmlFor="bridge">LLM Bridge: </label>
@@ -246,40 +170,8 @@ const ChatApp: React.FC = () => {
           </select>
           <PresetSelector presets={presets} value={presetId} onChange={handleChangePreset} />
         </div>
-        <div
-          style={{
-            height: '400px',
-            overflowY: 'auto',
-            border: '1px solid #ccc',
-            padding: '8px',
-          }}
-        >
-          {messages.map((m, idx) => (
-            <div key={idx} style={{ marginBottom: '8px' }}>
-              <strong>{m.sender === 'user' ? 'You' : 'Agent'}:</strong> {m.text}
-            </div>
-          ))}
-          <div ref={endRef} />
-        </div>
-        <div>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Type a message"
-            style={{ width: '80%' }}
-            disabled={busy}
-          />
-          <button onClick={handleSend} disabled={busy}>
-            Send
-          </button>
-        </div>
+        <ChatMessageList messages={messages} />
+        <ChatInput onSend={handleSend} disabled={busy} />
       </div>
     </div>
   );
