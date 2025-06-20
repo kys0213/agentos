@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import PresetSelector from '../PresetSelector';
+import PresetSelector from '../components/PresetSelector';
 import { Preset } from '@agentos/core';
 
 describe('PresetSelector', () => {

@@ -1,8 +1,8 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import ChatMessageList from '../ChatMessageList';
+import ChatMessageList, { Message } from '../components/ChatMessageList';
 
-const msgs = [
+const msgs: Message[] = [
   { sender: 'user', text: 'hi' },
   { sender: 'agent', text: 'hello' },
 ];

@@ -1,5 +1,5 @@
 import { Mcp } from '@agentos/core';
-import { McpConfigStore } from './mcp-config-store';
+import { McpConfigStore } from '../stores/mcp-config-store';
 
 export function loadMcpFromStore(store: McpConfigStore): Mcp | undefined {
   const config = store.get();

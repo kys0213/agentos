@@ -1,4 +1,4 @@
-import { BridgeManager } from '../BridgeManager';
+import { BridgeManager } from '../utils/BridgeManager';
 import { LlmBridge, LlmBridgePrompt, LlmBridgeResponse, LlmMetadata } from 'llm-bridge-spec';
 
 class DummyBridge implements LlmBridge {

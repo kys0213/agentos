@@ -1,7 +1,7 @@
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Preset } from '@agentos/core';
-import { PresetStore, loadPresets, savePreset, deletePreset } from '../preset-store';
+import { PresetStore, loadPresets, savePreset, deletePreset } from '../stores/preset-store';
 
 const tempDir = path.join(tmpdir(), 'preset-store-test');
 
