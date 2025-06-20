@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import McpList from '../McpList';
+import McpList from '../pages/McpList';
 import { McpConfig } from '@agentos/core';
 
 const sample: McpConfig = {

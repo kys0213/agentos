@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ChatManager, ChatSession, MessageHistory, Preset } from '@agentos/core';
-import { BridgeManager } from './BridgeManager';
-import { Message } from './ChatMessageList';
+import { BridgeManager } from '../utils/BridgeManager';
+import { Message } from '../components/ChatMessageList';
 
 export interface UseChatSession {
   session: ChatSession | null;
@@ -31,7 +31,7 @@ export default function useChatSession(
       if (!nextCursor || items.length === 0) break;
       cursor = nextCursor;
     }
-    return all.map((h) => ({
+    return all.map<Message>((h) => ({
       sender: h.role === 'user' ? 'user' : 'agent',
       text:
         !Array.isArray(h.content) && h.content.contentType === 'text'

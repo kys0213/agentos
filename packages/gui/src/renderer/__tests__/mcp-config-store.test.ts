@@ -1,7 +1,7 @@
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { McpConfigStore } from '../mcp-config-store';
-import { loadMcpFromStore } from '../mcp-loader';
+import { McpConfigStore } from '../stores/mcp-config-store';
+import { loadMcpFromStore } from '../utils/mcp-loader';
 
 const tempDir = path.join(tmpdir(), 'mcp-store-test');
 

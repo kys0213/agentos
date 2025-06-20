@@ -1,4 +1,4 @@
-import { createChatManager } from '../chat-manager';
+import { createChatManager } from '../utils/chat-manager';
 
 test('createChatManager returns working manager', async () => {
   const manager = createChatManager();

@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import ChatInput from '../ChatInput';
+import ChatInput from '../components/ChatInput';
 
 test('calls onSend when enter pressed', () => {
   const spy = jest.fn();

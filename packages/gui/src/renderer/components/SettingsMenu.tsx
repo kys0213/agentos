@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import PresetManager from './PresetManager';
+import PresetManager from '../pages/PresetManager';
 import LlmBridgeManager from './LlmBridgeManager';
-import { LlmBridgeStore } from './llm-bridge-store';
-import { BridgeManager } from './BridgeManager';
+import { LlmBridgeStore } from '../stores/llm-bridge-store';
+import { BridgeManager } from '../utils/BridgeManager';
 
 interface SettingsMenuProps {
   bridgeStore: LlmBridgeStore;

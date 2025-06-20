@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { BridgeManager } from './BridgeManager';
-import EchoBridge from './bridges/EchoBridge';
-import ReverseBridge from './bridges/ReverseBridge';
-import { LlmBridgeStore, LlmBridgeConfig } from './llm-bridge-store';
+import { BridgeManager } from '../utils/BridgeManager';
+import EchoBridge from '../bridges/EchoBridge';
+import ReverseBridge from '../bridges/ReverseBridge';
+import { LlmBridgeStore, LlmBridgeConfig } from '../stores/llm-bridge-store';
 
 export interface LlmBridgeManagerProps {
   store: LlmBridgeStore;

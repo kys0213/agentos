@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Preset } from '@agentos/core';
-import { PresetStore, loadPresets, savePreset, deletePreset } from './preset-store';
+import { PresetStore, loadPresets, savePreset, deletePreset } from '../stores/preset-store';
 
 const store = new PresetStore();
 

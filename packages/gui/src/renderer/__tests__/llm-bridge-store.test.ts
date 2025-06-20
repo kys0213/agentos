@@ -1,6 +1,6 @@
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { LlmBridgeStore, LlmBridgeConfig } from '../llm-bridge-store';
+import { LlmBridgeStore, LlmBridgeConfig } from '../stores/llm-bridge-store';
 
 const tempDir = path.join(tmpdir(), 'bridge-store-test');
 
