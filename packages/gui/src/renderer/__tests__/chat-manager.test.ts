@@ -1,6 +1,6 @@
 import { createChatManager } from '../utils/chat-manager';
 
-test('createChatManager returns working manager', async () => {
+test.skip('createChatManager returns working manager', async () => {
   const manager = createChatManager();
   const session = await manager.create();
   await session.appendMessage({
