@@ -7,4 +7,8 @@ module.exports = {
     '^.+\\.tsx?$': 'ts-jest',
   },
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
+  moduleNameMapper: {
+    '^electron-store$': '<rootDir>/__mocks__/electron-store.ts',
+    '^@agentos/core(.*)$': '<rootDir>/../core/src$1',
+  },
 };

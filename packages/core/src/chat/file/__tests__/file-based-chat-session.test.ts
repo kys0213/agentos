@@ -186,11 +186,11 @@ describe('FileBasedChatSession', () => {
 
       mockStorage.read.mockImplementation(async function* () {
         for (const h of histories) {
-          yield h;
+          yield h as any;
         }
       });
 
-      const result = await session.getHistories({ cursor: '1', limit: 2 });
+      const result = await session.getHistories({ cursor: '1', limit: 2, direction: 'forward' });
 
       expect(result.items).toHaveLength(2);
       expect(result.items[0]).toEqual(histories[1]);
