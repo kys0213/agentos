@@ -7,7 +7,7 @@
     "dev": "tsc -w",
     "lint": "eslint src --ext .ts",
     "start": "node dist/index.js",
-    "test": "jest"
+    "test": "jest --passWithNoTests"
   },
   "dependencies": {
     "@agentos/core": "workspace:*"
