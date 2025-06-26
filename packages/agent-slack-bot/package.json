@@ -8,13 +8,16 @@
     "build": "tsc",
     "dev": "tsc -w",
     "lint": "eslint src --ext .ts",
+    "test": "jest",
     "start": "node dist/index.js"
   },
   "dependencies": {
     "@agentos/core": "workspace:*",
     "@agentos/llm-bridge-runner": "workspace:*",
     "llm-bridge-spec": "^1.0.2",
-    "@slack/bolt": "^3.15.0"
+    "@slack/bolt": "^3.15.0",
+    "slack-block-builder": "^2.8.0",
+    "@slack/types": "^2.14.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.19",
