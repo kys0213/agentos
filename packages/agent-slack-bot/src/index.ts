@@ -5,6 +5,7 @@ import { InMemoryLlmBridgeRegistry } from '@agentos/llm-bridge-runner';
 import { Message } from 'llm-bridge-spec';
 import { getSettingsBlocks } from './settings-block';
 import { PresetService } from './preset-service';
+import { FileBasedChannelPresetStore } from './channel-preset-store';
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN || '',
@@ -12,7 +13,10 @@ const app = new App({
 });
 
 const presetRepo = new FileBasedPresetRepository(path.join(__dirname, '..', 'presets'));
-const presetService = new PresetService(presetRepo);
+const channelPresetStore = new FileBasedChannelPresetStore(
+  path.join(__dirname, '..', 'channel-presets')
+);
+const presetService = new PresetService(presetRepo, channelPresetStore);
 const userPresets = new Map<string, string>();
 
 function isGenericMessageEvent(msg: unknown): msg is GenericMessageEvent {
@@ -42,9 +46,17 @@ app.action('preset-change', async ({ ack, body, action }) => {
 });
 
 app.message(async ({ message, say }) => {
-  const text = isGenericMessageEvent(message) ? message.text : '';
+  const text: string = isGenericMessageEvent(message) ? message.text || '' : '';
   const userId = isGenericMessageEvent(message) ? message.user : undefined;
-  const preset = userId ? userPresets.get(userId) || 'none' : 'none';
+  const channel = isGenericMessageEvent(message) ? message.channel : undefined;
+
+  let preset = 'none';
+  if (channel) {
+    preset = (await presetService.getActivePreset(channel)) ?? 'none';
+  }
+  if (userId && userPresets.has(userId)) {
+    preset = userPresets.get(userId) as string;
+  }
 
   // Placeholder: initialize AgentOS components
   const mcpRegistry = new McpRegistry();
@@ -52,7 +64,7 @@ app.message(async ({ message, say }) => {
   const messages: Message[] = [
     {
       role: 'user',
-      content: [{ contentType: 'text', value: text }],
+      content: { contentType: 'text', value: text },
     },
   ];
   // TODO: Use agent from core with llmBridgeRegistry to process messages
