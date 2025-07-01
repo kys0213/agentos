@@ -1,27 +1,63 @@
-import { App, GenericMessageEvent } from '@slack/bolt';
-import { McpRegistry } from '@agentos/core';
+import { App, GenericMessageEvent, StaticSelectAction } from '@slack/bolt';
+import path from 'path';
+import { McpRegistry, FileBasedPresetRepository } from '@agentos/core';
 import { InMemoryLlmBridgeRegistry } from '@agentos/llm-bridge-runner';
 import { Message } from 'llm-bridge-spec';
+import { getSettingsBlocks } from './settings-block';
+import { PresetService } from './preset-service';
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN || '',
   signingSecret: process.env.SLACK_SIGNING_SECRET || '',
 });
 
+const presetRepo = new FileBasedPresetRepository(path.join(__dirname, '..', 'presets'));
+const presetService = new PresetService(presetRepo);
+const userPresets = new Map<string, string>();
+
 function isGenericMessageEvent(msg: unknown): msg is GenericMessageEvent {
   return !!msg && typeof (msg as GenericMessageEvent).text === 'string';
 }
 
+app.command('/agentos-settings', async ({ ack, body, client }) => {
+  await ack();
+  const presets = await presetService.list();
+  await client.views.open({
+    trigger_id: body.trigger_id,
+    view: {
+      type: 'modal',
+      callback_id: 'settings-modal',
+      title: { type: 'plain_text', text: 'AgentOS Settings' },
+      blocks: getSettingsBlocks(presets),
+    },
+  });
+});
+
+app.action('preset-change', async ({ ack, body, action }) => {
+  await ack();
+  const select = action as StaticSelectAction;
+  if (select.selected_option) {
+    userPresets.set(body.user.id, select.selected_option.value);
+  }
+});
+
 app.message(async ({ message, say }) => {
   const text = isGenericMessageEvent(message) ? message.text : '';
+  const userId = isGenericMessageEvent(message) ? message.user : undefined;
+  const preset = userId ? userPresets.get(userId) || 'none' : 'none';
 
   // Placeholder: initialize AgentOS components
   const mcpRegistry = new McpRegistry();
   const llmBridgeRegistry = new InMemoryLlmBridgeRegistry();
-  const messages: Message[] = [{ role: 'user', content: [{ contentType: 'text', value: text }] }];
+  const messages: Message[] = [
+    {
+      role: 'user',
+      content: [{ contentType: 'text', value: text }],
+    },
+  ];
   // TODO: Use agent from core with llmBridgeRegistry to process messages
 
-  await say(`Echo: ${text}`);
+  await say(`Echo: ${text} (preset: ${preset})`);
 });
 
 export async function start(port = 3000) {
