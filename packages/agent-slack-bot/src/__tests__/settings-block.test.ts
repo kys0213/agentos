@@ -20,6 +20,8 @@ test('getSettingsBlocks returns expected blocks', () => {
         Elements.StaticSelect({ placeholder: 'Select Preset' })
           .actionId('preset-change')
           .options(presets.map((p) => Bits.Option({ text: p.name, value: p.id }))),
+        Elements.Button({ text: 'Create Preset', value: 'open' }).actionId('preset-create'),
+        Elements.Button({ text: 'Edit MCP', value: 'open' }).actionId('mcp-settings'),
         Elements.Button({ text: 'Close', value: 'close' })
       )
     )

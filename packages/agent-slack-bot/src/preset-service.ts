@@ -16,6 +16,10 @@ export class PresetService {
     return this.repo.get(id);
   }
 
+  create(preset: Preset): Promise<void> {
+    return this.repo.create(preset);
+  }
+
   getActivePreset(channelId: string): Promise<string | null> {
     return this.channelStore.getPreset(channelId);
   }
