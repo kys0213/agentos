@@ -2,7 +2,11 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "paths": {
+      "@agentos/core": ["../core/src"],
+      "llm-bridge-spec": ["../core/node_modules/llm-bridge-spec"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
