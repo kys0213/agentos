@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run lint
+        run: pnpm -r lint
+        continue-on-error: false
+
+      - name: Run type check
+        run: |
+          # 각 패키지에서 사용 가능한 타입 체크 스크립트 실행
+          pnpm -r exec --if-present tsc --noEmit
+          # GUI 패키지의 typecheck 스크립트도 실행
+          pnpm --filter "@agentos/apps-gui" --if-present typecheck
+        continue-on-error: false
+
+      - name: Run tests
+        run: pnpm -r --if-present test
+        continue-on-error: false
+
+      - name: Run build
+        run: pnpm -r build
+        continue-on-error: false
+
+      - name: Success
+        run: echo "✅ CI passed successfully"
