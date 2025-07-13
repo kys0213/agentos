@@ -15,7 +15,9 @@ packages/
 └── agent-slack-bot/     # Slack bot using Bolt
 
 apps/
-└── playground/          # sandbox application
+├── cli/                 # command line interface
+├── gui/                 # Electron + React GUI
+└── agent-slack-bot/     # Slack bot application
 ```
 
 Additional design documents for each package live under `packages/<name>/docs`.
@@ -56,7 +58,7 @@ interactive flows. Handlers can be registered with regular expressions and will
 be triggered when the user's input matches:
 
 ```ts
-import { createUserInputStream } from '@agentos/cli/dist/utils/user-input-stream';
+import { createUserInputStream } from '@agentos/apps-cli/dist/utils/user-input-stream';
 
 const stream = createUserInputStream({ prompt: '> ' })
   .on(/^hello$/, () => console.log('hi'))
