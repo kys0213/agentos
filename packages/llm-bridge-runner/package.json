@@ -8,6 +8,7 @@
     "build": "tsc",
     "test": "jest --passWithNoTests",
     "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
     "clean": "rimraf dist"
   },
   "devDependencies": {
