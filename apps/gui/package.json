@@ -1,0 +1,68 @@
+{
+  "name": "@agentos/apps-gui",
+  "version": "1.0.0",
+  "description": "AgentOS GUI Application",
+  "author": "AgentOS Team",
+  "private": true,
+  "main": "dist/main.js",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "compile": "tsc",
+    "clean": "rm -rf dist",
+    "build": "tsc && electron-builder",
+    "build:mac": "tsc && electron-builder --mac",
+    "build:win": "tsc && electron-builder --win",
+    "build:linux": "tsc && electron-builder --linux",
+    "build:all": "tsc && electron-builder --mac --win --linux",
+    "build:docker": "docker build -t agentos-gui .",
+    "dev": "concurrently \"tsc -w\" \"electron .\"",
+    "lint": "eslint src --ext .ts,.tsx",
+    "start": "electron .",
+    "test": "jest"
+  },
+  "build": {
+    "appId": "com.agentos.gui",
+    "productName": "AgentOS GUI",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "dependencies": {
+    "@agentos/core": "workspace:*",
+    "electron-store": "^8.1.0",
+    "llm-bridge-spec": "^1.0.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@types/react-test-renderer": "^18.0.0",
+    "concurrently": "^8.2.2",
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1",
+    "react-test-renderer": "^18.2.0",
+    "typescript": "^5.3.3"
+  }
+}

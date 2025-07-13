@@ -7,6 +7,6 @@
       "llm-bridge-spec": ["../core/node_modules/llm-bridge-spec"]
     }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "src/**/__tests__"]
 }

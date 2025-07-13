@@ -4,15 +4,11 @@
     "module": "esnext",
     "lib": ["ES2020"],
     "moduleResolution": "node",
-    "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "declaration": true,
-    "composite": true,
-    "incremental": true
+    "resolveJsonModule": true
   },
   "exclude": ["node_modules", "dist", "build"]
 }
