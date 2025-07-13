@@ -24,7 +24,7 @@ jobs:
           version: 10
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: '22'
 
@@ -36,11 +36,7 @@ jobs:
         continue-on-error: false
 
       - name: Run type check
-        run: |
-          # 각 패키지에서 사용 가능한 타입 체크 스크립트 실행
-          pnpm -r exec --if-present tsc --noEmit
-          # GUI 패키지의 typecheck 스크립트도 실행
-          pnpm --filter "@agentos/apps-gui" --if-present typecheck
+        run: pnpm -r typecheck
         continue-on-error: false
 
       - name: Run tests

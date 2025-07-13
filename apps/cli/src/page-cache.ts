@@ -18,7 +18,9 @@ export class PageCache<T> {
       this.cache.delete(page);
     } else if (this.cache.size >= this.maxPages) {
       const oldest = this.cache.keys().next().value;
-      this.cache.delete(oldest);
+      if (oldest !== undefined) {
+        this.cache.delete(oldest);
+      }
     }
     this.cache.set(page, { data, cursor });
   }
