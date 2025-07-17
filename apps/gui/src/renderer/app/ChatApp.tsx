@@ -1,4 +1,5 @@
 import React from 'react';
+import { Box, Button, Flex, Select } from '@chakra-ui/react';
 import { BridgeManager } from '../utils/BridgeManager';
 import EchoBridge from '../bridges/EchoBridge';
 import ReverseBridge from '../bridges/ReverseBridge';
@@ -120,7 +121,7 @@ const ChatApp: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100%' }}>
+    <Flex h="100%">
       <ChatSidebar
         sessions={sessions}
         currentSessionId={activeTabId || session?.sessionId}
@@ -128,16 +129,16 @@ const ChatApp: React.FC = () => {
         onOpen={handleOpenSession}
         onShowMcps={() => setShowMcpList(true)}
       />
-      <div style={{ flex: 1, padding: '8px' }}>
+      <Box flex="1" p={2}>
         {showMcpList && (
           <McpList
             mcps={mcpConfigStore.get() ? [mcpConfigStore.get() as McpConfig] : []}
             onClose={() => setShowMcpList(false)}
           />
         )}
-        <button onClick={() => setShowSettings(true)} style={{ marginBottom: '8px' }}>
+        <Button onClick={() => setShowSettings(true)} mb={2} size="sm">
           MCP Settings
-        </button>
+        </Button>
         {showSettings && <McpSettings initial={mcpConfigStore.get()} onSave={handleSaveMcp} />}
         <SettingsMenu
           bridgeStore={bridgeStore}
@@ -152,9 +153,9 @@ const ChatApp: React.FC = () => {
           activeTabId={activeTabId}
           onSelect={handleOpenSession}
         />
-        <div style={{ marginBottom: '8px' }}>
-          <label htmlFor="bridge">LLM Bridge: </label>
-          <select
+        <Flex align="center" mb={2} gap={2}>
+          <label htmlFor="bridge">LLM Bridge:</label>
+          <Select
             id="bridge"
             value={bridgeId}
             onChange={async (e) => {
@@ -162,19 +163,21 @@ const ChatApp: React.FC = () => {
               await manager.switchBridge(id);
               setBridgeId(id);
             }}
+            w="auto"
+            size="sm"
           >
             {bridgeIds.map((id) => (
               <option key={id} value={id}>
                 {id}
               </option>
             ))}
-          </select>
+          </Select>
           <PresetSelector presets={presets} value={presetId} onChange={handleChangePreset} />
-        </div>
+        </Flex>
         <ChatMessageList messages={messages} />
         <ChatInput onSend={handleSend} disabled={busy} />
-      </div>
-    </div>
+      </Box>
+    </Flex>
   );
 };
 

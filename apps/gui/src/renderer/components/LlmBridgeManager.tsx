@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Box, Button, HStack, Input, Select, Text, VStack } from '@chakra-ui/react';
 import { BridgeManager } from '../utils/BridgeManager';
 import EchoBridge from '../bridges/EchoBridge';
 import ReverseBridge from '../bridges/ReverseBridge';
@@ -37,24 +38,38 @@ const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ store, manager, onC
   };
 
   return (
-    <div style={{ padding: '8px' }}>
-      <h3>LLM Bridges</h3>
-      <ul>
+    <Box p={2}>
+      <Text fontWeight="bold" mb={2}>
+        LLM Bridges
+      </Text>
+      <VStack align="start" spacing={2} as="ul" listStyleType="disc" pl={4}>
         {bridges.map((b) => (
-          <li key={b.id}>
-            {b.id} ({b.type}) <button onClick={() => handleDelete(b.id)}>Delete</button>
-          </li>
+          <HStack as="li" key={b.id} spacing={2}>
+            <Text>
+              {b.id} ({b.type})
+            </Text>
+            <Button size="xs" onClick={() => handleDelete(b.id)}>
+              Delete
+            </Button>
+          </HStack>
         ))}
-      </ul>
-      <div style={{ marginTop: '8px' }}>
-        <input value={id} onChange={(e) => setId(e.target.value)} placeholder="Bridge id" />
-        <select value={type} onChange={(e) => setType(e.target.value as any)}>
+      </VStack>
+      <HStack mt={2} spacing={2}>
+        <Input
+          value={id}
+          onChange={(e) => setId(e.target.value)}
+          placeholder="Bridge id"
+          size="sm"
+        />
+        <Select value={type} onChange={(e) => setType(e.target.value as any)} size="sm" w="auto">
           <option value="echo">echo</option>
           <option value="reverse">reverse</option>
-        </select>
-        <button onClick={handleAdd}>Add</button>
-      </div>
-    </div>
+        </Select>
+        <Button size="sm" onClick={handleAdd} colorScheme="brand">
+          Add
+        </Button>
+      </HStack>
+    </Box>
   );
 };
 

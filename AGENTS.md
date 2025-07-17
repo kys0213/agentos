@@ -38,3 +38,9 @@ Additional design documents for each package live under `<apps|packages>/<name>/
    작성한 계획서와 진행 상황은 작업 요청마다 리뷰하여 지속적으로 피드백을 반영합니다.
 
    > 🤝 AI 에이전트와의 협력 시에는 [AI 에이전트 협력 가이드라인](docs/AI_COLLABORATION_GUIDE.md)을 따라주세요.
+
+6. **작업계획서 Todo 체크**
+   작업계획서의 Todo 항목을 하나씩 처리하고 완료된 항목은 체크 표시합니다.
+
+7. **Todo 완료 후 종료**
+   모든 Todo가 완료되면 작업을 종료합니다.

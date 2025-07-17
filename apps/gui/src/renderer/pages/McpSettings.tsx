@@ -1,4 +1,5 @@
 import React from 'react';
+import { Box, Button, FormControl, FormLabel, Input, Select, Stack } from '@chakra-ui/react';
 import { McpConfig } from '@agentos/core';
 
 export interface McpSettingsProps {
@@ -42,56 +43,52 @@ const McpSettings: React.FC<McpSettingsProps> = ({ initial, onSave }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ padding: '8px' }}>
-      <div>
-        <label>
-          Type
-          <select value={type} onChange={(e) => setType(e.target.value as McpConfig['type'])}>
+    <Box as="form" onSubmit={handleSubmit} p={2}>
+      <Stack spacing={2}>
+        <FormControl>
+          <FormLabel>Type</FormLabel>
+          <Select value={type} onChange={(e) => setType(e.target.value as McpConfig['type'])}>
             <option value="stdio">stdio</option>
             <option value="streamableHttp">streamableHttp</option>
             <option value="websocket">websocket</option>
             <option value="sse">sse</option>
-          </select>
-        </label>
-      </div>
-      <div>
-        <label>
-          Name <input value={name} onChange={(e) => setName(e.target.value)} />
-        </label>
-      </div>
-      <div>
-        <label>
-          Version <input value={version} onChange={(e) => setVersion(e.target.value)} />
-        </label>
-      </div>
-      {type === 'stdio' && (
-        <>
-          <div>
-            <label>
-              Command <input value={command} onChange={(e) => setCommand(e.target.value)} />
-            </label>
-          </div>
-          <div>
-            <label>
-              Args
-              <input
+          </Select>
+        </FormControl>
+        <FormControl>
+          <FormLabel>Name</FormLabel>
+          <Input value={name} onChange={(e) => setName(e.target.value)} />
+        </FormControl>
+        <FormControl>
+          <FormLabel>Version</FormLabel>
+          <Input value={version} onChange={(e) => setVersion(e.target.value)} />
+        </FormControl>
+        {type === 'stdio' && (
+          <>
+            <FormControl>
+              <FormLabel>Command</FormLabel>
+              <Input value={command} onChange={(e) => setCommand(e.target.value)} />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Args</FormLabel>
+              <Input
                 value={args}
                 onChange={(e) => setArgs(e.target.value)}
                 placeholder="--flag value"
               />
-            </label>
-          </div>
-        </>
-      )}
-      {type !== 'stdio' && (
-        <div>
-          <label>
-            URL <input value={url} onChange={(e) => setUrl(e.target.value)} />
-          </label>
-        </div>
-      )}
-      <button type="submit">Save</button>
-    </form>
+            </FormControl>
+          </>
+        )}
+        {type !== 'stdio' && (
+          <FormControl>
+            <FormLabel>URL</FormLabel>
+            <Input value={url} onChange={(e) => setUrl(e.target.value)} />
+          </FormControl>
+        )}
+        <Button type="submit" colorScheme="brand" alignSelf="start">
+          Save
+        </Button>
+      </Stack>
+    </Box>
   );
 };
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button, HStack, Input } from '@chakra-ui/react';
 
 export interface ChatInputProps {
   onSend(text: string): void;
@@ -16,9 +17,8 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
   };
 
   return (
-    <div>
-      <input
-        type="text"
+    <HStack>
+      <Input
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={(e) => {
@@ -28,13 +28,12 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
           }
         }}
         placeholder="Type a message"
-        style={{ width: '80%' }}
-        disabled={disabled}
+        isDisabled={disabled}
       />
-      <button onClick={handleSend} disabled={disabled}>
+      <Button onClick={handleSend} isDisabled={disabled} colorScheme="brand">
         Send
-      </button>
-    </div>
+      </Button>
+    </HStack>
   );
 };
 

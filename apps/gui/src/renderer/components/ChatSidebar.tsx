@@ -1,4 +1,5 @@
 import React from 'react';
+import { Box, Button, Stack, Text } from '@chakra-ui/react';
 import { ChatSessionDescription } from '@agentos/core';
 
 interface ChatSidebarProps {
@@ -17,29 +18,34 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onShowMcps,
 }) => {
   return (
-    <div style={{ width: '250px', borderRight: '1px solid #ccc', padding: '8px' }}>
-      <button onClick={onNew}>New Chat</button>
-      <button onClick={onShowMcps} style={{ marginTop: '8px' }}>
-        MCPs
-      </button>
-      <div style={{ marginTop: '8px' }}>
-        {sessions.map((s) => (
-          <div
-            key={s.id}
-            onClick={() => onOpen(s.id)}
-            style={{
-              cursor: 'pointer',
-              fontWeight: currentSessionId === s.id ? 'bold' : 'normal',
-              marginBottom: '4px',
-            }}
-          >
-            <div>{s.title || '(no title)'}</div>
-            <div style={{ fontSize: '0.8em', color: '#666' }}>{s.id}</div>
-            <div style={{ fontSize: '0.8em', color: '#666' }}>{s.updatedAt.toLocaleString()}</div>
-          </div>
-        ))}
-      </div>
-    </div>
+    <Box w="250px" borderRight="1px solid" borderColor="gray.200" p="8px">
+      <Stack spacing={2}>
+        <Button size="sm" onClick={onNew} colorScheme="brand">
+          New Chat
+        </Button>
+        <Button size="sm" onClick={onShowMcps}>
+          MCPs
+        </Button>
+        <Stack spacing={2} mt={2}>
+          {sessions.map((s) => (
+            <Box
+              key={s.id}
+              cursor="pointer"
+              fontWeight={currentSessionId === s.id ? 'bold' : 'normal'}
+              onClick={() => onOpen(s.id)}
+            >
+              <Text>{s.title || '(no title)'}</Text>
+              <Text fontSize="xs" color="gray.600">
+                {s.id}
+              </Text>
+              <Text fontSize="xs" color="gray.600">
+                {s.updatedAt.toLocaleString()}
+              </Text>
+            </Box>
+          ))}
+        </Stack>
+      </Stack>
+    </Box>
   );
 };
 

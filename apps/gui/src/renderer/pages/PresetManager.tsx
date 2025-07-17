@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Box, Button, Input, List, ListItem, Text, VStack } from '@chakra-ui/react';
 import { Preset } from '@agentos/core';
 import { PresetStore, loadPresets, savePreset, deletePreset } from '../stores/preset-store';
 
@@ -38,24 +39,32 @@ const PresetManager: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '8px' }}>
-      <h3>Presets</h3>
-      <ul>
+    <Box p={2}>
+      <Text fontWeight="bold" mb={2}>
+        Presets
+      </Text>
+      <List spacing={1} styleType="disc" pl={4}>
         {presets.map((p) => (
-          <li key={p.id}>
-            {p.name} <button onClick={() => handleDelete(p.id)}>Delete</button>
-          </li>
+          <ListItem key={p.id}>
+            {p.name}{' '}
+            <Button size="xs" onClick={() => handleDelete(p.id)}>
+              Delete
+            </Button>
+          </ListItem>
         ))}
-      </ul>
-      <div style={{ marginTop: '8px' }}>
-        <input
+      </List>
+      <VStack mt={2} spacing={2} align="start">
+        <Input
           value={current.name}
           onChange={(e) => setCurrent({ ...current, name: e.target.value })}
           placeholder="Preset name"
+          size="sm"
         />
-        <button onClick={handleSave}>Add</button>
-      </div>
-    </div>
+        <Button size="sm" onClick={handleSave} colorScheme="brand">
+          Add
+        </Button>
+      </VStack>
+    </Box>
   );
 };
 

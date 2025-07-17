@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { Box, Text, VStack } from '@chakra-ui/react';
 
 export interface Message {
   sender: 'user' | 'agent';
@@ -17,21 +18,16 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ messages }) => {
   }, [messages]);
 
   return (
-    <div
-      style={{
-        height: '400px',
-        overflowY: 'auto',
-        border: '1px solid #ccc',
-        padding: '8px',
-      }}
-    >
-      {messages.map((m, idx) => (
-        <div key={idx} style={{ marginBottom: '8px' }}>
-          <strong>{m.sender === 'user' ? 'You' : 'Agent'}:</strong> {m.text}
-        </div>
-      ))}
-      <div ref={endRef} />
-    </div>
+    <Box h="400px" overflowY="auto" border="1px solid" borderColor="gray.200" p="8px">
+      <VStack align="start" spacing={2}>
+        {messages.map((m, idx) => (
+          <Text key={idx}>
+            <strong>{m.sender === 'user' ? 'You' : 'Agent'}:</strong> {m.text}
+          </Text>
+        ))}
+        <Box ref={endRef} />
+      </VStack>
+    </Box>
   );
 };
 
