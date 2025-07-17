@@ -28,11 +28,11 @@ function useChatSession(chatManager: ChatManager): {
 ```
 
 ## Todo
-- [ ] Create `ChatMessageList` and `ChatInput` components.
-- [ ] Extract session handling logic into `useChatSession` hook.
-- [ ] Replace direct state management in `ChatApp` with the new hook and components.
-- [ ] Ensure existing features (tabs, sidebar, preset selector) continue to work.
-- [ ] Run `pnpm lint` and `pnpm test`.
+- [x] Create `ChatMessageList` and `ChatInput` components.
+- [x] Extract session handling logic into `useChatSession` hook.
+- [x] Replace direct state management in `ChatApp` with the new hook and components.
+- [x] Ensure existing features (tabs, sidebar, preset selector) continue to work.
+- [x] Run `pnpm lint` and `pnpm test`.
 
 ## Steps
 1. Implement `useChatSession` to encapsulate session lifecycle and message flow.

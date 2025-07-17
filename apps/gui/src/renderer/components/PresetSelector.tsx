@@ -1,4 +1,5 @@
 import React from 'react';
+import { Select } from '@chakra-ui/react';
 import { Preset } from '@agentos/core';
 
 export interface PresetSelectorProps {
@@ -9,10 +10,12 @@ export interface PresetSelectorProps {
 
 const PresetSelector: React.FC<PresetSelectorProps> = ({ presets, value, onChange }) => {
   return (
-    <select
+    <Select
       value={value ?? ''}
       onChange={(e) => onChange(e.target.value)}
-      style={{ marginRight: '8px' }}
+      w="auto"
+      size="sm"
+      mr={{ base: 2, md: 3 }}
     >
       <option value="">(no preset)</option>
       {presets.map((p) => (
@@ -20,7 +23,7 @@ const PresetSelector: React.FC<PresetSelectorProps> = ({ presets, value, onChang
           {p.name}
         </option>
       ))}
-    </select>
+    </Select>
   );
 };
 

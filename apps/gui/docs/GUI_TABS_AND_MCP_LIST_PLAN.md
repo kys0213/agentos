@@ -26,13 +26,13 @@ interface McpListProps {
 ```
 
 ## Todo
-- [ ] `ChatTabs` 컴포넌트 작성
-- [ ] `ChatApp`에서 탭 목록과 활성 탭 상태 관리
-- [ ] 세션 로드 또는 생성 시 탭에 추가하고 활성화
-- [ ] 사이드바의 세션 선택과 탭 상태 동기화
-- [ ] `McpList` 컴포넌트 작성 및 기본 렌더 테스트
-- [ ] 사이드바에 "MCPs" 메뉴 추가하여 목록 화면을 토글
-- [ ] `pnpm lint` 와 `pnpm test` 실행
+- [x] `ChatTabs` 컴포넌트 작성
+- [x] `ChatApp`에서 탭 목록과 활성 탭 상태 관리
+- [x] 세션 로드 또는 생성 시 탭에 추가하고 활성화
+- [x] 사이드바의 세션 선택과 탭 상태 동기화
+- [x] `McpList` 컴포넌트 작성 및 기본 렌더 테스트
+- [x] 사이드바에 "MCPs" 메뉴 추가하여 목록 화면을 토글
+- [x] `pnpm lint` 와 `pnpm test` 실행
 
 ## 작업 순서
 1. `ChatTabs`와 `McpList` UI 컴포넌트 구현

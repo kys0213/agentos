@@ -29,11 +29,11 @@ interface LlmBridgeManagerProps {
 
 ## Todo
 
-- [ ] `LlmBridgeStore` 구현하여 electron-store 로 설정 저장
-- [ ] `LlmBridgeManager` 컴포넌트 작성: 목록 표시, 추가/삭제 기능 제공
-- [ ] `SettingsMenu` 에 브리지 관리 메뉴 추가
-- [ ] `ChatApp` 시작 시 저장된 브리지를 로드하여 `BridgeManager` 에 등록
-- [ ] 단위 테스트 추가 후 `pnpm lint` 와 `pnpm test` 실행
+- [x] `LlmBridgeStore` 구현하여 electron-store 로 설정 저장
+- [x] `LlmBridgeManager` 컴포넌트 작성: 목록 표시, 추가/삭제 기능 제공
+- [x] `SettingsMenu` 에 브리지 관리 메뉴 추가
+- [x] `ChatApp` 시작 시 저장된 브리지를 로드하여 `BridgeManager` 에 등록
+- [x] 단위 테스트 추가 후 `pnpm lint` 와 `pnpm test` 실행
 
 ## 작업 순서
 

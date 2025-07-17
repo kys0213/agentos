@@ -20,12 +20,12 @@ interface PresetSelectorProps {
 ```
 
 ## Todo
-- [ ] `FileBasedChatSession`에 `preset` setter 구현
-- [ ] `PresetSelector` 컴포넌트 작성
-- [ ] `ChatApp`에서 세션 생성 시 프리셋 선택 옵션 제공
-- [ ] 대화 중 드롭다운으로 프리셋 변경 후 `session.commit()` 호출
-- [ ] 세션 로드 시 저장된 프리셋을 초기값으로 설정
-- [ ] `pnpm lint` 와 `pnpm test` 실행
+- [x] `FileBasedChatSession`에 `preset` setter 구현
+- [x] `PresetSelector` 컴포넌트 작성 (Chakra `Select` 적용)
+- [x] `ChatApp`에서 세션 생성 시 프리셋 선택 옵션 제공
+- [x] 대화 중 드롭다운으로 프리셋 변경 후 `session.commit()` 호출
+- [x] 세션 로드 시 저장된 프리셋을 초기값으로 설정
+- [x] `pnpm lint` 와 `pnpm test` 실행
 
 ## 작업 순서
 1. `PresetSelector` 컴포넌트 구현 및 테스트
