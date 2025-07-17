@@ -1,4 +1,5 @@
 import React from 'react';
+import { Box, Button, List, ListItem, Text } from '@chakra-ui/react';
 import { McpConfig } from '@agentos/core';
 
 export interface McpListProps {
@@ -8,22 +9,22 @@ export interface McpListProps {
 
 const McpList: React.FC<McpListProps> = ({ mcps, onClose }) => {
   return (
-    <div style={{ padding: '8px' }}>
-      <button onClick={onClose} style={{ marginBottom: '8px' }}>
+    <Box p={2}>
+      <Button mb={2} size="sm" onClick={onClose}>
         Close
-      </button>
+      </Button>
       {mcps.length === 0 ? (
-        <div>No MCPs configured.</div>
+        <Text>No MCPs configured.</Text>
       ) : (
-        <ul>
+        <List spacing={1} styleType="disc" pl={4}>
           {mcps.map((mcp, idx) => (
-            <li key={idx}>
+            <ListItem key={idx}>
               <strong>{mcp.name}</strong> ({mcp.type})
-            </li>
+            </ListItem>
           ))}
-        </ul>
+        </List>
       )}
-    </div>
+    </Box>
   );
 };
 
