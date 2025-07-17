@@ -21,11 +21,11 @@ packages/gui/src/
 ```
 
 ## Todo
-- [ ] `app`, `components`, `hooks`, `stores`, `pages`, `utils` 폴더 생성
-- [ ] 기존 파일을 역할에 맞게 이동하고 경로 수정
-- [ ] 상대 경로 변경에 따른 import 문 업데이트
-- [ ] 테스트 코드도 동일한 위치로 옮기고 실행 확인
-- [ ] `pnpm lint` 와 `pnpm test` 실행
+- [x] `app`, `components`, `hooks`, `stores`, `pages`, `utils` 폴더 생성
+- [x] 기존 파일을 역할에 맞게 이동하고 경로 수정
+- [x] 상대 경로 변경에 따른 import 문 업데이트
+- [x] 테스트 코드도 동일한 위치로 옮기고 실행 확인
+- [x] `pnpm lint` 와 `pnpm test` 실행
 
 ## 작업 순서
 1. 새 폴더 구조를 생성한다.

@@ -23,11 +23,11 @@ interface ChatTabsProps {
 
 ## Todo
 
-- [ ] `ChatTabs` 컴포넌트 추가
-- [ ] `ChatApp` 상태에 열린 탭 목록과 활성 탭 id 관리
-- [ ] 세션 로드/생성 시 탭에 추가하고 활성화
-- [ ] 사이드바의 `currentSessionId` 가 활성 탭과 동기화되도록 수정
-- [ ] `pnpm lint` 와 `pnpm test` 실행
+- [x] `ChatTabs` 컴포넌트 추가
+- [x] `ChatApp` 상태에 열린 탭 목록과 활성 탭 id 관리
+- [x] 세션 로드/생성 시 탭에 추가하고 활성화
+- [x] 사이드바의 `currentSessionId` 가 활성 탭과 동기화되도록 수정
+- [x] `pnpm lint` 와 `pnpm test` 실행
 
 ## 작업 순서
 

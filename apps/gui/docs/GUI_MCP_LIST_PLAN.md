@@ -17,10 +17,10 @@ interface McpListProps {
 사이드바에 "MCPs" 메뉴를 추가하여 목록 화면을 열도록 변경할 예정이다.
 
 ## Todo
-- [ ] `McpList` 컴포넌트 작성
-- [ ] `ChatSidebar`에 "MCPs" 메뉴 항목 추가
-- [ ] `ChatApp`에 `showMcpList` 상태를 도입해 화면 전환
-- [ ] 기본 렌더 테스트 포함 후 `pnpm lint`와 `pnpm test` 실행
+- [x] `McpList` 컴포넌트 작성
+- [x] `ChatSidebar`에 "MCPs" 메뉴 항목 추가
+- [x] `ChatApp`에 `showMcpList` 상태를 도입해 화면 전환
+- [x] 기본 렌더 테스트 포함 후 `pnpm lint`와 `pnpm test` 실행
 
 ## 작업 순서
 1. `McpList` 작성 후 단위 테스트 추가

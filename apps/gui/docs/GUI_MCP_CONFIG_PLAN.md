@@ -25,11 +25,11 @@ interface McpSettingsProps {
 
 ## Todo
 
-- [ ] `McpConfigStore` 구현하여 `electron-store`로 설정 저장/로드
-- [ ] 저장된 설정을 이용해 `Mcp.create()`로 MCP 인스턴스를 반환하는 헬퍼 작성
-- [ ] `McpSettings` 컴포넌트에서 MCP 유형별 입력 폼 작성
-- [ ] `ChatApp`에 설정 화면을 열 수 있는 버튼 추가
-- [ ] 기본 테스트 작성 및 `pnpm lint` `pnpm test` 실행
+- [x] `McpConfigStore` 구현하여 `electron-store`로 설정 저장/로드
+- [x] 저장된 설정을 이용해 `Mcp.create()`로 MCP 인스턴스를 반환하는 헬퍼 작성
+- [x] `McpSettings` 컴포넌트에서 MCP 유형별 입력 폼 작성
+- [x] `ChatApp`에 설정 화면을 열 수 있는 버튼 추가
+- [x] 기본 테스트 작성 및 `pnpm lint` `pnpm test` 실행
 
 ## 작업 순서
 

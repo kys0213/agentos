@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Flex, Select } from '@chakra-ui/react';
+import { Box, Button, Flex, Select, FormControl, FormLabel } from '@chakra-ui/react';
 import { BridgeManager } from '../utils/BridgeManager';
 import EchoBridge from '../bridges/EchoBridge';
 import ReverseBridge from '../bridges/ReverseBridge';
@@ -153,8 +153,10 @@ const ChatApp: React.FC = () => {
           activeTabId={activeTabId}
           onSelect={handleOpenSession}
         />
-        <Flex align="center" mb={2} gap={2}>
-          <label htmlFor="bridge">LLM Bridge:</label>
+        <FormControl display="flex" alignItems="center" gap={2} mb={2} w="auto">
+          <FormLabel htmlFor="bridge" mb="0">
+            LLM Bridge:
+          </FormLabel>
           <Select
             id="bridge"
             value={bridgeId}
@@ -172,8 +174,8 @@ const ChatApp: React.FC = () => {
               </option>
             ))}
           </Select>
-          <PresetSelector presets={presets} value={presetId} onChange={handleChangePreset} />
-        </Flex>
+        </FormControl>
+        <PresetSelector presets={presets} value={presetId} onChange={handleChangePreset} />
         <ChatMessageList messages={messages} />
         <ChatInput onSend={handleSend} disabled={busy} />
       </Box>
