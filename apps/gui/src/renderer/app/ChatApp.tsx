@@ -121,7 +121,7 @@ const ChatApp: React.FC = () => {
   };
 
   return (
-    <Flex h="100%">
+    <Flex h="100%" direction={{ base: 'column', md: 'row' }}>
       <ChatSidebar
         sessions={sessions}
         currentSessionId={activeTabId || session?.sessionId}
@@ -129,7 +129,7 @@ const ChatApp: React.FC = () => {
         onOpen={handleOpenSession}
         onShowMcps={() => setShowMcpList(true)}
       />
-      <Box flex="1" p={2}>
+      <Box flex="1" p={2} display="flex" flexDirection="column">
         {showMcpList && (
           <McpList
             mcps={mcpConfigStore.get() ? [mcpConfigStore.get() as McpConfig] : []}

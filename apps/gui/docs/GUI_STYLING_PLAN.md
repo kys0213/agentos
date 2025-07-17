@@ -6,13 +6,13 @@
 
 - [x] Provide a consistent UI theme using Chakra UI
 - [x] All major components adopt Chakra UI components
-- [ ] Support dark and light mode switching
+- [x] Support dark and light mode switching
 
 ### 사용 시나리오
 
 - [x] User launches the GUI and sees the new theme applied
-- [ ] User toggles dark/light mode from settings
-- [ ] Layout remains responsive across window sizes
+- [x] User toggles dark/light mode from settings
+- [x] Layout remains responsive across window sizes
 
 ### 제약 조건
 
@@ -43,9 +43,9 @@ ReactDOM.createRoot(el).render(
 - [x] Create a global theme with color palette and dark mode config
 - [x] Wrap the application with `ChakraProvider`
 - [x] Replace inline styles with Chakra UI components (Button, Flex, etc.)
-- [ ] Unit test theme initialization and dark mode toggle
+- [x] Unit test theme initialization and dark mode toggle
 - [x] Run `pnpm lint` and `pnpm test`
-- [ ] Update documentation with styling guidelines
+- [x] Update documentation with styling guidelines
 
 ## 작업 순서
 

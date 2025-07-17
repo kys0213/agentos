@@ -18,7 +18,7 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ messages }) => {
   }, [messages]);
 
   return (
-    <Box h="400px" overflowY="auto" border="1px solid" borderColor="gray.200" p="8px">
+    <Box flex="1" overflowY="auto" border="1px solid" borderColor="gray.200" p="8px">
       <VStack align="start" spacing={2}>
         {messages.map((m, idx) => (
           <Text key={idx}>
