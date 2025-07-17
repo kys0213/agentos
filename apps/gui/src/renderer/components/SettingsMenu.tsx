@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, HStack } from '@chakra-ui/react';
+import ColorModeToggle from './ColorModeToggle';
 import PresetManager from '../pages/PresetManager';
 import LlmBridgeManager from './LlmBridgeManager';
 import { LlmBridgeStore } from '../stores/llm-bridge-store';
@@ -21,6 +22,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ bridgeStore, manager, onBri
       <Button size="sm" onClick={() => setShowBridges((b) => !b)}>
         LLM Bridges
       </Button>
+      <ColorModeToggle />
       {showPresets && <PresetManager />}
       {showBridges && (
         <LlmBridgeManager store={bridgeStore} manager={manager} onChange={onBridgesChange} />

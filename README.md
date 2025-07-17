@@ -70,6 +70,7 @@ await stream.run(); // resolves when the user types "quit"
 The `gui` package is an Electron application with a React renderer. It shows a
 basic window that can execute a task via the core library. Both packages are
 early prototypes and will evolve as the project grows.
+For styling details, see [GUI Styling Guide](apps/gui/docs/GUI_STYLING_GUIDE.md).
 
 ### LLM Bridge Runner
 

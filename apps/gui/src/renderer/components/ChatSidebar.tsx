@@ -18,7 +18,13 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onShowMcps,
 }) => {
   return (
-    <Box w="250px" borderRight="1px solid" borderColor="gray.200" p="8px">
+    <Box
+      w={{ base: '100%', md: '250px' }}
+      borderRight={{ base: 'none', md: '1px solid' }}
+      borderBottom={{ base: '1px solid', md: 'none' }}
+      borderColor="gray.200"
+      p="8px"
+    >
       <Stack spacing={2}>
         <Button size="sm" onClick={onNew} colorScheme="brand">
           New Chat
