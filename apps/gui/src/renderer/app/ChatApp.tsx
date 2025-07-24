@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Flex, Select, FormControl, FormLabel } from '@chakra-ui/react';
+import { Box, Button, Flex, Select, FormControl, FormLabel, Input } from '@chakra-ui/react';
 import { BridgeManager } from '../utils/BridgeManager';
 import EchoBridge from '../bridges/EchoBridge';
 import ReverseBridge from '../bridges/ReverseBridge';
@@ -19,6 +19,7 @@ import { LlmBridgeStore } from '../stores/llm-bridge-store';
 import ChatMessageList from '../components/ChatMessageList';
 import ChatInput from '../components/ChatInput';
 import useChatSession from '../hooks/useChatSession';
+import useMessageSearch from '../hooks/useMessageSearch';
 
 const manager = new BridgeManager();
 manager.register('echo', new EchoBridge());
@@ -45,11 +46,13 @@ const ChatApp: React.FC = () => {
   const [showMcpList, setShowMcpList] = React.useState(false);
   const [presets, setPresets] = React.useState<Preset[]>([]);
   const [presetId, setPresetId] = React.useState<string>('');
+  const [searchTerm, setSearchTerm] = React.useState('');
   const bridgeIds = React.useMemo(() => manager.getBridgeIds(), [bridgesVersion]);
   const { session, messages, openSession, startNewSession, send } = useChatSession(
     chatManager,
     manager
   );
+  const filteredMessages = useMessageSearch(messages, searchTerm);
 
   React.useEffect(() => {
     const loaded = loadMcpFromStore(mcpConfigStore);
@@ -176,7 +179,14 @@ const ChatApp: React.FC = () => {
           </Select>
         </FormControl>
         <PresetSelector presets={presets} value={presetId} onChange={handleChangePreset} />
-        <ChatMessageList messages={messages} />
+        <Input
+          placeholder="Search messages"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          mb={2}
+          size="sm"
+        />
+        <ChatMessageList messages={filteredMessages} />
         <ChatInput onSend={handleSend} disabled={busy} />
       </Box>
     </Flex>
