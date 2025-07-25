@@ -37,6 +37,7 @@ export default function useChatSession(
         !Array.isArray(h.content) && h.content.contentType === 'text'
           ? String(h.content.value)
           : '',
+      timestamp: h.createdAt,
     }));
   }, []);
 
@@ -64,7 +65,8 @@ export default function useChatSession(
   const send = useCallback(
     async (text: string) => {
       if (!session) return;
-      setMessages((prev) => [...prev, { sender: 'user', text }]);
+      const userMsg: Message = { sender: 'user', text, timestamp: new Date() };
+      setMessages((prev) => [...prev, userMsg]);
       await session.appendMessage({
         role: 'user',
         content: { contentType: 'text', value: text },
@@ -74,7 +76,8 @@ export default function useChatSession(
         .invoke({ messages: [{ role: 'user', content: { contentType: 'text', value: text } }] });
       const content = llmResponse.content;
       const reply = content.contentType === 'text' ? String(content.value) : '';
-      setMessages((prev) => [...prev, { sender: 'agent', text: reply }]);
+      const agentMsg: Message = { sender: 'agent', text: reply, timestamp: new Date() };
+      setMessages((prev) => [...prev, agentMsg]);
       await session.appendMessage({
         role: 'assistant',
         content: { contentType: 'text', value: reply },

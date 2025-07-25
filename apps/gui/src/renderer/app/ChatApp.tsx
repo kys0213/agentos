@@ -186,7 +186,7 @@ const ChatApp: React.FC = () => {
           mb={2}
           size="sm"
         />
-        <ChatMessageList messages={filteredMessages} />
+        <ChatMessageList messages={filteredMessages} loading={busy} />
         <ChatInput onSend={handleSend} disabled={busy} />
       </Box>
     </Flex>
