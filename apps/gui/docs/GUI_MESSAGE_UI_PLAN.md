@@ -3,18 +3,18 @@
 ## Requirements
 
 ### 성공 조건
-- [ ] Messages display the sent time.
-- [ ] User and agent messages are visually separated with bubble styles.
-- [ ] Loading indicator appears while the agent is generating a reply.
+- [x] Messages display the sent time.
+- [x] User and agent messages are visually separated with bubble styles.
+- [x] Loading indicator appears while the agent is generating a reply.
 
 ### 사용 시나리오
-- [ ] User sends a message and immediately sees it on the right with timestamp.
-- [ ] Agent reply appears on the left with its timestamp.
-- [ ] While waiting, a spinner or "답변 생성 중..." informs the user of progress.
+- [x] User sends a message and immediately sees it on the right with timestamp.
+- [x] Agent reply appears on the left with its timestamp.
+- [x] While waiting, a spinner or "답변 생성 중..." informs the user of progress.
 
 ### 제약 조건
-- [ ] Existing message flow must remain intact.
-- [ ] Styling uses Chakra UI components.
+- [x] Existing message flow must remain intact.
+- [x] Styling uses Chakra UI components.
 
 ## Interface Sketch
 ```typescript
@@ -28,12 +28,12 @@ function send(text: string): Promise<void>; // records timestamp
 ```
 
 ## Todo
-- [ ] Extend `Message` type with `timestamp` field
-- [ ] Update `send` in `useChatSession` to add the current time
-- [ ] Style `ChatMessageList` bubbles with alignment and colors
-- [ ] Show a spinner while awaiting agent response
-- [ ] Unit test timestamp and loading logic
-- [ ] Update docs with new UI behavior
+- [x] Extend `Message` type with `timestamp` field
+- [x] Update `send` in `useChatSession` to add the current time
+- [x] Style `ChatMessageList` bubbles with alignment and colors
+- [x] Show a spinner while awaiting agent response
+- [x] Unit test timestamp and loading logic
+- [x] Update docs with new UI behavior
 
 ## 작업 순서
 1. **타입 확장**: `Message` 인터페이스에 `timestamp` 추가 (완료 조건: 빌드 성공)
