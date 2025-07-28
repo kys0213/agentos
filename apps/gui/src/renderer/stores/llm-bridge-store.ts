@@ -1,33 +1,29 @@
-import Store from 'electron-store';
-
+// 브라우저 호환을 위한 메모리 기반 LLM Bridge 스토어
 export interface LlmBridgeConfig {
   id: string;
   type: 'echo' | 'reverse';
 }
 
 export class LlmBridgeStore {
-  private store: Store<{ bridges: LlmBridgeConfig[] }>;
-
-  constructor(options?: Store.Options<{ bridges: LlmBridgeConfig[] }>) {
-    this.store = new Store<{ bridges: LlmBridgeConfig[] }>({
-      name: 'llm-bridges',
-      defaults: { bridges: [] },
-      ...options,
-    });
-  }
+  private bridges: LlmBridgeConfig[] = [
+    { id: 'echo', type: 'echo' },
+    { id: 'reverse', type: 'reverse' }
+  ];
 
   list(): LlmBridgeConfig[] {
-    return this.store.get('bridges');
+    return [...this.bridges];
   }
 
   save(config: LlmBridgeConfig): void {
-    const bridges = this.list().filter((b) => b.id !== config.id);
-    bridges.push(config);
-    this.store.set('bridges', bridges);
+    const index = this.bridges.findIndex(b => b.id === config.id);
+    if (index >= 0) {
+      this.bridges[index] = config;
+    } else {
+      this.bridges.push(config);
+    }
   }
 
   delete(id: string): void {
-    const bridges = this.list().filter((b) => b.id !== id);
-    this.store.set('bridges', bridges);
+    this.bridges = this.bridges.filter(b => b.id !== id);
   }
 }

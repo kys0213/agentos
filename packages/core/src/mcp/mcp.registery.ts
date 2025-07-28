@@ -1,4 +1,4 @@
-import { Tool } from '@modelcontextprotocol/sdk/types';
+import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { Mcp } from './mcp';
 import { StdioMcpConfig } from './mcp-config';
 

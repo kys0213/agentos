@@ -1,6 +1,6 @@
 import React from 'react';
 import { Select } from '@chakra-ui/react';
-import { Preset } from '@agentos/core';
+import type { Preset } from '../types/core-types';
 
 export interface PresetSelectorProps {
   presets: Preset[];

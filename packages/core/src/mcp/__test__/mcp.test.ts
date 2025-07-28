@@ -1,6 +1,6 @@
-import { Client } from '@modelcontextprotocol/sdk/client/index';
-import { Transport } from '@modelcontextprotocol/sdk/shared/transport';
-import { Tool } from '@modelcontextprotocol/sdk/types';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
+import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { mock, MockProxy } from 'jest-mock-extended';
 import { Mcp } from '../mcp';
 import { McpConfig } from '../mcp-config';

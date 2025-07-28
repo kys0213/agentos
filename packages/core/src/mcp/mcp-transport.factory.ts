@@ -1,9 +1,9 @@
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio';
-import { WebSocketClientTransport } from '@modelcontextprotocol/sdk/client/websocket';
-import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { WebSocketClientTransport } from '@modelcontextprotocol/sdk/client/websocket.js';
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import { McpConfig } from './mcp-config';
-import { Transport } from '@modelcontextprotocol/sdk/shared/transport';
+import { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 
 export class McpTransportFactory {
   static create(config: McpConfig): Transport {

@@ -1,41 +1,41 @@
-import Store from 'electron-store';
-import { Preset } from '@agentos/core';
+import type { Preset } from '../types/core-types';
+import { presetService } from '../services/preset-service';
 
+// IPC 기반 프리셋 스토어 (브라우저 호환)
 export class PresetStore {
-  private store: Store<{ presets: Preset[] }>;
-
-  constructor(options?: Store.Options<{ presets: Preset[] }>) {
-    this.store = new Store<{ presets: Preset[] }>({
-      name: 'presets',
-      defaults: { presets: [] },
-      ...options,
-    });
+  async list(): Promise<Preset[]> {
+    const response = await presetService.getAll();
+    return response.presets || [];
   }
 
-  list(): Preset[] {
-    return this.store.get('presets');
+  async save(preset: Preset): Promise<void> {
+    // ID가 있으면 업데이트, 없으면 생성
+    if (await this.exists(preset.id)) {
+      await presetService.update(preset);
+    } else {
+      await presetService.create(preset);
+    }
   }
 
-  save(preset: Preset): void {
-    const presets = this.list().filter((p) => p.id !== preset.id);
-    presets.push(preset);
-    this.store.set('presets', presets);
+  async delete(id: string): Promise<void> {
+    await presetService.delete(id);
   }
 
-  delete(id: string): void {
-    const presets = this.list().filter((p) => p.id !== id);
-    this.store.set('presets', presets);
+  private async exists(id: string): Promise<boolean> {
+    const presets = await this.list();
+    return presets.some(p => p.id === id);
   }
 }
 
+// 기존 함수들을 async로 업데이트
 export async function loadPresets(store: PresetStore): Promise<Preset[]> {
   return store.list();
 }
 
 export async function savePreset(store: PresetStore, preset: Preset): Promise<void> {
-  store.save(preset);
+  return store.save(preset);
 }
 
 export async function deletePreset(store: PresetStore, id: string): Promise<void> {
-  store.delete(id);
+  return store.delete(id);
 }

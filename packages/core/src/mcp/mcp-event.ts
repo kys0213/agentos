@@ -1,4 +1,4 @@
-import { Progress } from '@modelcontextprotocol/sdk/types';
+import { Progress } from '@modelcontextprotocol/sdk/types.js';
 
 export enum McpEvent {
   CONNECTED = 'connected',
