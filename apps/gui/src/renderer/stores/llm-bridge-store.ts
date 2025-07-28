@@ -7,7 +7,7 @@ export interface LlmBridgeConfig {
 export class LlmBridgeStore {
   private bridges: LlmBridgeConfig[] = [
     { id: 'echo', type: 'echo' },
-    { id: 'reverse', type: 'reverse' }
+    { id: 'reverse', type: 'reverse' },
   ];
 
   list(): LlmBridgeConfig[] {
@@ -15,7 +15,7 @@ export class LlmBridgeStore {
   }
 
   save(config: LlmBridgeConfig): void {
-    const index = this.bridges.findIndex(b => b.id === config.id);
+    const index = this.bridges.findIndex((b) => b.id === config.id);
     if (index >= 0) {
       this.bridges[index] = config;
     } else {
@@ -24,6 +24,6 @@ export class LlmBridgeStore {
   }
 
   delete(id: string): void {
-    this.bridges = this.bridges.filter(b => b.id !== id);
+    this.bridges = this.bridges.filter((b) => b.id !== id);
   }
 }

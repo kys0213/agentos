@@ -9,9 +9,9 @@ function initializePresetRepository(): PresetRepository {
 
   const userDataPath = app.getPath('userData');
   const presetsPath = path.join(userDataPath, 'presets');
-  
+
   presetRepository = new FileBasedPresetRepository(presetsPath);
-  
+
   console.log('Preset repository initialized');
   return presetRepository;
 }

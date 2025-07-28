@@ -23,7 +23,7 @@ export class PresetStore {
 
   private async exists(id: string): Promise<boolean> {
     const presets = await this.list();
-    return presets.some(p => p.id === id);
+    return presets.some((p) => p.id === id);
   }
 }
 

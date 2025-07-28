@@ -8,7 +8,7 @@ export async function loadMcpFromStore(store: McpConfigStore): Promise<McpConfig
   if (!config) {
     return undefined;
   }
-  
+
   // 실제 MCP 인스턴스 생성은 Main 프로세스에서 IPC를 통해 처리
   // TODO: IPC 핸들러에 MCP 등록/해제 API 구현 필요
   return config;

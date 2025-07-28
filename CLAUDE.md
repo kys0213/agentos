@@ -15,3 +15,4 @@ AGENTS.md에는 다음과 같은 핵심 내용이 포함되어 있습니다:
 - `pnpm build` - 전체 빌드
 - `pnpm test` - 테스트 실행
 - `pnpm typecheck` - 타입 체크
+- `pnpm lint` - 린트 검사

@@ -9,7 +9,7 @@ export class McpConfigStore {
     if (this.cachedConfig) {
       return this.cachedConfig;
     }
-    
+
     try {
       const response = await mcpService.getAll();
       const configs = response.clients || [];

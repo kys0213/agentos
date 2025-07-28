@@ -47,9 +47,8 @@ const ChatApp: React.FC = () => {
   const [presetId, setPresetId] = React.useState<string>('');
   const [searchTerm, setSearchTerm] = React.useState('');
   const bridgeIds = React.useMemo(() => manager.getBridgeIds(), [bridgesVersion]);
-  const { sessionId, messages, openSession, startNewSession, send, isLoading } = useChatSession(
-    manager
-  );
+  const { sessionId, messages, openSession, startNewSession, send, isLoading } =
+    useChatSession(manager);
   const filteredMessages = useMessageSearch(messages, searchTerm);
 
   React.useEffect(() => {
@@ -140,14 +139,18 @@ const ChatApp: React.FC = () => {
       <Box flex="1" p={2} display="flex" flexDirection="column">
         {showMcpList && (
           <McpList
-            mcps={mcpConfigStore.getSyncCached() ? [mcpConfigStore.getSyncCached() as McpConfig] : []}
+            mcps={
+              mcpConfigStore.getSyncCached() ? [mcpConfigStore.getSyncCached() as McpConfig] : []
+            }
             onClose={() => setShowMcpList(false)}
           />
         )}
         <Button onClick={() => setShowSettings(true)} mb={2} size="sm">
           MCP Settings
         </Button>
-        {showSettings && <McpSettings initial={mcpConfigStore.getSyncCached()} onSave={handleSaveMcp} />}
+        {showSettings && (
+          <McpSettings initial={mcpConfigStore.getSyncCached()} onSave={handleSaveMcp} />
+        )}
         <SettingsMenu
           bridgeStore={bridgeStore}
           manager={manager}

@@ -6,19 +6,21 @@ import type { ElectronAPI } from '../shared/types/electron-api';
 const electronAPI: ElectronAPI = {
   // Chat Session APIs
   chat: {
-    createSession: (options?: { preset?: any }) => ipcRenderer.invoke('chat:create-session', options),
+    createSession: (options?: { preset?: any }) =>
+      ipcRenderer.invoke('chat:create-session', options),
     listSessions: () => ipcRenderer.invoke('chat:list-sessions'),
     loadSession: (sessionId: string) => ipcRenderer.invoke('chat:load-session', sessionId),
-    sendMessage: (sessionId: string, message: string) => ipcRenderer.invoke('chat:send-message', sessionId, message),
+    sendMessage: (sessionId: string, message: string) =>
+      ipcRenderer.invoke('chat:send-message', sessionId, message),
   },
-  
+
   // MCP APIs
   mcp: {
     getAll: () => ipcRenderer.invoke('mcp:get-all'),
     connect: (config: any) => ipcRenderer.invoke('mcp:connect', config),
     disconnect: (name: string) => ipcRenderer.invoke('mcp:disconnect', name),
   },
-  
+
   // Preset APIs
   preset: {
     getAll: () => ipcRenderer.invoke('preset:get-all'),
