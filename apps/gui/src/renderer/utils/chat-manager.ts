@@ -11,15 +11,18 @@ export function createChatManager(): ChatManager {
   // 임시로 기본 구현을 제공
   const baseDir = '.agent/sessions';
   const storage = new FileBasedSessionStorage(baseDir);
-  
+
   // 기본 압축 전략 (압축하지 않음)
   const noCompression: CompressStrategy = {
     compress: async (messages): Promise<CompressionResult> => ({
-      summary: { role: 'system', content: { contentType: 'text', value: 'No compression applied' } },
+      summary: {
+        role: 'system',
+        content: { contentType: 'text', value: 'No compression applied' },
+      },
       compressedCount: 0,
       discardedMessages: [],
     }),
   };
-  
+
   return new FileBasedChatManager(storage, noCompression, noCompression);
 }
