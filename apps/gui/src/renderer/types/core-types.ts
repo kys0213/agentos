@@ -9,6 +9,14 @@ export interface ChatSessionDescription {
   preset?: Preset;
 }
 
+export interface EnabledMcp {
+  name: string;
+  version?: string;
+  enabledTools: string[];
+  enabledResources: string[];
+  enabledPrompts: string[];
+}
+
 export interface Preset {
   id: string;
   name: string;
@@ -18,7 +26,7 @@ export interface Preset {
   updatedAt: Date;
   version: string;
   systemPrompt: string;
-  enabledMcps: string[];
+  enabledMcps?: EnabledMcp[];
   llmBridgeName: string;
   llmBridgeConfig: Record<string, any>;
 }

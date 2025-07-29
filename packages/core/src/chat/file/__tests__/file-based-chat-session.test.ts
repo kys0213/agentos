@@ -1,6 +1,6 @@
 import { mock } from 'jest-mock-extended';
 import { LlmUsage, Message } from 'llm-bridge-spec';
-import { Checkpoint, CompressStrategy } from '../../chat-session';
+import { Checkpoint, CompressStrategy, MessageHistory } from '../../chat-session';
 import { FileBasedChatSession } from '../file-based-chat-session';
 import { FileBasedSessionStorage } from '../file-based-session-storage';
 import { FileBasedSessionMetadata } from '../file-based-session.metadata';
@@ -135,7 +135,7 @@ describe('FileBasedChatSession', () => {
 
   describe('getHistories', () => {
     it('메시지 히스토리를 반환해야 한다', async () => {
-      const mockHistory = {
+      const mockHistory: MessageHistory = {
         messageId: '1',
         createdAt: new Date(),
         role: 'user',
@@ -145,12 +145,11 @@ describe('FileBasedChatSession', () => {
         },
       };
 
-      mockStorage.read.mockReturnValue({
-        next: jest.fn().mockResolvedValue({ done: false, value: mockHistory }),
-        return: jest.fn().mockResolvedValue({ done: true, value: undefined }),
-        throw: jest.fn().mockResolvedValue({ done: true, value: undefined }),
-        [Symbol.asyncIterator]: jest.fn().mockReturnThis(),
-      });
+      mockStorage.read.mockReturnValue(
+        (async function* (): AsyncGenerator<MessageHistory, void, unknown> {
+          yield mockHistory;
+        })()
+      );
 
       const result = await session.getHistories();
       expect(result.items).toContainEqual(mockHistory);

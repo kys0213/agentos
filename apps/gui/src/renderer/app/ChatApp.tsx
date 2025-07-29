@@ -47,8 +47,7 @@ const ChatApp: React.FC = () => {
   const [presetId, setPresetId] = React.useState<string>('');
   const [searchTerm, setSearchTerm] = React.useState('');
   const bridgeIds = React.useMemo(() => manager.getBridgeIds(), [bridgesVersion]);
-  const { sessionId, messages, openSession, startNewSession, send, isLoading } =
-    useChatSession(manager);
+  const { sessionId, messages, openSession, startNewSession, send } = useChatSession(manager);
   const filteredMessages = useMessageSearch(messages, searchTerm);
 
   React.useEffect(() => {
