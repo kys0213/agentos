@@ -13,7 +13,7 @@ import { ChatSession } from '../chat/chat-session';
 import { McpContent } from '../mcp/mcp';
 import { McpRegistry } from '../mcp/mcp.registery';
 import { Agent } from './agent';
-import { Tool } from '@modelcontextprotocol/sdk/types';
+import { Tool } from '@modelcontextprotocol/sdk/types.js';
 
 export class SimpleAgent implements Agent {
   constructor(

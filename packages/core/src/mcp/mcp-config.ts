@@ -1,5 +1,5 @@
-import { OAuthClientProvider } from '@modelcontextprotocol/sdk/client/auth';
-import { StreamableHTTPReconnectionOptions } from '@modelcontextprotocol/sdk/client/streamableHttp';
+import { OAuthClientProvider } from '@modelcontextprotocol/sdk/client/auth.js';
+import { StreamableHTTPReconnectionOptions } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 
 export interface BaseMcpConfig {
   type: 'stdio' | 'streamableHttp' | 'websocket' | 'sse';

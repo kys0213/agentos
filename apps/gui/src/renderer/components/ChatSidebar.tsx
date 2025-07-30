@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Button, Stack, Text } from '@chakra-ui/react';
-import { ChatSessionDescription } from '@agentos/core';
+import type { ChatSessionDescription } from '../types/core-types';
 
 interface ChatSidebarProps {
   sessions: ChatSessionDescription[];

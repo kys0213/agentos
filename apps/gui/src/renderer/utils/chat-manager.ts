@@ -1,10 +1,28 @@
-import path from 'node:path';
-import { ChatManager, FileBasedChatManager, FileBasedSessionStorage } from '@agentos/core';
-import { NoopCompressor } from './NoopCompressor';
+import {
+  ChatManager,
+  FileBasedChatManager,
+  FileBasedSessionStorage,
+  CompressStrategy,
+  CompressionResult,
+} from '@agentos/core';
 
 export function createChatManager(): ChatManager {
-  const baseDir = path.join(process.cwd(), '.agent', 'sessions');
+  // GUI에서는 메모리 기반 또는 IPC를 통한 구현이 필요할 수 있음
+  // 임시로 기본 구현을 제공
+  const baseDir = '.agent/sessions';
   const storage = new FileBasedSessionStorage(baseDir);
-  const compressor = new NoopCompressor();
-  return new FileBasedChatManager(storage, compressor, compressor);
+
+  // 기본 압축 전략 (압축하지 않음)
+  const noCompression: CompressStrategy = {
+    compress: async (messages): Promise<CompressionResult> => ({
+      summary: {
+        role: 'system',
+        content: { contentType: 'text', value: 'No compression applied' },
+      },
+      compressedCount: 0,
+      discardedMessages: [],
+    }),
+  };
+
+  return new FileBasedChatManager(storage, noCompression, noCompression);
 }

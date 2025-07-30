@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, Input, List, ListItem, Text, VStack } from '@chakra-ui/react';
-import { Preset } from '@agentos/core';
+import type { Preset } from '../types/core-types';
 import { PresetStore, loadPresets, savePreset, deletePreset } from '../stores/preset-store';
 
 const store = new PresetStore();

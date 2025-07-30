@@ -29,7 +29,7 @@ Additional design documents for each package live under `<apps|packages>/<name>/
 3. **계획서 작성 후 코드 작성**
    위 원칙을 토대로 계획서를 먼저 작성한 뒤 컨펌을 받은 다음에 코드를 작성합니다.
 4. **계획서 필수 항목**
-   [템플릿](./docs/template/TASK_PLAN_TEMPLATE.md)을 참고하여 작성해주세요.
+   [템플릿](./docs/template/PLAN_TEMPLATE.md)을 참고하여 작성해주세요.
    - **요구사항**: 각 기능이 달성해야 하는 성공 조건과 사용 시나리오까지 명시합니다.
    - **인터페이스 초안**: 주요 타입, 메서드 시그니처 등의 예시를 간략히 적어 둡니다.
    - **Todo 리스트**: 테스트 작성 포함하여 작업을 순서대로 정리합니다. (테스트 규칙은 `docs/TESTING.md` 참고)

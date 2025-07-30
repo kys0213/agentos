@@ -3,8 +3,7 @@ import { Box, Button, Flex, Select, FormControl, FormLabel, Input } from '@chakr
 import { BridgeManager } from '../utils/BridgeManager';
 import EchoBridge from '../bridges/EchoBridge';
 import ReverseBridge from '../bridges/ReverseBridge';
-import { ChatManager, ChatSessionDescription, McpConfig } from '@agentos/core';
-import { createChatManager } from '../utils/chat-manager';
+import { chatService } from '../services/chat-service';
 import ChatSidebar from '../components/ChatSidebar';
 import ChatTabs from '../components/ChatTabs';
 import McpSettings from '../pages/McpSettings';
@@ -13,7 +12,7 @@ import SettingsMenu from '../components/SettingsMenu';
 import { McpConfigStore } from '../stores/mcp-config-store';
 import { loadMcpFromStore } from '../utils/mcp-loader';
 import PresetSelector from '../components/PresetSelector';
-import { Preset } from '@agentos/core';
+import type { ChatSessionDescription, Preset, McpConfig } from '../types/core-types';
 import { loadPresets, PresetStore } from '../stores/preset-store';
 import { LlmBridgeStore } from '../stores/llm-bridge-store';
 import ChatMessageList from '../components/ChatMessageList';
@@ -25,7 +24,7 @@ const manager = new BridgeManager();
 manager.register('echo', new EchoBridge());
 manager.register('reverse', new ReverseBridge());
 
-const chatManager: ChatManager = createChatManager();
+// IPC 기반 채팅 서비스 사용
 const mcpConfigStore = new McpConfigStore();
 const presetStore = new PresetStore();
 const bridgeStore = new LlmBridgeStore();
@@ -48,17 +47,17 @@ const ChatApp: React.FC = () => {
   const [presetId, setPresetId] = React.useState<string>('');
   const [searchTerm, setSearchTerm] = React.useState('');
   const bridgeIds = React.useMemo(() => manager.getBridgeIds(), [bridgesVersion]);
-  const { session, messages, openSession, startNewSession, send } = useChatSession(
-    chatManager,
-    manager
-  );
+  const { sessionId, messages, openSession, startNewSession, send } = useChatSession(manager);
   const filteredMessages = useMessageSearch(messages, searchTerm);
 
   React.useEffect(() => {
-    const loaded = loadMcpFromStore(mcpConfigStore);
-    if (loaded) {
-      // MCP loaded but not used
-    }
+    const loadMcp = async () => {
+      const loaded = await loadMcpFromStore(mcpConfigStore);
+      if (loaded) {
+        // MCP loaded but not used
+      }
+    };
+    void loadMcp();
   }, []);
 
   React.useEffect(() => {
@@ -67,20 +66,21 @@ const ChatApp: React.FC = () => {
     });
   }, []);
 
-  const handleSaveMcp = (config: McpConfig) => {
-    mcpConfigStore.set(config);
+  const handleSaveMcp = async (config: McpConfig) => {
+    await mcpConfigStore.set(config);
     setShowSettings(false);
   };
 
   const refreshSessions = React.useCallback(async () => {
-    const { items } = await chatManager.list();
+    const { items } = await chatService.listSessions();
     setSessions(items);
   }, []);
 
   const handleOpenSession = React.useCallback(
     async (id: string) => {
-      const loaded = await openSession(id);
-      setPresetId(loaded.preset?.id ?? '');
+      await openSession(id);
+      // TODO: 프리셋 정보는 별도 IPC 호출로 가져와야 함
+      setPresetId('');
       setOpenTabIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
       setActiveTabId(id);
     },
@@ -89,27 +89,30 @@ const ChatApp: React.FC = () => {
 
   const handleStartNewSession = React.useCallback(async () => {
     const preset = presets.find((p) => p.id === presetId);
-    const newS = await startNewSession(preset);
-    setOpenTabIds((prev) => [...prev, newS.sessionId]);
-    setActiveTabId(newS.sessionId);
+    await startNewSession(preset);
+    // 새 세션 ID는 Hook 내부에서 관리되므로 sessionId 사용
+    if (sessionId) {
+      setOpenTabIds((prev) => [...prev, sessionId]);
+      setActiveTabId(sessionId);
+    }
     await refreshSessions();
-  }, [startNewSession, refreshSessions, presets, presetId]);
+  }, [startNewSession, refreshSessions, presets, presetId, sessionId]);
 
   const handleChangePreset = async (id: string) => {
     setPresetId(id);
     const preset = presets.find((p) => p.id === id);
-    if (session) {
-      session.preset = preset;
-      await session.commit();
+    if (sessionId) {
+      // TODO: IPC를 통해 세션 프리셋 업데이트 API 추가 필요
+      // await chatService.updateSessionPreset(sessionId, preset);
       await refreshSessions();
     }
   };
 
   React.useEffect(() => {
-    if (presets.length > 0 && !session) {
+    if (presets.length > 0 && !sessionId) {
       void handleStartNewSession();
     }
-  }, [handleStartNewSession, presets, session]);
+  }, [handleStartNewSession, presets, sessionId]);
 
   const handleSend = async (text: string) => {
     try {
@@ -127,7 +130,7 @@ const ChatApp: React.FC = () => {
     <Flex h="100%" direction={{ base: 'column', md: 'row' }}>
       <ChatSidebar
         sessions={sessions}
-        currentSessionId={activeTabId || session?.sessionId}
+        currentSessionId={activeTabId || sessionId || undefined}
         onNew={handleStartNewSession}
         onOpen={handleOpenSession}
         onShowMcps={() => setShowMcpList(true)}
@@ -135,14 +138,18 @@ const ChatApp: React.FC = () => {
       <Box flex="1" p={2} display="flex" flexDirection="column">
         {showMcpList && (
           <McpList
-            mcps={mcpConfigStore.get() ? [mcpConfigStore.get() as McpConfig] : []}
+            mcps={
+              mcpConfigStore.getSyncCached() ? [mcpConfigStore.getSyncCached() as McpConfig] : []
+            }
             onClose={() => setShowMcpList(false)}
           />
         )}
         <Button onClick={() => setShowSettings(true)} mb={2} size="sm">
           MCP Settings
         </Button>
-        {showSettings && <McpSettings initial={mcpConfigStore.get()} onSave={handleSaveMcp} />}
+        {showSettings && (
+          <McpSettings initial={mcpConfigStore.getSyncCached()} onSave={handleSaveMcp} />
+        )}
         <SettingsMenu
           bridgeStore={bridgeStore}
           manager={manager}

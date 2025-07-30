@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Button, List, ListItem, Text } from '@chakra-ui/react';
-import { McpConfig } from '@agentos/core';
+import type { McpConfig } from '../types/core-types';
 
 export interface McpListProps {
   mcps: McpConfig[];

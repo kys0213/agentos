@@ -1,5 +1,5 @@
-import { Client } from '@modelcontextprotocol/sdk/client/index';
-import { Transport } from '@modelcontextprotocol/sdk/shared/transport';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import {
   AudioContent,
   ImageContent,
@@ -10,7 +10,7 @@ import {
   ServerCapabilities,
   TextContent,
   Tool,
-} from '@modelcontextprotocol/sdk/types';
+} from '@modelcontextprotocol/sdk/types.js';
 import EventEmitter from 'node:events';
 import { Scheduler } from '../common/scheduler/scheduler';
 import { safeZone } from '../common/utils/safeZone';
