@@ -1,24 +1,28 @@
 import type { Preset } from '../types/core-types';
-import { presetService } from '../services/preset-service';
+import { PresetService } from '../services/preset-service';
+import { Services } from '../bootstrap';
 
 // IPC 기반 프리셋 스토어 (브라우저 호환)
 export class PresetStore {
+  private get presetService(): PresetService {
+    return Services.getPreset();
+  }
+
   async list(): Promise<Preset[]> {
-    const response = await presetService.getAll();
-    return response.presets || [];
+    return await this.presetService.getAll();
   }
 
   async save(preset: Preset): Promise<void> {
     // ID가 있으면 업데이트, 없으면 생성
     if (await this.exists(preset.id)) {
-      await presetService.update(preset);
+      await this.presetService.update(preset);
     } else {
-      await presetService.create(preset);
+      await this.presetService.create(preset);
     }
   }
 
   async delete(id: string): Promise<void> {
-    await presetService.delete(id);
+    await this.presetService.delete(id);
   }
 
   private async exists(id: string): Promise<boolean> {

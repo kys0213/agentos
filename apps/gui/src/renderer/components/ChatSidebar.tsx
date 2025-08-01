@@ -33,7 +33,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
           MCPs
         </Button>
         <Stack spacing={2} mt={2}>
-          {sessions.map((s) => (
+          {Array.isArray(sessions) ? sessions.map((s) => (
             <Box
               key={s.id}
               cursor="pointer"
@@ -48,7 +48,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 {s.updatedAt.toLocaleString()}
               </Text>
             </Box>
-          ))}
+          )) : []}
         </Stack>
       </Stack>
     </Box>

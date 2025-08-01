@@ -22,7 +22,6 @@ apps/
 
 Additional design documents for each package live under `packages/<name>/docs`.
 
-
 ## Getting Started
 
 ### Prerequisites

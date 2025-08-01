@@ -11,7 +11,7 @@ test('save and list bridges', () => {
   store.save(sample);
   const bridges = store.list();
   expect(bridges).toHaveLength(3); // 기본 2개 + 추가 1개
-  expect(bridges.find(b => b.id === 'x')).toBeDefined();
+  expect(bridges.find((b) => b.id === 'x')).toBeDefined();
 });
 
 test('delete bridge', () => {

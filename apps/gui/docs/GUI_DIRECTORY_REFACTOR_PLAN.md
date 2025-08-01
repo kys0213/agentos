@@ -1,11 +1,13 @@
 # GUI Directory Refactor Plan
 
 ## 요구사항
+
 - UI 관련 파일을 명확한 계층 구조로 정리하여 유지보수성을 높인다.
 - 컴포넌트, 훅, 스토어와 같이 역할별 폴더를 구분한다.
 - 테스트 코드 역시 동일한 구조 하위에 위치시킨다.
 
 ## 인터페이스 초안
+
 ```
 packages/gui/src/
   main.ts
@@ -21,6 +23,7 @@ packages/gui/src/
 ```
 
 ## Todo
+
 - [x] `app`, `components`, `hooks`, `stores`, `pages`, `utils` 폴더 생성
 - [x] 기존 파일을 역할에 맞게 이동하고 경로 수정
 - [x] 상대 경로 변경에 따른 import 문 업데이트
@@ -28,6 +31,7 @@ packages/gui/src/
 - [x] `pnpm lint` 와 `pnpm test` 실행
 
 ## 작업 순서
+
 1. 새 폴더 구조를 생성한다.
 2. 컴포넌트 파일과 훅 파일을 각각 `components`, `hooks` 로 분리한다.
 3. 상태 저장 관련 코드를 `stores` 로 이동한다.

@@ -3,18 +3,21 @@
 ## Requirements
 
 ### 성공 조건
+
 - [ ] React 앱이 단일 JS 파일로 번들링됨
 - [ ] index.html에서 번들 파일 로드하여 GUI 정상 동작
 - [ ] 개발 모드에서 hot reload 지원
 - [ ] TypeScript, JSX 컴파일 정상 동작
 - [ ] Chakra UI, electron-store 등 모든 의존성 정상 작동
 
-### 사용 시나리오  
+### 사용 시나리오
+
 - [ ] 개발자가 `pnpm dev` 실행시 Electron 앱에서 React UI 표시
 - [ ] 코드 변경시 자동 리빌드 및 브라우저 새로고침
 - [ ] 프로덕션 빌드시 최적화된 번들 생성
 
 ### 제약 조건
+
 - [ ] 기존 TypeScript 설정과 호환
 - [ ] electron-store, @agentos/core 등 기존 의존성 유지
 - [ ] 개발/프로덕션 환경 모두 지원

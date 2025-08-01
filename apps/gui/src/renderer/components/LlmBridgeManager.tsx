@@ -1,40 +1,85 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, HStack, Input, Select, Text, VStack } from '@chakra-ui/react';
-import { BridgeManager } from '../utils/BridgeManager';
-import EchoBridge from '../bridges/EchoBridge';
-import ReverseBridge from '../bridges/ReverseBridge';
-import { LlmBridgeStore, LlmBridgeConfig } from '../stores/llm-bridge-store';
+import { Services } from '../bootstrap';
+import type { LlmBridgeConfig } from '../types/core-types';
 
 export interface LlmBridgeManagerProps {
-  store: LlmBridgeStore;
-  manager: BridgeManager;
   onChange?(): void;
 }
 
-const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ store, manager, onChange }) => {
-  const [bridges, setBridges] = useState<LlmBridgeConfig[]>([]);
+const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ onChange }) => {
+  const [bridgeIds, setBridgeIds] = useState<string[]>([]);
+  const [currentBridge, setCurrentBridge] = useState<{
+    id: string;
+    config: LlmBridgeConfig;
+  } | null>(null);
   const [id, setId] = useState('');
-  const [type, setType] = useState<'echo' | 'reverse'>('echo');
+  const [type, setType] = useState<'openai' | 'anthropic' | 'local' | 'custom'>('custom');
+
+  const bridgeService = Services.getBridge();
 
   useEffect(() => {
-    setBridges(store.list());
-  }, [store]);
+    const loadBridges = async () => {
+      try {
+        const [ids, current] = await Promise.all([
+          bridgeService.getBridgeIds(),
+          bridgeService.getCurrentBridge(),
+        ]);
+        setBridgeIds(ids);
+        setCurrentBridge(current);
+      } catch (error) {
+        console.error('Failed to load bridges:', error);
+      }
+    };
 
-  const handleAdd = () => {
+    void loadBridges();
+  }, [bridgeService]);
+
+  const handleAdd = async () => {
     if (!id) return;
-    const config: LlmBridgeConfig = { id, type };
-    store.save(config);
-    const BridgeCtor = type === 'echo' ? EchoBridge : ReverseBridge;
-    manager.register(id, new BridgeCtor());
-    setBridges(store.list());
-    setId('');
-    onChange && onChange();
+
+    try {
+      const config: LlmBridgeConfig = {
+        name: id,
+        type,
+        apiUrl: type === 'local' ? 'http://localhost:8080' : undefined,
+        apiKey: type !== 'local' ? 'your-api-key' : undefined,
+      };
+
+      await bridgeService.register(id, config);
+
+      // Refresh bridge list
+      const [ids, current] = await Promise.all([
+        bridgeService.getBridgeIds(),
+        bridgeService.getCurrentBridge(),
+      ]);
+      setBridgeIds(ids);
+      setCurrentBridge(current);
+      setId('');
+
+      onChange && onChange();
+    } catch (error) {
+      console.error('Failed to add bridge:', error);
+    }
   };
 
-  const handleDelete = (bridgeId: string) => {
-    store.delete(bridgeId);
-    setBridges(store.list());
-    onChange && onChange();
+  const handleDelete = async (bridgeId: string) => {
+    try {
+      // Note: unregisterBridge method needs to be implemented in BridgeService
+      // await bridgeService.unregisterBridge(bridgeId);
+
+      // For now, just refresh the list
+      const [ids, current] = await Promise.all([
+        bridgeService.getBridgeIds(),
+        bridgeService.getCurrentBridge(),
+      ]);
+      setBridgeIds(ids);
+      setCurrentBridge(current);
+
+      onChange && onChange();
+    } catch (error) {
+      console.error('Failed to delete bridge:', error);
+    }
   };
 
   return (
@@ -43,16 +88,16 @@ const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ store, manager, onC
         LLM Bridges
       </Text>
       <VStack align="start" spacing={2} as="ul" listStyleType="disc" pl={4}>
-        {bridges.map((b) => (
-          <HStack as="li" key={b.id} spacing={2}>
+        {Array.isArray(bridgeIds) ? bridgeIds.map((bridgeId) => (
+          <HStack as="li" key={bridgeId} spacing={2}>
             <Text>
-              {b.id} ({b.type})
+              {bridgeId} {currentBridge?.id === bridgeId ? '(current)' : ''}
             </Text>
-            <Button size="xs" onClick={() => handleDelete(b.id)}>
+            <Button size="xs" onClick={() => handleDelete(bridgeId)}>
               Delete
             </Button>
           </HStack>
-        ))}
+        )) : []}
       </VStack>
       <HStack mt={2} spacing={2}>
         <Input
@@ -61,9 +106,16 @@ const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ store, manager, onC
           placeholder="Bridge id"
           size="sm"
         />
-        <Select value={type} onChange={(e) => setType(e.target.value as any)} size="sm" w="auto">
-          <option value="echo">echo</option>
-          <option value="reverse">reverse</option>
+        <Select
+          value={type}
+          onChange={(e) => setType(e.target.value as 'openai' | 'anthropic' | 'local' | 'custom')}
+          size="sm"
+          w="auto"
+        >
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic</option>
+          <option value="local">Local</option>
+          <option value="custom">Custom</option>
         </Select>
         <Button size="sm" onClick={handleAdd} colorScheme="brand">
           Add

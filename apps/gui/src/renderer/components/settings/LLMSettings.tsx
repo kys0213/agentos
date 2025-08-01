@@ -1,0 +1,98 @@
+import React from 'react';
+import {
+  Select,
+  FormControl,
+  FormLabel,
+  VStack,
+  HStack,
+  Button,
+  Text,
+  Box,
+  Badge,
+} from '@chakra-ui/react';
+import { useCurrentBridge, useBridgeIds, useSwitchBridge } from '../../hooks/queries/use-bridge';
+
+/**
+ * LLM 브릿지 설정 컴포넌트
+ * - 현재 브릿지 표시 및 전환
+ * - 브릿지 상태 확인
+ * - 테스트 기능 (향후 구현)
+ */
+const LLMSettings: React.FC = () => {
+  const { data: currentBridge, isLoading: isLoadingCurrent } = useCurrentBridge();
+  const { data: bridgeIds = [], isLoading: isLoadingIds } = useBridgeIds();
+  const switchBridgeMutation = useSwitchBridge();
+
+  const handleBridgeChange = async (bridgeId: string) => {
+    if (bridgeId === currentBridge?.id) return;
+
+    try {
+      await switchBridgeMutation.mutateAsync(bridgeId);
+    } catch (error) {
+      console.error('Failed to switch bridge:', error);
+    }
+  };
+
+  if (isLoadingCurrent || isLoadingIds) {
+    return <Text>Loading bridge information...</Text>;
+  }
+
+  return (
+    <VStack align="stretch" spacing={4}>
+      {/* 현재 브릿지 정보 */}
+      <Box p={4} bg="gray.50" borderRadius="md">
+        <HStack justify="space-between" align="center">
+          <VStack align="start" spacing={1}>
+            <Text fontWeight="semibold">Current Bridge</Text>
+            <HStack>
+              <Text>{currentBridge?.id || 'None'}</Text>
+              <Badge colorScheme="green" size="sm">
+                Active
+              </Badge>
+            </HStack>
+          </VStack>
+        </HStack>
+      </Box>
+
+      {/* 브릿지 선택 */}
+      <FormControl>
+        <FormLabel>Switch Bridge</FormLabel>
+        <HStack>
+          <Select
+            value={currentBridge?.id || ''}
+            onChange={(e) => handleBridgeChange(e.target.value)}
+            isDisabled={switchBridgeMutation.isPending}
+            placeholder="Select a bridge"
+          >
+            {bridgeIds.map((id) => (
+              <option key={id} value={id}>
+                {id}
+              </option>
+            ))}
+          </Select>
+
+          {switchBridgeMutation.isPending && <Badge colorScheme="blue">Switching...</Badge>}
+        </HStack>
+      </FormControl>
+
+      {/* 브릿지 테스트 (향후 구현) */}
+      <Box p={3} bg="gray.50" borderRadius="md">
+        <Text fontSize="sm" color="gray.600" mb={2}>
+          Quick Test (Coming Soon)
+        </Text>
+        <Button size="sm" isDisabled colorScheme="blue" variant="outline">
+          Test Current Bridge
+        </Button>
+      </Box>
+
+      {/* 에러 표시 */}
+      {switchBridgeMutation.isError && (
+        <Text color="red.500" fontSize="sm">
+          Failed to switch bridge. Please try again.
+        </Text>
+      )}
+    </VStack>
+  );
+};
+
+export default LLMSettings;

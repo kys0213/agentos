@@ -15,7 +15,7 @@ export interface ChatTabsProps {
 const ChatTabs: React.FC<ChatTabsProps> = ({ tabs, activeTabId, onSelect }) => {
   return (
     <HStack borderBottom="1px" borderColor="gray.200" spacing={0}>
-      {tabs.map((tab) => (
+      {Array.isArray(tabs) ? tabs.map((tab) => (
         <Box
           key={tab.id}
           px={2}
@@ -28,7 +28,7 @@ const ChatTabs: React.FC<ChatTabsProps> = ({ tabs, activeTabId, onSelect }) => {
         >
           {tab.title || '(no title)'}
         </Box>
-      ))}
+      )) : []}
     </HStack>
   );
 };
