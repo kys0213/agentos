@@ -19,9 +19,7 @@ test('calls onSelect when tab clicked', () => {
     { id: 'b', title: 'B' },
   ];
   const spy = jest.fn();
-  const comp = renderer.create(
-    <ChatTabs tabs={tabs} activeTabId="a" onSelect={spy} />
-  );
+  const comp = renderer.create(<ChatTabs tabs={tabs} activeTabId="a" onSelect={spy} />);
   const firstTab = comp.root.findAllByType('div')[1];
   act(() => {
     firstTab.props.onClick();

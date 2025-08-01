@@ -1,6 +1,6 @@
 # AgentOS Core
 
-The **core** package provides the runtime primitives used by other packages in the AgentOS project.  It is written in TypeScript and compiled to JavaScript.
+The **core** package provides the runtime primitives used by other packages in the AgentOS project. It is written in TypeScript and compiled to JavaScript.
 
 ## Folder Structure
 
@@ -21,14 +21,14 @@ packages/core
 
 The `agent` folder defines the basic interface for an agent and a simple implementation:
 
-- **`agent.ts`** – Defines the `Agent` interface which has a single `run()` method.  It receives an array of user messages and returns the updated message list.
-- **`simple-agent.ts`** – Implements `Agent`.  It communicates with an LLM through an `LlmBridge`, handles tool calls by using registered MCP tools and stores messages in a `ChatSession`.
+- **`agent.ts`** – Defines the `Agent` interface which has a single `run()` method. It receives an array of user messages and returns the updated message list.
+- **`simple-agent.ts`** – Implements `Agent`. It communicates with an LLM through an `LlmBridge`, handles tool calls by using registered MCP tools and stores messages in a `ChatSession`.
 
 ## Chat System
 
 The `chat` folder contains types and classes for managing chat sessions.
 
-- **`chat-session.ts`** – Declares the `ChatSession` interface.  It supports appending messages, storing usage, reading history, checkpoints and metadata.
+- **`chat-session.ts`** – Declares the `ChatSession` interface. It supports appending messages, storing usage, reading history, checkpoints and metadata.
 - **`chat-session-metata.ts`** – Metadata structure for a chat session including totals, title and checkpoints.
 - **`chat.manager.ts`** – `ChatManager` interface for creating, loading and listing chat sessions.
 - **`file` subfolder** – File based implementation of chat storage:
@@ -39,13 +39,13 @@ The `chat` folder contains types and classes for managing chat sessions.
 
 ## MCP
 
-The `mcp` directory wraps the **Model Context Protocol** client.  Main pieces are:
+The `mcp` directory wraps the **Model Context Protocol** client. Main pieces are:
 
-- **`mcp.ts`** – High level client exposing methods to invoke tools, prompts and resources.  Handles connection management and exposes events.
+- **`mcp.ts`** – High level client exposing methods to invoke tools, prompts and resources. Handles connection management and exposes events.
 - **`mcp-config.ts`** – Configuration types describing how to connect to an MCP server (stdio, streamable HTTP, WebSocket or SSE).
 - **`mcp-transport.factory.ts`** – Factory that creates the appropriate transport based on `McpConfig`.
 - **`mcp-event.ts`** – Events emitted by an `Mcp` instance.
-- **`mcp.registery.ts`** – Registry of MCP instances.  Supports registering/unregistering MCPs and looking up tools.
+- **`mcp.registery.ts`** – Registry of MCP instances. Supports registering/unregistering MCPs and looking up tools.
 
 ## Common Utilities
 
@@ -57,7 +57,7 @@ Shared helper modules live in `common`:
 
 ## Presets
 
-`preset/preset.ts` defines a `Preset` describing system prompts, enabled MCPs and LLM bridge information.  A preset can be attached to a chat session to preconfigure its behaviour.
+`preset/preset.ts` defines a `Preset` describing system prompts, enabled MCPs and LLM bridge information. A preset can be attached to a chat session to preconfigure its behaviour.
 
 ## Building and Testing
 

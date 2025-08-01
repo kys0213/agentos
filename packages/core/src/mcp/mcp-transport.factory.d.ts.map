@@ -1,0 +1,1 @@
+{"version":3,"file":"mcp-transport.factory.d.ts","sourceRoot":"","sources":["mcp-transport.factory.ts"],"names":[],"mappings":"AAIA,OAAO,EAAE,SAAS,EAAE,MAAM,cAAc,CAAC;AACzC,OAAO,EAAE,SAAS,EAAE,MAAM,+CAA+C,CAAC;AAE1E,qBAAa,mBAAmB;IAC9B,MAAM,CAAC,MAAM,CAAC,MAAM,EAAE,SAAS,GAAG,SAAS;CAqC5C"}

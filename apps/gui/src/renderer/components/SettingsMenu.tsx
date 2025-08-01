@@ -25,7 +25,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ bridgeStore, manager, onBri
       <ColorModeToggle />
       {showPresets && <PresetManager />}
       {showBridges && (
-        <LlmBridgeManager store={bridgeStore} manager={manager} onChange={onBridgesChange} />
+        <LlmBridgeManager onChange={onBridgesChange} />
       )}
     </HStack>
   );

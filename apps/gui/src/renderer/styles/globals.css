@@ -1,0 +1,79 @@
+/* Tailwind CSS 기본 스타일 */
+@import 'tailwindcss';
+@config "../../../tailwind.config.js";
+
+/* 전역 스타일 */
+@layer base {
+  html,
+  body,
+  #root {
+    @apply h-full;
+  }
+
+  * {
+    @apply box-border;
+  }
+}
+
+/* 컴포넌트 스타일 */
+@layer components {
+  /* CSS Grid 레이아웃 클래스들 */
+  .layout-grid {
+    @apply h-screen grid transition-all duration-300;
+  }
+
+  .layout-grid-full {
+    grid-template-columns: 300px 1fr 300px;
+  }
+
+  .layout-grid-left {
+    grid-template-columns: 300px 1fr 0px;
+  }
+
+  .layout-grid-right {
+    grid-template-columns: 0px 1fr 300px;
+  }
+
+  .layout-grid-center {
+    grid-template-columns: 0px 1fr 0px;
+  }
+
+  /* 반응형 레이아웃 */
+  @media (max-width: 768px) {
+    .layout-grid-full,
+    .layout-grid-left,
+    .layout-grid-right {
+      grid-template-columns: 0px 1fr 0px;
+    }
+  }
+
+  /* 채팅 영역 보호 */
+  .chat-area {
+    @apply min-w-0; /* Grid 오버플로우 방지 */
+    @apply flex flex-col;
+    @apply h-full;
+  }
+
+  /* 사이드바 스타일 */
+  .sidebar {
+    @apply bg-gray-50 border-gray-200;
+    @apply overflow-hidden;
+    @apply transition-all duration-300;
+  }
+
+  .sidebar-left {
+    @apply border-r;
+  }
+
+  .sidebar-right {
+    @apply border-l;
+  }
+}
+
+/* 유틸리티 확장 */
+@layer utilities {
+  .grid-area-safe {
+    min-width: 0;
+    min-height: 0;
+  }
+}

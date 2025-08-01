@@ -3,6 +3,7 @@
 ## Requirements
 
 ### 성공 조건
+
 - [ ] Main 프로세스에서만 @agentos/core 패키지 사용
 - [ ] Renderer 프로세스는 IPC 통신만 사용
 - [ ] Main/Renderer 코드 디렉토리 분리
@@ -10,12 +11,14 @@
 - [ ] 타입 안전성 확보
 
 ### 사용 시나리오
+
 - [ ] 채팅 세션 생성/조회/로드 - IPC 통신으로
 - [ ] MCP 클라이언트 관리 - IPC 통신으로
 - [ ] 프리셋 관리 - IPC 통신으로
 - [ ] 모든 core 기능이 main 프로세스에서만 실행
 
 ### 제약 조건
+
 - [ ] Electron 보안 모델 준수
 - [ ] 기존 저장된 데이터 호환성 유지
 - [ ] 현재 UI 동작 변경 최소화
@@ -39,7 +42,7 @@ class ChatService {
   async createSession(options?: any) {
     return window.electronAPI.invoke('chat:create-session', options);
   }
-  
+
   async listSessions() {
     return window.electronAPI.invoke('chat:list-sessions');
   }

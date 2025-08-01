@@ -22,7 +22,7 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ messages, loading }) 
   return (
     <Box flex="1" overflowY="auto" border="1px solid" borderColor="gray.200" p="8px">
       <VStack align="stretch" spacing={2}>
-        {messages.map((m, idx) => (
+        {Array.isArray(messages) ? messages.map((m, idx) => (
           <Box
             key={idx}
             alignSelf={m.sender === 'user' ? 'flex-end' : 'flex-start'}
@@ -36,7 +36,7 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ messages, loading }) 
               {m.timestamp.toLocaleTimeString()}
             </Text>
           </Box>
-        ))}
+        )) : []}
         {loading && (
           <HStack alignSelf="flex-start" spacing={2}>
             <Spinner size="sm" />
