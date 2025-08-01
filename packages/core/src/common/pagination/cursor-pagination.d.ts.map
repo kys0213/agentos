@@ -1,1 +1,0 @@
-{"version":3,"file":"cursor-pagination.d.ts","sourceRoot":"","sources":["cursor-pagination.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,gBAAgB;IAC/B,MAAM,EAAE,MAAM,CAAC;IACf,KAAK,EAAE,MAAM,CAAC;IACd,SAAS,EAAE,SAAS,GAAG,UAAU,CAAC;CACnC;AAED,MAAM,WAAW,sBAAsB,CAAC,CAAC;IACvC,KAAK,EAAE,CAAC,EAAE,CAAC;IACX,UAAU,EAAE,MAAM,CAAC;CACpB"}

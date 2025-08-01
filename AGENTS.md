@@ -28,6 +28,7 @@ Additional design documents for each package live under `<apps|packages>/<n>/doc
 1. **[Frontend Architect](.claude/agents/frontend-architect.md) 에이전트 사용 필수**
 2. **[Frontend Implementation Roadmap](apps/gui/docs/FRONTEND_IMPLEMENTATION_ROADMAP.md)** - 전체 계획 및 진행상황 확인
 3. **Week 1에서 구축된 현대적 아키텍처 기반으로 점진적 개선**
+4. **[Git Workflow Guide](docs/GIT_WORKFLOW_GUIDE.md)** - 브랜치 전략 및 TODO별 커밋 필수
 
 ## 문제 해결 원칙 (Problem-Solving Principles)
 
@@ -40,7 +41,11 @@ Additional design documents for each package live under `<apps|packages>/<n>/doc
 
 3. **계획서 작성 후 코드 작성**
    위 원칙을 토대로 계획서를 먼저 작성한 뒤 컨펌을 받은 다음에 코드를 작성합니다.
-4. **계획서 필수 항목**
+4. **Git 브랜치 생성 및 TODO별 커밋 필수**
+   - 작업 시작 전 적절한 브랜치 생성 (`feature/ux-command-palette` 등)
+   - 각 TODO 완료 시마다 의미있는 커밋 메시지로 커밋
+   - 상세 가이드: [Git Workflow Guide](docs/GIT_WORKFLOW_GUIDE.md)
+5. **계획서 필수 항목**
    [템플릿](./docs/template/PLAN_TEMPLATE.md)을 참고하여 작성해주세요.
    - **요구사항**: 각 기능이 달성해야 하는 성공 조건과 사용 시나리오까지 명시합니다.
    - **인터페이스 초안**: 주요 타입, 메서드 시그니처 등의 예시를 간략히 적어 둡니다.
