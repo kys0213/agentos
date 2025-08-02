@@ -173,17 +173,21 @@ export interface IpcChannel {
   loadChatSession(sessionId: string): Promise<ChatSessionDescription>;
   sendChatMessage(sessionId: string, message: string): Promise<SendMessageResponse>;
   getChatMessages(sessionId: string, options?: PaginationOptions): Promise<MessageListResponse>;
-  
+
   // Bridge methods
   registerBridge(id: string, config: LlmBridgeConfig): Promise<{ success: boolean }>;
   getCurrentBridge(): Promise<{ id: string; config: LlmBridgeConfig } | null>;
   getBridgeIds(): Promise<string[]>;
-  
+
   // MCP methods
   getAllMcp(): Promise<McpConfig[]>;
   connectMcp(config: McpConfig): Promise<{ success: boolean }>;
-  executeMcpTool(clientName: string, toolName: string, args: McpToolArgs): Promise<ToolExecutionResponse>;
-  
+  executeMcpTool(
+    clientName: string,
+    toolName: string,
+    args: McpToolArgs
+  ): Promise<ToolExecutionResponse>;
+
   // Preset methods
   getAllPresets(): Promise<Preset[]>;
 }

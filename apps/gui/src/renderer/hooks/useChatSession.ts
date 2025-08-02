@@ -19,26 +19,29 @@ export default function useChatSession(chatService: ChatService): UseChatSession
   const [isLoading, setIsLoading] = useState(false);
 
   // IPC를 통해 메시지 히스토리 로드
-  const loadMessages = useCallback(async (id: string) => {
-    try {
-      setIsLoading(true);
-      const messageResponse = await chatService.getMessages(id);
-      
-      // MessageListResponse를 Message 형태로 변환
-      const convertedMessages: Message[] = messageResponse.messages.map(msg => ({
-        sender: msg.role === 'user' ? 'user' : 'agent',
-        text: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
-        timestamp: msg.timestamp,
-      }));
-      
-      setMessages(convertedMessages);
-    } catch (error) {
-      console.error('Failed to load messages:', error);
-      setMessages([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [chatService]);
+  const loadMessages = useCallback(
+    async (id: string) => {
+      try {
+        setIsLoading(true);
+        const messageResponse = await chatService.getMessages(id);
+
+        // MessageListResponse를 Message 형태로 변환
+        const convertedMessages: Message[] = messageResponse.messages.map((msg) => ({
+          sender: msg.role === 'user' ? 'user' : 'agent',
+          text: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
+          timestamp: msg.timestamp,
+        }));
+
+        setMessages(convertedMessages);
+      } catch (error) {
+        console.error('Failed to load messages:', error);
+        setMessages([]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [chatService]
+  );
 
   const openSession = useCallback(
     async (id: string) => {
@@ -58,21 +61,24 @@ export default function useChatSession(chatService: ChatService): UseChatSession
     [loadMessages, chatService]
   );
 
-  const startNewSession = useCallback(async (preset?: Preset) => {
-    try {
-      setIsLoading(true);
-      // IPC를 통해 새 세션 생성
-      const session = await chatService.createSession(preset ? { preset } : undefined);
+  const startNewSession = useCallback(
+    async (preset?: Preset) => {
+      try {
+        setIsLoading(true);
+        // IPC를 통해 새 세션 생성
+        const session = await chatService.createSession(preset ? { preset } : undefined);
 
-      setSessionId(session.id);
-      setMessages([]);
-    } catch (error) {
-      console.error('Failed to start new session:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [chatService]);
+        setSessionId(session.id);
+        setMessages([]);
+      } catch (error) {
+        console.error('Failed to start new session:', error);
+        throw error;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [chatService]
+  );
 
   const send = useCallback(
     async (text: string) => {
@@ -89,7 +95,7 @@ export default function useChatSession(chatService: ChatService): UseChatSession
 
         // IPC를 통해 메시지 전송 (이제 응답도 함께 처리됨)
         const response = await chatService.sendMessage(sessionId, text);
-        
+
         if (response.success) {
           // 메시지 전송 후 최신 메시지 히스토리 다시 로드
           await loadMessages(sessionId);

@@ -88,16 +88,18 @@ const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ onChange }) => {
         LLM Bridges
       </Text>
       <VStack align="start" spacing={2} as="ul" listStyleType="disc" pl={4}>
-        {Array.isArray(bridgeIds) ? bridgeIds.map((bridgeId) => (
-          <HStack as="li" key={bridgeId} spacing={2}>
-            <Text>
-              {bridgeId} {currentBridge?.id === bridgeId ? '(current)' : ''}
-            </Text>
-            <Button size="xs" onClick={() => handleDelete(bridgeId)}>
-              Delete
-            </Button>
-          </HStack>
-        )) : []}
+        {Array.isArray(bridgeIds)
+          ? bridgeIds.map((bridgeId) => (
+              <HStack as="li" key={bridgeId} spacing={2}>
+                <Text>
+                  {bridgeId} {currentBridge?.id === bridgeId ? '(current)' : ''}
+                </Text>
+                <Button size="xs" onClick={() => handleDelete(bridgeId)}>
+                  Delete
+                </Button>
+              </HStack>
+            ))
+          : []}
       </VStack>
       <HStack mt={2} spacing={2}>
         <Input

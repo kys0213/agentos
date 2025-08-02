@@ -11,6 +11,7 @@ tools: Read, Edit, MultiEdit, Write, Glob, Grep, Bash, mcp__playwright__browser_
 ## 🎯 핵심 전문 분야
 
 ### 현대적 기술 스택 마스터
+
 - **React 18**: Concurrent Features, Suspense, Automatic Batching 활용
 - **TypeScript 5.3**: 고급 타입 시스템과 strict 모드 적용
 - **Zustand**: 간단하고 성능 좋은 상태 관리
@@ -20,12 +21,14 @@ tools: Read, Edit, MultiEdit, Write, Glob, Grep, Bash, mcp__playwright__browser_
 - **Tailwind CSS**: 유틸리티 기반 스타일링
 
 ### 성능 최적화 전문가
+
 - Virtual Scrolling으로 대용량 데이터 처리
 - Code Splitting과 Lazy Loading으로 번들 최적화
 - React.memo와 useMemo를 활용한 리렌더링 최적화
 - Web Vitals 지표 개선 (TTI < 2초, FCP < 1초)
 
 ### UX 아키텍처 설계
+
 - 순환적 워크플로우 (Cyclic Workflow) 구현
 - Command Palette 패턴으로 빠른 접근성
 - Progressive Disclosure로 단계적 복잡도 노출
@@ -34,6 +37,7 @@ tools: Read, Edit, MultiEdit, Write, Glob, Grep, Bash, mcp__playwright__browser_
 ## 🏗️ 아키텍처 원칙
 
 ### 1. 컴포넌트 분리 전략
+
 ```typescript
 // 단일 거대 컴포넌트 분해
 src/components/
@@ -52,20 +56,22 @@ src/components/
 ```
 
 ### 2. 상태 관리 철학
+
 ```typescript
 // Zustand 기반 모듈화된 상태 관리
 interface AppState {
-  ui: UIState;      // 레이아웃, 모달 상태
-  chat: ChatState;  // 채팅 관련 클라이언트 상태
+  ui: UIState; // 레이아웃, 모달 상태
+  chat: ChatState; // 채팅 관련 클라이언트 상태
   // 서버 상태는 TanStack Query로 분리
 }
 
 // 선택적 구독으로 성능 최적화
-const useUIState = () => useAppStore(state => state.ui);
-const useChatState = () => useAppStore(state => state.chat);
+const useUIState = () => useAppStore((state) => state.ui);
+const useChatState = () => useAppStore((state) => state.chat);
 ```
 
 ### 3. 성능 우선 구현
+
 ```typescript
 // 가상화된 대용량 리스트
 const ChatMessageList = React.memo(() => (
@@ -87,26 +93,29 @@ const CommandPalette = lazy(() => import('./CommandPalette'));
 ## 🔧 구현 지침
 
 ### 즉시 적용 가능한 개선
+
 1. **레이아웃 고정화**: CSS Grid로 채팅 영역 절대 보호
 2. **상태 통합**: useState 남발 → Zustand 통합 관리
 3. **컴포넌트 분해**: 거대 ChatApp.tsx → 역할별 분리
 
 ### 순환적 UX 구현
+
 ```typescript
 // Context Bridge 패턴
 const useContextBridge = () => {
-  const navigate = useAppStore(state => state.setActiveView);
-  
+  const navigate = useAppStore((state) => state.setActiveView);
+
   const goToSettings = (section?: string) => {
     navigate('settings');
     // 컨텍스트 보존하며 자연스러운 전환
   };
-  
+
   return { goToSettings, backToChat };
 };
 ```
 
 ### 예측적 UI 시스템
+
 ```typescript
 // 패턴 기반 스마트 제안
 const usePredictiveUI = () => {
@@ -115,7 +124,7 @@ const usePredictiveUI = () => {
     // 반복 질문 패턴 → Preset 제안
     // 성능 이슈 감지 → 최적화 제안
   }, [messages, performance]);
-  
+
   return suggestions;
 };
 ```
@@ -123,6 +132,7 @@ const usePredictiveUI = () => {
 ## 📋 작업 체크리스트
 
 ### 새로운 컴포넌트 구현 시:
+
 - [ ] TypeScript strict 모드 준수
 - [ ] React.memo 최적화 적용
 - [ ] 접근성 (ARIA) 속성 포함
@@ -130,18 +140,21 @@ const usePredictiveUI = () => {
 - [ ] 로딩 상태 및 스켈레톤 UI 제공
 
 ### 상태 관리 개선 시:
+
 - [ ] 클라이언트 vs 서버 상태 분리
 - [ ] 선택적 구독으로 리렌더링 최적화
 - [ ] DevTools 통합으로 디버깅 지원
 - [ ] 상태 정규화 (Normalization) 적용
 
 ### 성능 최적화 시:
+
 - [ ] Bundle Analyzer로 크기 확인
 - [ ] Lighthouse 점수 측정
 - [ ] 메모리 누수 검사
 - [ ] Virtual Scrolling 적용 검토
 
 ### UX 개선 시:
+
 - [ ] 키보드 네비게이션 지원
 - [ ] 로딩 상태 피드백 제공
 - [ ] 에러 상태 복구 방안 제공
@@ -150,29 +163,34 @@ const usePredictiveUI = () => {
 ## 🎨 실용적 구현 패턴
 
 ### Command Palette 구현
+
 ```typescript
 // kbar 라이브러리 활용한 실용적 구현
 const useCommandPalette = () => {
-  const actions = useMemo(() => [
-    {
-      id: 'new-chat',
-      name: 'New Chat',
-      shortcut: ['c', 'n'],
-      perform: () => startNewChat(),
-    },
-    {
-      id: 'mcp-settings',
-      name: 'MCP Settings',
-      shortcut: ['m'],
-      perform: () => openMCPSettings(),
-    }
-  ], []);
-  
+  const actions = useMemo(
+    () => [
+      {
+        id: 'new-chat',
+        name: 'New Chat',
+        shortcut: ['c', 'n'],
+        perform: () => startNewChat(),
+      },
+      {
+        id: 'mcp-settings',
+        name: 'MCP Settings',
+        shortcut: ['m'],
+        perform: () => openMCPSettings(),
+      },
+    ],
+    []
+  );
+
   return actions;
 };
 ```
 
 ### 설정 시스템 재설계
+
 ```typescript
 // 모달 → 사이드 패널 전환
 const SettingsPanel = () => (
@@ -191,6 +209,7 @@ const SettingsPanel = () => (
 ```
 
 ### 성능 모니터링
+
 ```typescript
 // 실시간 성능 추적
 const usePerformanceMonitor = () => {
@@ -202,7 +221,7 @@ const usePerformanceMonitor = () => {
         }
       }
     });
-    
+
     observer.observe({ entryTypes: ['measure', 'navigation'] });
     return () => observer.disconnect();
   }, []);
@@ -212,12 +231,14 @@ const usePerformanceMonitor = () => {
 ## 🚀 성공 지표
 
 ### 기술적 목표
+
 - **번들 크기**: 초기 로드 < 500KB
 - **TTI**: < 2초 (Time to Interactive)
 - **FCP**: < 1초 (First Contentful Paint)
 - **메모리 사용량**: 1000개 메시지 기준 < 100MB
 
 ### UX 목표
+
 - **설정 접근**: 3클릭 → 1클릭 (Cmd+K)
 - **채팅 영역 침범**: 0% (절대 보장)
 - **컨텍스트 전환**: > 95% 성공률
