@@ -1,9 +1,13 @@
 import type { McpConfig } from '../types/core-types';
-import { mcpService } from '../services/mcp-service';
+import { McpService } from '../services/mcp-service';
+import { Services } from '../bootstrap';
 
 // IPC 기반 MCP 설정 스토어 (브라우저 호환)
 export class McpConfigStore {
   private cachedConfig: McpConfig | undefined;
+  private get mcpService(): McpService {
+    return Services.getMcp();
+  }
 
   async get(): Promise<McpConfig | undefined> {
     if (this.cachedConfig) {
@@ -11,8 +15,7 @@ export class McpConfigStore {
     }
 
     try {
-      const response = await mcpService.getAll();
-      const configs = response.clients || [];
+      const configs = await this.mcpService.getAll();
       // 첫 번째 설정을 반환 (단일 설정 가정)
       this.cachedConfig = configs[0];
       return this.cachedConfig;
@@ -24,7 +27,7 @@ export class McpConfigStore {
 
   async set(config: McpConfig): Promise<void> {
     try {
-      await mcpService.connect(config);
+      await this.mcpService.connect(config);
       this.cachedConfig = config;
     } catch (error) {
       console.error('Failed to set MCP config:', error);

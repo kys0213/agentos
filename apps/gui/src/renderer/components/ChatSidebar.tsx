@@ -33,22 +33,24 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
           MCPs
         </Button>
         <Stack spacing={2} mt={2}>
-          {sessions.map((s) => (
-            <Box
-              key={s.id}
-              cursor="pointer"
-              fontWeight={currentSessionId === s.id ? 'bold' : 'normal'}
-              onClick={() => onOpen(s.id)}
-            >
-              <Text>{s.title || '(no title)'}</Text>
-              <Text fontSize="xs" color="gray.600">
-                {s.id}
-              </Text>
-              <Text fontSize="xs" color="gray.600">
-                {s.updatedAt.toLocaleString()}
-              </Text>
-            </Box>
-          ))}
+          {Array.isArray(sessions)
+            ? sessions.map((s) => (
+                <Box
+                  key={s.id}
+                  cursor="pointer"
+                  fontWeight={currentSessionId === s.id ? 'bold' : 'normal'}
+                  onClick={() => onOpen(s.id)}
+                >
+                  <Text>{s.title || '(no title)'}</Text>
+                  <Text fontSize="xs" color="gray.600">
+                    {s.id}
+                  </Text>
+                  <Text fontSize="xs" color="gray.600">
+                    {s.updatedAt.toLocaleString()}
+                  </Text>
+                </Box>
+              ))
+            : []}
         </Stack>
       </Stack>
     </Box>

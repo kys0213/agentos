@@ -22,21 +22,23 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ messages, loading }) 
   return (
     <Box flex="1" overflowY="auto" border="1px solid" borderColor="gray.200" p="8px">
       <VStack align="stretch" spacing={2}>
-        {messages.map((m, idx) => (
-          <Box
-            key={idx}
-            alignSelf={m.sender === 'user' ? 'flex-end' : 'flex-start'}
-            bg={m.sender === 'user' ? 'blue.100' : 'gray.100'}
-            borderRadius="md"
-            p={2}
-            maxW="80%"
-          >
-            <Text>{m.text}</Text>
-            <Text fontSize="xs" color="gray.500" textAlign="right">
-              {m.timestamp.toLocaleTimeString()}
-            </Text>
-          </Box>
-        ))}
+        {Array.isArray(messages)
+          ? messages.map((m, idx) => (
+              <Box
+                key={idx}
+                alignSelf={m.sender === 'user' ? 'flex-end' : 'flex-start'}
+                bg={m.sender === 'user' ? 'blue.100' : 'gray.100'}
+                borderRadius="md"
+                p={2}
+                maxW="80%"
+              >
+                <Text>{m.text}</Text>
+                <Text fontSize="xs" color="gray.500" textAlign="right">
+                  {m.timestamp.toLocaleTimeString()}
+                </Text>
+              </Box>
+            ))
+          : []}
         {loading && (
           <HStack alignSelf="flex-start" spacing={2}>
             <Spinner size="sm" />

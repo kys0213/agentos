@@ -8,14 +8,27 @@ Welcome to the AgentOS repository. This file summarizes key resources and comman
 2. [Interface Specifications](docs/INTERFACE_SPEC.md)
 3. [Testing Guide](docs/TESTING.md)
 4. [Documentation Standards](docs/DOCUMENTATION_STANDARDS.md)
+5. [TypeScript Typing Guidelines](docs/TYPESCRIPT_TYPING_GUIDELINES.md)
+6. **[Frontend Architect Guide](.claude/agents/frontend-architect.md)** ⭐ **프론트엔드 작업 필수**
+7. [AI Collaboration Guide](docs/AI_COLLABORATION_GUIDE.md)
 
 ## Quick Commands
 
 - Install dependencies: `pnpm install`
 - Build all packages: `pnpm build`
 - Run tests: `pnpm test`
+- **GUI 앱 개발**: `cd apps/gui && pnpm run dev` ⭐
 
-Additional design documents for each package live under `<apps|packages>/<name>/docs`.
+Additional design documents for each package live under `<apps|packages>/<n>/docs`.
+
+## 🎯 **프론트엔드 작업 가이드라인**
+
+**모든 GUI/프론트엔드 관련 작업 시에는:**
+
+1. **[Frontend Architect](.claude/agents/frontend-architect.md) 에이전트 사용 필수**
+2. **[Frontend Implementation Roadmap](apps/gui/docs/FRONTEND_IMPLEMENTATION_ROADMAP.md)** - 전체 계획 및 진행상황 확인
+3. **Week 1에서 구축된 현대적 아키텍처 기반으로 점진적 개선**
+4. **[Git Workflow Guide](docs/GIT_WORKFLOW_GUIDE.md)** - 브랜치 전략 및 TODO별 커밋 필수
 
 ## 문제 해결 원칙 (Problem-Solving Principles)
 
@@ -28,19 +41,38 @@ Additional design documents for each package live under `<apps|packages>/<name>/
 
 3. **계획서 작성 후 코드 작성**
    위 원칙을 토대로 계획서를 먼저 작성한 뒤 컨펌을 받은 다음에 코드를 작성합니다.
-4. **계획서 필수 항목**
+4. **Git 브랜치 생성 및 TODO별 커밋 필수**
+   - 작업 시작 전 적절한 브랜치 생성 (`feature/ux-command-palette` 등)
+   - 각 TODO 완료 시마다 의미있는 커밋 메시지로 커밋
+   - 상세 가이드: [Git Workflow Guide](docs/GIT_WORKFLOW_GUIDE.md)
+5. **계획서 필수 항목**
    [템플릿](./docs/template/PLAN_TEMPLATE.md)을 참고하여 작성해주세요.
    - **요구사항**: 각 기능이 달성해야 하는 성공 조건과 사용 시나리오까지 명시합니다.
    - **인터페이스 초안**: 주요 타입, 메서드 시그니처 등의 예시를 간략히 적어 둡니다.
    - **Todo 리스트**: 테스트 작성 포함하여 작업을 순서대로 정리합니다. (테스트 규칙은 `docs/TESTING.md` 참고)
    - **작업 순서**: Todo 리스트를 기반으로 단계별 진행 순서를 정리합니다.
-5. **리뷰**
-   작성한 계획서와 진행 상황은 작업 요청마다 리뷰하여 지속적으로 피드백을 반영합니다.
 
-   > 🤝 AI 에이전트와의 협력 시에는 [AI 에이전트 협력 가이드라인](docs/AI_COLLABORATION_GUIDE.md)을 따라주세요.
+## 타입 안전성 원칙 (Type Safety Principles)
 
-6. **작업계획서 Todo 체크**
+코드 작성 시 타입 안전성을 보장하기 위해 다음 원칙을 준수합니다:
+
+1. **any 타입 사용 절대 금지**
+   - `any` 대신 `unknown`, 제네릭, Union 타입 사용
+   - 타입 가드를 통한 안전한 타입 변환
+2. **구체적 타입 정의**
+   - 모든 인터페이스와 함수에 명확한 타입 정의
+   - API 응답, IPC 통신 등에 구체적 타입 사용
+3. **타입 검증**
+   - ESLint 규칙으로 any 사용 방지 자동화
+   - 코드 리뷰에서 타입 안전성 확인
+
+> 📋 자세한 내용은 [TypeScript 타이핑 지침](docs/TYPESCRIPT_TYPING_GUIDELINES.md)을 참고하세요. 5. **리뷰**
+> 작성한 계획서와 진행 상황은 작업 요청마다 리뷰하여 지속적으로 피드백을 반영합니다.
+
+> 🤝 AI 에이전트와의 협력 시에는 [AI 에이전트 협력 가이드라인](docs/AI_COLLABORATION_GUIDE.md)을 따라주세요.
+
+4. **작업계획서 Todo 체크**
    작업계획서의 Todo 항목을 하나씩 처리하고 완료된 항목은 체크 표시합니다.
 
-7. **Todo 완료 후 종료**
+5. **Todo 완료 후 종료**
    모든 Todo가 완료되면 작업을 종료합니다.

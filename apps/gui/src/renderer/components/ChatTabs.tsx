@@ -15,20 +15,22 @@ export interface ChatTabsProps {
 const ChatTabs: React.FC<ChatTabsProps> = ({ tabs, activeTabId, onSelect }) => {
   return (
     <HStack borderBottom="1px" borderColor="gray.200" spacing={0}>
-      {tabs.map((tab) => (
-        <Box
-          key={tab.id}
-          px={2}
-          py={1}
-          cursor="pointer"
-          borderBottom={activeTabId === tab.id ? '2px solid' : '2px solid transparent'}
-          borderColor={activeTabId === tab.id ? 'brand.500' : 'transparent'}
-          fontWeight={activeTabId === tab.id ? 'bold' : 'normal'}
-          onClick={() => onSelect(tab.id)}
-        >
-          {tab.title || '(no title)'}
-        </Box>
-      ))}
+      {Array.isArray(tabs)
+        ? tabs.map((tab) => (
+            <Box
+              key={tab.id}
+              px={2}
+              py={1}
+              cursor="pointer"
+              borderBottom={activeTabId === tab.id ? '2px solid' : '2px solid transparent'}
+              borderColor={activeTabId === tab.id ? 'brand.500' : 'transparent'}
+              fontWeight={activeTabId === tab.id ? 'bold' : 'normal'}
+              onClick={() => onSelect(tab.id)}
+            >
+              {tab.title || '(no title)'}
+            </Box>
+          ))
+        : []}
     </HStack>
   );
 };

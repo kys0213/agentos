@@ -18,11 +18,13 @@ const PresetSelector: React.FC<PresetSelectorProps> = ({ presets, value, onChang
       mr={{ base: 2, md: 3 }}
     >
       <option value="">(no preset)</option>
-      {presets.map((p) => (
-        <option key={p.id} value={p.id}>
-          {p.name}
-        </option>
-      ))}
+      {Array.isArray(presets)
+        ? presets.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))
+        : []}
     </Select>
   );
 };

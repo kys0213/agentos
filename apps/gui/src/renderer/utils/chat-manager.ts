@@ -1,28 +1,66 @@
-import {
-  ChatManager,
-  FileBasedChatManager,
-  FileBasedSessionStorage,
-  CompressStrategy,
-  CompressionResult,
-} from '@agentos/core';
+import { ServiceContainer } from '../services/ServiceContainer';
+import type { ChatService } from '../services/chat-service';
+import type { ChatSessionDescription, Preset } from '../types/core-types';
 
-export function createChatManager(): ChatManager {
-  // GUI에서는 메모리 기반 또는 IPC를 통한 구현이 필요할 수 있음
-  // 임시로 기본 구현을 제공
-  const baseDir = '.agent/sessions';
-  const storage = new FileBasedSessionStorage(baseDir);
+/**
+ * @deprecated createChatManager()는 더 이상 사용되지 않습니다.
+ * 대신 ServiceContainer.get('chat') 또는 Services.getChat()를 사용하세요.
+ *
+ * 기존 코드와의 호환성을 위해 ChatService로 위임하는 래퍼 함수
+ */
+export function createChatManager(): ChatManagerCompat {
+  console.warn('createChatManager() is deprecated. Use ServiceContainer.get("chat") instead.');
+  return new ChatManagerCompat();
+}
 
-  // 기본 압축 전략 (압축하지 않음)
-  const noCompression: CompressStrategy = {
-    compress: async (messages): Promise<CompressionResult> => ({
-      summary: {
-        role: 'system',
-        content: { contentType: 'text', value: 'No compression applied' },
-      },
-      compressedCount: 0,
-      discardedMessages: [],
-    }),
-  };
+/**
+ * 기존 ChatManager 인터페이스와의 호환성을 위한 래퍼 클래스
+ */
+class ChatManagerCompat {
+  private get chatService(): ChatService {
+    return ServiceContainer.get<ChatService>('chat');
+  }
 
-  return new FileBasedChatManager(storage, noCompression, noCompression);
+  /**
+   * @deprecated chatService.createSession()을 직접 사용하세요
+   */
+  async create(options?: { preset?: Preset }): Promise<ChatSessionDescription> {
+    return this.chatService.createSession(options);
+  }
+
+  /**
+   * @deprecated chatService.listSessions()를 직접 사용하세요
+   */
+  async list(options?: any): Promise<{ items: ChatSessionDescription[]; nextCursor: string }> {
+    const sessions = await this.chatService.listSessions();
+    return { items: sessions || [], nextCursor: '' };
+  }
+
+  /**
+   * @deprecated chatService.loadSession()을 직접 사용하세요
+   */
+  async load(options: { sessionId: string }): Promise<ChatSessionDescription> {
+    return this.chatService.loadSession(options.sessionId);
+  }
+
+  /**
+   * @deprecated chatService.sendMessage()를 직접 사용하세요
+   */
+  async sendMessage(sessionId: string, message: string) {
+    return this.chatService.sendMessage(sessionId, message);
+  }
+
+  /**
+   * @deprecated chatService.deleteSession()을 직접 사용하세요
+   */
+  async deleteSession(sessionId: string) {
+    return this.chatService.deleteSession(sessionId);
+  }
+
+  /**
+   * @deprecated chatService.renameSession()을 직접 사용하세요
+   */
+  async renameSession(sessionId: string, newName: string) {
+    return this.chatService.renameSession(sessionId, newName);
+  }
 }
