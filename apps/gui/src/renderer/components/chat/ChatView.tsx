@@ -758,7 +758,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
       {/* Agent Selection Panel */}
       {showAgentPanel && (
         <div className="w-80 bg-muted flex flex-col">
-          <div className="p-4 border-b bg-background">
+          <div className="px-4 py-4 border-b bg-background">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold">Available Agents</h3>
               <Button variant="ghost" size="sm" onClick={() => setShowAgentPanel(false)}>
@@ -831,7 +831,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
             })}
           </div>
 
-          <div className="p-4 border-t bg-white">
+          <div className="px-4 py-4 border-t bg-white">
             <Button variant="outline" className="w-full" onClick={() => onNavigate('subagents')}>
               <Settings className="w-4 h-4 mr-2" />
               Manage Agents

@@ -121,7 +121,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
   return (
     <div className="w-80 bg-muted flex flex-col h-full border-r">
       {/* 고정 헤더 */}
-      <div className="p-4 border-b bg-background">
+      <div className="px-4 py-4 border-b bg-background">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-lg">Chats</h2>
           <Button variant="outline" size="sm" onClick={onNewChat}>
@@ -150,7 +150,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
       </div>
 
       {/* 고정 푸터 */}
-      <div className="border-t bg-background p-3">
+      <div className="border-t bg-background px-4 py-3">
         {archived.length > 0 && (
           <div className="pb-3 border-b">
             <div className="flex items-center gap-2 mb-2">
