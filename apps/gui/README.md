@@ -4,130 +4,165 @@ A desktop GUI built with **Electron** and **React**. It uses the AgentOS core
 library to run tasks and provides a friendly interface for managing chat
 sessions and presets.
 
-## 🎯 Current Status: Modern Frontend Architecture Complete
+## 🎯 Current Status: Figma Prototype Migration Complete
 
-**Week 1 (2025-08-01) Modernization Completed:**
+**Figma-based Modern Implementation (2025-08-03):**
 
-- ✅ **State Management**: Zustand + React Query (ChatApp.tsx: 230 lines → 21 lines)
-- ✅ **Component Architecture**: 12 role-based components (layout/, chat/, settings/, ui/)
-- ✅ **CSS Grid Layout**: Absolute chat area protection system
-- ✅ **Performance**: Selective subscription + memoization optimizations
+- ✅ **AI Reasoning Mode & Agent Orchestration**: Advanced chat interface
+- ✅ **Complete Management System**: Dashboard, Sub-Agents, Models, Presets
+- ✅ **shadcn/ui Design System**: Modern component library with 15+ components
+- ✅ **Dual Mode Architecture**: Chat ↔ Management seamless transitions
+- ✅ **Multi-Environment Support**: Electron, Web, Extension compatibility
+- ✅ **Mock-First Development**: Independent from @packages/core
 
-📖 **Detailed Status**: [Week 1 Completion Summary](docs/WEEK1_COMPLETION_SUMMARY.md)
-📖 **Implementation Guide**: [Frontend Architect](../.claude/agents/frontend-architect.md)
+📖 **Migration Details**: [Figma Migration Cleanup](docs/FIGMA_MIGRATION_DOCS_CLEANUP.md)
 
-## 🌀 UX Roadmap: Cyclic User Experience Design
+## 🎯 Next Development Priorities
 
-**Following designer-ux.md principles: Users are exploration-oriented, not goal-oriented (A⟷B⟷C⟷A pattern)**
+**Building on Figma Implementation Foundation**
 
-### 🚀 **High Priority: Core UX Experience**
+### 🚀 **Phase 1: Backend Integration**
 
-_Direct impact on user exploration and context preservation_
+_Transform mock services to real functionality_
 
-1. **[Cyclic UX Redesign](docs/GUI_CYCLIC_UX_REDESIGN_PLAN.md)** 🎯 **CRITICAL**
-   - Command Palette system (Cmd+K) - instant access to all features
-   - FAB (Floating Action Button) system - contextual quick actions
-   - Settings: Modal → Side Panel transition - frictionless configuration
-   - **Why**: Enables A⟷B⟷C⟷A exploration pattern, core UX foundation
+1. **Real API Integration** 🔌 **HIGH**
+   - Replace mock services with @packages/core integration
+   - Live chat functionality with actual LLM bridges
+   - Real preset and model management
 
-2. **[Message Search & Navigation](docs/GUI_MESSAGE_SEARCH_PLAN.md)** 🔍 **HIGH**
-   - Real-time message filtering and contextual search
-   - **Why**: Supports exploration-oriented user behavior, natural discovery
+2. **Data Persistence** 💾 **HIGH**
+   - Chat history storage and retrieval
+   - Session state management
+   - User preferences persistence
 
-3. **[Session Management](docs/GUI_SESSION_RENAME_PLAN.md)** 📝 **HIGH**
-   - Inline session renaming and organization
-   - **Why**: Users organize through exploration, not predefined structure
+### 🔄 **Phase 2: Advanced Features**
 
-4. **[Preset Enhancement](docs/GUI_PRESET_ENHANCEMENT_PLAN.md)** ⚙️ **HIGH**
-   - Real-time preset switching during conversations
-   - **Why**: Context preservation during exploration, no workflow interruption
+_Expand beyond basic functionality_
 
-### 🔄 **Medium Priority: Workflow Integration**
+3. **Enhanced Chat Experience** 💬 **MEDIUM**
+   - Message search and filtering
+   - Session organization and renaming
+   - Export capabilities
 
-_Seamless transitions between different contexts_
+4. **Advanced Management** ⚙️ **MEDIUM**
+   - MCP plugin management
+   - Advanced model configuration
+   - Performance monitoring
 
-5. **[MCP Configuration](docs/GUI_MCP_CONFIG_PLAN.md)** 🔌 **MEDIUM**
-   - Unified settings panel integration
-   - **Why**: "Make settings unnecessary, not hidden" - smart configuration
+### 📊 **Phase 3: Optimization & Polish**
 
-6. **[History Integration](docs/GUI_HISTORY_SIDEBAR_PLAN.md)** 📚 **MEDIUM**
-   - Contextual bridges between chat ⟷ history ⟷ settings
-   - **Why**: Natural context switching, orbital UI pattern
+_Performance and user experience refinement_
 
-7. **[Bridge Management](docs/GUI_BRIDGE_MANAGEMENT_PLAN.md)** 🌉 **MEDIUM**
-   - Predictive LLM switching based on context
-   - **Why**: Reduce cognitive load, AI-powered personalization
+5. **Performance Optimization** ⚡ **LOW**
+   - Virtual scrolling for large conversations
+   - Bundle optimization and code splitting
+   - Memory usage optimization
 
-### 📊 **Lower Priority: Feature Expansion**
+6. **Testing & Quality** 🧪 **LOW**
+   - E2E test coverage
+   - Accessibility improvements
+   - Error handling enhancement
 
-_Additional functionality built on solid UX foundation_
+## 📁 Component Architecture
 
-- [MCP Management](docs/GUI_MCP_MANAGEMENT_EXPANSION_PLAN.md) - Advanced MCP features
-- [Message UI](docs/GUI_MESSAGE_UI_PLAN.md) - Visual enhancements
-- [History Export](docs/GUI_HISTORY_EXPORT_PLAN.md) - Data portability
-- [Process Separation](docs/GUI_PROCESS_SEPARATION_PLAN.md) - Technical improvements
-- [IPC Migration](docs/GUI_RENDERER_UTILS_IPC_MIGRATION_PLAN.md) - Architecture updates
-
-### 🎯 **UX Success Metrics**
-
-**Cyclic Flow Success:**
-
-- Settings access: 3 clicks → 1 click (Cmd+K)
-- Context preservation: >95% during transitions
-- Chat area protection: 0% invasion (absolute guarantee)
-
-**Exploration Support:**
-
-- User mistake recovery: <2 seconds
-- Cross-context information retention: 100%
-- Predictive UI accuracy: >80%
-
-**"Make Settings Unnecessary" Goal:**
-
-- Auto-configuration success rate: >70%
-- Manual setting adjustments: <30% of actions
-- Zero-configuration new user experience: <5 minutes setup
-
-## Folder Structure
+**Role-based Component Organization:**
 
 ```text
-apps/gui
-├── src/            # main and renderer processes
-├── dist/           # compiled output
-├── docs/           # design documents
-├── __mocks__/      # test mocks
-├── jest.config.js  # Jest configuration
-├── package.json    # npm metadata
-├── tsconfig.json   # TypeScript configuration
-└── Dockerfile      # container build
+apps/gui/src/renderer/components/
+├── layout/
+│   └── AppLayoutV2.tsx           # Main dual-mode layout
+├── chat/
+│   ├── ChatHistory.tsx           # Message display & history
+│   └── ChatView.tsx              # AI reasoning interface
+├── management/
+│   ├── Dashboard.tsx             # Management overview
+│   ├── ModelManager.tsx          # LLM model configuration
+│   ├── PresetManager.tsx         # Chat preset management
+│   ├── SubAgentManager.tsx       # Agent orchestration
+│   ├── Sidebar.tsx               # Navigation sidebar
+│   └── ManagementView.tsx        # Management container
+├── settings/
+│   ├── SettingsContainer.tsx     # Settings wrapper
+│   ├── LLMSettings.tsx           # LLM configuration
+│   └── PresetSettings.tsx        # Preset configuration
+├── ui/                           # shadcn/ui components
+│   ├── button.tsx, card.tsx      # Core UI primitives
+│   ├── dialog.tsx, input.tsx     # Form components
+│   ├── avatar.tsx, badge.tsx     # Display components
+│   └── README.md                 # Component usage guide
+└── root level/
+    ├── ColorModeToggle.tsx       # Theme switching
+    ├── LlmBridgeManager.tsx      # Bridge selection
+    ├── PresetSelector.tsx        # Quick preset switch
+    └── SettingsMenu.tsx          # Settings access
 ```
 
-## Core Concepts
+## 📁 Project Structure
 
-- **Electron** hosts the application shell.
-- **React** powers the renderer with Chakra UI for components and theming.
-- The GUI communicates with the `@agentos/core` package to execute tasks.
+```text
+apps/gui/
+├── src/
+│   ├── main/                     # Electron main process
+│   └── renderer/                 # React renderer
+├── docs/                         # Migration documentation
+├── dist/                         # Build output
+├── __mocks__/                    # Test mocks
+└── configuration files
+```
 
-## Styling Guide
+## 🏗️ Core Architecture
 
-The GUI follows these styling principles:
+### **Technology Stack**
 
-- Chakra UI provides the base components and theming.
-- The application theme is defined in `src/renderer/theme.ts`.
-- Color mode can be toggled from the settings menu via the sun/moon button.
-- Use Chakra UI's responsive props (`base`, `md`, etc.) to ensure layouts adapt to window size.
-- Prefer Chakra components over raw HTML elements for consistency.
-- The `PresetSelector` component uses `Select` with responsive props.
-- The bridge selector in `ChatApp` uses `FormControl` and `FormLabel` for better consistency.
+- **Electron**: Cross-platform desktop application shell
+- **React 18**: Modern renderer with concurrent features
+- **shadcn/ui**: Modern design system (15+ components)
+- **Chakra UI**: Legacy theming system (being migrated)
+- **TypeScript**: Full type safety throughout
 
-### 🔑 **Key UX Principles Applied**
+### **Key Design Patterns**
 
-1. **Orbital UI Pattern**: Chat as center, with Settings ← Chat → MCP Status orbiting around
-2. **Contextual Bridges**: Smart transitions that remember where user came from
-3. **Elastic Interface**: UI adapts to user intent before they explicitly request it
-4. **Progressive Disclosure**: Show complexity only when user explores deeper
+- **Dual Mode Architecture**: Seamless Chat ↔ Management transitions
+- **Mock-First Development**: Independent from backend dependencies
+- **Component Composition**: Highly reusable, focused components
+- **Type-Safe Communication**: Strict TypeScript across all interfaces
 
-_For UX design decisions, always use [designer-ux.md](../.claude/agents/designer-ux.md) agent_
+## 🎨 Design System
+
+### **shadcn/ui Components (Primary)**
+
+```tsx
+// Modern component usage
+import { Button, Card, Input, Avatar } from './ui';
+
+<Card>
+  <Button variant="outline">Action</Button>
+  <Input placeholder="Type here..." />
+</Card>;
+```
+
+### **Styling Architecture**
+
+- **shadcn/ui**: Primary component system with Tailwind CSS
+- **Chakra UI**: Legacy system (gradual migration)
+- **Theme Support**: Light/dark mode via `ColorModeToggle`
+- **Responsive Design**: Mobile-first approach with breakpoints
+- **Type Safety**: Full TypeScript integration
+
+### **Component Guidelines**
+
+1. **Prefer shadcn/ui** for new features
+2. **Maintain consistency** with existing patterns
+3. **Use composition** over inheritance
+4. **Follow accessibility** standards
+5. **Implement responsive** design patterns
+
+### 🔑 **UX Principles**
+
+- **Dual Mode Flow**: Seamless Chat ↔ Management transitions
+- **Context Preservation**: No data loss during navigation
+- **Progressive Disclosure**: Advanced features discoverable but not intrusive
+- **Predictive Interface**: AI-powered suggestions and automation
 
 ---
 
