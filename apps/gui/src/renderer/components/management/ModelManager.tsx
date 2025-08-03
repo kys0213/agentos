@@ -1,33 +1,28 @@
-import React, { useState } from 'react';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Input } from '../ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import {
+  Activity,
+  AlertCircle,
+  BarChart3,
+  CheckCircle,
+  Cpu,
+  DollarSign,
+  Download,
+  ExternalLink,
+  MessageSquare,
+  Package,
   Plus,
+  RefreshCw,
+  Search,
   Settings,
   Wifi,
   WifiOff,
-  Cpu,
   Zap,
-  DollarSign,
-  Clock,
-  AlertCircle,
-  CheckCircle,
-  BarChart3,
-  Download,
-  Package,
-  ExternalLink,
-  Search,
-  Filter,
-  Code,
-  MessageSquare,
-  Camera,
-  RefreshCw,
-  Activity,
-  TrendingUp,
 } from 'lucide-react';
+import { useState } from 'react';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Input } from '../ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
 // Mock data types
 interface ModelInstance {

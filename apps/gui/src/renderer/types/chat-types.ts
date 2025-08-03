@@ -1,15 +1,15 @@
 export interface ChatMessage {
   id: number;
-  type: 'user' | 'agent' | 'system' | 'reasoning';
+  type: 'user' | 'agent' | 'system' | 'orchestration';
   content: string;
   timestamp: string;
   agentName?: string;
   agentPreset?: string;
   agentId?: string;
-  reasoningSteps?: ReasoningStep[];
+  orchestrationSteps?: OrchestrationStep[];
 }
 
-export interface ReasoningStep {
+export interface OrchestrationStep {
   id: string;
   type: 'analysis' | 'keyword-matching' | 'agent-selection' | 'conclusion';
   title: string;

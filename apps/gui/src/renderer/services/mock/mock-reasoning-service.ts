@@ -1,7 +1,7 @@
-import { ReasoningStep } from '../../types/chat-types';
+import { OrchestrationStep } from '../../types/chat-types';
 import { mockAvailableAgents } from './mock-available-agents';
 
-export class MockReasoningService {
+export class MockOrchestrationService {
   /**
    * 질문을 분석하여 적절한 에이전트를 찾고 리즈닝 스텝을 생성
    */
@@ -10,10 +10,10 @@ export class MockReasoningService {
     activeAgentIds: string[]
   ): {
     matchedAgents: string[];
-    steps: ReasoningStep[];
+    steps: OrchestrationStep[];
   } {
     const lowerQuery = query.toLowerCase();
-    const steps: ReasoningStep[] = [];
+    const steps: OrchestrationStep[] = [];
 
     // Step 1: Query Analysis
     steps.push({

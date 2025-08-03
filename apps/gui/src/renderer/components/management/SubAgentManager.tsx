@@ -1,22 +1,19 @@
-import React, { useState } from 'react';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Input } from '../ui/input';
 import {
   Bot,
-  Plus,
-  Settings,
+  Filter,
   MessageSquare,
   MoreVertical,
-  Search,
-  Filter,
-  Play,
   Pause,
-  Trash2,
-  Edit,
-  Copy,
+  Play,
+  Plus,
+  Search,
+  Settings,
 } from 'lucide-react';
+import { useState } from 'react';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Input } from '../ui/input';
 
 interface SubAgentManagerProps {
   onOpenChat?: (agentId: number, agentName: string, agentPreset: string) => void;
