@@ -42,3 +42,6 @@ coverage
 # Project specific
 .agent/*
 !.agent/.gitkeep
+
+# Design files
+apps/gui/design/current/image.png
