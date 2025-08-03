@@ -75,16 +75,18 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
         )}
         <div
           key={chat.id}
-          className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
-            selectedChatId === chat.id ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'
+          className={`px-4 py-4 rounded-lg cursor-pointer transition-all duration-200 mb-3 mx-1 ${
+            selectedChatId === chat.id
+              ? 'bg-blue-50 border border-blue-200 shadow-sm'
+              : 'hover:bg-gray-50 hover:shadow-sm'
           }`}
           onClick={() => onSelectChat(chat)}
         >
           <div className="flex items-start gap-3">
             <div
-              className={`w-8 h-8 ${getAgentColor(chat.agentName)} rounded-full flex items-center justify-center flex-shrink-0`}
+              className={`w-9 h-9 ${getAgentColor(chat.agentName)} rounded-full flex items-center justify-center flex-shrink-0 shadow-sm`}
             >
-              <span className="text-xs text-white font-medium">
+              <span className="text-sm text-white font-semibold">
                 {chat.agentName
                   .split(' ')
                   .map((word) => word[0])
@@ -92,18 +94,22 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-1">
-                <h4 className="font-medium text-sm truncate">{chat.title}</h4>
-                <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-semibold text-sm truncate text-gray-900">{chat.title}</h4>
+                <span className="text-xs text-gray-500 flex-shrink-0 ml-3">
                   {formatTimestamp(chat.timestamp)}
                 </span>
               </div>
-              <p className="text-xs text-gray-600 line-clamp-2 mb-2">{chat.lastMessage}</p>
+              <p className="text-xs text-gray-600 line-clamp-2 mb-3 leading-relaxed">
+                {chat.lastMessage}
+              </p>
               <div className="flex items-center justify-between">
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-xs font-medium">
                   {chat.agentName}
                 </Badge>
-                <span className="text-xs text-gray-500">{chat.messageCount} messages</span>
+                <span className="text-xs text-gray-500 font-medium">
+                  {chat.messageCount} messages
+                </span>
               </div>
             </div>
           </div>
@@ -136,7 +142,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
       <div className="flex-1 overflow-y-auto">
         <AutoSizer>
           {({ height, width }) => (
-            <List height={height} itemCount={items.length} itemSize={125} width={width}>
+            <List height={height} itemCount={items.length} itemSize={140} width={width}>
               {Row}
             </List>
           )}
