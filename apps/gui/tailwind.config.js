@@ -2,6 +2,10 @@
 module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}', './index.html'],
   theme: {
+    // 기본 border 색상을 gray-200으로 재정의
+    borderColor: {
+      DEFAULT: '#E2E8F0', // gray-200
+    },
     extend: {
       colors: {
         // Chakra UI 호환성을 위한 색상 팔레트
@@ -42,7 +46,7 @@ module.exports = {
           900: '#7F1D1D',
         },
         // shadcn/ui semantic colors
-        border: '#E2E8F0',
+        border: '#E2E8F0', // gray-200 - 모든 기본 border 색상 통일
         input: '#E2E8F0',
         ring: '#3182CE',
         background: '#FFFFFF',
