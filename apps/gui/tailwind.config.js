@@ -29,6 +29,52 @@ module.exports = {
           800: '#2A4365',
           900: '#1A365D',
         },
+        red: {
+          50: '#FEF2F2',
+          100: '#FEE2E2',
+          200: '#FECACA',
+          300: '#FCA5A5',
+          400: '#F87171',
+          500: '#EF4444',
+          600: '#DC2626',
+          700: '#B91C1C',
+          800: '#991B1B',
+          900: '#7F1D1D',
+        },
+        // shadcn/ui semantic colors
+        border: '#E2E8F0',
+        input: '#E2E8F0',
+        ring: '#3182CE',
+        background: '#FFFFFF',
+        foreground: '#1A202C',
+        primary: {
+          DEFAULT: '#3182CE',
+          foreground: '#FFFFFF',
+        },
+        secondary: {
+          DEFAULT: '#EDF2F7',
+          foreground: '#1A202C',
+        },
+        destructive: {
+          DEFAULT: '#EF4444',
+          foreground: '#FFFFFF',
+        },
+        muted: {
+          DEFAULT: '#F7FAFC',
+          foreground: '#718096',
+        },
+        accent: {
+          DEFAULT: '#EDF2F7',
+          foreground: '#1A202C',
+        },
+        popover: {
+          DEFAULT: '#FFFFFF',
+          foreground: '#1A202C',
+        },
+        card: {
+          DEFAULT: '#FFFFFF',
+          foreground: '#1A202C',
+        },
       },
       gridTemplateColumns: {
         // 레이아웃별 그리드 템플릿
@@ -39,6 +85,25 @@ module.exports = {
       },
       spacing: {
         sidebar: '300px',
+      },
+      borderRadius: {
+        lg: '0.5rem',
+        md: '0.375rem',
+        sm: '0.25rem',
+      },
+      keyframes: {
+        'accordion-down': {
+          from: { height: 0 },
+          to: { height: 'var(--radix-accordion-content-height)' },
+        },
+        'accordion-up': {
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: 0 },
+        },
+      },
+      animation: {
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
       },
     },
   },
