@@ -45,7 +45,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelectChat, onNewChat, sele
   };
 
   return (
-    <div className="w-80 bg-white border-r flex flex-col h-full">
+    <div className="w-80 bg-muted border-r flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center justify-between mb-3">
@@ -219,7 +219,6 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelectChat, onNewChat, sele
           </div>
         )}
       </div>
-    </div>
   );
 };
 

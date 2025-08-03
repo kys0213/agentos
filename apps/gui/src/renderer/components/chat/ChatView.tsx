@@ -580,7 +580,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-background">
         {/* Chat Header with Orchestration Mode Toggle */}
         <div className="border-b bg-white p-4">
           <div className="flex items-center justify-between">
@@ -806,7 +806,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
 
       {/* Agent Selection Panel */}
       {showAgentPanel && (
-        <div className="w-80 border-l bg-gray-50 flex flex-col">
+        <div className="w-80 bg-muted flex flex-col">
           <div className="p-4 border-b bg-white">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold">Available Agents</h3>
