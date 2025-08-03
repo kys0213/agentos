@@ -16,7 +16,6 @@
     "build:win": "pnpm run build && electron-builder --win",
     "build:linux": "pnpm run build && electron-builder --linux",
     "build:all": "pnpm run build && electron-builder --mac --win --linux",
-    "build:docker": "docker build -t agentos-gui .",
     "dev": "NODE_ENV=development electron .",
     "dev:web": "vite",
     "lint": "eslint src --ext .ts,.tsx",
