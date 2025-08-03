@@ -1,7 +1,13 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { ChatService } from '../services/chat-service';
-import { Message } from '../components/ChatMessageList';
 import type { Preset } from '../types/core-types';
+
+// Message 타입 정의 (ChatMessageList에서 가져왔던 것)
+export interface Message {
+  sender: 'user' | 'agent';
+  text: string;
+  timestamp: Date;
+}
 
 // 새로운 IPC 기반 인터페이스
 export interface UseChatSession {
