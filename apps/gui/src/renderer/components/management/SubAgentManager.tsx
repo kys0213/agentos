@@ -188,7 +188,7 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
               <Button
                 size="sm"
                 className="flex-1 gap-2"

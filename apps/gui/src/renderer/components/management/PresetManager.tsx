@@ -281,7 +281,7 @@ export function PresetManager() {
               )}
             </div>
 
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
               <Button size="sm" className="flex-1">
                 <Eye className="w-3 h-3 mr-1" />
                 View

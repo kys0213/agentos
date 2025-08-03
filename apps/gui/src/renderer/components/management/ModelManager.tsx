@@ -314,7 +314,7 @@ export function ModelManager() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+                <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
                   <Button size="sm" className="flex-1">
                     <MessageSquare className="w-3 h-3 mr-1" />
                     Test
@@ -379,7 +379,7 @@ export function ModelManager() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+                <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
                   <Button size="sm" className="flex-1" disabled={model.isInstalled}>
                     <Download className="w-3 h-3 mr-1" />
                     {model.isInstalled ? 'Installed' : 'Install'}

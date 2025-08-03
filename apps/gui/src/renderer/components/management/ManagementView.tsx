@@ -73,7 +73,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({
 
       <main className="flex-1 overflow-hidden flex flex-col">
         {/* Management Header with Back to Chat */}
-        <div className="border-b bg-white p-4">
+        <div className="border-b border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Button variant="outline" size="sm" onClick={onBackToChat} className="gap-2">
