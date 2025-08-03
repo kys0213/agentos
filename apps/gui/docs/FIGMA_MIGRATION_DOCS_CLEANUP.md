@@ -50,33 +50,65 @@ Figma 프로토타입 마이그레이션 완료 후, 현재 구현된 상태와 
 
 ## ✅ **유지되는 문서들**
 
-### **미래 작업 관련 문서들**
-- `GUI_*_PLAN.md` 시리즈 중 아직 시작되지 않은 작업들
-- MCP, History, Message 관련 계획서들
-- 기타 구현되지 않은 기능 계획서들
-
-### **유효한 정리 문서들**
+### **Figma 관련 문서들만 보존**
+- `FIGMA_MIGRATION_DOCS_CLEANUP.md` - 이 정리 요약서
 - `OUTDATED_DOCS_CLEANUP_SUMMARY.md` - 이전 정리 내역
-- 이 문서 (`FIGMA_MIGRATION_DOCS_CLEANUP.md`)
 
-## 📊 **정리 결과**
+## 🧹 **추가 정리 작업 (2025-08-03 오후)**
 
-### **삭제된 문서 통계**
-- **총 삭제 문서**: 4개
-- **총 삭제 용량**: ~1,000줄 (추정)
+### ❌ **추가로 삭제된 미래 작업 문서들 (18개)**
+
+#### **완료된 작업 관련 문서들 (8개)**
+- GUI_MESSAGE_SEARCH_PLAN.md (완료됨)
+- GUI_MESSAGE_UI_PLAN.md (완료됨) 
+- GUI_TABS_AND_MCP_LIST_PLAN.md (완료됨)
+- GUI_BRIDGE_MANAGEMENT_PLAN.md (완료됨)
+- GUI_MCP_CONFIG_PLAN.md (완료됨)
+- GUI_MCP_LIST_PLAN.md (완료됨)
+- GUI_HISTORY_SIDEBAR_PLAN.md (완료됨)
+- GUI_PREVIOUS_SESSION_PLAN.md (완료됨)
+- GUI_SESSION_PRESET_PLAN.md (완료됨)
+
+#### **Figma와 무관한 미래 작업들 (7개)**
+- GUI_HISTORY_EXPORT_PLAN.md
+- GUI_LLM_BRIDGE_EXPANSION_PLAN.md  
+- GUI_MCP_MANAGEMENT_EXPANSION_PLAN.md
+- GUI_MISC_UI_PLAN.md
+- GUI_PRESET_ENHANCEMENT_PLAN.md
+- GUI_PROCESS_SEPARATION_PLAN.md
+- GUI_RENDERER_UTILS_IPC_MIGRATION_PLAN.md
+- GUI_SESSION_RENAME_PLAN.md
+
+#### **기술적 문제 해결 문서들 (3개)**
+- ELECTRON_STORE_FIX_PLAN.md
+- REACT_BUNDLING_PLAN.md  
+- WEB_GUI_INFINITE_RENDERING_RECOVERY_PLAN.md
+
+### **최종 정리 결과**
+- **총 삭제된 문서**: 22개 (4개 + 18개)
+- **남은 문서**: 2개 (Figma 관련만)
+- **정리 완료**: ✅ Figma 프로토타입 중심으로 최적화
+
+## 📊 **최종 정리 통계**
+
+### **전체 삭제된 문서 통계**
+- **총 삭제 문서**: 22개 (4개 기존 + 18개 추가)
+- **총 삭제 용량**: ~3,000줄 이상 (추정)
 - **삭제 사유**:
   - Figma 마이그레이션으로 대체: 2개
-  - 완료된 작업: 2개
+  - 완료된 작업: 12개  
+  - Figma와 무관한 미래 작업: 7개
+  - 기술적 문제 해결: 3개
 
-### **현재 문서 구조**
+### **최종 문서 구조**
 
 ```
 apps/gui/docs/
 ├── FIGMA_MIGRATION_DOCS_CLEANUP.md     ⭐ 이 정리 요약
-├── OUTDATED_DOCS_CLEANUP_SUMMARY.md    📝 이전 정리 내역
-├── GUI_*_PLAN.md                       🔄 미래 작업 계획서들
-└── 기타 유효한 계획서들                 🔄 아직 시작되지 않은 작업들
+└── OUTDATED_DOCS_CLEANUP_SUMMARY.md    📝 이전 정리 내역
 ```
+
+**🎯 결과**: Figma 프로토타입 중심의 깔끔한 문서 환경 완성!
 
 ## 🎯 **개선 효과**
 
