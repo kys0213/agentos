@@ -16,17 +16,33 @@ import {
   Network,
   Settings,
 } from 'lucide-react';
-import { ChatSession } from '../../types/chat-types';
+import { AppModeState, ChatSession } from '../../types/chat-types';
 import { getChatSessions } from '../../services/mock';
 
 interface ChatHistoryProps {
   onSelectChat: (chat: ChatSession) => void;
   onNewChat: () => void;
   selectedChatId?: string;
+  onNavigate: (section: AppModeState['activeSection']) => void;
 }
 
-const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelectChat, onNewChat, selectedChatId }) => {
+const ChatHistory: React.FC<ChatHistoryProps> = ({
+  onSelectChat,
+  onNewChat,
+  selectedChatId,
+  onNavigate,
+}) => {
   const chatSessions = getChatSessions();
+
+  const quickNavItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'presets', label: 'Presets', icon: Layers },
+    { id: 'subagents', label: 'Agents', icon: Bot },
+    { id: 'models', label: 'Models', icon: Cpu },
+    { id: 'tools', label: 'Tools', icon: Wrench },
+    { id: 'racp', label: 'RACP', icon: Network },
+    { id: 'settings', label: 'Settings', icon: Settings },
+  ];
 
   const pinned = chatSessions.filter((c) => c.isPinned);
   const recent = chatSessions.filter((c) => !c.isPinned && !c.isArchived);
@@ -43,17 +59,17 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelectChat, onNewChat, sele
     return (
       <div style={style} className="px-3">
         {isFirstInPinned && (
-          <div className="flex items-center gap-2 mt-2 mb-2">
-            <Pin className="w-3 h-3 text-gray-500" />
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Pinned
+          <div className="flex items-center gap-2 mt-3 mb-3 px-1">
+            <Pin className="w-4 h-4 text-gray-600 fill-current" />
+            <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+              📌 Pinned
             </span>
           </div>
         )}
         {isFirstInRecent && (
-          <div className="flex items-center gap-2 mt-4 mb-2">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Recent
+          <div className="flex items-center gap-2 mt-5 mb-3 px-1">
+            <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+              Older
             </span>
           </div>
         )}
@@ -97,7 +113,8 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelectChat, onNewChat, sele
   };
 
   return (
-    <div className="w-80 bg-muted flex flex-col h-full">
+    <div className="w-80 bg-muted flex flex-col h-full border-r">
+      {/* 고정 헤더 */}
       <div className="p-4 border-b bg-background">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-lg">Chats</h2>
@@ -115,7 +132,8 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelectChat, onNewChat, sele
         </div>
       </div>
 
-      <div className="flex-1">
+      {/* 스크롤 가능한 채팅 목록 */}
+      <div className="flex-1 overflow-y-auto">
         <AutoSizer>
           {({ height, width }) => (
             <List height={height} itemCount={items.length} itemSize={125} width={width}>
@@ -125,47 +143,44 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelectChat, onNewChat, sele
         </AutoSizer>
       </div>
 
-      {archived.length > 0 && (
-        <div className="p-3 border-t bg-background">
-          <div className="flex items-center gap-2 mb-2">
-            <Archive className="w-3 h-3 text-gray-500" />
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Archived ({archived.length})
-            </span>
-          </div>
-        </div>
-      )}
-
+      {/* 고정 푸터 */}
       <div className="border-t bg-background p-3">
+        {archived.length > 0 && (
+          <div className="pb-3 border-b">
+            <div className="flex items-center gap-2 mb-2">
+              <Archive className="w-3 h-3 text-gray-500" />
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                Archived ({archived.length})
+              </span>
+            </div>
+          </div>
+        )}
+        {/* Quick Navigation */}
         <div className="space-y-2">
           <h4 className="text-xs font-medium text-muted-foreground mb-2">Quick Access</h4>
           <div className="grid grid-cols-2 gap-1">
-            <Button variant="ghost" size="sm" className="h-8 text-xs justify-start gap-2 px-2">
-              <Home className="w-3 h-3" />
-              Dashboard
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 text-xs justify-start gap-2 px-2">
-              <Layers className="w-3 h-3" />
-              Presets
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 text-xs justify-start gap-2 px-2">
-              <Bot className="w-3 h-3" />
-              Agents
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 text-xs justify-start gap-2 px-2">
-              <Cpu className="w-3 h-3" />
-              Models
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 text-xs justify-start gap-2 px-2">
-              <Wrench className="w-3 h-3" />
-              Tools
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 text-xs justify-start gap-2 px-2">
-              <Network className="w-3 h-3" />
-              RACP
-            </Button>
+            {quickNavItems.slice(0, 6).map((item) => {
+              const Icon = item.icon;
+              return (
+                <Button
+                  key={item.id}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onNavigate(item.id as AppModeState['activeSection'])}
+                  className="h-8 text-xs justify-start gap-2 px-2"
+                >
+                  <Icon className="w-3 h-3" />
+                  {item.label}
+                </Button>
+              );
+            })}
           </div>
-          <Button variant="outline" size="sm" className="w-full h-8 text-xs gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onNavigate('settings')}
+            className="w-full h-8 text-xs gap-2"
+          >
             <Settings className="w-3 h-3" />
             Settings
           </Button>
