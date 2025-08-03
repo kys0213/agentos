@@ -772,27 +772,29 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
             </p>
           </div>
 
-          <div className="flex-1 p-4 space-y-3">
+          <div className="flex-1 p-3 space-y-2">
             {availableAgents.map((agent, index) => {
               const isActive = activeAgents.some((a) => a.id === agent.id);
 
               return (
                 <Card
                   key={index}
-                  className={`p-4 cursor-pointer transition-all ${
-                    isActive ? 'border-green-500 bg-green-50' : 'hover:shadow-md'
+                  className={`p-3 cursor-pointer transition-all duration-200 ${
+                    isActive
+                      ? 'border-green-500 bg-green-50 shadow-sm'
+                      : 'hover:shadow-md hover:border-gray-300'
                   }`}
                   onClick={() => handleAgentSelect(agent)}
                 >
                   <div className="flex items-start gap-3">
                     <div
-                      className={`w-10 h-10 ${isActive ? 'bg-green-100' : 'bg-gray-100'} rounded-lg flex items-center justify-center`}
+                      className={`w-9 h-9 ${isActive ? 'bg-green-100' : 'bg-gray-100'} rounded-lg flex items-center justify-center shadow-sm`}
                     >
-                      <span className="text-lg">{agent.icon}</span>
+                      <span className="text-base">{agent.icon}</span>
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-sm">{agent.name}</h4>
+                      <div className="flex items-center justify-between mb-1">
+                        <h4 className="font-semibold text-sm text-gray-900">{agent.name}</h4>
                         <Badge
                           variant={
                             isActive
@@ -801,19 +803,21 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                                 ? 'default'
                                 : 'secondary'
                           }
-                          className="text-xs"
+                          className="text-xs font-medium"
                         >
                           {isActive ? 'Available' : agent.status}
                         </Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground mb-1">{agent.preset}</p>
-                      <p className="text-xs text-muted-foreground">{agent.description}</p>
+                      <p className="text-xs text-gray-600 mb-1 font-medium">{agent.preset}</p>
+                      <p className="text-xs text-gray-500 mb-2 leading-relaxed">
+                        {agent.description}
+                      </p>
                       {orchestrationMode && (
-                        <div className="flex flex-wrap gap-1 mt-2">
+                        <div className="flex flex-wrap gap-1.5 mt-2">
                           {agent.keywords.slice(0, 3).map((keyword) => (
                             <span
                               key={keyword}
-                              className="text-xs bg-blue-100 text-blue-700 px-1 py-0.5 rounded"
+                              className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-md font-medium border border-blue-200"
                             >
                               {keyword}
                             </span>
