@@ -807,7 +807,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
       {/* Agent Selection Panel */}
       {showAgentPanel && (
         <div className="w-80 bg-muted flex flex-col">
-          <div className="p-4 border-b bg-white">
+          <div className="p-4 border-b bg-background">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold">Available Agents</h3>
               <Button variant="ghost" size="sm" onClick={() => setShowAgentPanel(false)}>
