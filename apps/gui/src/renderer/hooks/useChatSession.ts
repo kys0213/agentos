@@ -8,7 +8,7 @@ export interface UseChatSession {
   sessionId: string | null;
   messages: Message[];
   openSession(id: string): Promise<void>;
-  startNewSession(preset?: Preset): Promise<void>;
+  startNewSession(preset?: Preset): Promise<string>;
   send(text: string): Promise<void>;
   isLoading: boolean;
 }
@@ -70,6 +70,7 @@ export default function useChatSession(chatService: ChatService): UseChatSession
 
         setSessionId(session.id);
         setMessages([]);
+        return session.id;
       } catch (error) {
         console.error('Failed to start new session:', error);
         throw error;

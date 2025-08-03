@@ -51,7 +51,9 @@ export class IpcChannelFactory {
 
       case 'web':
       default:
-        this._instance = new WebIpcChannel();
+        // web 환경에서는 개발 중이므로 MockIpcChannel 사용
+        // 프로덕션에서는 실제 백엔드 서버와 연결할 WebIpcChannel을 사용
+        this._instance = new MockIpcChannel();
         break;
     }
 
