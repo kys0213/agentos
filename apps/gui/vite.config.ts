@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
 export default defineConfig({
+  base: './',
   plugins: [react()],
 
   // public 디렉토리를 정적 리소스로 사용

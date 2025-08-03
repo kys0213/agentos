@@ -11,8 +11,7 @@
     "clean": "rm -rf dist",
     "build": "tsc && pnpm run build:renderer",
     "build:dev": "NODE_ENV=development vite build",
-    "build:renderer": "vite build && cp public/index.html dist/renderer/",
-    "watch:renderer": "vite build --watch",
+    "build:renderer": "vite build",
     "build:mac": "pnpm run build && electron-builder --mac",
     "build:win": "pnpm run build && electron-builder --win",
     "build:linux": "pnpm run build && electron-builder --linux",
@@ -79,6 +78,7 @@
     "zustand": "^5.0.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.54.2",
     "@tailwindcss/postcss": "^4.1.11",
     "@tailwindcss/typography": "^0.5.16",
     "@types/react": "^18.2.55",

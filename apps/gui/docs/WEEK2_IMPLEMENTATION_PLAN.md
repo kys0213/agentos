@@ -18,17 +18,20 @@
 ### **Day 1-2: Command Palette 시스템 구축**
 
 #### **목표**
+
 - kbar 라이브러리 기반 Command Palette 구현
 - 키보드 중심 내비게이션 지원
 - 실용적 액션들로 생산성 향상
 
 #### **요구사항**
+
 - `Cmd+K` (Mac) / `Ctrl+K` (Windows/Linux)로 즉시 접근
 - 퍼지 검색으로 빠른 명령어 찾기
 - 계층적 메뉴 지원 (부모-자식 액션)
 - 설정 변경 시 채팅 영역 침범 절대 금지
 
 #### **성공 조건**
+
 - [ ] `Cmd+K` 단축키로 팔레트 즉시 열림
 - [ ] "new chat", "switch bridge", "mcp settings" 등 핵심 액션 포함
 - [ ] 키보드 화살표로 내비게이션 가능
@@ -90,7 +93,7 @@ const CommandPalette: React.FC = () => {
       <KBarPortal>
         <KBarPositioner className="fixed inset-0 z-50 bg-black/50">
           <KBarAnimator className="mx-auto mt-[10vh] max-w-lg overflow-hidden rounded-lg bg-white shadow-xl">
-            <KBarSearch 
+            <KBarSearch
               className="w-full border-0 border-b px-4 py-3 text-lg outline-none"
               placeholder="Type a command or search..."
             />
@@ -104,6 +107,7 @@ const CommandPalette: React.FC = () => {
 ```
 
 #### **구현 Todo**
+
 1. [ ] kbar 라이브러리 설치 및 기본 설정
 2. [ ] 핵심 액션 정의 (new-chat, switch-bridge, mcp-settings)
 3. [ ] 키보드 단축키 등록 (Cmd+K)
@@ -116,17 +120,20 @@ const CommandPalette: React.FC = () => {
 ### **Day 3-4: 설정 시스템 개선**
 
 #### **목표**
+
 - 모달 → 사이드 패널 전환으로 컨텍스트 보존
 - 실시간 설정 변경 및 즉시 테스트 기능
 - 채팅 영역 절대 침범 금지
 
 #### **요구사항**
+
 - 우측에서 슬라이드되는 설정 패널
 - 탭 기반 설정 카테고리 (LLM, MCP, Presets)
 - 설정 변경 즉시 반영 및 테스트 가능
 - 채팅 영역 레이아웃 유지
 
 #### **성공 조건**
+
 - [ ] 설정 패널이 우측에서 슬라이드 애니메이션으로 등장
 - [ ] LLM Bridge 변경 시 즉시 적용 및 테스트 가능
 - [ ] MCP 서버 추가/제거 실시간 반영
@@ -191,7 +198,7 @@ const LLMBridgeSettings: React.FC = () => {
 
   const handleQuickTest = async () => {
     if (!testMessage.trim()) return;
-    
+
     try {
       // 현재 설정된 bridge로 테스트 메시지 전송
       await sendTestMessage(testMessage);
@@ -237,8 +244,8 @@ const LLMBridgeSettings: React.FC = () => {
             onChange={(e) => setTestMessage(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleQuickTest()}
           />
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             onClick={handleQuickTest}
             disabled={!testMessage.trim() || isLoading}
             className="w-full"
@@ -253,6 +260,7 @@ const LLMBridgeSettings: React.FC = () => {
 ```
 
 #### **구현 Todo**
+
 1. [ ] Framer Motion 기반 사이드 패널 애니메이션
 2. [ ] Radix UI Tabs로 설정 카테고리 분리
 3. [ ] LLM Bridge 설정 UI 개선 (즉시 테스트 포함)
@@ -265,17 +273,20 @@ const LLMBridgeSettings: React.FC = () => {
 ### **Day 5: 순환적 워크플로우 구현**
 
 #### **목표**
+
 - Context Bridge 패턴으로 자연스러운 화면 전환
 - 채팅 → 설정 → 채팅 순환 시 컨텍스트 보존
 - 오류 상황에서 자동 설정 제안
 
 #### **요구사항**
+
 - 채팅에서 설정으로 이동 시 현재 대화 유지
 - 설정 완료 후 원래 채팅으로 복귀
 - MCP/Bridge 오류 시 자동 설정 링크 제공
 - 모든 전환에서 데이터 손실 없음
 
 #### **성공 조건**
+
 - [ ] 채팅 중 설정 변경 후 원래 대화로 복귀
 - [ ] 오류 메시지에 해당 설정으로 가는 버튼 자동 생성
 - [ ] 설정 변경 후 채팅에서 즉시 반영 확인 가능
@@ -307,7 +318,7 @@ const useContextBridge = () => {
     });
 
     navigate('settings');
-    
+
     // 특정 섹션으로 바로 이동
     if (section) {
       useAppStore.setState(state => ({
@@ -325,7 +336,7 @@ const useContextBridge = () => {
     }
 
     navigate('chat');
-    
+
     // 설정 변경 결과가 있다면 채팅에서 확인 메시지 표시
     if (returnData) {
       showSettingsAppliedToast(returnData);
@@ -433,6 +444,7 @@ const showSettingsAppliedToast = (data: Record<string, any>) => {
 ```
 
 #### **구현 Todo**
+
 1. [ ] Context Bridge Hook 구현 (goToSettings, backToChat)
 2. [ ] 스마트 에러 메시지 컴포넌트 (자동 설정 링크)
 3. [ ] 설정 패널에 "Back to Chat" 버튼 추가
@@ -445,6 +457,7 @@ const showSettingsAppliedToast = (data: Record<string, any>) => {
 ## 🧪 테스트 계획
 
 ### **단위 테스트**
+
 ```typescript
 // Command Palette 테스트
 describe('CommandPalette', () => {
@@ -476,6 +489,7 @@ describe('useContextBridge', () => {
 ```
 
 ### **E2E 테스트**
+
 ```typescript
 test('순환적 워크플로우: 채팅 → 설정 → 채팅', async ({ page }) => {
   // 1. 채팅 시작
@@ -502,12 +516,14 @@ test('순환적 워크플로우: 채팅 → 설정 → 채팅', async ({ page })
 ## 📊 성공 지표
 
 ### **정량적 지표**
+
 - Command Palette 접근 시간: < 0.5초
-- 설정 → 채팅 복귀 시간: < 1초  
+- 설정 → 채팅 복귀 시간: < 1초
 - 키보드 내비게이션 성공률: 100%
 - 컨텍스트 보존 성공률: 100%
 
 ### **정성적 지표**
+
 - 설정 변경이 "자연스럽고" "끊김없이" 느껴짐
 - 채팅 중단 없이 설정 조정 가능
 - 오류 상황에서 해결 방법이 명확함

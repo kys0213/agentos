@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@chakra-ui/react';
-import { useUIState, useUIActions } from '../../stores/app-store';
 
 interface SidebarToggleProps {
   side: 'left' | 'right';
@@ -8,17 +7,17 @@ interface SidebarToggleProps {
 }
 
 /**
- * 사이드바 토글 버튼 컴포넌트
- * - 좌/우 사이드바 독립적 토글
- * - 반응형 아이콘 표시
- * - 접근성 지원
+ * 사이드바 토글 버튼 컴포넌트 (임시 간소화)
+ * - store 의존성 제거하여 무한 렌더링 방지
+ * - Week 2 UX 기능 테스트 후 복원 예정
  */
 const SidebarToggle: React.FC<SidebarToggleProps> = ({ side, className = '' }) => {
-  const { leftSidebarOpen, rightSidebarOpen } = useUIState();
-  const { toggleLeftSidebar, toggleRightSidebar } = useUIActions();
+  const [isOpen, setIsOpen] = useState(true); // 기본값으로 열린 상태
 
-  const isOpen = side === 'left' ? leftSidebarOpen : rightSidebarOpen;
-  const toggle = side === 'left' ? toggleLeftSidebar : toggleRightSidebar;
+  const toggle = () => {
+    setIsOpen(!isOpen);
+    console.log(`${side} sidebar toggle - temporarily using local state`);
+  };
 
   const icon =
     side === 'left'

@@ -25,6 +25,7 @@ AGENTS.md에는 다음과 같은 핵심 내용이 포함되어 있습니다:
 **모든 코딩 작업 시 반드시 따라야 하는 Git 지침:**
 
 ### 1. 작업 시작 전 브랜치 생성 (필수)
+
 ```bash
 # 작업 시작 전 반드시 브랜치 생성
 git checkout -b feature/descriptive-name
@@ -34,6 +35,7 @@ git checkout -b feature/descriptive-name
 ```
 
 ### 2. TODO별 커밋 전략 (필수)
+
 - **각 TODO 항목 완료 시마다 즉시 커밋**
 - **절대 여러 TODO를 한번에 커밋하지 말 것**
 - **의미있는 커밋 메시지 필수**
@@ -53,6 +55,7 @@ git commit -m "feat: implement Command Palette keyboard shortcuts (Cmd+K)
 ```
 
 ### 3. 커밋 메시지 형식 (필수)
+
 ```
 feat: 구체적인 기능 설명
 
@@ -67,13 +70,16 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ### 4. 금지사항
+
 - ❌ main 브랜치에서 직접 작업
 - ❌ 여러 TODO를 한번에 커밋
 - ❌ 의미없는 커밋 메시지 ("update", "fix", "add" 등)
 - ❌ 작업 완료 후 한번에 모든 것을 커밋
 
 ### 5. 준수 확인
+
 모든 작업에서 다음을 확인:
+
 - [ ] 브랜치 생성했는가?
 - [ ] TODO별로 커밋했는가?
 - [ ] 커밋 메시지가 구체적인가?

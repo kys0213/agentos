@@ -1,5 +1,4 @@
-import React from 'react';
-import { useUIState } from '../../stores/app-store';
+import React, { useState } from 'react';
 import LeftSidebar from './LeftSidebar';
 import RightSidebar from './RightSidebar';
 import ChatArea from './ChatArea';
@@ -7,14 +6,13 @@ import CommandPalette from '../ui/CommandPalette';
 import SettingsPanel from '../ui/SettingsPanel';
 
 /**
- * 메인 앱 레이아웃 컴포넌트
- * - CSS Grid 기반 고정 레이아웃
- * - 채팅 영역 절대 보호
- * - 반응형 사이드바 시스템
- * - Tailwind CSS 기반 현대적 스타일링
+ * 메인 앱 레이아웃 컴포넌트 (임시 간소화)
+ * - store 의존성 제거하여 무한 렌더링 방지
+ * - Week 2 UX 기능 테스트 후 복원 예정
  */
 const AppLayout: React.FC = () => {
-  const { leftSidebarOpen, rightSidebarOpen } = useUIState();
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
 
   // CSS Grid 클래스 결정
   const getGridClass = () => {
@@ -30,8 +28,9 @@ const AppLayout: React.FC = () => {
   };
 
   return (
-    <CommandPalette>
-      <div className={`layout-grid ${getGridClass()}`}>
+    <>
+      {/* CommandPalette 제거하고 직접 레이아웃 렌더링 */}
+      <div className={`layout-grid ${getGridClass()}`} data-testid="app-layout">
         {/* 좌측 사이드바 - 네비게이션 + 액션 */}
         <div className={`sidebar sidebar-left ${leftSidebarOpen ? 'block' : 'hidden'}`}>
           <LeftSidebar />
@@ -50,7 +49,10 @@ const AppLayout: React.FC = () => {
 
       {/* 설정 패널 - 고정 위치, 채팅 영역과 독립적 */}
       <SettingsPanel />
-    </CommandPalette>
+
+      {/* CommandPalette 별도 렌더링 */}
+      <CommandPalette />
+    </>
   );
 };
 

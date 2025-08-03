@@ -1,85 +1,47 @@
 import React from 'react';
-import { Box, Input } from '@chakra-ui/react';
-import { useChatSessions, useSendMessage } from '../../hooks/queries/use-chat-sessions';
-import { useChatState, useChatActions } from '../../stores/app-store';
-import ChatTabs from '../ChatTabs';
-import ChatMessageList from '../ChatMessageList';
-import ChatInput from '../ChatInput';
-import useChatSession from '../../hooks/useChatSession';
-import useMessageSearch from '../../hooks/useMessageSearch';
-import { Services } from '../../bootstrap';
+import { Box, Text } from '@chakra-ui/react';
 
 /**
- * 채팅 컨테이너 컴포넌트
- * - 채팅 관련 모든 로직과 UI 관리
- * - 탭, 메시지 리스트, 입력, 검색 포함
- * - ChatApp.tsx에서 채팅 관련 로직 분리
+ * 채팅 컨테이너 컴포넌트 (임시 간소화)
+ * - store 의존성 제거하여 무한 렌더링 방지
+ * - Week 2 UX 기능 테스트 후 복원 예정
  */
 const ChatContainer: React.FC = () => {
-  const chatState = useChatState();
-  const chatActions = useChatActions();
-
-  // React Query 데이터
-  const { data: sessions = [], refetch: refetchSessions } = useChatSessions();
-  const sendMessageMutation = useSendMessage();
-
-  // 기존 훅 (점진적 마이그레이션)
-  const { sessionId, messages, openSession, send } = useChatSession(Services.getChat());
-  const filteredMessages = useMessageSearch(messages, chatState.searchTerm);
-
-  // 세션 열기 핸들러
-  const handleOpenSession = React.useCallback(
-    async (id: string) => {
-      await openSession(id);
-      chatActions.addTab(id);
-    },
-    [openSession, chatActions]
-  );
-
-  // 메시지 전송 핸들러
-  const handleSend = async (text: string) => {
-    if (!sessionId) return;
-
-    try {
-      chatActions.setBusy(true);
-      await send(text);
-      refetchSessions();
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      chatActions.setBusy(false);
-    }
-  };
-
   return (
-    <Box p={2} display="flex" flexDirection="column" h="100%">
-      {/* 채팅 탭 */}
-      <ChatTabs
-        tabs={chatState.openTabIds.map((id) => ({
-          id,
-          title: sessions.find((s) => s.id === id)?.title || id,
-        }))}
-        activeTabId={chatState.activeSessionId || ''}
-        onSelect={handleOpenSession}
-      />
+    <Box className="h-full flex flex-col p-4">
+      <div className="flex-1 flex flex-col space-y-4">
+        {/* 헤더 */}
+        <div className="border-b pb-2">
+          <Text className="text-lg font-semibold text-gray-900">
+            Chat Area (Week 2 UX Testing Mode)
+          </Text>
+          <Text className="text-sm text-gray-600">
+            Temporarily simplified to prevent infinite rendering
+          </Text>
+        </div>
 
-      {/* 메시지 검색 */}
-      <Input
-        placeholder="Search messages"
-        value={chatState.searchTerm}
-        onChange={(e) => chatActions.setSearchTerm(e.target.value)}
-        mb={2}
-        size="sm"
-      />
+        {/* Mock 채팅 메시지들 */}
+        <div className="flex-1 space-y-3">
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <Text className="text-sm font-medium text-blue-800">User</Text>
+            <Text className="text-gray-700">Hello, this is a mock chat message</Text>
+          </div>
 
-      {/* 메시지 리스트 */}
-      <ChatMessageList
-        messages={filteredMessages}
-        loading={chatState.busy || sendMessageMutation.isPending}
-      />
+          <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <Text className="text-sm font-medium text-gray-800">Assistant</Text>
+            <Text className="text-gray-700">This is a mock response from the assistant</Text>
+          </div>
+        </div>
 
-      {/* 채팅 입력 */}
-      <ChatInput onSend={handleSend} disabled={chatState.busy || sendMessageMutation.isPending} />
+        {/* Mock 입력창 */}
+        <div className="border-t pt-4">
+          <div className="p-3 border border-gray-300 rounded bg-white">
+            <Text className="text-gray-500 text-sm">
+              Mock chat input (functionality disabled during debugging)
+            </Text>
+          </div>
+        </div>
+      </div>
     </Box>
   );
 };

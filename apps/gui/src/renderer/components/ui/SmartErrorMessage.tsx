@@ -21,7 +21,7 @@ interface SmartErrorMessageProps {
 
 const SmartErrorMessage: React.FC<SmartErrorMessageProps> = ({ message, className = '' }) => {
   const { getErrorActions } = useErrorToSettingsLink();
-  
+
   if (message.type !== 'error') {
     // 에러가 아닌 경우 기본 메시지 표시
     return (
@@ -38,19 +38,13 @@ const SmartErrorMessage: React.FC<SmartErrorMessageProps> = ({ message, classNam
       <div className="flex items-start space-x-3">
         <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
         <div className="flex-1">
-          <h4 className="text-sm font-medium text-red-800 mb-1">
-            Error Occurred
-          </h4>
-          <p className="text-sm text-red-700 mb-3">
-            {message.content}
-          </p>
-          
+          <h4 className="text-sm font-medium text-red-800 mb-1">Error Occurred</h4>
+          <p className="text-sm text-red-700 mb-3">{message.content}</p>
+
           {/* 자동 생성된 해결 액션들 */}
           {errorActions.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-medium text-red-800">
-                Suggested Actions:
-              </p>
+              <p className="text-xs font-medium text-red-800">Suggested Actions:</p>
               <div className="flex flex-wrap gap-2">
                 {errorActions.map((action, index) => (
                   <button
@@ -94,59 +88,59 @@ const SmartErrorMessage: React.FC<SmartErrorMessageProps> = ({ message, classNam
  */
 export const ErrorExamples = {
   MCPError: () => (
-    <SmartErrorMessage 
+    <SmartErrorMessage
       message={{
         id: '1',
         content: 'MCP server connection failed: Could not connect to localhost:8080',
         type: 'error',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }}
     />
   ),
 
   BridgeError: () => (
-    <SmartErrorMessage 
+    <SmartErrorMessage
       message={{
-        id: '2', 
+        id: '2',
         content: 'LLM Bridge error: Invalid API configuration for Claude bridge',
         type: 'error',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }}
     />
   ),
 
   AuthError: () => (
-    <SmartErrorMessage 
+    <SmartErrorMessage
       message={{
         id: '3',
         content: 'Authentication failed: API key is invalid or expired',
-        type: 'error', 
-        timestamp: Date.now()
+        type: 'error',
+        timestamp: Date.now(),
       }}
     />
   ),
 
   PresetError: () => (
-    <SmartErrorMessage 
+    <SmartErrorMessage
       message={{
         id: '4',
         content: 'Preset "Code Review" could not be loaded: Configuration is corrupted',
         type: 'error',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }}
     />
   ),
 
   GenericError: () => (
-    <SmartErrorMessage 
+    <SmartErrorMessage
       message={{
         id: '5',
         content: 'An unexpected error occurred while processing your request',
         type: 'error',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }}
     />
-  )
+  ),
 };
 
 export default SmartErrorMessage;
