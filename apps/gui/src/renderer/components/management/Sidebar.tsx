@@ -23,7 +23,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => 
   ] as const;
 
   return (
-    <div className="w-64 bg-gray-50 border-r flex flex-col">
+    <div className="w-64 bg-gray-50 border-r border-gray-100 flex flex-col">
       <div className="p-4 border-b bg-white">
         <h2 className="font-semibold text-lg">Management</h2>
         <p className="text-sm text-muted-foreground">System configuration</p>

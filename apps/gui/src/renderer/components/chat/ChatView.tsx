@@ -1,62 +1,55 @@
+import {
+  BarChart3,
+  Bot,
+  Brain,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Code,
+  Copy,
+  Cpu,
+  FileText,
+  Home,
+  Image as ImageIcon,
+  Layers,
+  Lightbulb,
+  MessageSquare,
+  Network,
+  Paperclip,
+  Plus,
+  Search,
+  Send,
+  Settings,
+  Sparkles,
+  Target,
+  ThumbsDown,
+  ThumbsUp,
+  User,
+  UserMinus,
+  Users,
+  Wrench,
+  X,
+} from 'lucide-react';
 import React, { useState } from 'react';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
-import { Avatar } from '../ui/avatar';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Input } from '../ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import ChatHistory from './ChatHistory';
-import {
-  Send,
-  Bot,
-  User,
-  Settings,
-  Copy,
-  ThumbsUp,
-  ThumbsDown,
-  MoreVertical,
-  Plus,
-  MessageSquare,
-  Sparkles,
-  Zap,
-  Code,
-  BarChart3,
-  FileText,
-  Image as ImageIcon,
-  Paperclip,
-  ChevronRight,
-  ChevronLeft,
-  X,
-  Home,
-  Layers,
-  Cpu,
-  Wrench,
-  Network,
-  Users,
-  Minus,
-  UserMinus,
-  Info,
-  Brain,
-  ArrowRight,
-  ArrowDown,
-  CheckCircle,
-  Search,
-  Target,
-  Lightbulb,
-} from 'lucide-react';
 
 import {
-  ChatMessage,
-  ReasoningStep,
-  ChatSession,
-  QuickAction,
   ActiveAgent,
   AppModeState,
+  ChatMessage,
+  ChatSession,
+  QuickAction,
+  ReasoningStep,
 } from '../../types/chat-types';
 
 import {
-  MockReasoningService,
   MockAgentOrchestrator,
+  MockReasoningService,
   getAvailableAgents,
   getChatSessions,
 } from '../../services/mock';
@@ -114,16 +107,6 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
       description: 'AI를 활용한 이미지 생성',
       category: 'creative',
     },
-  ];
-
-  const quickNavItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'presets', label: 'Presets', icon: Layers },
-    { id: 'subagents', label: 'Agents', icon: Bot },
-    { id: 'models', label: 'Models', icon: Cpu },
-    { id: 'tools', label: 'Tools', icon: Wrench },
-    { id: 'racp', label: 'RACP', icon: Network },
-    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   const handleSelectChat = (chat: ChatSession) => {
@@ -536,70 +519,36 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
   return (
     <div className="flex h-full">
       {/* Chat History Sidebar */}
-      <div className="flex flex-col">
-        <div className="flex-1">
-          <ChatHistory
-            onSelectChat={handleSelectChat}
-            onNewChat={handleNewChat}
-            selectedChatId={selectedChat?.id}
-          />
-        </div>
-
-        {/* Quick Navigation */}
-        <div className="border-t bg-white p-3">
-          <div className="space-y-2">
-            <h4 className="text-xs font-medium text-muted-foreground mb-2">Quick Access</h4>
-            <div className="grid grid-cols-2 gap-1">
-              {quickNavItems.slice(0, 6).map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Button
-                    key={item.id}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onNavigate(item.id as AppModeState['activeSection'])}
-                    className="h-8 text-xs justify-start gap-2 px-2"
-                  >
-                    <Icon className="w-3 h-3" />
-                    {item.label}
-                  </Button>
-                );
-              })}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onNavigate('settings')}
-              className="w-full h-8 text-xs gap-2"
-            >
-              <Settings className="w-3 h-3" />
-              Settings
-            </Button>
-          </div>
-        </div>
-      </div>
+      <ChatHistory
+        onSelectChat={handleSelectChat}
+        onNewChat={handleNewChat}
+        selectedChatId={selectedChat?.id}
+        onNavigate={onNavigate}
+      />
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-background">
         {/* Chat Header with Orchestration Mode Toggle */}
-        <div className="border-b bg-white p-4">
+        <div className="border-b bg-white px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-white" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-sm">
+                <MessageSquare className="w-4 h-4 text-white" />
               </div>
-              <div>
-                <h1 className="text-lg font-semibold">
+              <div className="min-w-0">
+                <h1 className="text-lg font-semibold text-gray-900 truncate">
                   {selectedChat ? selectedChat.title : 'New Chat'}
                 </h1>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
                   {orchestrationMode ? (
-                    <span>
-                      🧠 Reasoning Mode • {activeAgents.length} specialist
+                    <span className="flex items-center gap-1">
+                      <Brain className="w-3 h-3 text-purple-500" />
+                      Reasoning Mode • {activeAgents.length} specialist
                       {activeAgents.length > 1 ? 's' : ''} available
                     </span>
                   ) : (
-                    <span>
+                    <span className="flex items-center gap-1">
+                      <Bot className="w-3 h-3 text-blue-500" />
                       {activeAgents.length} agent{activeAgents.length > 1 ? 's' : ''} active
                     </span>
                   )}
@@ -608,32 +557,34 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
 
               {/* Agent Avatars */}
               {(orchestrationMode || activeAgents.length > 0) && (
-                <div className="ml-6">{renderAgentAvatars()}</div>
+                <div className="ml-4">{renderAgentAvatars()}</div>
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Button
                 variant={orchestrationMode ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setOrchestrationMode(!orchestrationMode)}
+                className="h-8"
               >
-                <Brain className="w-4 h-4 mr-2" />
+                <Brain className="w-3 h-3 mr-2" />
                 {orchestrationMode ? 'Reasoning' : 'Direct Mode'}
               </Button>
-              <Button variant="outline" size="sm">
-                <Settings className="w-4 h-4 mr-2" />
+              <Button variant="outline" size="sm" className="h-8">
+                <Settings className="w-3 h-3 mr-2" />
                 Settings
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowAgentPanel(!showAgentPanel)}
+                className="h-8 w-8 p-0"
               >
                 {showAgentPanel ? (
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-3 h-3" />
                 ) : (
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-3 h-3" />
                 )}
               </Button>
             </div>
@@ -806,8 +757,8 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
 
       {/* Agent Selection Panel */}
       {showAgentPanel && (
-        <div className="w-80 border-l bg-gray-50 flex flex-col">
-          <div className="p-4 border-b bg-white">
+        <div className="w-80 bg-muted flex flex-col border-l border-gray-100">
+          <div className="px-4 py-4 border-b bg-background">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold">Available Agents</h3>
               <Button variant="ghost" size="sm" onClick={() => setShowAgentPanel(false)}>
@@ -821,27 +772,29 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
             </p>
           </div>
 
-          <div className="flex-1 p-4 space-y-3">
+          <div className="flex-1 p-3 space-y-2">
             {availableAgents.map((agent, index) => {
               const isActive = activeAgents.some((a) => a.id === agent.id);
 
               return (
                 <Card
                   key={index}
-                  className={`p-4 cursor-pointer transition-all ${
-                    isActive ? 'border-green-500 bg-green-50' : 'hover:shadow-md'
+                  className={`p-3 cursor-pointer transition-all duration-200 ${
+                    isActive
+                      ? 'border-green-500 bg-green-50 shadow-sm'
+                      : 'hover:shadow-md hover:border-gray-100'
                   }`}
                   onClick={() => handleAgentSelect(agent)}
                 >
                   <div className="flex items-start gap-3">
                     <div
-                      className={`w-10 h-10 ${isActive ? 'bg-green-100' : 'bg-gray-100'} rounded-lg flex items-center justify-center`}
+                      className={`w-9 h-9 ${isActive ? 'bg-green-100' : 'bg-gray-100'} rounded-lg flex items-center justify-center shadow-sm`}
                     >
-                      <span className="text-lg">{agent.icon}</span>
+                      <span className="text-base">{agent.icon}</span>
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-sm">{agent.name}</h4>
+                      <div className="flex items-center justify-between mb-1">
+                        <h4 className="font-semibold text-sm text-gray-900">{agent.name}</h4>
                         <Badge
                           variant={
                             isActive
@@ -850,19 +803,21 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                                 ? 'default'
                                 : 'secondary'
                           }
-                          className="text-xs"
+                          className="text-xs font-medium"
                         >
                           {isActive ? 'Available' : agent.status}
                         </Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground mb-1">{agent.preset}</p>
-                      <p className="text-xs text-muted-foreground">{agent.description}</p>
+                      <p className="text-xs text-gray-600 mb-1 font-medium">{agent.preset}</p>
+                      <p className="text-xs text-gray-500 mb-2 leading-relaxed">
+                        {agent.description}
+                      </p>
                       {orchestrationMode && (
-                        <div className="flex flex-wrap gap-1 mt-2">
+                        <div className="flex flex-wrap gap-1.5 mt-2">
                           {agent.keywords.slice(0, 3).map((keyword) => (
                             <span
                               key={keyword}
-                              className="text-xs bg-blue-100 text-blue-700 px-1 py-0.5 rounded"
+                              className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-md font-medium border border-blue-200"
                             >
                               {keyword}
                             </span>
@@ -876,7 +831,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
             })}
           </div>
 
-          <div className="p-4 border-t bg-white">
+          <div className="px-4 py-4 border-t bg-white">
             <Button variant="outline" className="w-full" onClick={() => onNavigate('subagents')}>
               <Settings className="w-4 h-4 mr-2" />
               Manage Agents

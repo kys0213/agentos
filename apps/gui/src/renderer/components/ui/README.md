@@ -5,6 +5,7 @@ This directory contains shadcn/ui style components for the AgentOS GUI applicati
 ## Available Components
 
 ### Button (`button.tsx`)
+
 Standard button component with multiple variants and sizes.
 
 ```tsx
@@ -16,15 +17,17 @@ import { Button } from './ui/button';
 ```
 
 ### Input (`input.tsx`)
+
 Text input component with focus styling.
 
 ```tsx
 import { Input } from './ui/input';
 
-<Input placeholder="Enter text..." />
+<Input placeholder="Enter text..." />;
 ```
 
 ### Badge (`badge.tsx`)
+
 Badge/label component for status indicators.
 
 ```tsx
@@ -35,6 +38,7 @@ import { Badge } from './ui/badge';
 ```
 
 ### Card (`card.tsx`)
+
 Card container with header, content, and footer sections.
 
 ```tsx
@@ -45,13 +49,12 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './ui/
     <CardTitle>Title</CardTitle>
     <CardDescription>Description</CardDescription>
   </CardHeader>
-  <CardContent>
-    Content here
-  </CardContent>
-</Card>
+  <CardContent>Content here</CardContent>
+</Card>;
 ```
 
 ### Avatar (`avatar.tsx`)
+
 Avatar component with image and fallback support.
 
 ```tsx
@@ -60,10 +63,11 @@ import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 <Avatar>
   <AvatarImage src="/avatar.png" alt="User" />
   <AvatarFallback>UN</AvatarFallback>
-</Avatar>
+</Avatar>;
 ```
 
 ### Popover (`popover.tsx`)
+
 Popover component for floating content.
 
 ```tsx
@@ -73,10 +77,8 @@ import { Popover, PopoverTrigger, PopoverContent } from './ui/popover';
   <PopoverTrigger asChild>
     <Button>Open</Button>
   </PopoverTrigger>
-  <PopoverContent>
-    Popover content
-  </PopoverContent>
-</Popover>
+  <PopoverContent>Popover content</PopoverContent>
+</Popover>;
 ```
 
 ## Import All Components
@@ -95,7 +97,7 @@ import {
   AvatarFallback,
   Popover,
   PopoverTrigger,
-  PopoverContent
+  PopoverContent,
 } from './ui';
 ```
 
