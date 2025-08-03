@@ -16,7 +16,7 @@ test.describe('Web GUI Basic Functionality', () => {
 
   test('should load without infinite rendering errors', async ({ page }) => {
     const errors: string[] = [];
-    
+
     page.on('console', (msg) => {
       if (msg.type() === 'error' && msg.text().includes('Maximum update depth')) {
         errors.push(msg.text());
@@ -37,7 +37,7 @@ test.describe('Web GUI Basic Functionality', () => {
 
   test('should handle button clicks correctly', async ({ page }) => {
     const consoleLogs: string[] = [];
-    
+
     page.on('console', (msg) => {
       if (msg.type() === 'log') {
         consoleLogs.push(msg.text());
@@ -46,12 +46,12 @@ test.describe('Web GUI Basic Functionality', () => {
 
     await page.getByRole('button', { name: '➕ New Chat' }).click();
     await page.waitForTimeout(500);
-    
-    expect(consoleLogs.some(log => log.includes('New Chat clicked'))).toBeTruthy();
+
+    expect(consoleLogs.some((log) => log.includes('New Chat clicked'))).toBeTruthy();
 
     await page.getByRole('button', { name: '⚙️ Settings' }).click();
     await page.waitForTimeout(500);
-    
-    expect(consoleLogs.some(log => log.includes('Settings clicked'))).toBeTruthy();
+
+    expect(consoleLogs.some((log) => log.includes('Settings clicked'))).toBeTruthy();
   });
 });
