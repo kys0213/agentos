@@ -424,7 +424,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-64 p-0" align="start">
-                <div className="p-4 border-b border-gray-200">
+                <div className="p-4 border-b">
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-10 h-10 ${orchestrator.getAgentColor(agent.id)} rounded-full flex items-center justify-center`}
@@ -466,7 +466,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-72 p-0" align="start">
-              <div className="p-3 border-b border-gray-200">
+              <div className="p-3 border-b">
                 <h4 className="font-medium">Add Agent to Chat</h4>
                 <p className="text-xs text-muted-foreground">
                   {orchestrationMode
@@ -480,7 +480,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                   .map((agent) => (
                     <div
                       key={agent.id}
-                      className="w-full p-3 hover:bg-gray-50 flex items-center gap-3 cursor-pointer border-b border-gray-200 last:border-b-0 transition-colors"
+                      className="w-full p-3 hover:bg-gray-50 flex items-center gap-3 cursor-pointer border-b last:border-b-0 transition-colors"
                       onClick={() => handleAgentSelect(agent)}
                     >
                       <div
@@ -529,7 +529,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col bg-background">
         {/* Chat Header with Orchestration Mode Toggle */}
-        <div className="border-b border-gray-200 bg-white px-6 py-4">
+        <div className="border-b bg-white px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-sm">
@@ -722,7 +722,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-gray-200 bg-white p-4">
+        <div className="border-t bg-white p-4">
           <div className="flex gap-3">
             <div className="flex-1 relative">
               <Input
@@ -758,7 +758,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
       {/* Agent Selection Panel */}
       {showAgentPanel && (
         <div className="w-80 bg-muted flex flex-col border-l border-gray-100">
-          <div className="px-4 py-4 border-b border-gray-200 bg-background">
+          <div className="px-4 py-4 border-b bg-background">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold">Available Agents</h3>
               <Button variant="ghost" size="sm" onClick={() => setShowAgentPanel(false)}>
@@ -831,7 +831,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
             })}
           </div>
 
-          <div className="px-4 py-4 border-t border-gray-200 bg-white">
+          <div className="px-4 py-4 border-t bg-white">
             <Button variant="outline" className="w-full" onClick={() => onNavigate('subagents')}>
               <Settings className="w-4 h-4 mr-2" />
               Manage Agents
