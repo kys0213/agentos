@@ -44,6 +44,10 @@ const AppLayoutV2: React.FC = () => {
           activeSection={appMode.activeSection}
           onSectionChange={handleSectionChange}
           onBackToChat={handleNavigateToChat}
+          onOpenChat={(_agentId, _agentName, _agentPreset) => {
+            // Could pass these to ChatView if needed for specific agent selection
+            handleNavigateToChat();
+          }}
         />
       )}
     </div>

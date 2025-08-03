@@ -3,11 +3,16 @@ import { AppModeState } from '../../types/chat-types';
 import Sidebar from './Sidebar';
 import { Button } from '../ui/button';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
+import { Dashboard } from './Dashboard';
+import { PresetManager } from './PresetManager';
+import { SubAgentManager } from './SubAgentManager';
+import { ModelManager } from './ModelManager';
 
 interface ManagementViewProps {
   activeSection: AppModeState['activeSection'];
   onSectionChange: (section: AppModeState['activeSection']) => void;
   onBackToChat: () => void;
+  onOpenChat?: (agentId?: number, agentName?: string, agentPreset?: string) => void;
 }
 
 /**
@@ -17,37 +22,23 @@ const ManagementView: React.FC<ManagementViewProps> = ({
   activeSection,
   onSectionChange,
   onBackToChat,
+  onOpenChat,
 }) => {
+  const handleOpenChat = (agentId?: number, agentName?: string, agentPreset?: string) => {
+    onOpenChat?.(agentId, agentName, agentPreset);
+    onBackToChat();
+  };
+
   const renderManagementContent = () => {
     switch (activeSection) {
       case 'dashboard':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-semibold">Dashboard</h1>
-            <p className="text-muted-foreground">Dashboard content coming soon...</p>
-          </div>
-        );
+        return <Dashboard onOpenChat={handleOpenChat} />;
       case 'presets':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-semibold">Presets</h1>
-            <p className="text-muted-foreground">Preset management coming soon...</p>
-          </div>
-        );
+        return <PresetManager />;
       case 'subagents':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-semibold">Agents</h1>
-            <p className="text-muted-foreground">Agent management coming soon...</p>
-          </div>
-        );
+        return <SubAgentManager onOpenChat={handleOpenChat} />;
       case 'models':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-semibold">Models</h1>
-            <p className="text-muted-foreground">Model configuration coming soon...</p>
-          </div>
-        );
+        return <ModelManager />;
       case 'tools':
         return (
           <div className="p-6">
