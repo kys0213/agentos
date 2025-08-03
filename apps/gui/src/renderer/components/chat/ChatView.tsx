@@ -782,7 +782,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                   className={`p-3 cursor-pointer transition-all duration-200 ${
                     isActive
                       ? 'border-green-500 bg-green-50 shadow-sm'
-                      : 'hover:shadow-md hover:border-gray-300'
+                      : 'hover:shadow-md hover:border-gray-200'
                   }`}
                   onClick={() => handleAgentSelect(agent)}
                 >
