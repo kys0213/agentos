@@ -1,33 +1,25 @@
-import React, { useState } from 'react';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Input } from '../ui/input';
 import {
-  Plus,
-  Edit,
-  Copy,
-  Trash2,
-  Search,
-  Filter,
-  Settings,
   Bot,
-  Code,
-  Layers,
   Calendar,
-  User,
-  ChevronRight,
-  Save,
-  X,
-  Upload,
-  Download,
-  Eye,
-  Wrench,
-  Cpu,
-  FileText,
   CheckCircle2,
-  AlertCircle,
+  Code,
+  Copy,
+  Cpu,
+  Edit,
+  Eye,
+  Filter,
+  Layers,
+  Plus,
+  Search,
+  Settings,
+  Upload,
+  User,
 } from 'lucide-react';
+import { useState } from 'react';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Input } from '../ui/input';
 
 // Types based on the core interface
 interface Preset {

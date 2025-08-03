@@ -44,12 +44,12 @@ import {
   ChatMessage,
   ChatSession,
   QuickAction,
-  ReasoningStep,
+  OrchestrationStep,
 } from '../../types/chat-types';
 
 import {
   MockAgentOrchestrator,
-  MockReasoningService,
+  MockOrchestrationService,
   getAvailableAgents,
   getChatSessions,
 } from '../../services/mock';
@@ -67,10 +67,12 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
   const [showAgentPanel, setShowAgentPanel] = useState(true);
   const [selectedAgentForMenu, setSelectedAgentForMenu] = useState<string | null>(null);
   const [orchestrationMode, setOrchestrationMode] = useState(true);
-  const [currentReasoningSteps, setCurrentReasoningSteps] = useState<ReasoningStep[]>([]);
+  const [currentOrchestrationSteps, setCurrentOrchestrationSteps] = useState<OrchestrationStep[]>(
+    []
+  );
 
   // 서비스 인스턴스
-  const reasoningService = new MockReasoningService();
+  const orchestrationService = new MockOrchestrationService();
   const orchestrator = new MockAgentOrchestrator();
   const availableAgents = getAvailableAgents();
   const chatSessions = getChatSessions();
@@ -168,31 +170,31 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
     setIsTyping(true);
 
     if (orchestrationMode && activeAgents.length > 0) {
-      // Orchestrated mode with reasoning steps
+      // Orchestrated mode with orchestration steps
       setTimeout(() => {
-        const { matchedAgents, steps } = reasoningService.analyzeQueryWithSteps(
+        const { matchedAgents, steps } = orchestrationService.analyzeQueryWithSteps(
           currentQuery,
           activeAgents.map((a) => a.id)
         );
-        setCurrentReasoningSteps(steps);
+        setCurrentOrchestrationSteps(steps);
 
-        // Create reasoning message
-        const reasoningMessage: ChatMessage = {
+        // Create orchestrated message
+        const orchestratedMessage: ChatMessage = {
           id: messages.length + 2,
-          type: 'reasoning',
+          type: 'orchestration',
           content: '질문을 분석하여 적절한 전문가를 찾고 있습니다...',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           agentName: mainAgent.name,
           agentPreset: mainAgent.preset,
           agentId: mainAgent.id,
-          reasoningSteps: steps,
+          orchestrationSteps: steps,
         };
 
-        setMessages((prev) => [...prev, reasoningMessage]);
+        setMessages((prev) => [...prev, orchestratedMessage]);
 
         setTimeout(() => {
           setIsTyping(false);
-          setCurrentReasoningSteps([]);
+          setCurrentOrchestrationSteps([]);
 
           if (matchedAgents.length > 0) {
             // Generate responses from matched agents
@@ -312,14 +314,14 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
         return <User className="w-4 h-4" />;
       case 'agent':
         return <Bot className="w-4 h-4" />;
-      case 'reasoning':
+      case 'orchestration':
         return <Brain className="w-4 h-4 text-purple-500" />;
       default:
         return <Sparkles className="w-4 h-4" />;
     }
   };
 
-  const getReasoningStepIcon = (stepType: string) => {
+  const getOrchestrationStepIcon = (stepType: string) => {
     switch (stepType) {
       case 'analysis':
         return <Search className="w-4 h-4 text-blue-500" />;
@@ -340,7 +342,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
         return 'bg-blue-50 border-blue-200';
       case 'agent':
         return 'bg-green-50 border-green-200';
-      case 'reasoning':
+      case 'orchestration':
         return 'bg-purple-50 border-purple-200';
       case 'system':
         return 'bg-gray-50 border-gray-200';
@@ -349,7 +351,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
     }
   };
 
-  const renderReasoningSteps = (steps: ReasoningStep[]) => {
+  const renderOrchestrationSteps = (steps: OrchestrationStep[]) => {
     return (
       <div className="mt-4 space-y-3">
         {steps.map((step, index) => (
@@ -360,7 +362,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                   step.isCompleted ? 'bg-green-100' : 'bg-gray-100'
                 }`}
               >
-                {getReasoningStepIcon(step.type)}
+                {getOrchestrationStepIcon(step.type)}
               </div>
               {index < steps.length - 1 && <div className="w-0.5 h-4 bg-gray-300 mt-2"></div>}
             </div>
@@ -400,7 +402,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
           {orchestrationMode && (
             <div className="relative w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center border-2 border-white z-50">
               <span className="text-xs text-white">{mainAgent.icon}</span>
-              {currentReasoningSteps.length > 0 && (
+              {currentOrchestrationSteps.length > 0 && (
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-400 rounded-full animate-pulse"></div>
               )}
             </div>
@@ -543,7 +545,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                   {orchestrationMode ? (
                     <span className="flex items-center gap-1">
                       <Brain className="w-3 h-3 text-purple-500" />
-                      Reasoning Mode • {activeAgents.length} specialist
+                      Orchestration Mode • {activeAgents.length} specialist
                       {activeAgents.length > 1 ? 's' : ''} available
                     </span>
                   ) : (
@@ -569,7 +571,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                 className="h-8"
               >
                 <Brain className="w-3 h-3 mr-2" />
-                {orchestrationMode ? 'Reasoning' : 'Direct Mode'}
+                {orchestrationMode ? 'Orchestration' : 'Direct Mode'}
               </Button>
               <Button variant="outline" size="sm" className="h-8">
                 <Settings className="w-3 h-3 mr-2" />
@@ -652,8 +654,8 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                       <span className="text-sm font-medium capitalize">
                         {message.type === 'agent' && message.agentName
                           ? message.agentName
-                          : message.type === 'reasoning'
-                            ? 'AgentOS (Reasoning)'
+                          : message.type === 'orchestration'
+                            ? 'AgentOS (Orchestration)'
                             : message.type}
                       </span>
                       {message.agentPreset && (
@@ -665,15 +667,15 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                     </div>
                     <p className="text-sm whitespace-pre-line">{message.content}</p>
 
-                    {/* Reasoning Steps */}
-                    {message.type === 'reasoning' &&
-                      message.reasoningSteps &&
-                      renderReasoningSteps(message.reasoningSteps)}
+                    {/* Orchestration Steps */}
+                    {message.type === 'orchestration' &&
+                      message.orchestrationSteps &&
+                      renderOrchestrationSteps(message.orchestrationSteps)}
                   </div>
                 </div>
               </div>
 
-              {(message.type === 'agent' || message.type === 'reasoning') && (
+              {(message.type === 'agent' || message.type === 'orchestration') && (
                 <div className="flex gap-2 ml-12">
                   <Button variant="ghost" size="sm" className="h-7 px-2">
                     <Copy className="w-3 h-3 mr-1" />
@@ -694,7 +696,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
 
           {isTyping && (
             <div className="flex items-center gap-3 text-muted-foreground">
-              {orchestrationMode && currentReasoningSteps.length > 0 ? (
+              {orchestrationMode && currentOrchestrationSteps.length > 0 ? (
                 <Brain className="w-4 h-4 text-purple-500" />
               ) : (
                 <Bot className="w-4 h-4" />
@@ -711,8 +713,8 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                 ></div>
               </div>
               <span className="text-sm">
-                {orchestrationMode && currentReasoningSteps.length > 0
-                  ? 'AI reasoning in progress...'
+                {orchestrationMode && currentOrchestrationSteps.length > 0
+                  ? 'AI orchestration in progress...'
                   : activeAgents.length > 0
                     ? `${activeAgents.length} agent${activeAgents.length > 1 ? 's' : ''} typing...`
                     : 'typing...'}
