@@ -5,30 +5,30 @@ export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
 export { Avatar, AvatarImage, AvatarFallback } from './avatar';
 export { Popover, PopoverTrigger, PopoverContent } from './popover';
 export { Textarea, type TextareaProps } from './textarea';
-export { 
-  Select, 
-  SelectGroup, 
-  SelectValue, 
-  SelectTrigger, 
-  SelectContent, 
-  SelectLabel, 
-  SelectItem, 
-  SelectSeparator, 
-  SelectScrollUpButton, 
-  SelectScrollDownButton 
+export {
+  Select,
+  SelectGroup,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectLabel,
+  SelectItem,
+  SelectSeparator,
+  SelectScrollUpButton,
+  SelectScrollDownButton,
 } from './select';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
-export { 
-  Dialog, 
-  DialogPortal, 
-  DialogOverlay, 
-  DialogClose, 
-  DialogTrigger, 
-  DialogContent, 
-  DialogHeader, 
-  DialogFooter, 
-  DialogTitle, 
-  DialogDescription 
+export {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogClose,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
 } from './dialog';
 export { Checkbox } from './checkbox';
 export { Separator } from './separator';
