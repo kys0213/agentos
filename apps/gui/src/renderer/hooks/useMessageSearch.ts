@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Message } from '../components/ChatMessageList';
+import { Message } from './useChatSession';
 
 export default function useMessageSearch(messages: Message[], term: string): Message[] {
   return useMemo(() => {

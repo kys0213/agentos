@@ -24,7 +24,7 @@ test.describe('Web GUI Basic Functionality', () => {
     });
 
     await page.waitForTimeout(5000);
-    expect(errors).toHaveLength(0, `Infinite rendering detected: ${errors.join(', ')}`);
+    expect(errors).toHaveLength(0);
   });
 
   test('should render main layout components', async ({ page }) => {
