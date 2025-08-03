@@ -3,6 +3,8 @@ import { useUIState } from '../../stores/app-store';
 import LeftSidebar from './LeftSidebar';
 import RightSidebar from './RightSidebar';
 import ChatArea from './ChatArea';
+import CommandPalette from '../ui/CommandPalette';
+import SettingsPanel from '../ui/SettingsPanel';
 
 /**
  * 메인 앱 레이아웃 컴포넌트
@@ -28,22 +30,27 @@ const AppLayout: React.FC = () => {
   };
 
   return (
-    <div className={`layout-grid ${getGridClass()}`}>
-      {/* 좌측 사이드바 - 네비게이션 + 액션 */}
-      <div className={`sidebar sidebar-left ${leftSidebarOpen ? 'block' : 'hidden'}`}>
-        <LeftSidebar />
+    <CommandPalette>
+      <div className={`layout-grid ${getGridClass()}`}>
+        {/* 좌측 사이드바 - 네비게이션 + 액션 */}
+        <div className={`sidebar sidebar-left ${leftSidebarOpen ? 'block' : 'hidden'}`}>
+          <LeftSidebar />
+        </div>
+
+        {/* 메인 채팅 영역 - 절대 침범되지 않는 고정 영역 */}
+        <div className="chat-area grid-area-safe">
+          <ChatArea />
+        </div>
+
+        {/* 우측 사이드바 - 히스토리 + 컨텍스트 */}
+        <div className={`sidebar sidebar-right ${rightSidebarOpen ? 'block' : 'hidden'}`}>
+          <RightSidebar />
+        </div>
       </div>
 
-      {/* 메인 채팅 영역 - 절대 침범되지 않는 고정 영역 */}
-      <div className="chat-area grid-area-safe">
-        <ChatArea />
-      </div>
-
-      {/* 우측 사이드바 - 히스토리 + 컨텍스트 */}
-      <div className={`sidebar sidebar-right ${rightSidebarOpen ? 'block' : 'hidden'}`}>
-        <RightSidebar />
-      </div>
-    </div>
+      {/* 설정 패널 - 고정 위치, 채팅 영역과 독립적 */}
+      <SettingsPanel />
+    </CommandPalette>
   );
 };
 
