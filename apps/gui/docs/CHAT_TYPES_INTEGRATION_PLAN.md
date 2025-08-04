@@ -1,33 +1,37 @@
 # Chat Types 단계적 통합 계획서
 
 ## 🎯 목표
+
 `apps/gui/src/renderer/types/chat-types.ts`의 타입들을 packages/core 및 llm-bridge-spec과 단계적으로 통합하여 안전하고 점진적인 마이그레이션 수행
 
 ## 📊 현재 상황 분석
 
 ### **영향도 분석 결과**
+
 - **총 22개 파일**에서 chat-types.ts 사용
 - **160개 인스턴스**에서 타입 참조
 - **주요 영향 영역**: UI 컴포넌트, Mock 서비스, IPC 채널, Hook
 
 ### **타입별 사용 빈도 및 영향도**
 
-| 타입 | 사용 파일 수 | 영향도 | 마이그레이션 우선순위 |
-|------|-------------|--------|---------------------|
-| `ChatMessage` | 15개 | 🔴 High | Phase 3 (복잡) |
-| `ChatSession` | 8개 | 🟡 Medium | Phase 2 (중간) |
-| `AvailableAgent` | 4개 | 🟢 Low | Phase 1 (안전) |
-| `ActiveAgent` | 3개 | 🟢 Low | Phase 1 (안전) |
-| `OrchestrationStep` | 6개 | 🟡 Medium | Phase 4 (GUI 전용) |
-| `QuickAction` | 2개 | 🟢 Low | Phase 1 (안전) |
-| `AppModeState` | 3개 | 🟢 Low | Phase 1 (안전) |
+| 타입                | 사용 파일 수 | 영향도    | 마이그레이션 우선순위 |
+| ------------------- | ------------ | --------- | --------------------- |
+| `ChatMessage`       | 15개         | 🔴 High   | Phase 3 (복잡)        |
+| `ChatSession`       | 8개          | 🟡 Medium | Phase 2 (중간)        |
+| `AvailableAgent`    | 4개          | 🟢 Low    | Phase 1 (안전)        |
+| `ActiveAgent`       | 3개          | 🟢 Low    | Phase 1 (안전)        |
+| `OrchestrationStep` | 6개          | 🟡 Medium | Phase 4 (GUI 전용)    |
+| `QuickAction`       | 2개          | 🟢 Low    | Phase 1 (안전)        |
+| `AppModeState`      | 3개          | 🟢 Low    | Phase 1 (안전)        |
 
 ## 🏗️ 단계적 마이그레이션 전략
 
 ### **Phase 1: 저위험 타입 마이그레이션 (1주)**
+
 **대상**: `QuickAction`, `AppModeState`, `AvailableAgent`, `ActiveAgent`
 
 #### **1.1 QuickAction & AppModeState**
+
 - **영향**: UI 상태 관리만 (2-3개 파일)
 - **작업**: 타입 정의 개선 및 any 제거
 - **위험도**: 🟢 매우 낮음
@@ -49,6 +53,7 @@ export interface QuickAction {
 ```
 
 #### **1.2 Agent 타입 표준화**
+
 - **영향**: Mock 서비스 및 Agent 관리 UI (4-5개 파일)
 - **작업**: Core의 Preset과 연동
 - **위험도**: 🟢 낮음
@@ -68,9 +73,11 @@ export interface AvailableAgent {
 ```
 
 ### **Phase 2: 중위험 타입 마이그레이션 (1-2주)**
+
 **대상**: `ChatSession`
 
 #### **2.1 ChatSession 점진적 마이그레이션**
+
 - **영향**: 8개 파일 (Hook, 컴포넌트, Mock 서비스)
 - **전략**: 기존 타입 유지하면서 Core 타입과 호환성 추가
 
@@ -87,7 +94,7 @@ export interface ChatSessionCompat {
   messageCount: number;
   isPinned?: boolean;
   isArchived?: boolean;
-  
+
   // Core 호환성을 위한 추가 필드 (optional)
   sessionId?: string;
   totalMessages?: number;
@@ -103,14 +110,17 @@ export type ChatSession = ChatSessionCompat;
 ```
 
 #### **2.2 마이그레이션 단계**
+
 1. **Week 1**: 호환성 타입 도입 및 Mock 데이터 업데이트
 2. **Week 2**: Hook 및 컴포넌트 점진적 업데이트
 3. **Week 3**: Core 타입 기반으로 최종 전환
 
 ### **Phase 3: 고위험 타입 마이그레이션 (2-3주)**
+
 **대상**: `ChatMessage`
 
 #### **3.1 ChatMessage 복합 전략**
+
 - **영향**: 15개 파일 (가장 광범위한 사용)
 - **전략**: 단계적 타입 분리 및 마이그레이션
 
@@ -142,15 +152,18 @@ export type ChatMessage = ChatMessageV1 | ChatMessageV2;
 ```
 
 #### **3.2 점진적 전환 전략**
+
 1. **Week 1**: V2 타입 도입 및 Utility 함수 작성
 2. **Week 2**: Mock 서비스 및 데이터 레이어 전환
 3. **Week 3**: UI 컴포넌트 단계별 전환 (가장 영향 적은 것부터)
 4. **Week 4**: 핵심 채팅 컴포넌트 전환 및 테스트
 
 ### **Phase 4: GUI 전용 타입 최적화 (1주)**
+
 **대상**: `OrchestrationStep`
 
 #### **4.1 GUI 특화 타입 개선**
+
 - **목표**: any 타입 제거 및 타입 안전성 확보
 - **영향**: 6개 파일 (오케스트레이션 관련)
 
@@ -194,11 +207,13 @@ export interface ConclusionData {
 ## 🛡️ 안전한 마이그레이션 원칙
 
 ### **1. 하위 호환성 유지**
+
 - 기존 API 시그니처 변경 최소화
 - 점진적 타입 전환으로 breaking change 방지
 - Type Guard 및 Utility 함수 활용
 
 ### **2. 단계별 검증**
+
 ```typescript
 // 각 단계마다 검증 함수 작성
 export function isChatMessageV1(msg: ChatMessage): msg is ChatMessageV1 {
@@ -211,36 +226,40 @@ export function isChatMessageV2(msg: ChatMessage): msg is ChatMessageV2 {
 ```
 
 ### **3. 실시간 모니터링**
+
 - 각 Phase 완료 후 타입 체크 및 빌드 테스트
 - 기능 테스트를 통한 회귀 검증
 - Lint 규칙으로 any 사용 방지
 
 ## 📅 마이그레이션 일정
 
-| Phase | 기간 | 주요 작업 | 완료 조건 |
-|-------|------|----------|----------|
-| **Phase 1** | 1주 | 저위험 타입 마이그레이션 | 빌드 성공 + 기능 테스트 통과 |
-| **Phase 2** | 1-2주 | ChatSession 점진적 전환 | 세션 관리 기능 정상 동작 |
-| **Phase 3** | 2-3주 | ChatMessage 복합 마이그레이션 | 채팅 기능 완전 정상 동작 |
-| **Phase 4** | 1주 | GUI 전용 타입 최적화 | any 타입 완전 제거 |
-| **총 기간** | **5-7주** | **점진적 완전 통합** | **타입 안전성 100% 확보** |
+| Phase       | 기간      | 주요 작업                     | 완료 조건                    |
+| ----------- | --------- | ----------------------------- | ---------------------------- |
+| **Phase 1** | 1주       | 저위험 타입 마이그레이션      | 빌드 성공 + 기능 테스트 통과 |
+| **Phase 2** | 1-2주     | ChatSession 점진적 전환       | 세션 관리 기능 정상 동작     |
+| **Phase 3** | 2-3주     | ChatMessage 복합 마이그레이션 | 채팅 기능 완전 정상 동작     |
+| **Phase 4** | 1주       | GUI 전용 타입 최적화          | any 타입 완전 제거           |
+| **총 기간** | **5-7주** | **점진적 완전 통합**          | **타입 안전성 100% 확보**    |
 
 ## 🚨 위험 요소 및 대응 방안
 
 ### **High Risk: ChatMessage 마이그레이션**
+
 - **위험**: 채팅 기능 전체 영향 가능성
-- **대응**: 
+- **대응**:
   - Feature Flag를 통한 점진적 전환
   - 기존 타입과 신규 타입 병행 지원
   - 충분한 테스트 케이스 작성
 
 ### **Medium Risk: 타입 호환성 문제**
+
 - **위험**: llm-bridge-spec과 GUI 타입 간 불일치
 - **대응**:
   - Adapter 패턴으로 타입 변환
   - Utility 함수로 안전한 타입 변환 제공
 
 ### **Low Risk: 성능 영향**
+
 - **위험**: 타입 변환으로 인한 성능 저하
 - **대응**:
   - 타입 변환 최소화

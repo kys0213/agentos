@@ -35,7 +35,8 @@ const mockPresets: Record<string, Preset> = {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
     version: '1.0.0',
-    systemPrompt: 'You are a writing specialist. Help users with creative writing and content creation.',
+    systemPrompt:
+      'You are a writing specialist. Help users with creative writing and content creation.',
     llmBridgeName: 'default',
     llmBridgeConfig: { model: 'gpt-4', temperature: 0.7 },
   },
@@ -47,7 +48,8 @@ const mockPresets: Record<string, Preset> = {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
     version: '1.0.0',
-    systemPrompt: 'You are a research specialist. Help users with information gathering and analysis.',
+    systemPrompt:
+      'You are a research specialist. Help users with information gathering and analysis.',
     llmBridgeName: 'default',
     llmBridgeConfig: { model: 'gpt-4', temperature: 0.3 },
   },
