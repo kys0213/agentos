@@ -1,3 +1,5 @@
+import type { Preset } from './core-types';
+
 export interface ChatMessage {
   id: number;
   type: 'user' | 'agent' | 'system' | 'orchestration';
@@ -33,8 +35,8 @@ export interface ChatSession {
 export interface AvailableAgent {
   id: string;
   name: string;
-  preset: string;
-  status: 'active' | 'idle';
+  preset: Preset;
+  status: 'active' | 'idle' | 'error';
   description: string;
   icon: string;
   keywords: string[];
@@ -43,8 +45,8 @@ export interface AvailableAgent {
 export interface ActiveAgent {
   id: string;
   name: string;
-  preset: string;
-  status: string;
+  preset: Preset;
+  status: 'active' | 'idle' | 'busy' | 'error';
   description: string;
   icon: string;
 }
@@ -52,9 +54,9 @@ export interface ActiveAgent {
 export interface QuickAction {
   id: string;
   label: string;
-  icon: React.ReactNode;
+  icon: React.ComponentType<any>;
   description: string;
-  category: string;
+  category: 'chat' | 'management' | 'settings' | 'navigation';
 }
 
 export interface AppModeState {

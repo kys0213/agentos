@@ -1,10 +1,63 @@
 import { AvailableAgent } from '../../types/chat-types';
+import type { Preset } from '../../types/core-types';
+
+// Mock Preset objects
+const mockPresets: Record<string, Preset> = {
+  dataAnalysis: {
+    id: 'data-analysis-preset',
+    name: 'Data Analysis Expert',
+    description: 'Expert in data analysis and visualization',
+    author: 'System',
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
+    version: '1.0.0',
+    systemPrompt: 'You are a data analysis expert. Help users analyze and visualize data.',
+    llmBridgeName: 'default',
+    llmBridgeConfig: { model: 'gpt-4', temperature: 0.1 },
+  },
+  development: {
+    id: 'development-preset',
+    name: 'Development Helper',
+    description: 'Expert in software development and debugging',
+    author: 'System',
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
+    version: '1.0.0',
+    systemPrompt: 'You are a software development expert. Help users with coding and debugging.',
+    llmBridgeName: 'default',
+    llmBridgeConfig: { model: 'gpt-4', temperature: 0.2 },
+  },
+  writing: {
+    id: 'writing-preset',
+    name: 'Writing Specialist',
+    description: 'Expert in creative writing and content creation',
+    author: 'System',
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
+    version: '1.0.0',
+    systemPrompt: 'You are a writing specialist. Help users with creative writing and content creation.',
+    llmBridgeName: 'default',
+    llmBridgeConfig: { model: 'gpt-4', temperature: 0.7 },
+  },
+  research: {
+    id: 'research-preset',
+    name: 'Research Specialist',
+    description: 'Expert in research and information analysis',
+    author: 'System',
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
+    version: '1.0.0',
+    systemPrompt: 'You are a research specialist. Help users with information gathering and analysis.',
+    llmBridgeName: 'default',
+    llmBridgeConfig: { model: 'gpt-4', temperature: 0.3 },
+  },
+};
 
 export const mockAvailableAgents: AvailableAgent[] = [
   {
     id: 'data-analyzer',
     name: 'Data Analyzer',
-    preset: 'Data Analysis Expert',
+    preset: mockPresets.dataAnalysis,
     status: 'active',
     description: '데이터 분석과 시각화를 도와드립니다',
     icon: '📊',
@@ -13,7 +66,7 @@ export const mockAvailableAgents: AvailableAgent[] = [
   {
     id: 'code-assistant',
     name: 'Code Assistant',
-    preset: 'Development Helper',
+    preset: mockPresets.development,
     status: 'active',
     description: '코드 리뷰와 디버깅을 지원합니다',
     icon: '💻',
@@ -22,7 +75,7 @@ export const mockAvailableAgents: AvailableAgent[] = [
   {
     id: 'content-writer',
     name: 'Content Writer',
-    preset: 'Writing Specialist',
+    preset: mockPresets.writing,
     status: 'idle',
     description: '창의적인 글쓰기를 도와드립니다',
     icon: '✍️',
@@ -31,7 +84,7 @@ export const mockAvailableAgents: AvailableAgent[] = [
   {
     id: 'research-assistant',
     name: 'Research Assistant',
-    preset: 'Research Specialist',
+    preset: mockPresets.research,
     status: 'active',
     description: '정보 수집과 분석을 전문으로 합니다',
     icon: '🔍',

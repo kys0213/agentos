@@ -84,30 +84,30 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
     {
       id: 'analyze',
       label: '데이터 분석',
-      icon: <BarChart3 className="w-4 h-4" />,
+      icon: BarChart3,
       description: 'CSV, JSON 데이터 분석 및 시각화',
-      category: 'analysis',
+      category: 'chat',
     },
     {
       id: 'code-review',
       label: '코드 리뷰',
-      icon: <Code className="w-4 h-4" />,
+      icon: Code,
       description: '코드 품질 검토 및 개선 제안',
-      category: 'development',
+      category: 'chat',
     },
     {
       id: 'writing',
       label: '글쓰기 도움',
-      icon: <FileText className="w-4 h-4" />,
+      icon: FileText,
       description: '문서 작성 및 편집 지원',
-      category: 'content',
+      category: 'chat',
     },
     {
       id: 'image-gen',
       label: '이미지 생성',
-      icon: <ImageIcon className="w-4 h-4" />,
+      icon: ImageIcon,
       description: 'AI를 활용한 이미지 생성',
-      category: 'creative',
+      category: 'chat',
     },
   ];
 
@@ -209,7 +209,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                   minute: '2-digit',
                 }),
                 agentName: agent!.name,
-                agentPreset: agent!.preset,
+                agentPreset: agent!.preset.name,
                 agentId: agent!.id,
               };
             });
@@ -254,7 +254,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
             content: `[${agent.name}] ${orchestrator.getAgentResponse(agent, currentQuery)}`,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             agentName: agent.name,
-            agentPreset: agent.preset,
+            agentPreset: agent.preset.name,
             agentId: agent.id,
           }));
 
@@ -435,7 +435,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                     </div>
                     <div className="flex-1">
                       <h4 className="font-medium">{agent.name}</h4>
-                      <p className="text-sm text-muted-foreground">{agent.preset}</p>
+                      <p className="text-sm text-muted-foreground">{agent.preset.name}</p>
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">{agent.description}</p>
@@ -618,7 +618,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                     className="h-auto p-4 flex flex-col gap-2"
                     onClick={() => handleQuickAction(action)}
                   >
-                    {action.icon}
+                    <action.icon className="w-4 h-4" />
                     <span className="text-xs font-medium">{action.label}</span>
                   </Button>
                 ))}
@@ -810,7 +810,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                           {isActive ? 'Available' : agent.status}
                         </Badge>
                       </div>
-                      <p className="text-xs text-gray-600 mb-1 font-medium">{agent.preset}</p>
+                      <p className="text-xs text-gray-600 mb-1 font-medium">{agent.preset.name}</p>
                       <p className="text-xs text-gray-500 mb-2 leading-relaxed">
                         {agent.description}
                       </p>
