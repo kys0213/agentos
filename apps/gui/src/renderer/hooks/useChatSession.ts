@@ -74,9 +74,9 @@ export default function useChatSession(chatService: ChatService): UseChatSession
         // IPC를 통해 새 세션 생성
         const session = await chatService.createSession(preset ? { preset } : undefined);
 
-        setSessionId(session.id);
+        setSessionId(session.sessionId);
         setMessages([]);
-        return session.id;
+        return session.sessionId;
       } catch (error) {
         console.error('Failed to start new session:', error);
         throw error;

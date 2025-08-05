@@ -35,10 +35,13 @@ export class MockIpcChannel implements IpcChannel {
   private initializeMockData() {
     // Mock Chat Session
     this.mockSessions.push({
-      id: 'session-1',
+      sessionId: 'session-1',
       title: 'Mock Chat Session',
       createdAt: new Date(),
       updatedAt: new Date(),
+      totalMessages: 0,
+      totalUsage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+      recentMessages: [],
     });
 
     // Mock Bridge
@@ -82,15 +85,18 @@ export class MockIpcChannel implements IpcChannel {
     await this.delay();
 
     const session: ChatSessionDescription = {
-      id: `session-${Date.now()}`,
+      sessionId: `session-${Date.now()}`,
       title: `New Chat Session`,
       createdAt: new Date(),
       updatedAt: new Date(),
       preset: options?.preset,
+      totalMessages: 0,
+      totalUsage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+      recentMessages: [],
     };
 
     this.mockSessions.push(session);
-    this.mockMessages.set(session.id, []);
+    this.mockMessages.set(session.sessionId, []);
 
     return session;
   }
@@ -103,7 +109,7 @@ export class MockIpcChannel implements IpcChannel {
   async loadChatSession(sessionId: string): Promise<ChatSessionDescription> {
     await this.delay();
 
-    const session = this.mockSessions.find((s) => s.id === sessionId);
+    const session = this.mockSessions.find((s) => s.sessionId === sessionId);
     if (!session) {
       throw new Error(`Session ${sessionId} not found`);
     }
@@ -174,7 +180,7 @@ export class MockIpcChannel implements IpcChannel {
   async deleteChatSession(sessionId: string): Promise<{ success: boolean }> {
     await this.delay();
 
-    const index = this.mockSessions.findIndex((s) => s.id === sessionId);
+    const index = this.mockSessions.findIndex((s) => s.sessionId === sessionId);
     if (index !== -1) {
       this.mockSessions.splice(index, 1);
       this.mockMessages.delete(sessionId);
@@ -187,7 +193,7 @@ export class MockIpcChannel implements IpcChannel {
   async renameChatSession(sessionId: string, newName: string): Promise<{ success: boolean }> {
     await this.delay();
 
-    const session = this.mockSessions.find((s) => s.id === sessionId);
+    const session = this.mockSessions.find((s) => s.sessionId === sessionId);
     if (session) {
       session.title = newName;
       session.updatedAt = new Date();
