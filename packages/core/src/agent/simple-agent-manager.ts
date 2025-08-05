@@ -6,6 +6,7 @@ import {
   AgentManagerError,
   AGENT_MANAGER_ERROR_CODES,
   validateAgentId,
+  AgentManager,
 } from './agent-manager';
 import { CursorPagination, CursorPaginationResult } from '../common/pagination/cursor-pagination';
 

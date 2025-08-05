@@ -1,4 +1,4 @@
-import { Message, UserMessage, LlmBridge } from 'llm-bridge-spec';
+import { UserMessage, LlmBridge } from 'llm-bridge-spec';
 import { ChatManager, SimpleAgent, SimpleAgentManager, McpRegistry } from '@agentos/core';
 import { createUserInputStream } from './utils/user-input-stream';
 
@@ -53,7 +53,7 @@ export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge
         role: 'user',
         content: { contentType: 'text', value: input },
       };
-      const messages = await agentManager.execute('cli-agent', [userMessage]);
+      const { messages } = await agentManager.execute('cli-agent', [userMessage]);
       const assistantMessage = messages[messages.length - 1];
       const text =
         !Array.isArray(assistantMessage.content) && assistantMessage.content.contentType === 'text'
