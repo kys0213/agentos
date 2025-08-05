@@ -221,7 +221,7 @@ export interface AgentRegistry {
    * @param agentId - Agent ID
    * @returns Agent 통계 정보
    */
-  getAgentStats(agentId: string): Promise<AgentStats>;
+  getAgentStats(agentId: string): Promise<AgentRegistryAgentStats>;
 
   // ============ 이벤트 구독 ============
 
@@ -279,9 +279,9 @@ export interface AgentRegistryStats {
 }
 
 /**
- * Agent 통계
+ * Agent 레지스트리 Agent 통계
  */
-export interface AgentStats {
+export interface AgentRegistryAgentStats {
   /** Agent ID */
   agentId: string;
 

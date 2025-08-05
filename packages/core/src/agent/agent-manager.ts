@@ -147,7 +147,7 @@ export interface AgentManager {
    * @param agentId - 모니터링할 Agent ID
    * @returns Agent 상태 업데이트 스트림
    */
-  monitorAgent(agentId: string): AsyncIterable<AgentStatusUpdate>;
+  monitorAgent(agentId: string): AsyncIterable<AgentManagerStatusUpdate>;
 
   /**
    * Agent 실행을 실시간으로 모니터링합니다.
@@ -162,7 +162,7 @@ export interface AgentManager {
    *
    * @returns 전체 Agent 상태 업데이트 스트림
    */
-  monitorAllAgents(): AsyncIterable<AgentStatusUpdate>;
+  monitorAllAgents(): AsyncIterable<AgentManagerStatusUpdate>;
 
   // ============ 큐 및 스케줄링 관리 ============
 
@@ -406,9 +406,9 @@ export interface ExecutionQueueStatus {
 }
 
 /**
- * Agent 상태 업데이트
+ * Agent 매니저 상태 업데이트
  */
-export interface AgentStatusUpdate {
+export interface AgentManagerStatusUpdate {
   /** Agent ID */
   agentId: string;
 

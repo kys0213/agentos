@@ -7,6 +7,11 @@ export * from './chat/file/file-based-chat.manager';
 
 export * from './agent/agent';
 export * from './agent/simple-agent';
+export * from './agent/agent-metadata';
+export * from './agent/agent-instance';
+export * from './agent/agent-execution-context';
+export * from './agent/agent-registry';
+export * from './agent/agent-manager';
 
 export * from './mcp/mcp';
 export * from './mcp/mcp-config';
