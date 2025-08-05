@@ -7,11 +7,13 @@ export * from './chat/file/file-based-chat.manager';
 
 export * from './agent/agent';
 export * from './agent/simple-agent';
+export * from './agent/agent-manager';
+export * from './agent/simple-agent-manager';
 
-export * from './mcp/mcp';
-export * from './mcp/mcp-config';
-export * from './mcp/mcp-event';
-export * from './mcp/mcp.registery';
+export * from './tool/mcp/mcp';
+export * from './tool/mcp/mcp-config';
+export * from './tool/mcp/mcp-event';
+export * from './tool/mcp/mcp.registery';
 
 export * from './preset/preset';
 export * from './preset/preset.repository';

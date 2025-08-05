@@ -12,8 +12,8 @@ import {
   Tool,
 } from '@modelcontextprotocol/sdk/types.js';
 import EventEmitter from 'node:events';
-import { Scheduler } from '../common/scheduler/scheduler';
-import { safeZone } from '../common/utils/safeZone';
+import { Scheduler } from '../../common/scheduler/scheduler';
+import { safeZone } from '../../common/utils/safeZone';
 import { McpConfig } from './mcp-config';
 import { McpEvent, McpEventMap } from './mcp-event';
 import { McpTransportFactory } from './mcp-transport.factory';

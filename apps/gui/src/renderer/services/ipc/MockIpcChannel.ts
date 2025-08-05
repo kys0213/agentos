@@ -81,7 +81,7 @@ export class MockIpcChannel implements IpcChannel {
 
   // ==================== Chat 관련 메서드들 ====================
 
-  async createChatSession(options?: { preset?: Preset }): Promise<ChatSessionDescription> {
+  async createChatSession(): Promise<ChatSessionDescription> {
     await this.delay();
 
     const session: ChatSessionDescription = {
@@ -89,7 +89,6 @@ export class MockIpcChannel implements IpcChannel {
       title: `New Chat Session`,
       createdAt: new Date(),
       updatedAt: new Date(),
-      preset: options?.preset,
       totalMessages: 0,
       totalUsage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
       recentMessages: [],

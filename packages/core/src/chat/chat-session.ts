@@ -1,6 +1,5 @@
 import { ChatMessage, LlmUsage, Message } from 'llm-bridge-spec';
 import { CursorPagination, CursorPaginationResult } from '../common/pagination/cursor-pagination';
-import { Preset } from '../preset/preset';
 import { ChatSessionMetadata } from './chat-session-metata';
 
 /**
@@ -11,11 +10,6 @@ export interface ChatSession {
    * The id of the chat session
    */
   sessionId: string;
-
-  /**
-   * The preset of the chat session
-   */
-  preset?: Preset;
 
   /**
    * The title of the chat session
