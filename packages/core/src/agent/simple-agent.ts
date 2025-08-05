@@ -23,7 +23,13 @@ export class SimpleAgent implements Agent {
     private readonly maxToolCallCount: number = 3
   ) {}
 
-  async run(messages: UserMessage[], options?: { abortSignal?: AbortSignal }): Promise<Message[]> {
+  async run(
+    messages: UserMessage[],
+    options?: {
+      abortSignal?: AbortSignal;
+      sessionId?: string;
+    }
+  ): Promise<Message[]> {
     const buffer: Message[] = Array.from(messages);
 
     const tools = await this.getEnabledTools();
