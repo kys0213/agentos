@@ -5,7 +5,7 @@
 import type { ChatSessionMetadata } from '@agentos/core/src/chat/chat-session-metata';
 import type { MessageHistory } from '@agentos/core/src/chat/chat-session';
 import type { Preset, EnabledMcp } from '@agentos/core/src/preset/preset';
-import type { McpConfig } from '@agentos/core/src/mcp/mcp-config';
+import type { McpConfig } from '@agentos/core/src/tool/mcp/mcp-config';
 
 // Re-export core types
 export type { ChatSessionMetadata, MessageHistory, Preset, EnabledMcp, McpConfig };
