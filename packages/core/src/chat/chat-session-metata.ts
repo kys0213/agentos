@@ -1,6 +1,5 @@
 import { LlmUsage } from 'llm-bridge-spec';
 import { Checkpoint } from './chat-session';
-import { Preset } from '../preset/preset';
 import { MessageHistory } from './chat-session';
 
 export interface ChatSessionMetadata {
@@ -33,11 +32,6 @@ export interface ChatSessionMetadata {
    * The total usage of the session
    */
   totalUsage: LlmUsage;
-
-  /**
-   * The preset of the session
-   */
-  preset?: Preset;
 
   /**
    * The latest summary of the session

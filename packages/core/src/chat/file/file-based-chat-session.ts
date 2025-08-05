@@ -3,10 +3,9 @@ import {
   CursorPagination,
   CursorPaginationResult,
 } from '../../common/pagination/cursor-pagination';
-import { Preset } from '../../preset/preset';
+import { uuid } from '../../common/utils/uuid';
 import { ChatSession, Checkpoint, CompressStrategy, MessageHistory } from '../chat-session';
 import { ChatSessionMetadata } from '../chat-session-metata';
-import { uuid } from '../../common/utils/uuid';
 import { FileBasedSessionStorage } from './file-based-session-storage';
 
 import { FileBasedSessionMetadata } from './file-based-session.metadata';
@@ -23,14 +22,6 @@ export class FileBasedChatSession implements ChatSession {
     private readonly historyCompressor: CompressStrategy,
     private readonly titleCompressor?: CompressStrategy
   ) {}
-
-  get preset(): Preset | undefined {
-    return this.metadata.preset;
-  }
-
-  set preset(preset: Preset | undefined) {
-    this.metadata.preset = preset;
-  }
 
   get title(): string | undefined {
     return this.metadata.title;
