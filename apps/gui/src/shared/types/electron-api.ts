@@ -1,4 +1,12 @@
 import type { ChatSessionDescription, Preset, McpConfig } from '../../renderer/types/core-types';
+import type { McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
+import type {
+  UsageLogQueryOptions,
+  McpUsageUpdateEvent,
+  HourlyStatsResponse,
+  ClearUsageLogsResponse,
+  SetUsageTrackingResponse,
+} from './mcp-usage-types';
 
 // 로컬 응답 타입들 (중복 방지)
 export interface SendMessageResponse {
@@ -110,6 +118,7 @@ export interface BridgeAPI {
 }
 
 export interface McpAPI {
+  // ==================== 기존 기본 기능들 ====================
   getAll: () => Promise<McpConfig[]>;
   connect: (config: McpConfig) => Promise<{ success: boolean }>;
   disconnect: (name: string) => Promise<{ success: boolean }>;
@@ -117,6 +126,58 @@ export interface McpAPI {
   getResources: (clientName: string) => Promise<ResourceListResponse>;
   readResource: (clientName: string, uri: string) => Promise<ResourceResponse>;
   getStatus: (clientName: string) => Promise<{ connected: boolean; error?: string }>;
+
+  // ==================== 새로운 사용량 추적 기능들 ====================
+  
+  /**
+   * MCP 도구 메타데이터 조회
+   */
+  getToolMetadata: (clientName: string) => Promise<McpToolMetadata>;
+  
+  /**
+   * 모든 MCP 도구들의 메타데이터 일괄 조회
+   */
+  getAllToolMetadata: () => Promise<McpToolMetadata[]>;
+  
+  /**
+   * 특정 도구의 사용량 로그 조회
+   */
+  getUsageLogs: (clientName: string, options?: UsageLogQueryOptions) => Promise<McpUsageLog[]>;
+  
+  /**
+   * 전체 사용량 로그 조회
+   */
+  getAllUsageLogs: (options?: UsageLogQueryOptions) => Promise<McpUsageLog[]>;
+  
+  /**
+   * 사용량 통계 조회
+   */
+  getUsageStats: (clientName?: string) => Promise<McpUsageStats>;
+  
+  /**
+   * 시간별 사용량 통계 조회
+   */
+  getHourlyStats: (date: Date, clientName?: string) => Promise<HourlyStatsResponse>;
+  
+  /**
+   * 기간별 사용량 로그 조회
+   */
+  getUsageLogsInRange: (startDate: Date, endDate: Date, clientName?: string) => Promise<McpUsageLog[]>;
+  
+  /**
+   * 사용량 로그 정리
+   */
+  clearUsageLogs: (olderThan?: Date) => Promise<ClearUsageLogsResponse>;
+  
+  /**
+   * 사용량 추적 활성화/비활성화
+   */
+  setUsageTracking: (clientName: string, enabled: boolean) => Promise<SetUsageTrackingResponse>;
+  
+  /**
+   * 사용량 변경 이벤트 구독
+   */
+  subscribeToUsageUpdates: (callback: (event: McpUsageUpdateEvent) => void) => Promise<() => void>;
 }
 
 export interface PresetAPI {
