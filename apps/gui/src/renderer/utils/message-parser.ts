@@ -39,7 +39,7 @@ export function parseMessageContent(message: ParseableMessage): string {
 
 /**
  * Message content가 비어있는지 확인
- * @param message MessageHistory 또는 MessageRecord  
+ * @param message MessageHistory 또는 MessageRecord
  * @returns content가 비어있으면 true
  */
 export function isMessageContentEmpty(message: ParseableMessage): boolean {
@@ -56,11 +56,11 @@ export function isMessageContentEmpty(message: ParseableMessage): boolean {
 export function parseMessagePreview(message: ParseableMessage, maxLength: number = 100): string {
   const fullContent = parseMessageContent(message);
   const firstLine = fullContent.split('\n')[0] || '';
-  
+
   if (firstLine.length <= maxLength) {
     return firstLine;
   }
-  
+
   return firstLine.substring(0, maxLength - 3) + '...';
 }
 
@@ -71,16 +71,16 @@ export function parseMessagePreview(message: ParseableMessage, maxLength: number
  */
 export function hasTextContent(message: ParseableMessage): boolean {
   if (!message.content) return false;
-  
+
   if (typeof message.content === 'string') return true;
-  
+
   if (Array.isArray(message.content)) {
     return message.content.some((c) => c.contentType === 'text');
   }
-  
+
   if (typeof message.content === 'object' && 'contentType' in message.content) {
     return message.content.contentType === 'text';
   }
-  
+
   return false;
 }
