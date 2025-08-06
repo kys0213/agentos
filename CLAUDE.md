@@ -10,7 +10,7 @@ AGENTS.md에는 다음과 같은 핵심 내용이 포함되어 있습니다:
 - 복잡도 판단 기준 (COMPLEXITY_GUIDE.md 참조)
 - 작업 프로세스 (계획서 작성 → 컨펌 → 실행)
 - 계획서 템플릿 (PLAN_TEMPLATE.md)
-- **Git 브랜치 및 커밋 전략 (절대 필수)**
+- **[Git Workflow Guide](docs/GIT_WORKFLOW_GUIDE.md) (절대 필수)**
 
 ## 🔍 기존 작업 확인 필수
 
@@ -116,7 +116,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 // ❌ 나쁜 예: 새로운 중복 타입 정의
 interface NewAgentInfo {
   id: string;
-  name: string;  
+  name: string;
   preset: string;
 }
 
@@ -157,7 +157,7 @@ interface ComplexOrchestration {
   synthesis: SynthesisResult;
 }
 
-// ✅ 단순한 구조  
+// ✅ 단순한 구조
 interface SimpleMultiAgent {
   joinedAgents: AgentMetadata[];
   // 메시지에 agentMetadata 추가로 충분
@@ -186,7 +186,7 @@ export interface MessageHistory extends Message {
   messageId: string;
   createdAt: Date;
   isCompressed?: boolean;
-  agentMetadata?: AgentMetadata;  // 새 필드는 옵셔널
+  agentMetadata?: AgentMetadata; // 새 필드는 옵셔널
 }
 ```
 
@@ -219,7 +219,7 @@ pnpm typecheck
 ```bash
 # 반드시 실행해야 하는 명령어들
 pnpm typecheck  # 타입 에러 확인
-pnpm build     # 빌드 에러 확인  
+pnpm build     # 빌드 에러 확인
 pnpm lint      # 코드 스타일 확인
 pnpm test      # 테스트 통과 확인
 ```

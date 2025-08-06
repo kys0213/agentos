@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppModeState } from '../../types/chat-types';
 import { Button } from '../ui/button';
-import { Home, Layers, Bot, Cpu, Wrench, Network, Settings } from 'lucide-react';
+import { Home, Layers, Bot, Cpu, Wrench, Network, Settings, MessageSquare } from 'lucide-react';
 
 interface SidebarProps {
   activeSection: AppModeState['activeSection'];
@@ -13,6 +13,7 @@ interface SidebarProps {
  */
 const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => {
   const menuItems = [
+    { id: 'chat', label: 'Chat', icon: MessageSquare },
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'presets', label: 'Presets', icon: Layers },
     { id: 'subagents', label: 'Agents', icon: Bot },

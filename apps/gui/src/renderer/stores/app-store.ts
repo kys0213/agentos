@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools, subscribeWithSelector } from 'zustand/middleware';
-import type { LlmBridgeConfig, Preset, McpConfig } from '../types/core-types';
+import type { LlmBridgeConfig } from '../types/core-types';
 
 // UI 상태 인터페이스
 interface UIState {

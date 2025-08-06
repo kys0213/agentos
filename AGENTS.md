@@ -11,6 +11,7 @@ Welcome to the AgentOS repository. This file summarizes key resources and comman
 5. [TypeScript Typing Guidelines](docs/TYPESCRIPT_TYPING_GUIDELINES.md)
 6. **[Frontend Architect Guide](.claude/agents/frontend-architect.md)** ⭐ **프론트엔드 작업 필수**
 7. [AI Collaboration Guide](docs/AI_COLLABORATION_GUIDE.md)
+8. **[Git Workflow Guide](docs/GIT_WORKFLOW_GUIDE.md)** - 브랜치 전략 및 TODO별 커밋 필수
 
 ## Quick Commands
 
@@ -28,7 +29,6 @@ Additional design documents for each package live under `<apps|packages>/<n>/doc
 1. **[Frontend Architect](.claude/agents/frontend-architect.md) 에이전트 사용 필수**
 2. **[Frontend Implementation Roadmap](apps/gui/docs/FRONTEND_IMPLEMENTATION_ROADMAP.md)** - 전체 계획 및 진행상황 확인
 3. **Week 1에서 구축된 현대적 아키텍처 기반으로 점진적 개선**
-4. **[Git Workflow Guide](docs/GIT_WORKFLOW_GUIDE.md)** - 브랜치 전략 및 TODO별 커밋 필수
 
 ## 문제 해결 원칙 (Problem-Solving Principles)
 

@@ -8,5 +8,13 @@ export interface QuickAction {
 
 export interface AppModeState {
   mode: 'chat' | 'management';
-  activeSection: 'dashboard' | 'presets' | 'subagents' | 'models' | 'tools' | 'racp' | 'settings';
+  activeSection:
+    | 'chat'
+    | 'dashboard'
+    | 'presets'
+    | 'subagents'
+    | 'models'
+    | 'tools'
+    | 'racp'
+    | 'settings';
 }
