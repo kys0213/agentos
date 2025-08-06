@@ -674,8 +674,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                           : ''}
                     </p>
 
-                    {/* Orchestration Steps */}
-                    {message.role === 'assistant' && renderOrchestrationSteps([message])}
+                    {/* Orchestration Steps - Only shown during typing via currentOrchestrationSteps */}
                   </div>
                 </div>
               </div>
@@ -700,30 +699,51 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
           ))}
 
           {isTyping && (
-            <div className="flex items-center gap-3 text-muted-foreground">
-              {orchestrationMode && currentOrchestrationSteps.length > 0 ? (
-                <Brain className="w-4 h-4 text-purple-500" />
-              ) : (
-                <Bot className="w-4 h-4" />
+            <div className="space-y-4">
+              {/* Orchestration Steps during typing */}
+              {orchestrationMode && currentOrchestrationSteps.length > 0 && (
+                <div className="p-4 rounded-lg border bg-purple-50 border-purple-200 max-w-4xl">
+                  <div className="flex items-start gap-3">
+                    <Brain className="w-6 h-6 text-purple-500 mt-0.5" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-sm font-medium">AgentOS (Orchestration)</span>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date().toLocaleString()}
+                        </span>
+                      </div>
+                      {renderOrchestrationSteps(currentOrchestrationSteps)}
+                    </div>
+                  </div>
+                </div>
               )}
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div
-                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                  style={{ animationDelay: '0.1s' }}
-                ></div>
-                <div
-                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                  style={{ animationDelay: '0.2s' }}
-                ></div>
+
+              {/* Typing indicator */}
+              <div className="flex items-center gap-3 text-muted-foreground">
+                {orchestrationMode && currentOrchestrationSteps.length > 0 ? (
+                  <Brain className="w-4 h-4 text-purple-500" />
+                ) : (
+                  <Bot className="w-4 h-4" />
+                )}
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: '0.1s' }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: '0.2s' }}
+                  ></div>
+                </div>
+                <span className="text-sm">
+                  {orchestrationMode && currentOrchestrationSteps.length > 0
+                    ? 'AI orchestration in progress...'
+                    : activeAgents.length > 0
+                      ? `${activeAgents.length} agent${activeAgents.length > 1 ? 's' : ''} typing...`
+                      : 'typing...'}
+                </span>
               </div>
-              <span className="text-sm">
-                {orchestrationMode && currentOrchestrationSteps.length > 0
-                  ? 'AI orchestration in progress...'
-                  : activeAgents.length > 0
-                    ? `${activeAgents.length} agent${activeAgents.length > 1 ? 's' : ''} typing...`
-                    : 'typing...'}
-              </span>
             </div>
           )}
         </div>
@@ -740,7 +760,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                     ? '질문을 입력하세요... (AI가 단계별로 사고하여 최적의 전문가를 찾아드립니다)'
                     : '메시지를 입력하세요...'
                 }
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                 className="pr-12"
               />
               <Button
