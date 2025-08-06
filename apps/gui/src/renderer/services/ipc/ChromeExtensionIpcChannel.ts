@@ -28,6 +28,14 @@ import type {
   ChromeExtensionMessage,
   ChromeExtensionResponse,
 } from '../../types/core-types';
+import type { McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
+import type {
+  UsageLogQueryOptions,
+  McpUsageUpdateEvent,
+  HourlyStatsResponse,
+  ClearUsageLogsResponse,
+  SetUsageTrackingResponse,
+} from '../../../shared/types/mcp-usage-types';
 
 /**
  * Chrome Extension 환경에서 사용되는 IpcChannel 구현체
@@ -186,5 +194,56 @@ export class ChromeExtensionIpcChannel implements IpcChannel {
 
   async getPreset(id: string): Promise<Preset | null> {
     return this.sendMessage('getPreset', { id });
+  }
+
+  // ==================== MCP 사용량 추적 메서드들 (Stub 구현) ====================
+
+  async getToolMetadata(_clientName: string): Promise<McpToolMetadata> {
+    throw new Error('MCP usage tracking not implemented in Chrome Extension environment');
+  }
+
+  async getAllToolMetadata(): Promise<McpToolMetadata[]> {
+    throw new Error('MCP usage tracking not implemented in Chrome Extension environment');
+  }
+
+  async getUsageLogs(_clientName: string, _options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
+    throw new Error('MCP usage tracking not implemented in Chrome Extension environment');
+  }
+
+  async getAllUsageLogs(_options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
+    throw new Error('MCP usage tracking not implemented in Chrome Extension environment');
+  }
+
+  async getUsageStats(_clientName?: string): Promise<McpUsageStats> {
+    throw new Error('MCP usage tracking not implemented in Chrome Extension environment');
+  }
+
+  async getHourlyStats(_date: Date, _clientName?: string): Promise<HourlyStatsResponse> {
+    throw new Error('MCP usage tracking not implemented in Chrome Extension environment');
+  }
+
+  async getUsageLogsInRange(
+    _startDate: Date,
+    _endDate: Date,
+    _clientName?: string
+  ): Promise<McpUsageLog[]> {
+    throw new Error('MCP usage tracking not implemented in Chrome Extension environment');
+  }
+
+  async clearUsageLogs(_olderThan?: Date): Promise<ClearUsageLogsResponse> {
+    throw new Error('MCP usage tracking not implemented in Chrome Extension environment');
+  }
+
+  async setUsageTracking(
+    _clientName: string,
+    _enabled: boolean
+  ): Promise<SetUsageTrackingResponse> {
+    throw new Error('MCP usage tracking not implemented in Chrome Extension environment');
+  }
+
+  async subscribeToUsageUpdates(
+    _callback: (event: McpUsageUpdateEvent) => void
+  ): Promise<() => void> {
+    throw new Error('MCP usage tracking not implemented in Chrome Extension environment');
   }
 }
