@@ -6,7 +6,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { bootstrap } from './bootstrap';
 import { WebIpcChannel } from './services/ipc/WebIpcChannel';
-import AppLayoutV2 from './components/layout/AppLayoutV2';
+import AppLayout from './components/layout/AppLayout';
 import './styles/globals.css';
 
 console.log('🌐 Starting web application...');
@@ -32,7 +32,7 @@ if (typeof window !== 'undefined') {
 const container = document.getElementById('root');
 if (container) {
   const root = createRoot(container);
-  root.render(React.createElement(AppLayoutV2));
+  root.render(React.createElement(AppLayout));
   console.log('✅ React app mounted successfully');
 } else {
   console.error('❌ Failed to find root element');
