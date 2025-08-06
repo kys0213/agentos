@@ -52,6 +52,7 @@ describe('FileBasedChatSession', () => {
       recentMessages: [],
       latestSummary: undefined,
       latestCheckpoint: undefined,
+      joinedAgents: [],
     };
 
     session = new FileBasedChatSession(
