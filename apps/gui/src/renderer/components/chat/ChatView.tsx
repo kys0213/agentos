@@ -57,7 +57,9 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
   const [selectedAgentForMenu, setSelectedAgentForMenu] = useState<string | null>(null);
   const [orchestrationMode, setOrchestrationMode] = useState(true);
   const [currentOrchestrationSteps, setCurrentOrchestrationSteps] = useState<MessageHistory[]>([]);
-  const [completedOrchestrations, setCompletedOrchestrations] = useState<Record<string, MessageHistory[]>>({});
+  const [completedOrchestrations, setCompletedOrchestrations] = useState<
+    Record<string, MessageHistory[]>
+  >({});
   const [expandedOrchestrations, setExpandedOrchestrations] = useState<Record<string, boolean>>({});
 
   // 서비스 인스턴스
@@ -192,7 +194,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
 
         setTimeout(() => {
           setIsTyping(false);
-          
+
           // Store orchestration steps for the completed message
           const orchestratedMessageId = (messages.length + 2).toString();
           setCompletedOrchestrations((prev) => ({
