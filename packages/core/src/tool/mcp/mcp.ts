@@ -17,6 +17,8 @@ import { safeZone } from '../../common/utils/safeZone';
 import { McpConfig } from './mcp-config';
 import { McpEvent, McpEventMap } from './mcp-event';
 import { McpTransportFactory } from './mcp-transport.factory';
+import { McpToolMetadata, McpUsageTracker, McpUsageLog, McpUsageStats, McpConnectionStatus } from './mcp-types';
+import { InMemoryUsageTracker, NoOpUsageTracker } from './mcp-usage-tracker';
 
 /**
  * mcp is a client for the MCP protocol.
@@ -31,15 +33,35 @@ export class Mcp extends EventEmitter {
   private prompts: Prompt[] = [];
   private resources: Resource[] = [];
 
+  private metadata: McpToolMetadata;
+  private usageTracker: McpUsageTracker;
+
   constructor(
     private readonly client: Client,
     private readonly transport: Transport,
-    private readonly config: McpConfig
+    private readonly config: McpConfig,
+    private readonly usageTrackingEnabled: boolean = false
   ) {
     super();
+    
+    // 메타데이터 초기화
+    this.metadata = {
+      id: this.generateToolId(),
+      name: config.name,
+      description: `MCP Tool: ${config.name}`,
+      version: config.version,
+      permissions: [],
+      status: 'disconnected',
+      usageCount: 0,
+    };
+    
+    // 사용량 추적기 초기화
+    this.usageTracker = usageTrackingEnabled ? 
+      new InMemoryUsageTracker() : 
+      new NoOpUsageTracker();
   }
 
-  static create(config: McpConfig) {
+  static create(config: McpConfig, usageTrackingEnabled: boolean = false) {
     const transport = McpTransportFactory.create(config);
 
     const client = new Client({
@@ -47,7 +69,7 @@ export class Mcp extends EventEmitter {
       version: config.version,
     });
 
-    const mcp = new Mcp(client, transport, config);
+    const mcp = new Mcp(client, transport, config, usageTrackingEnabled);
 
     return mcp;
   }
@@ -100,41 +122,71 @@ export class Mcp extends EventEmitter {
 
   async invokeTool(
     tool: Tool,
-    option?: { resumptionToken?: string; input?: Record<string, unknown> }
+    option?: { resumptionToken?: string; input?: Record<string, unknown>; agentId?: string; agentName?: string }
   ): Promise<InvokeToolResult> {
     let freshResumptionToken: string | undefined;
+    const startTime = Date.now();
+    let status: 'success' | 'error' | 'timeout' = 'success';
+    let error: string | undefined;
 
     await this.connectIfNotConnected();
     this.updateLastUsedTime();
 
-    const result = await this.client.callTool(
-      {
-        name: this.removePrefix(tool.name),
-        arguments: option?.input,
-      },
-      undefined,
-      {
-        timeout: this.config.network?.timeoutMs,
-        maxTotalTimeout: this.config.network?.maxTotalTimeoutMs,
-        resetTimeoutOnProgress: true,
-        signal: this.abortController?.signal,
-        onprogress: (progress) => {
-          this.emit(McpEvent.ON_PROGRESS, { type: 'tool', name: tool.name, progress });
+    try {
+      const result = await this.client.callTool(
+        {
+          name: this.removePrefix(tool.name),
+          arguments: option?.input,
         },
-        resumptionToken: option?.resumptionToken,
-        onresumptiontoken: (token) => (freshResumptionToken = token),
+        undefined,
+        {
+          timeout: this.config.network?.timeoutMs,
+          maxTotalTimeout: this.config.network?.maxTotalTimeoutMs,
+          resetTimeoutOnProgress: true,
+          signal: this.abortController?.signal,
+          onprogress: (progress) => {
+            this.emit(McpEvent.ON_PROGRESS, { type: 'tool', name: tool.name, progress });
+          },
+          resumptionToken: option?.resumptionToken,
+          onresumptiontoken: (token) => (freshResumptionToken = token),
+        }
+      );
+
+      if (result.isError) {
+        status = 'error';
+        error = typeof result.content === 'string' ? result.content : String(result.content);
+        throw new Error('Tool call failed reason: ' + error);
       }
-    );
 
-    if (result.isError) {
-      throw new Error('Tool call failed reason: ' + result.content);
+      return {
+        isError: result.isError == true,
+        contents: Array.isArray(result.content) ? result.content : [result.content],
+        resumptionToken: freshResumptionToken,
+      };
+    } catch (e) {
+      status = 'error';
+      error = e instanceof Error ? e.message : String(e);
+      throw e;
+    } finally {
+      // 사용량 추적
+      if (this.usageTrackingEnabled) {
+        this.usageTracker.trackUsage({
+          toolId: this.metadata.id,
+          toolName: tool.name,
+          agentId: option?.agentId,
+          agentName: option?.agentName,
+          action: 'invoke',
+          duration: Date.now() - startTime,
+          status,
+          parameters: option?.input,
+          error,
+        });
+
+        // 메타데이터 업데이트
+        this.metadata.usageCount++;
+        this.metadata.lastUsedAt = new Date();
+      }
     }
-
-    return {
-      isError: result.isError == true,
-      contents: Array.isArray(result.content) ? result.content : [result.content],
-      resumptionToken: freshResumptionToken,
-    };
   }
 
   async getResource(uri: string): Promise<ResourceContents[]> {
@@ -245,15 +297,24 @@ export class Mcp extends EventEmitter {
 
     this.abortController = new AbortController();
 
-    await this.client.connect(this.transport, {
-      signal: this.abortController.signal,
-      timeout: this.config.network?.timeoutMs,
-      maxTotalTimeout: this.config.network?.maxTotalTimeoutMs,
-    });
+    try {
+      await this.client.connect(this.transport, {
+        signal: this.abortController.signal,
+        timeout: this.config.network?.timeoutMs,
+        maxTotalTimeout: this.config.network?.maxTotalTimeoutMs,
+      });
 
-    this.emit(McpEvent.CONNECTED, undefined);
+      // 연결 상태 업데이트
+      this.metadata.status = 'connected';
 
-    this.registerMaxIdleTimeoutScheduler();
+      this.emit(McpEvent.CONNECTED, undefined);
+
+      this.registerMaxIdleTimeoutScheduler();
+    } catch (error) {
+      // 연결 실패 시 상태 업데이트
+      this.metadata.status = 'error';
+      throw error;
+    }
   }
 
   async disconnect() {
@@ -267,6 +328,9 @@ export class Mcp extends EventEmitter {
 
     try {
       await this.client.close();
+
+      // 연결 해제 상태 업데이트
+      this.metadata.status = 'disconnected';
 
       this.emit(McpEvent.DISCONNECTED, undefined);
 
@@ -321,6 +385,52 @@ export class Mcp extends EventEmitter {
 
   private updateLastUsedTime() {
     this.lastUsedTime = Date.now();
+  }
+
+  private generateToolId(): string {
+    return `mcp_${this.config.name}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+  }
+
+  /**
+   * 도구 메타데이터 조회
+   */
+  getMetadata(): McpToolMetadata {
+    return { ...this.metadata };
+  }
+
+  /**
+   * 사용량 로그 조회
+   */
+  getUsageLogs(): McpUsageLog[] {
+    return this.usageTracker.getUsageLogs(this.metadata.id);
+  }
+
+  /**
+   * 사용량 통계 조회
+   */
+  getUsageStats(): McpUsageStats {
+    return this.usageTracker.getUsageStats(this.metadata.id);
+  }
+
+  /**
+   * 전체 사용량 로그 조회 (모든 도구)
+   */
+  getAllUsageLogs(): McpUsageLog[] {
+    return this.usageTracker.getUsageLogs();
+  }
+
+  /**
+   * 사용량 추적 활성화 여부 확인
+   */
+  isUsageTrackingEnabled(): boolean {
+    return this.usageTrackingEnabled;
+  }
+
+  /**
+   * 사용량 로그 정리
+   */
+  clearUsageLogs(olderThan?: Date): void {
+    this.usageTracker.clearLogs(olderThan);
   }
 }
 
