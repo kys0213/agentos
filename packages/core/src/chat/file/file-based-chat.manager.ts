@@ -64,6 +64,7 @@ export class FileBasedChatManager implements ChatManager {
       recentMessages: [],
       latestSummary: undefined,
       latestCheckpoint: undefined,
+      joinedAgents: [],
     };
 
     return new FileBasedChatSession(

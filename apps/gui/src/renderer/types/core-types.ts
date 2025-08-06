@@ -2,10 +2,13 @@
 // Main 프로세스와 IPC를 통해 데이터를 주고받을 때 사용
 
 // Core types from packages/core
-import type { ChatSessionMetadata } from '@agentos/core/src/chat/chat-session-metata';
-import type { MessageHistory } from '@agentos/core/src/chat/chat-session';
-import type { Preset, EnabledMcp } from '@agentos/core/src/preset/preset';
-import type { McpConfig } from '@agentos/core/src/tool/mcp/mcp-config';
+import type {
+  ChatSessionMetadata,
+  MessageHistory,
+  Preset,
+  EnabledMcp,
+  McpConfig,
+} from '@agentos/core';
 
 // Re-export core types
 export type { ChatSessionMetadata, MessageHistory, Preset, EnabledMcp, McpConfig };

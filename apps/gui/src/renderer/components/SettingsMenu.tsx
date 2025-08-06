@@ -1,19 +1,21 @@
-import React, { useState } from 'react';
 import { Button, HStack } from '@chakra-ui/react';
-import ColorModeToggle from './ColorModeToggle';
+import React, { useState } from 'react';
 import PresetManager from '../pages/PresetManager';
+import ColorModeToggle from './ColorModeToggle';
 import LlmBridgeManager from './LlmBridgeManager';
-import { LlmBridgeStore } from '../stores/llm-bridge-store';
-import { BridgeManager } from '../utils/BridgeManager';
+import { MCPToolsManager } from './management/McpToolManager';
 
+/**
+ * TODO: 상태 변경시 저장하는 기능 추가
+ */
 interface SettingsMenuProps {
-  bridgeStore: LlmBridgeStore;
-  manager: BridgeManager;
   onBridgesChange(): void;
 }
-const SettingsMenu: React.FC<SettingsMenuProps> = ({ bridgeStore, manager, onBridgesChange }) => {
+
+const SettingsMenu: React.FC<SettingsMenuProps> = ({ onBridgesChange }) => {
   const [showPresets, setShowPresets] = useState(false);
   const [showBridges, setShowBridges] = useState(false);
+  const [showMcpTools, setShowMcpTools] = useState(false);
   return (
     <HStack mb={2} spacing={2}>
       <Button size="sm" onClick={() => setShowPresets((p) => !p)}>
@@ -22,9 +24,13 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ bridgeStore, manager, onBri
       <Button size="sm" onClick={() => setShowBridges((b) => !b)}>
         LLM Bridges
       </Button>
+      <Button size="sm" onClick={() => setShowMcpTools((m) => !m)}>
+        Tools
+      </Button>
       <ColorModeToggle />
       {showPresets && <PresetManager />}
       {showBridges && <LlmBridgeManager onChange={onBridgesChange} />}
+      {showMcpTools && <MCPToolsManager />}
     </HStack>
   );
 };

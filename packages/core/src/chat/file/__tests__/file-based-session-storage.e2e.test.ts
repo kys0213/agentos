@@ -153,6 +153,7 @@ describe('FileBasedSessionStorage E2E', () => {
           },
         },
       ],
+      joinedAgents: [],
     };
 
     await storage.saveSessionMetadata(sessionId, metadata);

@@ -1,6 +1,7 @@
 import { ChatMessage, LlmUsage, Message } from 'llm-bridge-spec';
 import { CursorPagination, CursorPaginationResult } from '../common/pagination/cursor-pagination';
 import { ChatSessionMetadata } from './chat-session-metata';
+import { AgentMetadata } from '../agent/agent-metadata';
 
 /**
  * The chat session
@@ -87,6 +88,7 @@ export type MessageHistory = Message & {
   messageId: string;
   createdAt: Date;
   isCompressed?: boolean;
+  agentMetadata?: AgentMetadata;
 };
 
 /**

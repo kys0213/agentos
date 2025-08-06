@@ -1,4 +1,4 @@
-import { AvailableAgent } from '../../types/chat-types';
+import { Agent } from '@agentos/core';
 import type { Preset } from '../../types/core-types';
 
 // Mock Preset objects
@@ -55,7 +55,7 @@ const mockPresets: Record<string, Preset> = {
   },
 };
 
-export const mockAvailableAgents: AvailableAgent[] = [
+export const mockAvailableAgents: Agent[] = [
   {
     id: 'data-analyzer',
     name: 'Data Analyzer',
@@ -64,6 +64,8 @@ export const mockAvailableAgents: AvailableAgent[] = [
     description: '데이터 분석과 시각화를 도와드립니다',
     icon: '📊',
     keywords: ['데이터', '분석', '차트', '그래프', '통계', 'csv', 'json', '시각화'],
+    sessionCount: 0,
+    run: () => Promise.resolve({ messages: [], sessionId: '' }),
   },
   {
     id: 'code-assistant',
@@ -73,6 +75,8 @@ export const mockAvailableAgents: AvailableAgent[] = [
     description: '코드 리뷰와 디버깅을 지원합니다',
     icon: '💻',
     keywords: ['코드', '프로그래밍', '개발', '버그', '리팩토링', 'javascript', 'python', 'react'],
+    sessionCount: 0,
+    run: () => Promise.resolve({ messages: [], sessionId: '' }),
   },
   {
     id: 'content-writer',
@@ -82,6 +86,8 @@ export const mockAvailableAgents: AvailableAgent[] = [
     description: '창의적인 글쓰기를 도와드립니다',
     icon: '✍️',
     keywords: ['글쓰기', '콘텐츠', '마케팅', '카피', '문서', '작성', '편집'],
+    sessionCount: 0,
+    run: () => Promise.resolve({ messages: [], sessionId: '' }),
   },
   {
     id: 'research-assistant',
@@ -91,13 +97,15 @@ export const mockAvailableAgents: AvailableAgent[] = [
     description: '정보 수집과 분석을 전문으로 합니다',
     icon: '🔍',
     keywords: ['리서치', '조사', '정보', '분석', '자료', '검색', '팩트체크'],
+    sessionCount: 0,
+    run: () => Promise.resolve({ messages: [], sessionId: '' }),
   },
 ];
 
-export const getAvailableAgents = (): AvailableAgent[] => {
+export const getAvailableAgents = (): Agent[] => {
   return mockAvailableAgents;
 };
 
-export const getAgentById = (id: string): AvailableAgent | undefined => {
+export const getAgentById = (id: string): Agent | undefined => {
   return mockAvailableAgents.find((agent) => agent.id === id);
 };

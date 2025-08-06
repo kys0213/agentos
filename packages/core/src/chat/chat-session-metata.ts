@@ -1,6 +1,7 @@
 import { LlmUsage } from 'llm-bridge-spec';
 import { Checkpoint } from './chat-session';
 import { MessageHistory } from './chat-session';
+import { AgentMetadata } from '../agent/agent-metadata';
 
 export interface ChatSessionMetadata {
   /**
@@ -47,4 +48,9 @@ export interface ChatSessionMetadata {
    * The latest checkpoint of the session
    */
   latestCheckpoint?: Checkpoint;
+
+  /**
+   * The joined agents of the session
+   */
+  joinedAgents: AgentMetadata[];
 }

@@ -1,19 +1,7 @@
-import React from 'react';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
+import { Activity, Bot, Cpu, Layers, MessageSquare } from 'lucide-react';
 import { Badge } from '../ui/badge';
-import {
-  Bot,
-  MessageSquare,
-  Cpu,
-  Layers,
-  Activity,
-  Clock,
-  TrendingUp,
-  Users,
-  Zap,
-  BarChart3,
-} from 'lucide-react';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
 
 interface DashboardProps {
   onOpenChat?: (agentId: number, agentName: string, agentPreset: string) => void;

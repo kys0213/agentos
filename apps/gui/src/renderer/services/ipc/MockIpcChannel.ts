@@ -42,6 +42,7 @@ export class MockIpcChannel implements IpcChannel {
       totalMessages: 0,
       totalUsage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
       recentMessages: [],
+      joinedAgents: [],
     });
 
     // Mock Bridge
@@ -92,6 +93,7 @@ export class MockIpcChannel implements IpcChannel {
       totalMessages: 0,
       totalUsage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
       recentMessages: [],
+      joinedAgents: [],
     };
 
     this.mockSessions.push(session);

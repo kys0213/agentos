@@ -7,6 +7,7 @@ import { Dashboard } from './Dashboard';
 import { PresetManager } from './PresetManager';
 import { SubAgentManager } from './SubAgentManager';
 import { ModelManager } from './ModelManager';
+import { MCPToolsManager } from './McpToolManager';
 
 interface ManagementViewProps {
   activeSection: AppModeState['activeSection'];
@@ -40,12 +41,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({
       case 'models':
         return <ModelManager />;
       case 'tools':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-semibold">MCP Tools</h1>
-            <p className="text-muted-foreground">Tool management coming soon...</p>
-          </div>
-        );
+        return <MCPToolsManager />;
       case 'racp':
         return (
           <div className="p-6">

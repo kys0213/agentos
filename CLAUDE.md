@@ -105,3 +105,127 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - [ ] 각 커밋이 단일 책임을 갖는가?
 
 **이 지침을 위반하면 작업을 다시 시작해야 합니다.**
+
+## 🎯 타입 설계 원칙
+
+**TypeScript 타입 설계 시 반드시 준수해야 하는 원칙들:**
+
+### 1. 기존 타입 재사용 우선
+
+```typescript
+// ❌ 나쁜 예: 새로운 중복 타입 정의
+interface NewAgentInfo {
+  id: string;
+  name: string;  
+  preset: string;
+}
+
+// ✅ 좋은 예: 기존 타입 재사용
+import { AgentMetadata } from '@agentos/core';
+joinedAgents: AgentMetadata[];
+```
+
+### 2. 복잡한 중간 타입 지양
+
+- **"Compat", "Adapter" 같은 중간 타입 최대한 지양**
+- **Core 타입 직접 확장 우선**
+- **변환 로직은 유틸리티 함수로 분리**
+
+```typescript
+// ❌ 나쁜 예: 복잡한 중간 타입
+interface ChatSessionCompat extends LegacyType, CoreType { ... }
+
+// ✅ 좋은 예: Core 직접 확장
+interface GuiChatSession extends ChatSessionMetadata {
+  isPinned?: boolean;  // GUI 전용 필드만 추가
+}
+```
+
+### 3. Core 우선 설계
+
+- **packages/core의 타입이 최고 우선순위**
+- **GUI 요구사항을 Core에 반영할지 먼저 검토**
+- **Core 변경이 어려운 경우에만 GUI 레벨 확장**
+
+### 4. 단순함이 최우선
+
+```typescript
+// ❌ 복잡한 구조
+interface ComplexOrchestration {
+  steps: OrchestrationStep[];
+  executions: AgentExecutionReference[];
+  synthesis: SynthesisResult;
+}
+
+// ✅ 단순한 구조  
+interface SimpleMultiAgent {
+  joinedAgents: AgentMetadata[];
+  // 메시지에 agentMetadata 추가로 충분
+}
+```
+
+## 🏗️ 인터페이스 확장 원칙
+
+### 1. 최소 변경 원칙
+
+- **기존 인터페이스 시그니처 변경 금지**
+- **새 필드는 옵셔널(?)로 추가**
+- **Breaking Change 절대 금지**
+
+### 2. 점진적 확장
+
+- **한 번에 모든 것을 바꾸려 하지 말 것**
+- **기존 코드가 계속 동작하도록 보장**
+- **새 기능은 옵셔널로 점진 도입**
+
+### 3. 하위 호환성 보장
+
+```typescript
+// ✅ 좋은 예: 하위 호환성 유지
+export interface MessageHistory extends Message {
+  messageId: string;
+  createdAt: Date;
+  isCompressed?: boolean;
+  agentMetadata?: AgentMetadata;  // 새 필드는 옵셔널
+}
+```
+
+## 🎨 계획 vs 실행 균형
+
+### 1. 과도한 계획 지양
+
+- **복잡한 아키텍처 설계보다 실용적 접근 우선**
+- **실제 구현 가능성을 항상 고려**
+- **"완벽한 설계"보다 "동작하는 설계"**
+
+### 2. 실행 중 피드백 반영
+
+- **계획이 복잡해지면 즉시 단순화 검토**
+- **구현하면서 얻는 인사이트를 계획에 반영**
+- **사용자 피드백에 따라 유연하게 조정**
+
+### 3. 단계별 검증
+
+```bash
+# 각 단계마다 빌드/타입체크로 검증
+pnpm build
+pnpm typecheck
+```
+
+## 🔧 코드 품질 보장
+
+### 1. 작업 완료 전 필수 체크
+
+```bash
+# 반드시 실행해야 하는 명령어들
+pnpm typecheck  # 타입 에러 확인
+pnpm build     # 빌드 에러 확인  
+pnpm lint      # 코드 스타일 확인
+pnpm test      # 테스트 통과 확인
+```
+
+### 2. 타입 안전성 검증
+
+- **any 타입 사용 절대 금지**
+- **모든 public API에 명시적 타입 정의**
+- **타입 가드 활용으로 런타임 안전성 보장**

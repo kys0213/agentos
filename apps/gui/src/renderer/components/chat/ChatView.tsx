@@ -7,14 +7,10 @@ import {
   ChevronRight,
   Code,
   Copy,
-  Cpu,
   FileText,
-  Home,
   Image as ImageIcon,
-  Layers,
   Lightbulb,
   MessageSquare,
-  Network,
   Paperclip,
   Plus,
   Search,
@@ -27,7 +23,6 @@ import {
   User,
   UserMinus,
   Users,
-  Wrench,
   X,
 } from 'lucide-react';
 import React, { useState } from 'react';
@@ -38,15 +33,9 @@ import { Input } from '../ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import ChatHistory from './ChatHistory';
 
-import {
-  ActiveAgent,
-  AppModeState,
-  ChatMessage,
-  ChatSession,
-  QuickAction,
-  OrchestrationStep,
-} from '../../types/chat-types';
+import { AppModeState, QuickAction } from '../../types/chat-types';
 
+import { Agent, ChatSessionMetadata, MessageHistory } from '@agentos/core';
 import {
   MockAgentOrchestrator,
   MockOrchestrationService,
@@ -59,17 +48,19 @@ interface ChatViewProps {
 }
 
 const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<MessageHistory[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [selectedChat, setSelectedChat] = useState<ChatSession | null>(null);
-  const [activeAgents, setActiveAgents] = useState<ActiveAgent[]>([]);
+  const [selectedChat, setSelectedChat] = useState<ChatSessionMetadata | null>(null);
+  const [activeAgents, setActiveAgents] = useState<Agent[]>([]);
   const [showAgentPanel, setShowAgentPanel] = useState(true);
   const [selectedAgentForMenu, setSelectedAgentForMenu] = useState<string | null>(null);
   const [orchestrationMode, setOrchestrationMode] = useState(true);
-  const [currentOrchestrationSteps, setCurrentOrchestrationSteps] = useState<OrchestrationStep[]>(
-    []
-  );
+  const [currentOrchestrationSteps, setCurrentOrchestrationSteps] = useState<MessageHistory[]>([]);
+  const [completedOrchestrations, setCompletedOrchestrations] = useState<
+    Record<string, MessageHistory[]>
+  >({});
+  const [expandedOrchestrations, setExpandedOrchestrations] = useState<Record<string, boolean>>({});
 
   // 서비스 인스턴스
   const orchestrationService = new MockOrchestrationService();
@@ -111,30 +102,31 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
     },
   ];
 
-  const handleSelectChat = (chat: ChatSession) => {
+  const handleSelectChat = (chat: ChatSessionMetadata) => {
     setSelectedChat(chat);
 
+    // Get primary agent name from joinedAgents
+    const primaryAgent = chat.joinedAgents?.[0]?.name || 'AgentOS';
+
     // Load mock messages for the selected chat
-    const mockMessages: ChatMessage[] = [
+    const mockMessages: MessageHistory[] = [
       {
-        id: 1,
-        type: 'system',
-        content: `${chat.agentName}와의 대화를 계속합니다.`,
-        timestamp: '10:00 AM',
+        messageId: '1',
+        role: 'system',
+        content: { contentType: 'text', value: `${primaryAgent}와의 대화를 계속합니다.` },
+        createdAt: new Date(),
       },
       {
-        id: 2,
-        type: 'user',
-        content: '이전 대화를 이어서 진행하고 싶습니다.',
-        timestamp: '10:01 AM',
+        messageId: '2',
+        role: 'user',
+        content: { contentType: 'text', value: '이전 대화를 이어서 진행하고 싶습니다.' },
+        createdAt: new Date(),
       },
       {
-        id: 3,
-        type: 'agent',
-        content: chat.lastMessage,
-        timestamp: '10:02 AM',
-        agentName: chat.agentName,
-        agentPreset: chat.agentPreset,
+        messageId: '3',
+        role: 'assistant',
+        content: { contentType: 'text', value: '이전 대화를 이어서 진행하고 싶습니다.' },
+        createdAt: new Date(),
       },
     ];
     setMessages(mockMessages);
@@ -143,13 +135,19 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
   const handleNewChat = () => {
     setSelectedChat(null);
     setActiveAgents([]);
+    setCompletedOrchestrations({});
+    setExpandedOrchestrations({});
+    setCurrentOrchestrationSteps([]);
     setMessages([
       {
-        id: 1,
-        type: 'system',
-        content:
-          'AgentOS에 오신 것을 환영합니다! 저는 여러 전문 에이전트를 관리하는 오케스트레이터입니다. 질문해주시면 적절한 전문가를 배정해드릴게요.',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        messageId: '1',
+        role: 'assistant',
+        content: {
+          contentType: 'text',
+          value:
+            'AgentOS에 오신 것을 환영합니다! 저는 여러 전문 에이전트를 관리하는 오케스트레이터입니다. 질문해주시면 적절한 전문가를 배정해드릴게요.',
+        },
+        createdAt: new Date(),
       },
     ]);
   };
@@ -157,11 +155,11 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
-    const userMessage: ChatMessage = {
-      id: messages.length + 1,
-      type: 'user',
-      content: inputMessage,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    const userMessage: MessageHistory = {
+      messageId: (messages.length + 1).toString(),
+      role: 'user',
+      content: { contentType: 'text', value: inputMessage },
+      createdAt: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -179,52 +177,80 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
         setCurrentOrchestrationSteps(steps);
 
         // Create orchestrated message
-        const orchestratedMessage: ChatMessage = {
-          id: messages.length + 2,
-          type: 'orchestration',
-          content: '질문을 분석하여 적절한 전문가를 찾고 있습니다...',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          agentName: mainAgent.name,
-          agentPreset: mainAgent.preset,
-          agentId: mainAgent.id,
-          orchestrationSteps: steps,
+        const orchestratedMessage: MessageHistory = {
+          messageId: (messages.length + 2).toString(),
+          role: 'assistant',
+          content: {
+            contentType: 'text',
+            value:
+              matchedAgents.length > 0
+                ? `질문을 분석하여 ${matchedAgents.length}개의 전문 에이전트를 선택했습니다.`
+                : '질문을 분석하여 직접 답변을 제공합니다.',
+          },
+          createdAt: new Date(),
         };
 
         setMessages((prev) => [...prev, orchestratedMessage]);
 
         setTimeout(() => {
           setIsTyping(false);
+
+          // Store orchestration steps for the completed message
+          const orchestratedMessageId = (messages.length + 2).toString();
+          setCompletedOrchestrations((prev) => ({
+            ...prev,
+            [orchestratedMessageId]: steps,
+          }));
+
+          // Update the orchestrated message with agent metadata and completion status
+          setMessages((prev) => {
+            const updatedMessages = [...prev];
+            const orchestratedMsgIndex = updatedMessages.findIndex(
+              (msg) => msg.messageId === orchestratedMessageId
+            );
+
+            if (orchestratedMsgIndex !== -1) {
+              updatedMessages[orchestratedMsgIndex] = {
+                ...updatedMessages[orchestratedMsgIndex],
+                agentMetadata: {
+                  id: mainAgent.id,
+                  name: mainAgent.name,
+                  description: 'Orchestration completed',
+                  icon: mainAgent.icon,
+                  keywords: [],
+                },
+              };
+            }
+            return updatedMessages;
+          });
+
           setCurrentOrchestrationSteps([]);
 
           if (matchedAgents.length > 0) {
             // Generate responses from matched agents
-            const responses = matchedAgents.map((agentId, index) => {
-              const agent = availableAgents.find((a) => a.id === agentId);
+            const responses = matchedAgents.map((agentId, index): MessageHistory => {
               return {
-                id: messages.length + 3 + index,
-                type: 'agent' as const,
-                content: orchestrator.getAgentResponse(agent!, currentQuery),
-                timestamp: new Date().toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                }),
-                agentName: agent!.name,
-                agentPreset: agent!.preset.name,
-                agentId: agent!.id,
+                messageId: (messages.length + 3 + index).toString(),
+                role: 'assistant',
+                content: {
+                  contentType: 'text',
+                  value: orchestrator.getAgentResponse(agentId, currentQuery),
+                },
+                createdAt: new Date(),
               };
             });
 
             setMessages((prev) => [...prev, ...responses]);
           } else {
             // Main agent responds directly
-            const directResponse: ChatMessage = {
-              id: messages.length + 3,
-              type: 'agent',
-              content: orchestrator.getDirectResponse(currentQuery),
-              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              agentName: mainAgent.name,
-              agentPreset: mainAgent.preset,
-              agentId: mainAgent.id,
+            const directResponse: MessageHistory = {
+              messageId: (messages.length + 3).toString(),
+              role: 'assistant',
+              content: {
+                contentType: 'text',
+                value: orchestrator.getDirectResponse(currentQuery),
+              },
+              createdAt: new Date(),
             };
 
             setMessages((prev) => [...prev, directResponse]);
@@ -237,26 +263,28 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
         setIsTyping(false);
 
         if (activeAgents.length === 0) {
-          const defaultResponse: ChatMessage = {
-            id: messages.length + 2,
-            type: 'agent',
-            content: '안녕하세요! 더 나은 도움을 위해 오른쪽에서 전문 에이전트를 선택해주세요.',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            agentName: mainAgent.name,
-            agentPreset: mainAgent.preset,
-            agentId: mainAgent.id,
+          const defaultResponse: MessageHistory = {
+            messageId: (messages.length + 2).toString(),
+            role: 'assistant',
+            content: {
+              contentType: 'text',
+              value: '안녕하세요! 더 나은 도움을 위해 오른쪽에서 전문 에이전트를 선택해주세요.',
+            },
+            createdAt: new Date(),
           };
           setMessages((prev) => [...prev, defaultResponse]);
         } else {
-          const responses = activeAgents.map((agent, index) => ({
-            id: messages.length + 2 + index,
-            type: 'agent' as const,
-            content: `[${agent.name}] ${orchestrator.getAgentResponse(agent, currentQuery)}`,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            agentName: agent.name,
-            agentPreset: agent.preset.name,
-            agentId: agent.id,
-          }));
+          const responses = activeAgents.map(
+            (agent, index): MessageHistory => ({
+              messageId: (messages.length + 2 + index).toString(),
+              role: 'assistant',
+              content: {
+                contentType: 'text',
+                value: `[${agent.name}] ${orchestrator.getAgentResponse(agent.id, currentQuery)}`,
+              },
+              createdAt: new Date(),
+            })
+          );
 
           setMessages((prev) => [...prev, ...responses]);
         }
@@ -265,17 +293,20 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
   };
 
   const handleQuickAction = (action: QuickAction) => {
-    const actionMessage: ChatMessage = {
-      id: messages.length + 1,
-      type: 'user',
-      content: `${action.label}: ${action.description}`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    const actionMessage: MessageHistory = {
+      messageId: (messages.length + 1).toString(),
+      role: 'user',
+      content: {
+        contentType: 'text',
+        value: `${action.label}: ${action.description}`,
+      },
+      createdAt: new Date(),
     };
     setMessages([...messages, actionMessage]);
   };
 
   const handleAgentSelect = (agent: (typeof availableAgents)[0]) => {
-    const newAgent: ActiveAgent = orchestrator.convertToActiveAgent(agent);
+    const newAgent: Agent = orchestrator.convertToActiveAgent(agent);
 
     if (activeAgents.some((a) => a.id === agent.id)) {
       return;
@@ -283,13 +314,23 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
 
     setActiveAgents((prev) => [...prev, newAgent]);
 
-    const agentMessage: ChatMessage = {
-      id: messages.length + 1,
-      type: 'system',
-      content: `${agent.name}이 대화에 참여했습니다. ${orchestrationMode ? '오케스트레이터가 필요시 자동으로 배정할 예정입니다.' : agent.description}`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    const agentMessage: MessageHistory = {
+      messageId: (messages.length + 1).toString(),
+      role: 'system',
+      content: {
+        contentType: 'text',
+        value: `${agent.name}이 대화에 참여했습니다. ${orchestrationMode ? '오케스트레이터가 필요시 자동으로 배정할 예정입니다.' : agent.description}`,
+      },
+      createdAt: new Date(),
     };
     setMessages([...messages, agentMessage]);
+  };
+
+  const toggleOrchestrationSteps = (messageId: string) => {
+    setExpandedOrchestrations((prev) => ({
+      ...prev,
+      [messageId]: !prev[messageId],
+    }));
   };
 
   const handleRemoveAgent = (agentId: string) => {
@@ -299,11 +340,14 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
     setActiveAgents((prev) => prev.filter((a) => a.id !== agentId));
     setSelectedAgentForMenu(null);
 
-    const leaveMessage: ChatMessage = {
-      id: messages.length + 1,
-      type: 'system',
-      content: `${agent.name}이 대화에서 나갔습니다.`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    const leaveMessage: MessageHistory = {
+      messageId: (messages.length + 1).toString(),
+      role: 'system',
+      content: {
+        contentType: 'text',
+        value: `${agent.name}이 대화에서 나갔습니다.`,
+      },
+      createdAt: new Date(),
     };
     setMessages([...messages, leaveMessage]);
   };
@@ -351,32 +395,41 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
     }
   };
 
-  const renderOrchestrationSteps = (steps: OrchestrationStep[]) => {
+  const renderOrchestrationSteps = (steps: MessageHistory[]) => {
     return (
       <div className="mt-4 space-y-3">
         {steps.map((step, index) => (
-          <div key={step.id} className="flex items-start gap-3">
+          <div key={step.messageId} className="flex items-start gap-3">
             <div className="flex flex-col items-center">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  step.isCompleted ? 'bg-green-100' : 'bg-gray-100'
+                  step.role === 'assistant' ? 'bg-green-100' : 'bg-gray-100'
                 }`}
               >
-                {getOrchestrationStepIcon(step.type)}
+                {getOrchestrationStepIcon(step.role)}
               </div>
               {index < steps.length - 1 && <div className="w-0.5 h-4 bg-gray-300 mt-2"></div>}
             </div>
             <div className="flex-1 pb-2">
               <div className="flex items-center gap-2 mb-1">
-                <h4 className="text-sm font-medium">{step.title}</h4>
-                {step.isCompleted && <CheckCircle className="w-4 h-4 text-green-500" />}
+                <h4 className="text-sm font-medium">{step.role}</h4>
+                {step.role === 'assistant' && <CheckCircle className="w-4 h-4 text-green-500" />}
               </div>
-              <p className="text-sm text-muted-foreground whitespace-pre-line">{step.content}</p>
-              {step.data &&
-                step.type === 'keyword-matching' &&
-                Object.keys(step.data).length > 0 && (
+              <p className="text-sm text-muted-foreground whitespace-pre-line">
+                {Array.isArray(step.content)
+                  ? step.content
+                      .filter((c) => c.contentType === 'text')
+                      .map((c) => c.value)
+                      .join('\n')
+                  : step.content.contentType === 'text'
+                    ? step.content.value
+                    : ''}
+              </p>
+              {step.role === 'assistant' &&
+                step.content &&
+                Object.keys(step.content).length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
-                    {Object.entries(step.data).map(([agentId, keywords]) => (
+                    {Object.entries(step.content.value).map(([agentId, _keywords]) => (
                       <Badge key={agentId} variant="secondary" className="text-xs">
                         {availableAgents.find((a) => a.id === agentId)?.name}
                       </Badge>
@@ -419,7 +472,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`relative w-8 h-8 p-0 ${orchestrator.getAgentColor(agent.id)} rounded-full flex items-center justify-center border-2 border-white hover:scale-110 transition-transform`}
+                  className={`relative w-8 h-8 p-0 ${orchestrator.getAgentColor(agent)} rounded-full flex items-center justify-center border-2 border-white hover:scale-110 transition-transform`}
                   style={{ zIndex: visibleAgents.length - index }}
                 >
                   <span className="text-xs text-white">{agent.icon}</span>
@@ -429,7 +482,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                 <div className="p-4 border-b">
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-10 h-10 ${orchestrator.getAgentColor(agent.id)} rounded-full flex items-center justify-center`}
+                      className={`w-10 h-10 ${orchestrator.getAgentColor(agent)} rounded-full flex items-center justify-center`}
                     >
                       <span className="text-lg text-white">{agent.icon}</span>
                     </div>
@@ -486,7 +539,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                       onClick={() => handleAgentSelect(agent)}
                     >
                       <div
-                        className={`w-8 h-8 ${orchestrator.getAgentColor(agent.id)} rounded-full flex items-center justify-center flex-shrink-0`}
+                        className={`w-8 h-8 ${orchestrator.getAgentColor(agent)} rounded-full flex items-center justify-center flex-shrink-0`}
                       >
                         <span className="text-sm text-white">{agent.icon}</span>
                       </div>
@@ -524,7 +577,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
       <ChatHistory
         onSelectChat={handleSelectChat}
         onNewChat={handleNewChat}
-        selectedChatId={selectedChat?.id}
+        selectedChatId={selectedChat?.sessionId}
         onNavigate={onNavigate}
       />
 
@@ -626,56 +679,85 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
             </div>
           )}
 
-          {messages.map((message) => (
-            <div key={message.id} className="space-y-2">
+          {messages.map((message: MessageHistory) => (
+            <div key={message.messageId} className="space-y-2">
               <div
-                className={`p-4 rounded-lg border ${getMessageBg(message.type)} max-w-4xl ${
-                  message.type === 'user' ? 'ml-auto' : ''
+                className={`p-4 rounded-lg border ${getMessageBg(message.role)} max-w-4xl ${
+                  message.role === 'user' ? 'ml-auto' : ''
                 }`}
               >
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5">
-                    {message.type === 'agent' && message.agentId ? (
+                    {message.role === 'assistant' && message.agentMetadata ? (
                       <div
-                        className={`w-6 h-6 ${orchestrator.getAgentColor(message.agentId)} rounded-full flex items-center justify-center`}
+                        className={`w-6 h-6 ${orchestrator.getAgentColor(message.agentMetadata)} rounded-full flex items-center justify-center`}
                       >
                         <span className="text-xs text-white">
-                          {message.agentId === mainAgent.id
+                          {message.agentMetadata?.id === mainAgent.id
                             ? mainAgent.icon
-                            : availableAgents.find((a) => a.id === message.agentId)?.icon}
+                            : availableAgents.find((a) => a.id === message.agentMetadata?.id)?.icon}
                         </span>
                       </div>
                     ) : (
-                      getMessageIcon(message.type)
+                      getMessageIcon(message.role)
                     )}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-medium capitalize">
-                        {message.type === 'agent' && message.agentName
-                          ? message.agentName
-                          : message.type === 'orchestration'
-                            ? 'AgentOS (Orchestration)'
-                            : message.type}
+                        {message.role === 'assistant' && message.agentMetadata
+                          ? message.agentMetadata.name
+                          : message.role}
                       </span>
-                      {message.agentPreset && (
-                        <Badge variant="secondary" className="text-xs">
-                          {message.agentPreset}
-                        </Badge>
-                      )}
-                      <span className="text-xs text-muted-foreground">{message.timestamp}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {message.createdAt.toLocaleString()}
+                      </span>
                     </div>
-                    <p className="text-sm whitespace-pre-line">{message.content}</p>
+                    <p className="text-sm whitespace-pre-line">
+                      {Array.isArray(message.content)
+                        ? message.content
+                            .filter((c) => c.contentType === 'text')
+                            .map((c) => c.value)
+                            .join('\n')
+                        : message.content.contentType === 'text'
+                          ? message.content.value
+                          : ''}
+                    </p>
 
-                    {/* Orchestration Steps */}
-                    {message.type === 'orchestration' &&
-                      message.orchestrationSteps &&
-                      renderOrchestrationSteps(message.orchestrationSteps)}
+                    {/* Orchestration Steps - Show completed orchestration steps with expand/collapse */}
+                    {message.role === 'assistant' &&
+                      message.agentMetadata?.id === mainAgent.id &&
+                      completedOrchestrations[message.messageId] && (
+                        <div className="mt-3">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleOrchestrationSteps(message.messageId)}
+                            className="h-7 px-2 text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                          >
+                            <Brain className="w-3 h-3 mr-1" />
+                            {expandedOrchestrations[message.messageId]
+                              ? 'Hide reasoning steps'
+                              : 'Show reasoning steps'}
+                            <ChevronRight
+                              className={`w-3 h-3 ml-1 transition-transform ${
+                                expandedOrchestrations[message.messageId] ? 'rotate-90' : ''
+                              }`}
+                            />
+                          </Button>
+
+                          {expandedOrchestrations[message.messageId] && (
+                            <div className="mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                              {renderOrchestrationSteps(completedOrchestrations[message.messageId])}
+                            </div>
+                          )}
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>
 
-              {(message.type === 'agent' || message.type === 'orchestration') && (
+              {message.role === 'assistant' && (
                 <div className="flex gap-2 ml-12">
                   <Button variant="ghost" size="sm" className="h-7 px-2">
                     <Copy className="w-3 h-3 mr-1" />
@@ -695,30 +777,51 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
           ))}
 
           {isTyping && (
-            <div className="flex items-center gap-3 text-muted-foreground">
-              {orchestrationMode && currentOrchestrationSteps.length > 0 ? (
-                <Brain className="w-4 h-4 text-purple-500" />
-              ) : (
-                <Bot className="w-4 h-4" />
+            <div className="space-y-4">
+              {/* Orchestration Steps during typing */}
+              {orchestrationMode && currentOrchestrationSteps.length > 0 && (
+                <div className="p-4 rounded-lg border bg-purple-50 border-purple-200 max-w-4xl">
+                  <div className="flex items-start gap-3">
+                    <Brain className="w-6 h-6 text-purple-500 mt-0.5" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-sm font-medium">AgentOS (Orchestration)</span>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date().toLocaleString()}
+                        </span>
+                      </div>
+                      {renderOrchestrationSteps(currentOrchestrationSteps)}
+                    </div>
+                  </div>
+                </div>
               )}
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div
-                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                  style={{ animationDelay: '0.1s' }}
-                ></div>
-                <div
-                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                  style={{ animationDelay: '0.2s' }}
-                ></div>
+
+              {/* Typing indicator */}
+              <div className="flex items-center gap-3 text-muted-foreground">
+                {orchestrationMode && currentOrchestrationSteps.length > 0 ? (
+                  <Brain className="w-4 h-4 text-purple-500" />
+                ) : (
+                  <Bot className="w-4 h-4" />
+                )}
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: '0.1s' }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: '0.2s' }}
+                  ></div>
+                </div>
+                <span className="text-sm">
+                  {orchestrationMode && currentOrchestrationSteps.length > 0
+                    ? 'AI orchestration in progress...'
+                    : activeAgents.length > 0
+                      ? `${activeAgents.length} agent${activeAgents.length > 1 ? 's' : ''} typing...`
+                      : 'typing...'}
+                </span>
               </div>
-              <span className="text-sm">
-                {orchestrationMode && currentOrchestrationSteps.length > 0
-                  ? 'AI orchestration in progress...'
-                  : activeAgents.length > 0
-                    ? `${activeAgents.length} agent${activeAgents.length > 1 ? 's' : ''} typing...`
-                    : 'typing...'}
-              </span>
             </div>
           )}
         </div>
@@ -735,7 +838,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                     ? '질문을 입력하세요... (AI가 단계별로 사고하여 최적의 전문가를 찾아드립니다)'
                     : '메시지를 입력하세요...'
                 }
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                 className="pr-12"
               />
               <Button
