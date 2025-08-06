@@ -21,6 +21,7 @@ import {
   Wrench,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { McpToolMetadata, McpUsageLog } from '@agentos/core';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -30,49 +31,35 @@ import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
-interface MCPTool {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  status: 'connected' | 'disconnected' | 'error' | 'pending';
-  version: string;
-  provider: string;
-  lastUsed?: Date;
-  usageCount: number;
-  endpoint?: string;
-  apiKey?: string;
-  permissions: string[];
+/**
+ * GUI-specific extension of Core McpToolMetadata
+ * Core 타입을 기반으로 GUI 전용 필드들을 추가
+ */
+interface GuiMcpTool extends McpToolMetadata {
+  /** GUI 전용: React 아이콘 컴포넌트 */
   icon: React.ReactNode;
-  config?: Record<string, any>;
+  /** API 키 (옵셔널, GUI에서만 관리) */
+  apiKey?: string;
 }
 
-interface ToolUsageLog {
-  id: string;
-  toolId: string;
-  toolName: string;
-  agentId: string;
-  agentName: string;
-  action: string;
-  timestamp: Date;
-  duration: number;
-  status: 'success' | 'error' | 'timeout';
-  parameters?: Record<string, any>;
-  result?: string;
-}
+/**
+ * Core McpUsageLog를 GUI에서 그대로 사용
+ * Core 타입이 이미 모든 필요한 필드를 포함하고 있음
+ */
+type GuiMcpUsageLog = McpUsageLog;
 
 export function MCPToolsManager() {
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [tools, setTools] = useState<MCPTool[]>([]);
-  const [usageLogs, setUsageLogs] = useState<ToolUsageLog[]>([]);
+  const [tools, setTools] = useState<GuiMcpTool[]>([]);
+  const [usageLogs, setUsageLogs] = useState<GuiMcpUsageLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Mock data initialization
   useEffect(() => {
     setTimeout(() => {
-      const mockTools: MCPTool[] = [
+      const mockTools: GuiMcpTool[] = [
         {
           id: 'web-search',
           name: 'Web Search',
@@ -81,7 +68,7 @@ export function MCPToolsManager() {
           status: 'connected',
           version: '2.1.0',
           provider: 'SearchAPI',
-          lastUsed: new Date(Date.now() - 1000 * 60 * 30),
+          lastUsedAt: new Date(Date.now() - 1000 * 60 * 30),
           usageCount: 245,
           endpoint: 'https://api.searchapi.com/v2',
           permissions: ['search', 'read'],
@@ -95,7 +82,7 @@ export function MCPToolsManager() {
           status: 'connected',
           version: '1.5.2',
           provider: 'CodeSandbox',
-          lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 2),
+          lastUsedAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
           usageCount: 89,
           permissions: ['execute', 'file-system'],
           icon: <Code className="w-5 h-5" />,
@@ -108,7 +95,7 @@ export function MCPToolsManager() {
           status: 'error',
           version: '3.0.1',
           provider: 'DALL-E API',
-          lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 24),
+          lastUsedAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
           usageCount: 156,
           permissions: ['generate', 'read'],
           icon: <ImageIcon className="w-5 h-5" />,
@@ -121,7 +108,7 @@ export function MCPToolsManager() {
           status: 'connected',
           version: '4.2.1',
           provider: 'PostgreSQL',
-          lastUsed: new Date(Date.now() - 1000 * 60 * 15),
+          lastUsedAt: new Date(Date.now() - 1000 * 60 * 15),
           usageCount: 67,
           permissions: ['read', 'write', 'admin'],
           icon: <Database className="w-5 h-5" />,
@@ -146,14 +133,14 @@ export function MCPToolsManager() {
           status: 'disconnected',
           version: '1.8.5',
           provider: 'Google Analytics',
-          lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+          lastUsedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
           usageCount: 123,
           permissions: ['read'],
           icon: <BarChart3 className="w-5 h-5" />,
         },
       ];
 
-      const mockLogs: ToolUsageLog[] = [
+      const mockLogs: GuiMcpUsageLog[] = [
         {
           id: 'log-1',
           toolId: 'web-search',
@@ -528,11 +515,11 @@ export function MCPToolsManager() {
                                     {tool.usageCount}
                                   </span>
                                 </div>
-                                {tool.lastUsed && (
+                                {tool.lastUsedAt && (
                                   <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Last used:</span>
                                     <span className="font-medium text-foreground">
-                                      {formatTimeAgo(tool.lastUsed)}
+                                      {formatTimeAgo(tool.lastUsedAt)}
                                     </span>
                                   </div>
                                 )}
