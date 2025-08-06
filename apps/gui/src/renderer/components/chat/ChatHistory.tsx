@@ -1,4 +1,5 @@
 import { AgentMetadata, ChatSessionMetadata } from '@agentos/core';
+import MessageRenderer from './MessageRenderer';
 import {
   Archive,
   Bot,
@@ -86,13 +87,13 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
                   {formatTimestamp(chat.createdAt)}
                 </span>
               </div>
-              <p className="text-xs text-gray-600 line-clamp-2 mb-3 leading-relaxed">
-                {Array.isArray(chat.recentMessages[0].content)
-                  ? chat.recentMessages[0].content.map((c) => c.contentType).join(', ')
-                  : chat.recentMessages[0].content.contentType === 'text'
-                    ? chat.recentMessages[0].content.value
-                    : ''}
-              </p>
+              <MessageRenderer
+                message={chat.recentMessages[0]}
+                mode="preview"
+                showTimestamp={false}
+                showAgentBadge={false}
+                className="mb-3"
+              />
               <div className="flex items-center justify-between">
                 <Badge variant="secondary" className="text-xs font-medium">
                   {presentAgent.name}
