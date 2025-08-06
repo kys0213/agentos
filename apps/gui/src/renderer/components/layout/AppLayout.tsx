@@ -8,7 +8,7 @@ import ManagementView from '../management/ManagementView';
  * - 듀얼 모드: chat ↔ management
  * - 채팅 중심 인터페이스가 기본
  */
-const AppLayoutV2: React.FC = () => {
+const AppLayout: React.FC = () => {
   const [appMode, setAppMode] = useState<AppModeState>({
     mode: 'chat',
     activeSection: 'dashboard',
@@ -54,4 +54,4 @@ const AppLayoutV2: React.FC = () => {
   );
 };
 
-export default AppLayoutV2;
+export default AppLayout;
