@@ -77,8 +77,9 @@ export class MockAgentOrchestrator {
 
   /**
    * 에이전트 색상 반환
+   * Agent 객체 또는 AgentMetadata를 받아서 색상 반환
    */
-  getAgentColor(agentMetadata: AgentMetadata): string {
+  getAgentColor(agent: Agent | AgentMetadata): string {
     const colors = {
       'data-analyzer': 'bg-blue-500',
       'code-assistant': 'bg-green-500',
@@ -86,6 +87,9 @@ export class MockAgentOrchestrator {
       'research-assistant': 'bg-orange-500',
       'main-orchestrator': 'bg-gradient-to-br from-blue-500 to-purple-600',
     };
-    return colors[agentMetadata.name as keyof typeof colors] || 'bg-gray-500';
+
+    // Agent 객체인지 AgentMetadata인지 확인하여 id 추출
+    const agentId = 'preset' in agent ? agent.id : agent.id;
+    return colors[agentId as keyof typeof colors] || 'bg-gray-500';
   }
 }
