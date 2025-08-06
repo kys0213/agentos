@@ -53,7 +53,7 @@ gh pr create --title "Add Command Palette system" --body "$(cat <<'EOF'
 
 ## TODO Completed
 ✅ [TODO 1/4] Add kbar library integration
-✅ [TODO 2/4] Implement keyboard shortcuts  
+✅ [TODO 2/4] Implement keyboard shortcuts
 ✅ [TODO 3/4] Add command categories
 ✅ [TODO 4/4] Complete app integration
 
@@ -135,6 +135,7 @@ Resolves: GUI_CYCLIC_UX_REDESIGN_PLAN.md Phase 1 Task 1"
 ## 🚨 **절대 금지 사항**
 
 ### **❌ 직접 병합 금지**
+
 ```bash
 # ❌ 절대 사용 금지 명령어들
 git checkout main
@@ -144,6 +145,7 @@ git branch -d feature/branch   # PR 승인 전 절대 금지!
 ```
 
 ### **✅ 올바른 완료 프로세스**
+
 ```bash
 # 1. 브랜치에서 작업 완료
 git push origin feature/branch-name

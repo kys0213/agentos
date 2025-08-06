@@ -219,7 +219,7 @@ describe('Mcp', () => {
 
     it('should return empty metadata when tracking is disabled', () => {
       const metadata = mcp.getMetadata();
-      
+
       expect(metadata.id).toBeDefined();
       expect(metadata.name).toBe('test-mcp');
       expect(metadata.version).toBe('1.0.0');
@@ -297,7 +297,7 @@ describe('Mcp with usage tracking enabled', () => {
 
       const logs = mcp.getUsageLogs();
       expect(logs).toHaveLength(1);
-      
+
       const log = logs[0];
       expect(log.toolName).toBe('test-tool');
       expect(log.action).toBe('invoke');
@@ -309,9 +309,9 @@ describe('Mcp with usage tracking enabled', () => {
     });
 
     it('should track failed tool usage', async () => {
-      mockClient.callTool.mockResolvedValue({ 
+      mockClient.callTool.mockResolvedValue({
         content: 'Test error',
-        isError: true 
+        isError: true,
       });
 
       try {
@@ -322,7 +322,7 @@ describe('Mcp with usage tracking enabled', () => {
 
       const logs = mcp.getUsageLogs();
       expect(logs).toHaveLength(1);
-      
+
       const log = logs[0];
       expect(log.status).toBe('error');
       expect(log.error).toBe('Tool call failed reason: Test error');
@@ -361,7 +361,7 @@ describe('Mcp with usage tracking enabled', () => {
 
       const stats = mcp.getUsageStats();
       expect(stats.totalUsage).toBe(3);
-      expect(stats.successRate).toBe(2/3);
+      expect(stats.successRate).toBe(2 / 3);
       expect(stats.errorCount).toBe(1);
       expect(stats.averageDuration).toBeGreaterThanOrEqual(0);
       expect(stats.lastUsedAt).toBeInstanceOf(Date);
@@ -369,20 +369,20 @@ describe('Mcp with usage tracking enabled', () => {
 
     it('should clear usage logs', async () => {
       mockClient.callTool.mockResolvedValue({ contents: [], isError: false });
-      
+
       await mcp.invokeTool(mockTool);
       expect(mcp.getUsageLogs()).toHaveLength(1);
-      
+
       mcp.clearUsageLogs();
       expect(mcp.getUsageLogs()).toHaveLength(0);
     });
 
     it('should get all usage logs across tools', async () => {
       mockClient.callTool.mockResolvedValue({ contents: [], isError: false });
-      
+
       await mcp.invokeTool(mockTool);
       await mcp.invokeTool({ ...mockTool, name: 'another-tool' });
-      
+
       const allLogs = mcp.getAllUsageLogs();
       expect(allLogs).toHaveLength(2);
     });

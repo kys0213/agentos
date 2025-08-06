@@ -119,7 +119,7 @@ describe('InMemoryUsageTracker', () => {
 
     it('should calculate correct statistics for specific tool', () => {
       const stats = tracker.getUsageStats('tool1');
-      
+
       expect(stats.totalUsage).toBe(3);
       expect(stats.successRate).toBe(2 / 3);
       expect(stats.averageDuration).toBe(150); // (100 + 200 + 150) / 3
@@ -129,7 +129,7 @@ describe('InMemoryUsageTracker', () => {
 
     it('should return zero stats for non-existent tool', () => {
       const stats = tracker.getUsageStats('non-existent');
-      
+
       expect(stats.totalUsage).toBe(0);
       expect(stats.successRate).toBe(0);
       expect(stats.averageDuration).toBe(0);
@@ -173,7 +173,7 @@ describe('InMemoryUsageTracker', () => {
 
     it('should clear all logs when no date provided', () => {
       tracker.clearLogs();
-      
+
       const logs = tracker.getUsageLogs();
       expect(logs).toHaveLength(0);
       expect(tracker.getLogCount()).toBe(0);
@@ -181,12 +181,12 @@ describe('InMemoryUsageTracker', () => {
 
     it('should clear logs older than specified date', async () => {
       // The existing logs were added before this cutoff date
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       const cutoffDate = new Date();
-      
+
       // Add a log after the cutoff
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       tracker.trackUsage({
         toolId: 'tool3',
         toolName: 'recent-tool',
@@ -194,10 +194,10 @@ describe('InMemoryUsageTracker', () => {
         duration: 50,
         status: 'success',
       });
-      
+
       // Clear logs older than cutoff, should keep only the recent one
       tracker.clearLogs(cutoffDate);
-      
+
       const logs = tracker.getUsageLogs();
       expect(logs).toHaveLength(1);
       expect(logs[0].toolId).toBe('tool3');
@@ -208,7 +208,7 @@ describe('InMemoryUsageTracker', () => {
     beforeEach(() => {
       // Add logs across different times of a day
       const baseDate = new Date('2024-01-01T10:30:00.000Z');
-      
+
       tracker.trackUsage({
         toolId: 'tool1',
         toolName: 'test-tool',
@@ -220,7 +220,7 @@ describe('InMemoryUsageTracker', () => {
 
     it('should return correct log count', () => {
       expect(tracker.getLogCount()).toBe(1);
-      
+
       tracker.trackUsage({
         toolId: 'tool2',
         toolName: 'another-tool',
@@ -228,14 +228,14 @@ describe('InMemoryUsageTracker', () => {
         duration: 200,
         status: 'success',
       });
-      
+
       expect(tracker.getLogCount()).toBe(2);
     });
 
     it('should get logs in date range', () => {
       const startDate = new Date(Date.now() - 1000);
       const endDate = new Date(Date.now() + 1000);
-      
+
       const logs = tracker.getLogsInRange(startDate, endDate);
       expect(logs).toHaveLength(1);
     });
@@ -243,7 +243,7 @@ describe('InMemoryUsageTracker', () => {
     it('should generate hourly stats', () => {
       const today = new Date();
       const hourlyStats = tracker.getHourlyStats(today);
-      
+
       expect(hourlyStats.size).toBe(24);
       expect(hourlyStats.get(today.getHours())).toBeGreaterThan(0);
     });
@@ -261,7 +261,7 @@ describe('InMemoryUsageTracker', () => {
           status: 'success',
         });
       }
-      
+
       expect(tracker.getLogCount()).toBe(10000);
     });
   });
@@ -289,7 +289,7 @@ describe('NoOpUsageTracker', () => {
 
   it('should return empty stats', () => {
     const stats = tracker.getUsageStats();
-    
+
     expect(stats.totalUsage).toBe(0);
     expect(stats.successRate).toBe(0);
     expect(stats.averageDuration).toBe(0);

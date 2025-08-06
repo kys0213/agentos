@@ -1,6 +1,6 @@
 /**
  * Core MCP Usage Tracking Types
- * 
+ *
  * GUI의 MCPTool/ToolUsageLog 타입을 Core로 통합하여
  * 모든 앱에서 일관된 MCP 사용량 데이터 활용이 가능하도록 합니다.
  */
@@ -83,19 +83,19 @@ export interface McpUsageTracker {
    * 사용량 로그 기록
    */
   trackUsage(log: Omit<McpUsageLog, 'id' | 'timestamp'>): void;
-  
+
   /**
    * 사용량 로그 조회
    * @param toolId 특정 도구 ID (옵셔널, 미지정 시 전체 조회)
    */
   getUsageLogs(toolId?: string): McpUsageLog[];
-  
+
   /**
    * 사용량 통계 조회
    * @param toolId 특정 도구 ID (옵셔널, 미지정 시 전체 통계)
    */
   getUsageStats(toolId?: string): McpUsageStats;
-  
+
   /**
    * 오래된 로그 삭제
    * @param olderThan 기준 날짜 (옵셔널, 미지정 시 전체 삭제)

@@ -17,7 +17,13 @@ import { safeZone } from '../../common/utils/safeZone';
 import { McpConfig } from './mcp-config';
 import { McpEvent, McpEventMap } from './mcp-event';
 import { McpTransportFactory } from './mcp-transport.factory';
-import { McpToolMetadata, McpUsageTracker, McpUsageLog, McpUsageStats, McpConnectionStatus } from './mcp-types';
+import {
+  McpToolMetadata,
+  McpUsageTracker,
+  McpUsageLog,
+  McpUsageStats,
+  McpConnectionStatus,
+} from './mcp-types';
 import { InMemoryUsageTracker, NoOpUsageTracker } from './mcp-usage-tracker';
 
 /**
@@ -43,7 +49,7 @@ export class Mcp extends EventEmitter {
     private readonly usageTrackingEnabled: boolean = false
   ) {
     super();
-    
+
     // 메타데이터 초기화
     this.metadata = {
       id: this.generateToolId(),
@@ -54,11 +60,9 @@ export class Mcp extends EventEmitter {
       status: 'disconnected',
       usageCount: 0,
     };
-    
+
     // 사용량 추적기 초기화
-    this.usageTracker = usageTrackingEnabled ? 
-      new InMemoryUsageTracker() : 
-      new NoOpUsageTracker();
+    this.usageTracker = usageTrackingEnabled ? new InMemoryUsageTracker() : new NoOpUsageTracker();
   }
 
   static create(config: McpConfig, usageTrackingEnabled: boolean = false) {
@@ -122,7 +126,12 @@ export class Mcp extends EventEmitter {
 
   async invokeTool(
     tool: Tool,
-    option?: { resumptionToken?: string; input?: Record<string, unknown>; agentId?: string; agentName?: string }
+    option?: {
+      resumptionToken?: string;
+      input?: Record<string, unknown>;
+      agentId?: string;
+      agentName?: string;
+    }
   ): Promise<InvokeToolResult> {
     let freshResumptionToken: string | undefined;
     const startTime = Date.now();

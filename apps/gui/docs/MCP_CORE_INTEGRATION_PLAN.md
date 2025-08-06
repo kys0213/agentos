@@ -3,36 +3,39 @@
 ## 🎯 요구사항
 
 **성공 조건**:
+
 - GUI의 MCPTool/ToolUsageLog 타입이 Core 표준 타입 기반으로 통합
 - Core에서 사용량 통계를 자동 수집하여 GUI에서 실시간 활용
 - 기존 Core MCP 기능에 Breaking Change 없이 점진적 확장
 - 모든 앱(`cli`, `slack-bot`, `gui`)에서 일관된 MCP 사용량 데이터 활용 가능
 
 **사용 시나리오**:
+
 1. Agent가 MCP Tool 사용 시 Core에서 자동으로 사용량 로그 기록
-2. GUI에서 실시간 사용량 통계 및 성능 모니터링 표시  
+2. GUI에서 실시간 사용량 통계 및 성능 모니터링 표시
 3. Tool별/Agent별 사용 패턴 분석을 통한 최적화 인사이트 제공
 4. 다른 앱(CLI, Slack Bot)에서도 동일한 사용량 데이터 활용
 
 ## 🏗️ 현재 상태 분석
 
 ### GUI의 독립 타입 (변경 대상)
+
 ```typescript
 // apps/gui/src/renderer/components/management/McpToolManager.tsx
 interface MCPTool {
   id: string;
   name: string;
   description: string;
-  category: string;                    // GUI 전용
+  category: string; // GUI 전용
   status: 'connected' | 'disconnected' | 'error' | 'pending';
   version: string;
-  provider: string;                    // GUI 전용
-  lastUsed?: Date;                     // 사용량 통계
-  usageCount: number;                  // 사용량 통계
+  provider: string; // GUI 전용
+  lastUsed?: Date; // 사용량 통계
+  usageCount: number; // 사용량 통계
   endpoint?: string;
   apiKey?: string;
   permissions: string[];
-  icon: React.ReactNode;               // GUI 전용
+  icon: React.ReactNode; // GUI 전용
   config?: Record<string, any>;
 }
 
@@ -52,6 +55,7 @@ interface ToolUsageLog {
 ```
 
 ### Core의 현재 구조 (확장 필요)
+
 ```typescript
 // packages/core/src/tool/mcp/mcp.ts
 export class Mcp extends EventEmitter {
@@ -123,7 +127,7 @@ export interface McpUsageStats {
 export class Mcp extends EventEmitter {
   private metadata: McpToolMetadata;
   private usageTracker?: McpUsageTracker;
-  
+
   constructor(
     // 기존 파라미터들
     private readonly usageTrackingEnabled: boolean = false
@@ -133,14 +137,14 @@ export class Mcp extends EventEmitter {
       this.usageTracker = new InMemoryUsageTracker();
     }
   }
-  
+
   // 기존 메서드 확장
   async invokeTool(tool: Tool, option?: ...): Promise<InvokeToolResult> {
     const startTime = Date.now();
     let result: InvokeToolResult;
     let status: McpUsageStatus = 'success';
     let error: string | undefined;
-    
+
     try {
       // 기존 로직
       result = await this.invokeToolInternal(tool, option);
@@ -159,25 +163,25 @@ export class Mcp extends EventEmitter {
           parameters: option?.input,
           error,
         });
-        
+
         // 메타데이터 업데이트
         this.metadata.usageCount++;
         this.metadata.lastUsedAt = new Date();
       }
     }
-    
+
     return result;
   }
-  
+
   // 새로운 메서드들
   getMetadata(): McpToolMetadata {
     return { ...this.metadata };
   }
-  
+
   getUsageLogs(): McpUsageLog[] {
     return this.usageTracker?.getUsageLogs(this.metadata.id) ?? [];
   }
-  
+
   getUsageStats(): McpUsageStats {
     return this.usageTracker?.getUsageStats(this.metadata.id) ?? {
       totalUsage: 0,
@@ -192,6 +196,7 @@ export class Mcp extends EventEmitter {
 ## 📝 Todo 리스트
 
 ### Phase 1: Core 타입 및 기능 추가
+
 - [ ] **[TODO 1/8]** `packages/core/src/tool/mcp/mcp-types.ts` 생성
   - McpToolMetadata, McpUsageLog 인터페이스 정의
   - McpUsageTracker 인터페이스 정의
@@ -212,6 +217,7 @@ export class Mcp extends EventEmitter {
   - 단위 테스트 작성
 
 ### Phase 2: GUI 통합
+
 - [ ] **[TODO 5/8]** GUI 타입 마이그레이션
   - MCPTool → McpToolMetadata + GUI 전용 필드로 분리
   - ToolUsageLog → McpUsageLog 기반으로 변경
@@ -225,6 +231,7 @@ export class Mcp extends EventEmitter {
   - Mock 데이터를 실제 Core 연동으로 변경
 
 ### Phase 3: 검증 및 최종화
+
 - [ ] **[TODO 8/8]** 통합 테스트 및 검증
   - GUI와 Core 간 데이터 흐름 검증
   - 성능 테스트 (사용량 추적 오버헤드 확인)

@@ -2,7 +2,7 @@ import { McpUsageLog, McpUsageStats, McpUsageTracker } from './mcp-types';
 
 /**
  * 메모리 기반 MCP 사용량 추적기 구현
- * 
+ *
  * 사용량 로그를 메모리에 저장하고 실시간 통계를 제공합니다.
  * 프로덕션 환경에서는 데이터베이스 기반 구현으로 교체할 수 있습니다.
  */
@@ -36,7 +36,7 @@ export class InMemoryUsageTracker implements McpUsageTracker {
       return [...this.logs];
     }
 
-    return this.logs.filter(log => log.toolId === toolId);
+    return this.logs.filter((log) => log.toolId === toolId);
   }
 
   /**
@@ -54,12 +54,13 @@ export class InMemoryUsageTracker implements McpUsageTracker {
       };
     }
 
-    const successCount = targetLogs.filter(log => log.status === 'success').length;
-    const errorCount = targetLogs.filter(log => log.status === 'error').length;
+    const successCount = targetLogs.filter((log) => log.status === 'success').length;
+    const errorCount = targetLogs.filter((log) => log.status === 'error').length;
     const totalDuration = targetLogs.reduce((sum, log) => sum + log.duration, 0);
-    const lastUsedAt = targetLogs.length > 0 ? 
-      new Date(Math.max(...targetLogs.map(log => log.timestamp.getTime()))) : 
-      undefined;
+    const lastUsedAt =
+      targetLogs.length > 0
+        ? new Date(Math.max(...targetLogs.map((log) => log.timestamp.getTime())))
+        : undefined;
 
     return {
       totalUsage: targetLogs.length,
@@ -82,7 +83,7 @@ export class InMemoryUsageTracker implements McpUsageTracker {
     }
 
     // 지정된 날짜 이전의 로그 삭제
-    this.logs = this.logs.filter(log => log.timestamp >= olderThan);
+    this.logs = this.logs.filter((log) => log.timestamp >= olderThan);
   }
 
   /**
@@ -97,10 +98,8 @@ export class InMemoryUsageTracker implements McpUsageTracker {
    */
   getLogsInRange(startDate: Date, endDate: Date, toolId?: string): McpUsageLog[] {
     const targetLogs = this.getUsageLogs(toolId);
-    
-    return targetLogs.filter(log => 
-      log.timestamp >= startDate && log.timestamp <= endDate
-    );
+
+    return targetLogs.filter((log) => log.timestamp >= startDate && log.timestamp <= endDate);
   }
 
   /**
@@ -116,13 +115,15 @@ export class InMemoryUsageTracker implements McpUsageTracker {
     }
 
     targetLogs
-      .filter(log => {
+      .filter((log) => {
         const logDate = log.timestamp;
-        return logDate.getFullYear() === date.getFullYear() &&
-               logDate.getMonth() === date.getMonth() &&
-               logDate.getDate() === date.getDate();
+        return (
+          logDate.getFullYear() === date.getFullYear() &&
+          logDate.getMonth() === date.getMonth() &&
+          logDate.getDate() === date.getDate()
+        );
       })
-      .forEach(log => {
+      .forEach((log) => {
         const hour = log.timestamp.getHours();
         hourlyStats.set(hour, (hourlyStats.get(hour) || 0) + 1);
       });
