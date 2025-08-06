@@ -8,6 +8,7 @@ import { PresetManager } from './PresetManager';
 import { SubAgentManager } from './SubAgentManager';
 import { ModelManager } from './ModelManager';
 import { MCPToolsManager } from './McpToolManager';
+import ChatView from '../chat/ChatView';
 
 interface ManagementViewProps {
   activeSection: AppModeState['activeSection'];
@@ -32,6 +33,9 @@ const ManagementView: React.FC<ManagementViewProps> = ({
 
   const renderManagementContent = () => {
     switch (activeSection) {
+      case 'chat':
+        onBackToChat();
+        return;
       case 'dashboard':
         return <Dashboard onOpenChat={handleOpenChat} />;
       case 'presets':
