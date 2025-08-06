@@ -140,15 +140,15 @@ export class InMemoryUsageTracker implements McpUsageTracker {
  * usageTrackingEnabled: false 일 때 사용됩니다.
  */
 export class NoOpUsageTracker implements McpUsageTracker {
-  trackUsage(): void {
+  trackUsage(_log: Omit<McpUsageLog, 'id' | 'timestamp'>): void {
     // 아무것도 하지 않음
   }
 
-  getUsageLogs(): McpUsageLog[] {
+  getUsageLogs(_toolId?: string): McpUsageLog[] {
     return [];
   }
 
-  getUsageStats(): McpUsageStats {
+  getUsageStats(_toolId?: string): McpUsageStats {
     return {
       totalUsage: 0,
       successRate: 0,
@@ -157,7 +157,7 @@ export class NoOpUsageTracker implements McpUsageTracker {
     };
   }
 
-  clearLogs(): void {
+  clearLogs(_olderThan?: Date): void {
     // 아무것도 하지 않음
   }
 }

@@ -14,6 +14,8 @@ export * from './agent/agent-metadata';
 export * from './tool/mcp/mcp';
 export * from './tool/mcp/mcp-config';
 export * from './tool/mcp/mcp-event';
+export * from './tool/mcp/mcp-types';
+export * from './tool/mcp/mcp-usage-tracker';
 export * from './tool/mcp/mcp.registery';
 
 export * from './preset/preset';
