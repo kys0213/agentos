@@ -2,27 +2,17 @@ import {
   BarChart3,
   Bot,
   Brain,
-  CheckCircle,
   ChevronLeft,
   ChevronRight,
   Code,
-  Copy,
   FileText,
   Image as ImageIcon,
-  Lightbulb,
   MessageSquare,
   Paperclip,
   Plus,
-  Search,
   Send,
   Settings,
-  Sparkles,
-  Target,
-  ThumbsDown,
-  ThumbsUp,
-  User,
   UserMinus,
-  Users,
   X,
 } from 'lucide-react';
 import React, { useState } from 'react';
@@ -32,6 +22,7 @@ import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import ChatHistory from './ChatHistory';
+import MessageRenderer from './MessageRenderer';
 
 import { AppModeState, QuickAction } from '../../types/chat-types';
 
@@ -40,7 +31,6 @@ import {
   MockAgentOrchestrator,
   MockOrchestrationService,
   getAvailableAgents,
-  getChatSessions,
 } from '../../services/mock';
 
 interface ChatViewProps {
@@ -66,7 +56,6 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
   const orchestrationService = new MockOrchestrationService();
   const orchestrator = new MockAgentOrchestrator();
   const availableAgents = getAvailableAgents();
-  const chatSessions = getChatSessions();
 
   // Main Agent (Orchestrator) configuration
   const mainAgent = MockAgentOrchestrator.getMainAgent();
@@ -352,97 +341,6 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
     setMessages([...messages, leaveMessage]);
   };
 
-  const getMessageIcon = (type: string) => {
-    switch (type) {
-      case 'user':
-        return <User className="w-4 h-4" />;
-      case 'agent':
-        return <Bot className="w-4 h-4" />;
-      case 'orchestration':
-        return <Brain className="w-4 h-4 text-purple-500" />;
-      default:
-        return <Sparkles className="w-4 h-4" />;
-    }
-  };
-
-  const getOrchestrationStepIcon = (stepType: string) => {
-    switch (stepType) {
-      case 'analysis':
-        return <Search className="w-4 h-4 text-blue-500" />;
-      case 'keyword-matching':
-        return <Target className="w-4 h-4 text-green-500" />;
-      case 'agent-selection':
-        return <Users className="w-4 h-4 text-purple-500" />;
-      case 'conclusion':
-        return <Lightbulb className="w-4 h-4 text-orange-500" />;
-      default:
-        return <CheckCircle className="w-4 h-4" />;
-    }
-  };
-
-  const getMessageBg = (type: string) => {
-    switch (type) {
-      case 'user':
-        return 'bg-blue-50 border-blue-200';
-      case 'agent':
-        return 'bg-green-50 border-green-200';
-      case 'orchestration':
-        return 'bg-purple-50 border-purple-200';
-      case 'system':
-        return 'bg-gray-50 border-gray-200';
-      default:
-        return 'bg-gray-50';
-    }
-  };
-
-  const renderOrchestrationSteps = (steps: MessageHistory[]) => {
-    return (
-      <div className="mt-4 space-y-3">
-        {steps.map((step, index) => (
-          <div key={step.messageId} className="flex items-start gap-3">
-            <div className="flex flex-col items-center">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  step.role === 'assistant' ? 'bg-green-100' : 'bg-gray-100'
-                }`}
-              >
-                {getOrchestrationStepIcon(step.role)}
-              </div>
-              {index < steps.length - 1 && <div className="w-0.5 h-4 bg-gray-300 mt-2"></div>}
-            </div>
-            <div className="flex-1 pb-2">
-              <div className="flex items-center gap-2 mb-1">
-                <h4 className="text-sm font-medium">{step.role}</h4>
-                {step.role === 'assistant' && <CheckCircle className="w-4 h-4 text-green-500" />}
-              </div>
-              <p className="text-sm text-muted-foreground whitespace-pre-line">
-                {Array.isArray(step.content)
-                  ? step.content
-                      .filter((c) => c.contentType === 'text')
-                      .map((c) => c.value)
-                      .join('\n')
-                  : step.content.contentType === 'text'
-                    ? step.content.value
-                    : ''}
-              </p>
-              {step.role === 'assistant' &&
-                step.content &&
-                Object.keys(step.content).length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {Object.entries(step.content.value).map(([agentId, _keywords]) => (
-                      <Badge key={agentId} variant="secondary" className="text-xs">
-                        {availableAgents.find((a) => a.id === agentId)?.name}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
   const renderAgentAvatars = () => {
     const maxVisible = 4;
     const visibleAgents = activeAgents.slice(0, maxVisible);
@@ -680,100 +578,19 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
           )}
 
           {messages.map((message: MessageHistory) => (
-            <div key={message.messageId} className="space-y-2">
-              <div
-                className={`p-4 rounded-lg border ${getMessageBg(message.role)} max-w-4xl ${
-                  message.role === 'user' ? 'ml-auto' : ''
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5">
-                    {message.role === 'assistant' && message.agentMetadata ? (
-                      <div
-                        className={`w-6 h-6 ${orchestrator.getAgentColor(message.agentMetadata)} rounded-full flex items-center justify-center`}
-                      >
-                        <span className="text-xs text-white">
-                          {message.agentMetadata?.id === mainAgent.id
-                            ? mainAgent.icon
-                            : availableAgents.find((a) => a.id === message.agentMetadata?.id)?.icon}
-                        </span>
-                      </div>
-                    ) : (
-                      getMessageIcon(message.role)
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium capitalize">
-                        {message.role === 'assistant' && message.agentMetadata
-                          ? message.agentMetadata.name
-                          : message.role}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {message.createdAt.toLocaleString()}
-                      </span>
-                    </div>
-                    <p className="text-sm whitespace-pre-line">
-                      {Array.isArray(message.content)
-                        ? message.content
-                            .filter((c) => c.contentType === 'text')
-                            .map((c) => c.value)
-                            .join('\n')
-                        : message.content.contentType === 'text'
-                          ? message.content.value
-                          : ''}
-                    </p>
-
-                    {/* Orchestration Steps - Show completed orchestration steps with expand/collapse */}
-                    {message.role === 'assistant' &&
-                      message.agentMetadata?.id === mainAgent.id &&
-                      completedOrchestrations[message.messageId] && (
-                        <div className="mt-3">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleOrchestrationSteps(message.messageId)}
-                            className="h-7 px-2 text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50"
-                          >
-                            <Brain className="w-3 h-3 mr-1" />
-                            {expandedOrchestrations[message.messageId]
-                              ? 'Hide reasoning steps'
-                              : 'Show reasoning steps'}
-                            <ChevronRight
-                              className={`w-3 h-3 ml-1 transition-transform ${
-                                expandedOrchestrations[message.messageId] ? 'rotate-90' : ''
-                              }`}
-                            />
-                          </Button>
-
-                          {expandedOrchestrations[message.messageId] && (
-                            <div className="mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
-                              {renderOrchestrationSteps(completedOrchestrations[message.messageId])}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                  </div>
-                </div>
-              </div>
-
-              {message.role === 'assistant' && (
-                <div className="flex gap-2 ml-12">
-                  <Button variant="ghost" size="sm" className="h-7 px-2">
-                    <Copy className="w-3 h-3 mr-1" />
-                    Copy
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-7 px-2">
-                    <ThumbsUp className="w-3 h-3 mr-1" />
-                    Good
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-7 px-2">
-                    <ThumbsDown className="w-3 h-3 mr-1" />
-                    Bad
-                  </Button>
-                </div>
-              )}
-            </div>
+            <MessageRenderer
+              key={message.messageId}
+              message={message}
+              mode="full"
+              showTimestamp={true}
+              showActions={message.role === 'assistant'}
+              availableAgents={availableAgents}
+              mainAgent={mainAgent}
+              onOrchestrationToggle={toggleOrchestrationSteps}
+              orchestrationSteps={completedOrchestrations[message.messageId]}
+              isOrchestrationExpanded={expandedOrchestrations[message.messageId]}
+              getAgentColor={(agent) => orchestrator.getAgentColor(agent)}
+            />
           ))}
 
           {isTyping && (
@@ -790,7 +607,16 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                           {new Date().toLocaleString()}
                         </span>
                       </div>
-                      {renderOrchestrationSteps(currentOrchestrationSteps)}
+                      <div className="mt-4 space-y-3">
+                        {currentOrchestrationSteps.map((step) => (
+                          <MessageRenderer
+                            key={step.messageId}
+                            message={step}
+                            mode="compact"
+                            showTimestamp={false}
+                          />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
