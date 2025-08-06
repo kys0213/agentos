@@ -1,5 +1,4 @@
-import { ActiveAgent, AvailableAgent } from '../../types/chat-types';
-import { getAgentById } from './mock-available-agents';
+import { Agent, AgentMetadata } from '@agentos/core';
 
 export class MockAgentOrchestrator {
   /**
@@ -19,7 +18,7 @@ export class MockAgentOrchestrator {
   /**
    * 에이전트별 응답 생성
    */
-  getAgentResponse(agent: ActiveAgent | AvailableAgent, message: string): string {
+  getAgentResponse(agentId: string, message: string): string {
     const responses = {
       'data-analyzer': [
         '데이터를 분석해보겠습니다. 어떤 형태의 데이터인지 알려주세요.',
@@ -43,9 +42,7 @@ export class MockAgentOrchestrator {
       ],
     };
 
-    const agentResponses = responses[agent.id as keyof typeof responses] || [
-      '도움을 드리겠습니다!',
-    ];
+    const agentResponses = responses[agentId as keyof typeof responses] || ['도움을 드리겠습니다!'];
     return agentResponses[Math.floor(Math.random() * agentResponses.length)];
   }
 
@@ -64,7 +61,7 @@ export class MockAgentOrchestrator {
   /**
    * Available Agent를 Active Agent로 변환
    */
-  convertToActiveAgent(agent: AvailableAgent): ActiveAgent {
+  convertToActiveAgent(agent: Agent): Agent {
     return {
       id: agent.id,
       name: agent.name,
@@ -72,13 +69,16 @@ export class MockAgentOrchestrator {
       status: agent.status,
       description: agent.description,
       icon: agent.icon,
+      sessionCount: 0,
+      run: () => Promise.resolve({ messages: [], sessionId: '' }),
+      keywords: [],
     };
   }
 
   /**
    * 에이전트 색상 반환
    */
-  getAgentColor(agentId: string): string {
+  getAgentColor(agentMetadata: AgentMetadata): string {
     const colors = {
       'data-analyzer': 'bg-blue-500',
       'code-assistant': 'bg-green-500',
@@ -86,6 +86,6 @@ export class MockAgentOrchestrator {
       'research-assistant': 'bg-orange-500',
       'main-orchestrator': 'bg-gradient-to-br from-blue-500 to-purple-600',
     };
-    return colors[agentId as keyof typeof colors] || 'bg-gray-500';
+    return colors[agentMetadata.name as keyof typeof colors] || 'bg-gray-500';
   }
 }

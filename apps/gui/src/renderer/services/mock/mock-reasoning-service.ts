@@ -1,4 +1,4 @@
-import { OrchestrationStep } from '../../types/chat-types';
+import { MessageHistory } from '@agentos/core';
 import { mockAvailableAgents } from './mock-available-agents';
 
 export class MockOrchestrationService {
@@ -10,18 +10,20 @@ export class MockOrchestrationService {
     activeAgentIds: string[]
   ): {
     matchedAgents: string[];
-    steps: OrchestrationStep[];
+    steps: MessageHistory[];
   } {
     const lowerQuery = query.toLowerCase();
-    const steps: OrchestrationStep[] = [];
 
+    const steps: MessageHistory[] = [];
     // Step 1: Query Analysis
     steps.push({
-      id: 'analysis',
-      type: 'analysis',
-      title: '질문 분석',
-      content: `사용자 질문: "${query}"\n질문의 핵심 의도와 필요한 전문 영역을 파악중입니다.`,
-      isCompleted: true,
+      messageId: '1',
+      role: 'system',
+      content: {
+        contentType: 'text',
+        value: `사용자 질문: "${query}"\n질문의 핵심 의도와 필요한 전문 영역을 파악중입니다.`,
+      },
+      createdAt: new Date(),
     });
 
     // Step 2: Keyword Matching
@@ -38,20 +40,21 @@ export class MockOrchestrationService {
     });
 
     steps.push({
-      id: 'keyword-matching',
-      type: 'keyword-matching',
-      title: '키워드 매칭',
-      content:
-        Object.keys(foundKeywords).length > 0
-          ? `발견된 전문 영역:\n${Object.entries(foundKeywords)
-              .map(([agentId, keywords]) => {
-                const agent = mockAvailableAgents.find((a) => a.id === agentId);
-                return `• ${agent?.name}: ${keywords.join(', ')}`;
-              })
-              .join('\n')}`
-          : '특정 전문 영역 키워드가 감지되지 않았습니다. 일반적인 질문으로 분류됩니다.',
-      data: foundKeywords,
-      isCompleted: true,
+      messageId: '2',
+      role: 'system',
+      content: {
+        contentType: 'text',
+        value:
+          Object.keys(foundKeywords).length > 0
+            ? `발견된 전문 영역:\n${Object.entries(foundKeywords)
+                .map(([agentId, keywords]) => {
+                  const agent = mockAvailableAgents.find((a) => a.id === agentId);
+                  return `• ${agent?.name}: ${keywords.join(', ')}`;
+                })
+                .join('\n')}`
+            : '특정 전문 영역 키워드가 감지되지 않았습니다. 일반적인 질문으로 분류됩니다.',
+      },
+      createdAt: new Date(),
     });
 
     // Step 3: Agent Selection
@@ -71,24 +74,27 @@ export class MockOrchestrationService {
     }
 
     steps.push({
-      id: 'agent-selection',
-      type: 'agent-selection',
-      title: '에이전트 선택',
-      content: selectionReason,
-      data: { selectedAgents: matchedAgents },
-      isCompleted: true,
+      messageId: '3',
+      role: 'assistant',
+      content: {
+        contentType: 'text',
+        value: selectionReason,
+      },
+      createdAt: new Date(),
     });
 
     // Step 4: Conclusion
     steps.push({
-      id: 'conclusion',
-      type: 'conclusion',
-      title: '결론',
-      content:
-        matchedAgents.length > 0
-          ? `${matchedAgents.length}개의 전문 에이전트가 순차적으로 응답을 제공합니다.`
-          : '메인 어시스턴트가 직접 응답을 제공합니다.',
-      isCompleted: true,
+      messageId: '4',
+      role: 'assistant',
+      content: {
+        contentType: 'text',
+        value:
+          matchedAgents.length > 0
+            ? `${matchedAgents.length}개의 전문 에이전트가 순차적으로 응답을 제공합니다.`
+            : '메인 어시스턴트가 직접 응답을 제공합니다.',
+      },
+      createdAt: new Date(),
     });
 
     return { matchedAgents, steps };

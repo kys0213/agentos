@@ -1,26 +1,26 @@
-import React from 'react';
-import { FixedSizeList as List } from 'react-window';
-import AutoSizer from 'react-virtualized-auto-sizer';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
+import { AgentMetadata, ChatSessionMetadata } from '@agentos/core';
 import {
-  Plus,
-  Search,
-  Pin,
   Archive,
-  Home,
-  Layers,
   Bot,
   Cpu,
-  Wrench,
+  Home,
+  Layers,
   Network,
+  Plus,
+  Search,
   Settings,
+  Wrench,
 } from 'lucide-react';
-import { AppModeState, ChatSession } from '../../types/chat-types';
+import React from 'react';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import { FixedSizeList as List } from 'react-window';
 import { getChatSessions } from '../../services/mock';
+import { AppModeState } from '../../types/chat-types';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 
 interface ChatHistoryProps {
-  onSelectChat: (chat: ChatSession) => void;
+  onSelectChat: (chat: ChatSessionMetadata) => void;
   onNewChat: () => void;
   selectedChatId?: string;
   onNavigate: (section: AppModeState['activeSection']) => void;
@@ -44,39 +44,25 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
-  const pinned = chatSessions.filter((c) => c.isPinned);
-  const recent = chatSessions.filter((c) => !c.isPinned && !c.isArchived);
-  const archived = chatSessions.filter((c) => c.isArchived);
-
-  const items = [...pinned, ...recent];
+  const items = chatSessions;
 
   const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
     const chat = items[index];
-    const isPinnedSection = index < pinned.length;
-    const isFirstInPinned = isPinnedSection && index === 0;
-    const isFirstInRecent = index === pinned.length;
+
+    const presentAgent = chat.joinedAgents[0] || {
+      id: 'main-orchestrator',
+      name: 'Main Orchestrator',
+      description: 'Main Orchestrator',
+      icon: '🔍',
+      keywords: ['main', 'orchestrator'],
+    };
 
     return (
       <div style={style} className="px-3">
-        {isFirstInPinned && (
-          <div className="flex items-center gap-2 mt-3 mb-3 px-1">
-            <Pin className="w-4 h-4 text-gray-600 fill-current" />
-            <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
-              📌 Pinned
-            </span>
-          </div>
-        )}
-        {isFirstInRecent && (
-          <div className="flex items-center gap-2 mt-5 mb-3 px-1">
-            <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
-              Older
-            </span>
-          </div>
-        )}
         <div
-          key={chat.id}
+          key={chat.sessionId}
           className={`px-4 py-4 rounded-lg cursor-pointer transition-all duration-200 mb-3 mx-1 ${
-            selectedChatId === chat.id
+            selectedChatId === chat.sessionId
               ? 'bg-blue-50 border border-blue-200 shadow-sm'
               : 'hover:bg-gray-50 hover:shadow-sm'
           }`}
@@ -84,10 +70,10 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
         >
           <div className="flex items-start gap-3">
             <div
-              className={`w-9 h-9 ${getAgentColor(chat.agentName)} rounded-full flex items-center justify-center flex-shrink-0 shadow-sm`}
+              className={`w-9 h-9 ${getAgentColor(chat.joinedAgents)} rounded-full flex items-center justify-center flex-shrink-0 shadow-sm`}
             >
               <span className="text-sm text-white font-semibold">
-                {chat.agentName
+                {presentAgent.name
                   .split(' ')
                   .map((word) => word[0])
                   .join('')}
@@ -97,18 +83,22 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-semibold text-sm truncate text-gray-900">{chat.title}</h4>
                 <span className="text-xs text-gray-500 flex-shrink-0 ml-3">
-                  {formatTimestamp(chat.timestamp)}
+                  {formatTimestamp(chat.createdAt)}
                 </span>
               </div>
               <p className="text-xs text-gray-600 line-clamp-2 mb-3 leading-relaxed">
-                {chat.lastMessage}
+                {Array.isArray(chat.recentMessages[0].content)
+                  ? chat.recentMessages[0].content.map((c) => c.contentType).join(', ')
+                  : chat.recentMessages[0].content.contentType === 'text'
+                    ? chat.recentMessages[0].content.value
+                    : ''}
               </p>
               <div className="flex items-center justify-between">
                 <Badge variant="secondary" className="text-xs font-medium">
-                  {chat.agentName}
+                  {presentAgent.name}
                 </Badge>
                 <span className="text-xs text-gray-500 font-medium">
-                  {chat.messageCount} messages
+                  {chat.totalMessages} messages
                 </span>
               </div>
             </div>
@@ -151,12 +141,12 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
 
       {/* 고정 푸터 */}
       <div className="border-t bg-background px-4 py-3">
-        {archived.length > 0 && (
+        {chatSessions.length > 0 && (
           <div className="pb-3 border-b">
             <div className="flex items-center gap-2 mb-2">
               <Archive className="w-3 h-3 text-gray-500" />
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Archived ({archived.length})
+                Archived ({chatSessions.length})
               </span>
             </div>
           </div>
@@ -208,14 +198,19 @@ const formatTimestamp = (timestamp: Date) => {
   return timestamp.toLocaleDateString();
 };
 
-const getAgentColor = (agentName: string) => {
+const getAgentColors = (agentMetadata: AgentMetadata[]) => {
   const colors: { [key: string]: string } = {
     'Data Analyzer': 'bg-blue-500',
     'Code Assistant': 'bg-green-500',
     'Content Writer': 'bg-purple-500',
     'Research Assistant': 'bg-orange-500',
   };
-  return colors[agentName] || 'bg-gray-500';
+  return agentMetadata.map((agent) => colors[agent.id] || 'bg-gray-500');
+};
+
+const getAgentColor = (agentMetadata: AgentMetadata[]) => {
+  const colors = getAgentColors(agentMetadata);
+  return colors[0];
 };
 
 export default ChatHistory;
