@@ -1,17 +1,12 @@
 import { AgentMetadata, MessageHistory } from '@agentos/core';
-import {
-  Bot,
-  Brain,
-  ChevronRight,
-  Copy,
-  Sparkles,
-  ThumbsDown,
-  ThumbsUp,
-  User,
-} from 'lucide-react';
+import { Bot, Brain, ChevronRight, Copy, Sparkles, ThumbsDown, ThumbsUp, User } from 'lucide-react';
 import React from 'react';
 import { MessageRecord } from '../../types/core-types';
-import { parseMessageContent, parseMessagePreview, ParseableMessage } from '../../utils/message-parser';
+import {
+  parseMessageContent,
+  parseMessagePreview,
+  ParseableMessage,
+} from '../../utils/message-parser';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 
@@ -48,8 +43,8 @@ const MessageRenderer: React.FC<MessageRendererProps> = ({
     if (role === 'assistant' && agentMetadata) {
       const agentColor = getAgentColor?.(agentMetadata) || 'bg-gray-500';
       const isMainAgent = agentMetadata.id === mainAgent?.id;
-      const agentIcon = isMainAgent 
-        ? mainAgent.icon 
+      const agentIcon = isMainAgent
+        ? mainAgent.icon
         : availableAgents.find((a) => a.id === agentMetadata.id)?.icon || '🤖';
 
       return (
@@ -113,7 +108,7 @@ const MessageRenderer: React.FC<MessageRendererProps> = ({
     return parseMessageContent(message);
   };
 
-  const messageTimestamp = message.createdAt || (message as MessageRecord).timestamp;
+  const messageTimestamp = 'createdAt' in message ? message.createdAt : message.timestamp;
   const messageId = (message as MessageHistory).messageId || (message as MessageRecord).id;
   const agentMetadata = (message as MessageHistory).agentMetadata;
 
@@ -148,10 +143,10 @@ const MessageRenderer: React.FC<MessageRendererProps> = ({
   }
 
   // Full mode - complete message rendering
-  const hasOrchestrationSteps = 
-    message.role === 'assistant' && 
-    agentMetadata?.id === mainAgent?.id && 
-    orchestrationSteps && 
+  const hasOrchestrationSteps =
+    message.role === 'assistant' &&
+    agentMetadata?.id === mainAgent?.id &&
+    orchestrationSteps &&
     orchestrationSteps.length > 0;
 
   return (
