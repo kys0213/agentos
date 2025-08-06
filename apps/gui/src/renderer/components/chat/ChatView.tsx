@@ -57,6 +57,8 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
   const [selectedAgentForMenu, setSelectedAgentForMenu] = useState<string | null>(null);
   const [orchestrationMode, setOrchestrationMode] = useState(true);
   const [currentOrchestrationSteps, setCurrentOrchestrationSteps] = useState<MessageHistory[]>([]);
+  const [completedOrchestrations, setCompletedOrchestrations] = useState<Record<string, MessageHistory[]>>({});
+  const [expandedOrchestrations, setExpandedOrchestrations] = useState<Record<string, boolean>>({});
 
   // 서비스 인스턴스
   const orchestrationService = new MockOrchestrationService();
@@ -131,6 +133,9 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
   const handleNewChat = () => {
     setSelectedChat(null);
     setActiveAgents([]);
+    setCompletedOrchestrations({});
+    setExpandedOrchestrations({});
+    setCurrentOrchestrationSteps([]);
     setMessages([
       {
         messageId: '1',
@@ -175,7 +180,10 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
           role: 'assistant',
           content: {
             contentType: 'text',
-            value: '질문을 분석하여 적절한 전문가를 찾고 있습니다...',
+            value:
+              matchedAgents.length > 0
+                ? `질문을 분석하여 ${matchedAgents.length}개의 전문 에이전트를 선택했습니다.`
+                : '질문을 분석하여 직접 답변을 제공합니다.',
           },
           createdAt: new Date(),
         };
@@ -184,6 +192,36 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
 
         setTimeout(() => {
           setIsTyping(false);
+          
+          // Store orchestration steps for the completed message
+          const orchestratedMessageId = (messages.length + 2).toString();
+          setCompletedOrchestrations((prev) => ({
+            ...prev,
+            [orchestratedMessageId]: steps,
+          }));
+
+          // Update the orchestrated message with agent metadata and completion status
+          setMessages((prev) => {
+            const updatedMessages = [...prev];
+            const orchestratedMsgIndex = updatedMessages.findIndex(
+              (msg) => msg.messageId === orchestratedMessageId
+            );
+
+            if (orchestratedMsgIndex !== -1) {
+              updatedMessages[orchestratedMsgIndex] = {
+                ...updatedMessages[orchestratedMsgIndex],
+                agentMetadata: {
+                  id: mainAgent.id,
+                  name: mainAgent.name,
+                  description: 'Orchestration completed',
+                  icon: mainAgent.icon,
+                  keywords: [],
+                },
+              };
+            }
+            return updatedMessages;
+          });
+
           setCurrentOrchestrationSteps([]);
 
           if (matchedAgents.length > 0) {
@@ -284,6 +322,13 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
       createdAt: new Date(),
     };
     setMessages([...messages, agentMessage]);
+  };
+
+  const toggleOrchestrationSteps = (messageId: string) => {
+    setExpandedOrchestrations((prev) => ({
+      ...prev,
+      [messageId]: !prev[messageId],
+    }));
   };
 
   const handleRemoveAgent = (agentId: string) => {
@@ -677,7 +722,35 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                           : ''}
                     </p>
 
-                    {/* Orchestration Steps - Only shown during typing via currentOrchestrationSteps */}
+                    {/* Orchestration Steps - Show completed orchestration steps with expand/collapse */}
+                    {message.role === 'assistant' &&
+                      message.agentMetadata?.id === mainAgent.id &&
+                      completedOrchestrations[message.messageId] && (
+                        <div className="mt-3">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleOrchestrationSteps(message.messageId)}
+                            className="h-7 px-2 text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                          >
+                            <Brain className="w-3 h-3 mr-1" />
+                            {expandedOrchestrations[message.messageId]
+                              ? 'Hide reasoning steps'
+                              : 'Show reasoning steps'}
+                            <ChevronRight
+                              className={`w-3 h-3 ml-1 transition-transform ${
+                                expandedOrchestrations[message.messageId] ? 'rotate-90' : ''
+                              }`}
+                            />
+                          </Button>
+
+                          {expandedOrchestrations[message.messageId] && (
+                            <div className="mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                              {renderOrchestrationSteps(completedOrchestrations[message.messageId])}
+                            </div>
+                          )}
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>
