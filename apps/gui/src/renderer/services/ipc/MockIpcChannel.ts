@@ -13,6 +13,14 @@ import type {
   LlmBridgeConfig,
   McpToolArgs,
 } from '../../types/core-types';
+import type { McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
+import type {
+  UsageLogQueryOptions,
+  McpUsageUpdateEvent,
+  HourlyStatsResponse,
+  ClearUsageLogsResponse,
+  SetUsageTrackingResponse,
+} from '../../../shared/types/mcp-usage-types';
 
 /**
  * 테스트 환경에서 사용되는 IpcChannel 구현체
@@ -391,5 +399,179 @@ export class MockIpcChannel implements IpcChannel {
     await this.delay();
 
     return this.mockPresets.find((p) => p.id === id) || null;
+  }
+
+  // ==================== MCP 사용량 추적 메서드들 (Mock 구현) ====================
+
+  async getToolMetadata(clientName: string): Promise<McpToolMetadata> {
+    await this.delay();
+    return {
+      id: clientName,
+      name: clientName,
+      description: `Mock MCP tool: ${clientName}`,
+      version: '1.0.0',
+      permissions: ['read', 'write'],
+      status: 'connected',
+      usageCount: Math.floor(Math.random() * 100),
+      lastUsedAt: new Date(),
+    };
+  }
+
+  async getAllToolMetadata(): Promise<McpToolMetadata[]> {
+    await this.delay();
+    return this.mockMcpConfigs.map((config) => ({
+      id: config.name,
+      name: config.name,
+      description: `Mock MCP tool: ${config.name}`,
+      version: '1.0.0',
+      permissions: ['read', 'write'],
+      status: 'connected' as const,
+      usageCount: Math.floor(Math.random() * 100),
+      lastUsedAt: new Date(),
+    }));
+  }
+
+  async getUsageLogs(clientName: string, _options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
+    await this.delay();
+    const logs: McpUsageLog[] = [];
+    const count = _options?.limit || 10;
+
+    for (let i = 0; i < count; i++) {
+      logs.push({
+        id: `log-${i}`,
+        toolId: clientName,
+        toolName: clientName,
+        action: 'call',
+        agentId: 'mock-agent',
+        timestamp: new Date(Date.now() - i * 60000),
+        duration: Math.floor(Math.random() * 1000),
+        status: Math.random() > 0.1 ? 'success' : 'error',
+        error: Math.random() > 0.1 ? undefined : 'Mock error',
+        parameters: { mockArg: `value-${i}` },
+        result: `result-${i}`,
+      });
+    }
+
+    return logs;
+  }
+
+  async getAllUsageLogs(_options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
+    await this.delay();
+    const allLogs: McpUsageLog[] = [];
+
+    for (const config of this.mockMcpConfigs) {
+      const logs = await this.getUsageLogs(config.name, { limit: 5 });
+      allLogs.push(...logs);
+    }
+
+    return allLogs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }
+
+  async getUsageStats(_clientName?: string): Promise<McpUsageStats> {
+    await this.delay();
+
+    return {
+      totalUsage: Math.floor(Math.random() * 100),
+      successRate: 0.8 + Math.random() * 0.2,
+      averageDuration: Math.floor(Math.random() * 500),
+      lastUsedAt: new Date(Date.now() - Math.random() * 86400000),
+      errorCount: Math.floor(Math.random() * 10),
+    };
+  }
+
+  async getHourlyStats(_date: Date, _clientName?: string): Promise<HourlyStatsResponse> {
+    await this.delay();
+
+    const hourlyData: Array<[number, number]> = [];
+    for (let hour = 0; hour < 24; hour++) {
+      hourlyData.push([hour, Math.floor(Math.random() * 10)]);
+    }
+
+    return { hourlyData };
+  }
+
+  async getUsageLogsInRange(
+    startDate: Date,
+    endDate: Date,
+    clientName?: string
+  ): Promise<McpUsageLog[]> {
+    await this.delay();
+
+    const logs: McpUsageLog[] = [];
+    const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    for (let i = 0; i < Math.min(daysDiff * 5, 50); i++) {
+      const timestamp = new Date(
+        startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())
+      );
+
+      logs.push({
+        id: `range-log-${i}`,
+        toolId: clientName || 'mock-tool',
+        toolName: clientName || 'mock-tool',
+        action: 'call',
+        agentId: 'mock-agent',
+        timestamp,
+        duration: Math.floor(Math.random() * 1000),
+        status: Math.random() > 0.1 ? 'success' : 'error',
+        error: Math.random() > 0.1 ? undefined : 'Mock error',
+        parameters: { mockArg: `value-${i}` },
+        result: `result-${i}`,
+      });
+    }
+
+    return logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }
+
+  async clearUsageLogs(_olderThan?: Date): Promise<ClearUsageLogsResponse> {
+    await this.delay();
+
+    return {
+      success: true,
+      clearedCount: Math.floor(Math.random() * 50),
+    };
+  }
+
+  async setUsageTracking(
+    _clientName: string,
+    _enabled: boolean
+  ): Promise<SetUsageTrackingResponse> {
+    await this.delay();
+
+    return {
+      success: true,
+    };
+  }
+
+  async subscribeToUsageUpdates(
+    callback: (event: McpUsageUpdateEvent) => void
+  ): Promise<() => void> {
+    await this.delay();
+
+    // Mock 실시간 업데이트 시뮬레이션
+    const interval = setInterval(() => {
+      if (Math.random() > 0.8) {
+        // 20% 확률로 이벤트 발생
+        callback({
+          type: 'usage-logged',
+          clientName: 'mock-tool',
+          newLog: {
+            id: `mock-log-${Date.now()}`,
+            toolId: 'mock-tool',
+            toolName: 'mock-tool',
+            action: 'call',
+            agentId: 'mock-agent',
+            timestamp: new Date(),
+            duration: Math.floor(Math.random() * 1000),
+            status: 'success',
+            parameters: { mockArg: 'value' },
+            result: 'result',
+          },
+          timestamp: new Date(),
+        });
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
   }
 }

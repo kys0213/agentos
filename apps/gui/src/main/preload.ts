@@ -42,6 +42,24 @@ const electronAPI: ElectronAPI = {
     readResource: (clientName: string, uri: string) =>
       ipcRenderer.invoke('mcp:read-resource', clientName, uri),
     getStatus: (clientName: string) => ipcRenderer.invoke('mcp:get-status', clientName),
+
+    // 사용량 추적 APIs
+    getToolMetadata: (clientName: string) =>
+      ipcRenderer.invoke('mcp:get-tool-metadata', clientName),
+    getAllToolMetadata: () => ipcRenderer.invoke('mcp:get-all-tool-metadata'),
+    getUsageLogs: (clientName: string, options?: any) =>
+      ipcRenderer.invoke('mcp:get-usage-logs', clientName, options),
+    getAllUsageLogs: (options?: any) => ipcRenderer.invoke('mcp:get-all-usage-logs', options),
+    getUsageStats: (clientName?: string) => ipcRenderer.invoke('mcp:get-usage-stats', clientName),
+    getHourlyStats: (date: Date, clientName?: string) =>
+      ipcRenderer.invoke('mcp:get-hourly-stats', date, clientName),
+    getUsageLogsInRange: (startDate: Date, endDate: Date, clientName?: string) =>
+      ipcRenderer.invoke('mcp:get-usage-logs-in-range', startDate, endDate, clientName),
+    clearUsageLogs: (olderThan?: Date) => ipcRenderer.invoke('mcp:clear-usage-logs', olderThan),
+    setUsageTracking: (clientName: string, enabled: boolean) =>
+      ipcRenderer.invoke('mcp:set-usage-tracking', clientName, enabled),
+    subscribeToUsageUpdates: (callback: any) =>
+      ipcRenderer.invoke('mcp:subscribe-usage-updates', callback),
   },
 
   // Preset APIs

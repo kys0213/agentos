@@ -12,6 +12,14 @@ import type {
   LlmBridgeConfig,
   McpToolArgs,
 } from '../../types/core-types';
+import type { McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
+import type {
+  UsageLogQueryOptions,
+  McpUsageUpdateEvent,
+  HourlyStatsResponse,
+  ClearUsageLogsResponse,
+  SetUsageTrackingResponse,
+} from '../../../shared/types/mcp-usage-types';
 
 /**
  * Electron 환경에서 사용되는 IpcChannel 구현체
@@ -122,6 +130,70 @@ export class ElectronIpcChannel implements IpcChannel {
 
   async getMcpStatus(clientName: string): Promise<{ connected: boolean; error?: string }> {
     return this.electronAPI.mcp.getStatus(clientName);
+  }
+
+  // ==================== MCP 사용량 추적 메서드들 ====================
+
+  async getToolMetadata(clientName: string): Promise<McpToolMetadata> {
+    return this.electronAPI.mcp.getToolMetadata(clientName);
+  }
+
+  async getAllToolMetadata(): Promise<McpToolMetadata[]> {
+    return this.electronAPI.mcp.getAllToolMetadata();
+  }
+
+  async getUsageLogs(clientName: string, options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
+    return this.electronAPI.mcp.getUsageLogs(clientName, options);
+  }
+
+  async getAllUsageLogs(options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
+    return this.electronAPI.mcp.getAllUsageLogs(options);
+  }
+
+  async getUsageStats(clientName?: string): Promise<McpUsageStats> {
+    return this.electronAPI.mcp.getUsageStats(clientName);
+  }
+
+  async getHourlyStats(date: Date, clientName?: string): Promise<HourlyStatsResponse> {
+    return this.electronAPI.mcp.getHourlyStats(date, clientName);
+  }
+
+  async getUsageLogsInRange(
+    startDate: Date,
+    endDate: Date,
+    clientName?: string
+  ): Promise<McpUsageLog[]> {
+    return this.electronAPI.mcp.getUsageLogsInRange(startDate, endDate, clientName);
+  }
+
+  async clearUsageLogs(olderThan?: Date): Promise<ClearUsageLogsResponse> {
+    return this.electronAPI.mcp.clearUsageLogs(olderThan);
+  }
+
+  async setUsageTracking(clientName: string, enabled: boolean): Promise<SetUsageTrackingResponse> {
+    return this.electronAPI.mcp.setUsageTracking(clientName, enabled);
+  }
+
+  async subscribeToUsageUpdates(
+    callback: (event: McpUsageUpdateEvent) => void
+  ): Promise<() => void> {
+    // 구독 설정을 위한 IPC 호출
+    await this.electronAPI.mcp.subscribeToUsageUpdates(callback);
+
+    // 실제 이벤트 구독은 Main Process에서 webContents.send로 전송되므로
+    // Renderer에서 ipcRenderer.on으로 수신
+    const { ipcRenderer } = window.require('electron');
+
+    const eventHandler = (_event: any, updateEvent: McpUsageUpdateEvent) => {
+      callback(updateEvent);
+    };
+
+    ipcRenderer.on('mcp:usage-update', eventHandler);
+
+    // 구독 해제 함수 반환
+    return () => {
+      ipcRenderer.removeListener('mcp:usage-update', eventHandler);
+    };
   }
 
   // ==================== Preset 관련 메서드들 ====================
