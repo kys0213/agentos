@@ -101,12 +101,15 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
   const handleSelectChat = (chat: ChatSessionMetadata) => {
     setSelectedChat(chat);
 
+    // Get primary agent name from joinedAgents
+    const primaryAgent = chat.joinedAgents?.[0]?.name || 'AgentOS';
+
     // Load mock messages for the selected chat
     const mockMessages: MessageHistory[] = [
       {
         messageId: '1',
         role: 'system',
-        content: { contentType: 'text', value: `${chat.title}와의 대화를 계속합니다.` },
+        content: { contentType: 'text', value: `${primaryAgent}와의 대화를 계속합니다.` },
         createdAt: new Date(),
       },
       {
@@ -379,7 +382,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                 step.content &&
                 Object.keys(step.content).length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
-                    {Object.entries(step.content.value).map(([agentId, keywords]) => (
+                    {Object.entries(step.content.value).map(([agentId, _keywords]) => (
                       <Badge key={agentId} variant="secondary" className="text-xs">
                         {availableAgents.find((a) => a.id === agentId)?.name}
                       </Badge>
