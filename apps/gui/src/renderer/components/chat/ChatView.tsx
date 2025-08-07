@@ -7,11 +7,11 @@ interface ChatViewProps {
 
 /**
  * ChatView Component
- * 
+ *
  * This component is currently being refactored to work with the new
  * Core-based MCP system. The previous implementation relied on mock
  * services that have been removed during code cleanup.
- * 
+ *
  * TODO: Integrate with actual ChatService and MCP system
  */
 const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
@@ -28,7 +28,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
           <p className="text-sm text-gray-500 mb-6">
             This feature will be available soon with improved performance and reliability.
           </p>
-          
+
           <div className="space-y-2">
             <p className="text-sm font-medium text-gray-700">Available Features:</p>
             <div className="flex flex-wrap gap-2 justify-center">
