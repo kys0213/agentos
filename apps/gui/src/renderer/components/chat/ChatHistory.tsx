@@ -12,13 +12,14 @@ import {
   Settings,
   Wrench,
 } from 'lucide-react';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList as List } from 'react-window';
-// TODO: Replace with actual chat service integration
 import { AppModeState } from '../../types/chat-types';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
+import { ServiceContainer } from '../../services/ServiceContainer';
+import type { ChatService } from '../../services/chat-service';
 
 interface ChatHistoryProps {
   onSelectChat: (chat: ChatSessionMetadata) => void;
@@ -33,8 +34,30 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
   selectedChatId,
   onNavigate,
 }) => {
-  // TODO: Replace with actual chat service call
-  const chatSessions: ChatSessionMetadata[] = [];
+  // Refactored to use actual chat service instead of mock data
+  const [chatSessions, setChatSessions] = useState<ChatSessionMetadata[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const chatService = ServiceContainer.get<ChatService>('chat');
+
+  // Load chat sessions from actual service
+  useEffect(() => {
+    const loadChatSessions = async () => {
+      try {
+        setIsLoading(true);
+        const sessions = await chatService.listSessions();
+        setChatSessions(sessions);
+      } catch (error) {
+        console.error('Failed to load chat sessions:', error);
+        // Graceful fallback - maintain empty array
+        setChatSessions([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadChatSessions();
+  }, [chatService]);
 
   const quickNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
@@ -47,6 +70,28 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
   ];
 
   const items = chatSessions;
+
+  // Show loading state if data is being loaded
+  if (isLoading) {
+    return (
+      <div className="w-80 bg-muted flex flex-col h-full border-r border-gray-100">
+        <div className="px-4 py-4 border-b bg-background">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold text-lg">Chats</h2>
+            <Button variant="outline" size="sm" onClick={onNewChat}>
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center text-gray-500">
+            <div className="animate-spin w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full mx-auto mb-2"></div>
+            <p className="text-sm">Loading chats...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
     const chat = items[index];
