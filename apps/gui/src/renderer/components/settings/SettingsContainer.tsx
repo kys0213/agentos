@@ -4,8 +4,9 @@ import { useSettingsState, useSettingsActions, useUIActions } from '../../stores
 import { useMcpConfigs, useConnectMcp } from '../../hooks/queries/use-mcp';
 import LLMSettings from './LLMSettings';
 import PresetSettings from './PresetSettings';
-import McpSettings from '../../pages/McpSettings';
-import McpList from '../../pages/McpList';
+// TODO: Replace with components from management folder
+// import McpSettings from '../../pages/McpSettings';
+// import McpList from '../../pages/McpList';
 import type { McpConfig } from '../../types/core-types';
 
 /**
@@ -86,17 +87,14 @@ const SettingsContainer: React.FC = () => {
             {/* MCP 설정 모달/패널 */}
             {settingsState.showMcpSettings && (
               <Box border="1px solid" borderColor="gray.200" borderRadius="md" p={4}>
-                <McpSettings
-                  initial={mcpConfigs.length > 0 ? mcpConfigs[0] : undefined}
-                  onSave={handleSaveMcp}
-                />
+                <Text>MCP Settings coming soon - use Management section</Text>
               </Box>
             )}
 
             {/* MCP 목록 */}
             {settingsState.showMcpList && (
               <Box border="1px solid" borderColor="gray.200" borderRadius="md" p={4}>
-                <McpList mcps={mcpConfigs} onClose={() => settingsActions.toggleMcpList()} />
+                <Text>MCP List coming soon - use Management section</Text>
               </Box>
             )}
           </VStack>

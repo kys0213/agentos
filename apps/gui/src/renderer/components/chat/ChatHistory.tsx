@@ -15,7 +15,7 @@ import {
 import React from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList as List } from 'react-window';
-import { getChatSessions } from '../../services/mock';
+// TODO: Replace with actual chat service integration
 import { AppModeState } from '../../types/chat-types';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -33,7 +33,8 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
   selectedChatId,
   onNavigate,
 }) => {
-  const chatSessions = getChatSessions();
+  // TODO: Replace with actual chat service call
+  const chatSessions: ChatSessionMetadata[] = [];
 
   const quickNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
