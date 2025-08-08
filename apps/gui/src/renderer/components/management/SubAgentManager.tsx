@@ -8,12 +8,16 @@ import {
   Plus,
   Search,
   Settings,
+  Star,
+  Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
+import { useAppData } from '../../hooks/useAppData';
+import type { DesignAgent } from '../../types/design-types';
 
 interface SubAgentManagerProps {
   onOpenChat?: (agentId: number, agentName: string, agentPreset: string) => void;
@@ -21,72 +25,109 @@ interface SubAgentManagerProps {
 
 export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
   const [searchQuery, setSearchQuery] = useState('');
-
-  const subAgents = [
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  
+  // Use real data from ServiceContainer
+  const { 
+    currentAgents, 
+    loading,
+    handleCreateAgent, 
+    handleUpdateAgentStatus
+  } = useAppData();
+  
+  // If no agents exist, create some sample agents for demonstration
+  const agents = currentAgents.length === 0 ? [
     {
-      id: 1,
+      id: '1',
       name: 'Data Analyzer Pro',
       description: 'Advanced data analysis and visualization specialist',
+      category: 'analysis',
       preset: 'Data Analysis Expert',
-      status: 'active',
-      lastActive: '2 minutes ago',
-      totalChats: 45,
-      capabilities: ['Data Analysis', 'Visualization', 'SQL', 'Python'],
-      performance: 95,
+      status: 'active' as const,
+      lastUsed: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago
+      usageCount: 45,
+      tags: ['Data Analysis', 'Visualization', 'SQL', 'Python'],
     },
     {
-      id: 2,
+      id: '2',
       name: 'Code Reviewer',
       description: 'Code quality assurance and debugging expert',
+      category: 'development',
       preset: 'Development Helper',
-      status: 'active',
-      lastActive: '15 minutes ago',
-      totalChats: 32,
-      capabilities: ['Code Review', 'Debugging', 'Testing', 'Documentation'],
-      performance: 92,
+      status: 'active' as const,
+      lastUsed: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
+      usageCount: 32,
+      tags: ['Code Review', 'Debugging', 'Testing', 'Documentation'],
     },
     {
-      id: 3,
+      id: '3',
       name: 'Content Creator',
       description: 'Creative writing and content generation assistant',
+      category: 'content',
       preset: 'Writing Specialist',
-      status: 'idle',
-      lastActive: '2 hours ago',
-      totalChats: 28,
-      capabilities: ['Writing', 'Editing', 'SEO', 'Marketing'],
-      performance: 88,
+      status: 'idle' as const,
+      lastUsed: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      usageCount: 28,
+      tags: ['Writing', 'Editing', 'SEO', 'Marketing'],
     },
     {
-      id: 4,
+      id: '4',
       name: 'Research Assistant',
       description: 'Information gathering and analysis specialist',
+      category: 'research',
       preset: 'Research Specialist',
-      status: 'active',
-      lastActive: '5 minutes ago',
-      totalChats: 52,
-      capabilities: ['Research', 'Fact-checking', 'Analysis', 'Summarization'],
-      performance: 94,
+      status: 'active' as const,
+      lastUsed: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
+      usageCount: 52,
+      tags: ['Research', 'Fact-checking', 'Analysis', 'Summarization'],
     },
-  ];
+  ] : currentAgents;
 
-  const filteredAgents = subAgents.filter((agent) => {
+  const filteredAgents = agents.filter((agent) => {
     const matchesSearch =
       agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agent.description.toLowerCase().includes(searchQuery.toLowerCase());
+      agent.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      agent.category.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Category filtering
+    if (selectedCategory === 'all') return matchesSearch;
+    if (selectedCategory === 'active') return matchesSearch && agent.status === 'active';
+    if (selectedCategory === 'idle') return matchesSearch && agent.status === 'idle';
+    if (selectedCategory === 'recent') {
+      if (!agent.lastUsed) return false;
+      return matchesSearch && Date.now() - agent.lastUsed.getTime() < 24 * 60 * 60 * 1000; // Last 24h
+    }
+    
     return matchesSearch;
   });
+  
+  const categories = [
+    { id: 'all', label: 'All Agents', count: agents.length },
+    { id: 'active', label: 'Active', count: agents.filter(a => a.status === 'active').length },
+    { id: 'idle', label: 'Idle', count: agents.filter(a => a.status === 'idle').length },
+    { id: 'recent', label: 'Recent', count: agents.filter(a => 
+      a.lastUsed && Date.now() - a.lastUsed.getTime() < 24 * 60 * 60 * 1000
+    ).length },
+  ];
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: DesignAgent['status']) => {
     switch (status) {
       case 'active':
         return 'bg-green-500';
       case 'idle':
         return 'bg-yellow-500';
-      case 'offline':
+      case 'inactive':
         return 'bg-gray-500';
       default:
         return 'bg-gray-500';
     }
+  };
+
+  const getPerformanceScore = (agent: DesignAgent) => {
+    // Calculate performance based on usage count and recency
+    const baseScore = Math.min(90, (agent.usageCount / 10) * 20); // Up to 90% from usage
+    const recencyBonus = agent.lastUsed && Date.now() - agent.lastUsed.getTime() < 7 * 24 * 60 * 60 * 1000 ? 10 : 0;
+    return Math.min(100, baseScore + recencyBonus);
   };
 
   const getPerformanceColor = (performance: number) => {
@@ -94,6 +135,70 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
     if (performance >= 75) return 'text-yellow-600';
     return 'text-red-600';
   };
+  
+  const formatLastActive = (lastUsed?: Date) => {
+    if (!lastUsed) return 'Never';
+    const now = Date.now();
+    const diff = now - lastUsed.getTime();
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
+  };
+  
+  const handleCreateNewAgent = () => {
+    const newAgent = handleCreateAgent({
+      name: `Agent ${agents.length + 1}`,
+      description: 'A new AI assistant ready to help',
+      category: 'general'
+    });
+    console.log('Created agent:', newAgent);
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-semibold">Sub-Agent Manager</h1>
+            <p className="text-muted-foreground">Loading your AI agents...</p>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-sm">Loading...</span>
+          </div>
+        </div>
+        
+        {/* Loading skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Card key={index} className="p-6">
+              <div className="animate-pulse">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+                    <div>
+                      <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-16"></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="h-12 bg-gray-200 rounded mb-4"></div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-200 rounded"></div>
+                  <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -103,104 +208,162 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
           <h1 className="text-2xl font-semibold">Sub-Agent Manager</h1>
           <p className="text-muted-foreground">Manage and monitor your AI sub-agents</p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={handleCreateNewAgent}>
           <Plus className="w-4 h-4" />
           Create Agent
         </Button>
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="Search agents..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+      {/* Filters and Categories */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Search agents..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Button variant="outline" className="gap-2">
+            <Filter className="w-4 h-4" />
+            Filter
+          </Button>
         </div>
-        <Button variant="outline" className="gap-2">
-          <Filter className="w-4 h-4" />
-          Filter
-        </Button>
+        
+        {/* Categories */}
+        <div className="flex items-center gap-2 overflow-x-auto">
+          {categories.map((category) => (
+            <Button
+              key={category.id}
+              variant={selectedCategory === category.id ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedCategory(category.id)}
+              className="flex-shrink-0"
+            >
+              {category.label}
+              <Badge variant="secondary" className="ml-2 text-xs">
+                {category.count}
+              </Badge>
+            </Button>
+          ))}
+        </div>
       </div>
 
       {/* Agent Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredAgents.map((agent) => (
-          <Card key={agent.id} className="p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Bot className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">{agent.name}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className={`w-2 h-2 ${getStatusColor(agent.status)} rounded-full`}></div>
-                    <span className="text-xs text-muted-foreground capitalize">{agent.status}</span>
-                  </div>
-                </div>
-              </div>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreVertical className="w-4 h-4" />
+        {filteredAgents.length === 0 ? (
+          // Empty state
+          <div className="col-span-full flex flex-col items-center justify-center py-12">
+            <Bot className="w-12 h-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No agents found</h3>
+            <p className="text-muted-foreground mb-4">
+              {searchQuery ? 'Try adjusting your search terms' : 'Create your first agent to get started'}
+            </p>
+            {!searchQuery && (
+              <Button onClick={handleCreateNewAgent} className="gap-2">
+                <Plus className="w-4 h-4" />
+                Create First Agent
               </Button>
-            </div>
+            )}
+          </div>
+        ) : (
+          filteredAgents.map((agent) => {
+            const performance = getPerformanceScore(agent);
+            return (
+              <Card key={agent.id} className="p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center relative">
+                      <Bot className="w-6 h-6 text-blue-600" />
+                      {agent.usageCount > 30 && (
+                        <Star className="w-3 h-3 text-yellow-500 absolute -top-1 -right-1 fill-current" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{agent.name}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className={`w-2 h-2 ${getStatusColor(agent.status)} rounded-full`}></div>
+                        <span className="text-xs text-muted-foreground capitalize">{agent.status}</span>
+                        <Badge variant="outline" className="text-xs">{agent.category}</Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </div>
 
             <p className="text-sm text-muted-foreground mb-4">{agent.description}</p>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Performance</span>
-                <span className={`font-semibold ${getPerformanceColor(agent.performance)}`}>
-                  {agent.performance}%
-                </span>
-              </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Performance</span>
+                    <span className={`font-semibold ${getPerformanceColor(performance)}`}>
+                      {performance}%
+                    </span>
+                  </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Total Chats</span>
-                <span className="font-semibold">{agent.totalChats}</span>
-              </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Total Chats</span>
+                    <span className="font-semibold">{agent.usageCount}</span>
+                  </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Last Active</span>
-                <span className="font-semibold">{agent.lastActive}</span>
-              </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Last Active</span>
+                    <span className="font-semibold">{formatLastActive(agent.lastUsed)}</span>
+                  </div>
 
-              <div>
-                <p className="text-xs text-muted-foreground mb-2">Capabilities</p>
-                <div className="flex flex-wrap gap-1">
-                  {agent.capabilities.slice(0, 3).map((capability) => (
-                    <Badge key={capability} variant="secondary" className="text-xs">
-                      {capability}
-                    </Badge>
-                  ))}
-                  {agent.capabilities.length > 3 && (
-                    <Badge variant="secondary" className="text-xs">
-                      +{agent.capabilities.length - 3}
-                    </Badge>
+                  {agent.tags && agent.tags.length > 0 && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-2">Capabilities</p>
+                      <div className="flex flex-wrap gap-1">
+                        {agent.tags.slice(0, 3).map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                        {agent.tags.length > 3 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{agent.tags.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-              <Button
-                size="sm"
-                className="flex-1 gap-2"
-                onClick={() => onOpenChat?.(agent.id, agent.name, agent.preset)}
-              >
-                <MessageSquare className="w-3 h-3" />
-                Chat
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Settings className="w-3 h-3" />
-                Config
-              </Button>
-            </div>
-          </Card>
-        ))}
+                <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+                  <Button
+                    size="sm"
+                    className="flex-1 gap-2"
+                    onClick={() => onOpenChat?.(parseInt(agent.id), agent.name, agent.preset)}
+                  >
+                    <MessageSquare className="w-3 h-3" />
+                    Chat
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2"
+                    onClick={() => handleUpdateAgentStatus(agent.id, 
+                      agent.status === 'active' ? 'idle' : 'active'
+                    )}
+                  >
+                    {agent.status === 'active' ? 
+                      <Pause className="w-3 h-3" /> : 
+                      <Play className="w-3 h-3" />
+                    }
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Settings className="w-3 h-3" />
+                  </Button>
+                </div>
+              </Card>
+            );
+          })
+        )}
       </div>
 
       {/* Quick Stats */}
@@ -212,7 +375,7 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
             </div>
             <div>
               <p className="text-sm font-semibold">
-                {subAgents.filter((a) => a.status === 'active').length}
+                {agents.filter((a) => a.status === 'active').length}
               </p>
               <p className="text-xs text-muted-foreground">Active Agents</p>
             </div>
@@ -226,7 +389,7 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
             </div>
             <div>
               <p className="text-sm font-semibold">
-                {subAgents.filter((a) => a.status === 'idle').length}
+                {agents.filter((a) => a.status === 'idle').length}
               </p>
               <p className="text-xs text-muted-foreground">Idle Agents</p>
             </div>
@@ -240,7 +403,7 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
             </div>
             <div>
               <p className="text-sm font-semibold">
-                {subAgents.reduce((sum, agent) => sum + agent.totalChats, 0)}
+                {agents.reduce((sum, agent) => sum + agent.usageCount, 0)}
               </p>
               <p className="text-xs text-muted-foreground">Total Chats</p>
             </div>
@@ -254,9 +417,9 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
             </div>
             <div>
               <p className="text-sm font-semibold">
-                {Math.round(
-                  subAgents.reduce((sum, agent) => sum + agent.performance, 0) / subAgents.length
-                )}
+                {agents.length > 0 ? Math.round(
+                  agents.reduce((sum, agent) => sum + getPerformanceScore(agent), 0) / agents.length
+                ) : 0}
                 %
               </p>
               <p className="text-xs text-muted-foreground">Avg Performance</p>
