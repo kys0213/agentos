@@ -17,14 +17,16 @@ import {
   WifiOff,
   Zap,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { ServiceContainer } from '../../services/ServiceContainer';
+import type { BridgeService } from '../../services/bridge-service';
 
-// Mock data types
+// Model data types based on BridgeService
 interface ModelInstance {
   id: string;
   name: string;
@@ -62,66 +64,99 @@ interface AvailableModel {
 export function ModelManager() {
   const [activeTab, setActiveTab] = useState('instances');
   const [searchQuery, setSearchQuery] = useState('');
-
-  const modelInstances: ModelInstance[] = [
-    {
-      id: '1',
-      name: 'GPT-4 Turbo',
-      provider: 'OpenAI',
-      status: 'online',
-      endpoint: 'https://api.openai.com/v1',
-      apiKey: 'sk-****...****',
-      capabilities: ['text', 'vision', 'function-calling'],
-      usage: {
-        requests: 1247,
-        tokens: 425678,
-        cost: 45.23,
-      },
-      performance: {
-        latency: 1.2,
-        uptime: 99.8,
-      },
-      lastUsed: new Date('2024-01-22T14:30:00'),
-    },
-    {
-      id: '2',
-      name: 'Claude 3 Opus',
-      provider: 'Anthropic',
-      status: 'online',
-      endpoint: 'https://api.anthropic.com/v1',
-      apiKey: 'sk-ant-****...****',
-      capabilities: ['text', 'vision', 'analysis'],
-      usage: {
-        requests: 892,
-        tokens: 324156,
-        cost: 32.1,
-      },
-      performance: {
-        latency: 0.9,
-        uptime: 99.9,
-      },
-      lastUsed: new Date('2024-01-22T13:45:00'),
-    },
-    {
-      id: '3',
-      name: 'Llama 2 70B',
-      provider: 'Meta (Local)',
-      status: 'error',
-      endpoint: 'http://localhost:8080',
-      apiKey: 'local-key',
-      capabilities: ['text', 'code'],
-      usage: {
-        requests: 156,
-        tokens: 78432,
-        cost: 0,
-      },
-      performance: {
-        latency: 3.5,
-        uptime: 85.2,
-      },
-      lastUsed: new Date('2024-01-21T09:20:00'),
-    },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [modelInstances, setModelInstances] = useState<ModelInstance[]>([]);
+  const [bridgeIds, setBridgeIds] = useState<string[]>([]);
+  
+  // Get BridgeService from ServiceContainer
+  const bridgeService = ServiceContainer.get<BridgeService>('bridge');
+  
+  // Load bridge data on mount
+  useEffect(() => {
+    const loadBridges = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Get available bridge IDs
+        const ids = await bridgeService.getBridgeIds();
+        setBridgeIds(ids);
+        
+        // Get current bridge info
+        const currentBridge = await bridgeService.getCurrentBridge();
+        
+        // Mock some model instances based on available bridges
+        // In real implementation, this would come from bridge configurations
+        const mockInstances: ModelInstance[] = [
+          {
+            id: '1',
+            name: 'GPT-4 Turbo',
+            provider: 'OpenAI',
+            status: currentBridge?.id === 'openai-gpt4' ? 'online' : 'offline',
+            endpoint: 'https://api.openai.com/v1',
+            apiKey: 'sk-****...****',
+            capabilities: ['text', 'vision', 'function-calling'],
+            usage: {
+              requests: 1247,
+              tokens: 425678,
+              cost: 45.23,
+            },
+            performance: {
+              latency: 1.2,
+              uptime: 99.8,
+            },
+            lastUsed: new Date('2024-01-22T14:30:00'),
+          },
+          {
+            id: '2',
+            name: 'Claude 3 Opus',
+            provider: 'Anthropic',
+            status: currentBridge?.id === 'anthropic-claude' ? 'online' : 'offline',
+            endpoint: 'https://api.anthropic.com/v1',
+            apiKey: 'sk-ant-****...****',
+            capabilities: ['text', 'vision', 'analysis'],
+            usage: {
+              requests: 892,
+              tokens: 324156,
+              cost: 32.1,
+            },
+            performance: {
+              latency: 0.9,
+              uptime: 99.9,
+            },
+            lastUsed: new Date('2024-01-22T13:45:00'),
+          },
+        ];
+        
+        setModelInstances(mockInstances);
+        
+      } catch (err) {
+        console.error('Failed to load bridge data:', err);
+        setError('Failed to load model information');
+        
+        // Fallback to mock data on error
+        setModelInstances([
+          {
+            id: '1',
+            name: 'GPT-4 Turbo (Mock)',
+            provider: 'OpenAI',
+            status: 'offline',
+            endpoint: 'https://api.openai.com/v1',
+            apiKey: 'Not configured',
+            capabilities: ['text', 'vision', 'function-calling'],
+            usage: { requests: 0, tokens: 0, cost: 0 },
+            performance: { latency: 0, uptime: 0 },
+            lastUsed: new Date(),
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadBridges();
+  }, []);
 
   const availableModels: AvailableModel[] = [
     {
@@ -135,7 +170,7 @@ export function ModelManager() {
         output: 15.0,
         unit: '1M tokens',
       },
-      isInstalled: false,
+      isInstalled: bridgeIds.includes('openai-gpt4o'),
     },
     {
       id: 'claude-3-haiku',
@@ -148,7 +183,7 @@ export function ModelManager() {
         output: 1.25,
         unit: '1M tokens',
       },
-      isInstalled: false,
+      isInstalled: bridgeIds.includes('anthropic-haiku'),
     },
     {
       id: 'gemini-pro',
@@ -161,9 +196,47 @@ export function ModelManager() {
         output: 10.5,
         unit: '1M tokens',
       },
-      isInstalled: false,
+      isInstalled: bridgeIds.includes('google-gemini'),
     },
   ];
+  
+  const handleRefresh = async () => {
+    setLoading(true);
+    try {
+      const ids = await bridgeService.getBridgeIds();
+      setBridgeIds(ids);
+      const currentBridge = await bridgeService.getCurrentBridge();
+      // Update model statuses based on current bridge
+      setModelInstances(prev => prev.map(model => ({
+        ...model,
+        status: currentBridge?.id.includes(model.provider.toLowerCase()) ? 'online' : 'offline'
+      })));
+    } catch (err) {
+      setError('Failed to refresh model data');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleInstallModel = async (modelId: string) => {
+    try {
+      // In real implementation, this would register a new bridge
+      console.log('Installing model:', modelId);
+      // await bridgeService.registerBridge(modelId, config);
+      await handleRefresh();
+    } catch (err) {
+      console.error('Failed to install model:', err);
+    }
+  };
+  
+  const handleSwitchModel = async (bridgeId: string) => {
+    try {
+      await bridgeService.switchBridge(bridgeId);
+      await handleRefresh();
+    } catch (err) {
+      console.error('Failed to switch model:', err);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -202,13 +275,59 @@ export function ModelManager() {
     return new Intl.NumberFormat('en-US').format(num);
   };
 
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-semibold">Model Manager</h1>
+            <p className="text-muted-foreground">Loading AI model configurations...</p>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-sm">Loading...</span>
+          </div>
+        </div>
+        
+        {/* Loading skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Card key={index} className="p-6">
+              <div className="animate-pulse">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+                    <div>
+                      <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-16"></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-200 rounded"></div>
+                  <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Model Manager</h1>
-          <p className="text-muted-foreground">Manage AI model instances and configurations</p>
+          <p className="text-muted-foreground">
+            {error ? 'Model configuration error detected' : 'Manage AI model instances and configurations'}
+          </p>
+          {error && (
+            <p className="text-sm text-red-600 mt-1">{error}</p>
+          )}
         </div>
         <Button className="gap-2">
           <Plus className="w-4 h-4" />
@@ -227,7 +346,7 @@ export function ModelManager() {
             className="pl-10"
           />
         </div>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" className="gap-2" onClick={handleRefresh}>
           <RefreshCw className="w-4 h-4" />
           Refresh
         </Button>
@@ -310,9 +429,14 @@ export function ModelManager() {
                 </div>
 
                 <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                  <Button size="sm" className="flex-1">
+                  <Button 
+                    size="sm" 
+                    className="flex-1"
+                    variant={model.status === 'online' ? 'default' : 'outline'}
+                    onClick={() => handleSwitchModel(model.id)}
+                  >
                     <MessageSquare className="w-3 h-3 mr-1" />
-                    Test
+                    {model.status === 'online' ? 'Active' : 'Switch'}
                   </Button>
                   <Button variant="outline" size="sm">
                     <Settings className="w-3 h-3" />
@@ -375,7 +499,12 @@ export function ModelManager() {
                 </div>
 
                 <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                  <Button size="sm" className="flex-1" disabled={model.isInstalled}>
+                  <Button 
+                    size="sm" 
+                    className="flex-1" 
+                    disabled={model.isInstalled}
+                    onClick={() => !model.isInstalled && handleInstallModel(model.id)}
+                  >
                     <Download className="w-3 h-3 mr-1" />
                     {model.isInstalled ? 'Installed' : 'Install'}
                   </Button>
