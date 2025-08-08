@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@agentos/core": "workspace:*",
-    "@agentos/llm-bridge-runner": "workspace:*",
+    "llm-bridge-loader": "^0.0.3",
     "llm-bridge-spec": "^1.0.2",
     "@slack/bolt": "^3.15.0",
     "slack-block-builder": "^2.8.0",

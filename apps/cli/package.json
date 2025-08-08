@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@agentos/core": "workspace:*",
-    "@agentos/llm-bridge-runner": "workspace:*",
+    "llm-bridge-loader": "^0.0.3",
     "chalk": "^4.1.2",
     "commander": "^11.1.0"
   },

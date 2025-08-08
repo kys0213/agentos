@@ -1,6 +1,6 @@
 import { ChatManager } from '@agentos/core';
 import { createManager } from './chat-manager';
-import { DependencyLlmBridgeLoader } from '@agentos/llm-bridge-runner';
+import { DependencyBridgeLoader } from 'llm-bridge-loader';
 import { LlmBridge } from 'llm-bridge-spec';
 
 export interface AppContext {
@@ -13,7 +13,7 @@ let context: AppContext | null = null;
 async function createBridge(): Promise<LlmBridge> {
   const moduleName = process.env.LLM_BRIDGE ?? '';
   const configEnv = process.env.LLM_BRIDGE_CONFIG;
-  const loader = new DependencyLlmBridgeLoader();
+  const loader = new DependencyBridgeLoader();
   const bootstrap = await loader.load(moduleName);
   const config = configEnv ? JSON.parse(configEnv) : {};
   return bootstrap.create(config);

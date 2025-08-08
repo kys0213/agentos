@@ -2,7 +2,7 @@
 
 ## 요구사항
 
-- CLI에서 LLM 호출을 `llm-bridge-runner`를 사용하도록 변경한다.
+- CLI에서 LLM 호출을 `llm-bridge-loader`를 사용하도록 변경한다.
 - `createManager` 호출 시 LLM Bridge를 동적으로 주입할 수 있어야 한다.
 - 대화 내용 요약 기능도 LLM Bridge를 이용해 실제 LLM에게 요약을 요청하도록 수정한다.
 
@@ -25,7 +25,7 @@ export class LlmCompressor implements CompressStrategy {
 
 ## Todo 리스트
 
-- [ ] `packages/cli` 의 `package.json` 에 `@agentos/llm-bridge-runner` 의존성 추가
+- [ ] `packages/cli` 의 `package.json` 에 `llm-bridge-loader` 의존성 추가
 - [ ] `createManager` 가 `llmBridge` 인자를 받아 Compressor에도 전달하도록 수정
 - [ ] `LlmCompressor` 구현
 - [ ] `interactiveChat`에서 `SimpleAgent`와 전달된 LLM Bridge를 사용해 응답 생성
