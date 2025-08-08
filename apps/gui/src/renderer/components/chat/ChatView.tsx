@@ -15,7 +15,7 @@ import {
   UserMinus,
   X,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -27,17 +27,15 @@ import MessageRenderer from './MessageRenderer';
 import { AppModeState, QuickAction } from '../../types/chat-types';
 
 import { Agent, ChatSessionMetadata, MessageHistory } from '@agentos/core';
-import {
-  MockAgentOrchestrator,
-  MockOrchestrationService,
-  getAvailableAgents,
-} from '../../services/mock';
+import { ServiceContainer } from '../../services/ServiceContainer';
+import type { ChatService } from '../../services/chat-service';
 
 interface ChatViewProps {
   onNavigate: (section: AppModeState['activeSection']) => void;
 }
 
 const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
+  // State management - restored from original
   const [messages, setMessages] = useState<MessageHistory[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -52,13 +50,69 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
   >({});
   const [expandedOrchestrations, setExpandedOrchestrations] = useState<Record<string, boolean>>({});
 
-  // 서비스 인스턴스
-  const orchestrationService = new MockOrchestrationService();
-  const orchestrator = new MockAgentOrchestrator();
-  const availableAgents = getAvailableAgents();
+  // Services - Refactored: replaced mock services with real services
+  const chatService = ServiceContainer.get<ChatService>('chat');
+  const [availableAgents, setAvailableAgents] = useState<any[]>([]);
+  const [mainAgent, setMainAgent] = useState<any>(null);
 
-  // Main Agent (Orchestrator) configuration
-  const mainAgent = MockAgentOrchestrator.getMainAgent();
+  // Load data from real services instead of mock
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        // TODO: Load available agents from actual agent service when available
+        // For now, provide mock structure to maintain UI functionality
+        const mockAvailableAgents = [
+          {
+            id: '1',
+            name: 'Data Analyst',
+            icon: '📊',
+            description: 'Data analysis expert',
+            status: 'active',
+            preset: { name: 'Data Analysis' },
+            keywords: ['data', 'analysis', 'visualization'],
+          },
+          {
+            id: '2',
+            name: 'Code Reviewer',
+            icon: '🔍',
+            description: 'Code review specialist',
+            status: 'active',
+            preset: { name: 'Code Review' },
+            keywords: ['code', 'review', 'quality'],
+          },
+          {
+            id: '3',
+            name: 'Writer',
+            icon: '✍️',
+            description: 'Writing assistant',
+            status: 'active',
+            preset: { name: 'Writing' },
+            keywords: ['writing', 'content', 'documentation'],
+          },
+        ];
+        setAvailableAgents(mockAvailableAgents);
+
+        const mockMainAgent = { id: 'main', name: 'AgentOS', icon: '🤖' };
+        setMainAgent(mockMainAgent);
+
+        // Initialize with welcome message
+        const welcomeMessage: MessageHistory = {
+          messageId: '1',
+          role: 'assistant',
+          content: {
+            contentType: 'text',
+            value: '안녕하세요! AgentOS입니다. 무엇을 도와드릴까요?',
+          },
+          createdAt: new Date(),
+        };
+        setMessages([welcomeMessage]);
+      } catch (error) {
+        console.error('Failed to load initial data:', error);
+      }
+    };
+
+    loadInitialData();
+  }, []);
 
   const quickActions: QuickAction[] = [
     {
@@ -91,54 +145,50 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
     },
   ];
 
-  const handleSelectChat = (chat: ChatSessionMetadata) => {
-    setSelectedChat(chat);
+  const handleSelectChat = async (chat: ChatSessionMetadata) => {
+    try {
+      setSelectedChat(chat);
 
-    // Get primary agent name from joinedAgents
-    const primaryAgent = chat.joinedAgents?.[0]?.name || 'AgentOS';
-
-    // Load mock messages for the selected chat
-    const mockMessages: MessageHistory[] = [
-      {
-        messageId: '1',
-        role: 'system',
-        content: { contentType: 'text', value: `${primaryAgent}와의 대화를 계속합니다.` },
-        createdAt: new Date(),
-      },
-      {
-        messageId: '2',
-        role: 'user',
-        content: { contentType: 'text', value: '이전 대화를 이어서 진행하고 싶습니다.' },
-        createdAt: new Date(),
-      },
-      {
-        messageId: '3',
-        role: 'assistant',
-        content: { contentType: 'text', value: '이전 대화를 이어서 진행하고 싶습니다.' },
-        createdAt: new Date(),
-      },
-    ];
-    setMessages(mockMessages);
+      // Load messages from real service instead of mock
+      const messagesResponse = await chatService.getMessages(chat.sessionId);
+      // Convert MessageRecord[] to MessageHistory[] if needed
+      const messages = (messagesResponse.messages || []) as unknown as MessageHistory[];
+      setMessages(messages);
+    } catch (error) {
+      console.error('Failed to load chat messages:', error);
+      // Fallback to basic message
+      setMessages([
+        {
+          messageId: '1',
+          role: 'assistant',
+          content: {
+            contentType: 'text',
+            value: '대화를 불러오는 중에 문제가 발생했습니다.',
+          },
+          createdAt: new Date(),
+        },
+      ]);
+    }
   };
 
-  const handleNewChat = () => {
-    setSelectedChat(null);
-    setActiveAgents([]);
-    setCompletedOrchestrations({});
-    setExpandedOrchestrations({});
-    setCurrentOrchestrationSteps([]);
-    setMessages([
-      {
+  const handleNewChat = async () => {
+    try {
+      const newSession = await chatService.createSession();
+      setSelectedChat(newSession);
+
+      const welcomeMessage: MessageHistory = {
         messageId: '1',
         role: 'assistant',
         content: {
           contentType: 'text',
-          value:
-            'AgentOS에 오신 것을 환영합니다! 저는 여러 전문 에이전트를 관리하는 오케스트레이터입니다. 질문해주시면 적절한 전문가를 배정해드릴게요.',
+          value: '새로운 대화를 시작합니다. 무엇을 도와드릴까요?',
         },
         createdAt: new Date(),
-      },
-    ]);
+      };
+      setMessages([welcomeMessage]);
+    } catch (error) {
+      console.error('Failed to create new chat:', error);
+    }
   };
 
   const handleSendMessage = async () => {
@@ -147,137 +197,68 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
     const userMessage: MessageHistory = {
       messageId: (messages.length + 1).toString(),
       role: 'user',
-      content: { contentType: 'text', value: inputMessage },
+      content: {
+        contentType: 'text',
+        value: inputMessage,
+      },
       createdAt: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
     const currentQuery = inputMessage;
+    setMessages([...messages, userMessage]);
     setInputMessage('');
     setIsTyping(true);
 
-    if (orchestrationMode && activeAgents.length > 0) {
-      // Orchestrated mode with orchestration steps
-      setTimeout(() => {
-        const { matchedAgents, steps } = orchestrationService.analyzeQueryWithSteps(
-          currentQuery,
-          activeAgents.map((a) => a.id)
-        );
-        setCurrentOrchestrationSteps(steps);
+    try {
+      // Send message through real service if chat is selected
+      if (selectedChat) {
+        const response = await chatService.sendMessage(selectedChat.sessionId, currentQuery);
 
-        // Create orchestrated message
-        const orchestratedMessage: MessageHistory = {
+        const assistantMessage: MessageHistory = {
           messageId: (messages.length + 2).toString(),
           role: 'assistant',
           content: {
             contentType: 'text',
-            value:
-              matchedAgents.length > 0
-                ? `질문을 분석하여 ${matchedAgents.length}개의 전문 에이전트를 선택했습니다.`
-                : '질문을 분석하여 직접 답변을 제공합니다.',
+            value: (response as any)?.content || '응답을 생성하는 중에 문제가 발생했습니다.',
           },
           createdAt: new Date(),
         };
 
-        setMessages((prev) => [...prev, orchestratedMessage]);
-
         setTimeout(() => {
           setIsTyping(false);
-
-          // Store orchestration steps for the completed message
-          const orchestratedMessageId = (messages.length + 2).toString();
-          setCompletedOrchestrations((prev) => ({
-            ...prev,
-            [orchestratedMessageId]: steps,
-          }));
-
-          // Update the orchestrated message with agent metadata and completion status
-          setMessages((prev) => {
-            const updatedMessages = [...prev];
-            const orchestratedMsgIndex = updatedMessages.findIndex(
-              (msg) => msg.messageId === orchestratedMessageId
-            );
-
-            if (orchestratedMsgIndex !== -1) {
-              updatedMessages[orchestratedMsgIndex] = {
-                ...updatedMessages[orchestratedMsgIndex],
-                agentMetadata: {
-                  id: mainAgent.id,
-                  name: mainAgent.name,
-                  description: 'Orchestration completed',
-                  icon: mainAgent.icon,
-                  keywords: [],
-                },
-              };
-            }
-            return updatedMessages;
-          });
-
-          setCurrentOrchestrationSteps([]);
-
-          if (matchedAgents.length > 0) {
-            // Generate responses from matched agents
-            const responses = matchedAgents.map((agentId, index): MessageHistory => {
-              return {
-                messageId: (messages.length + 3 + index).toString(),
-                role: 'assistant',
-                content: {
-                  contentType: 'text',
-                  value: orchestrator.getAgentResponse(agentId, currentQuery),
-                },
-                createdAt: new Date(),
-              };
-            });
-
-            setMessages((prev) => [...prev, ...responses]);
-          } else {
-            // Main agent responds directly
-            const directResponse: MessageHistory = {
-              messageId: (messages.length + 3).toString(),
-              role: 'assistant',
-              content: {
-                contentType: 'text',
-                value: orchestrator.getDirectResponse(currentQuery),
-              },
-              createdAt: new Date(),
-            };
-
-            setMessages((prev) => [...prev, directResponse]);
-          }
-        }, 2500);
-      }, 500);
-    } else {
-      // Direct mode (all active agents respond)
-      setTimeout(() => {
-        setIsTyping(false);
-
-        if (activeAgents.length === 0) {
-          const defaultResponse: MessageHistory = {
+          setMessages((prev) => [...prev, assistantMessage]);
+        }, 1500);
+      } else {
+        // Fallback response when no chat is selected
+        setTimeout(() => {
+          setIsTyping(false);
+          const fallbackResponse: MessageHistory = {
             messageId: (messages.length + 2).toString(),
             role: 'assistant',
             content: {
               contentType: 'text',
-              value: '안녕하세요! 더 나은 도움을 위해 오른쪽에서 전문 에이전트를 선택해주세요.',
+              value: '새 채팅을 시작하려면 왼쪽 상단의 "+" 버튼을 클릭해주세요.',
             },
             createdAt: new Date(),
           };
-          setMessages((prev) => [...prev, defaultResponse]);
-        } else {
-          const responses = activeAgents.map(
-            (agent, index): MessageHistory => ({
-              messageId: (messages.length + 2 + index).toString(),
-              role: 'assistant',
-              content: {
-                contentType: 'text',
-                value: `[${agent.name}] ${orchestrator.getAgentResponse(agent.id, currentQuery)}`,
-              },
-              createdAt: new Date(),
-            })
-          );
-
-          setMessages((prev) => [...prev, ...responses]);
-        }
-      }, 1500);
+          setMessages((prev) => [...prev, fallbackResponse]);
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      setTimeout(() => {
+        setIsTyping(false);
+        const errorMessage: MessageHistory = {
+          messageId: (messages.length + 2).toString(),
+          role: 'assistant',
+          content: {
+            contentType: 'text',
+            value: '메시지 전송 중에 오류가 발생했습니다.',
+          },
+          createdAt: new Date(),
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+      }, 1000);
     }
   };
 
@@ -294,63 +275,55 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
     setMessages([...messages, actionMessage]);
   };
 
-  const handleAgentSelect = (agent: (typeof availableAgents)[0]) => {
-    const newAgent: Agent = orchestrator.convertToActiveAgent(agent);
-
-    if (activeAgents.some((a) => a.id === agent.id)) {
-      return;
-    }
-
-    setActiveAgents((prev) => [...prev, newAgent]);
-
-    const agentMessage: MessageHistory = {
-      messageId: (messages.length + 1).toString(),
-      role: 'system',
-      content: {
-        contentType: 'text',
-        value: `${agent.name}이 대화에 참여했습니다. ${orchestrationMode ? '오케스트레이터가 필요시 자동으로 배정할 예정입니다.' : agent.description}`,
+  const handleAgentSelect = (agent: any) => {
+    const newAgent: Agent = {
+      id: agent.id,
+      name: agent.name,
+      description: agent.description,
+      icon: agent.icon,
+      preset: {
+        id: agent.id,
+        name: agent.name,
+        description: agent.description,
+        author: 'System',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        version: '1.0.0',
+        systemPrompt: '',
+        llmBridgeName: 'default',
+        llmBridgeConfig: {},
       },
-      createdAt: new Date(),
-    };
-    setMessages([...messages, agentMessage]);
-  };
+      keywords: [],
+      status: 'active',
+      sessionCount: 0,
+      run: async () => ({ messages: [], sessionId: '' }),
+    } as Agent;
 
-  const toggleOrchestrationSteps = (messageId: string) => {
-    setExpandedOrchestrations((prev) => ({
-      ...prev,
-      [messageId]: !prev[messageId],
-    }));
+    if (!activeAgents.find((a) => a.id === newAgent.id)) {
+      setActiveAgents([...activeAgents, newAgent]);
+    }
   };
 
   const handleRemoveAgent = (agentId: string) => {
-    const agent = activeAgents.find((a) => a.id === agentId);
-    if (!agent) return;
-
-    setActiveAgents((prev) => prev.filter((a) => a.id !== agentId));
+    setActiveAgents(activeAgents.filter((a) => a.id !== agentId));
     setSelectedAgentForMenu(null);
+  };
 
-    const leaveMessage: MessageHistory = {
-      messageId: (messages.length + 1).toString(),
-      role: 'system',
-      content: {
-        contentType: 'text',
-        value: `${agent.name}이 대화에서 나갔습니다.`,
-      },
-      createdAt: new Date(),
-    };
-    setMessages([...messages, leaveMessage]);
+  const getAgentColor = (agent: Agent) => {
+    const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500', 'bg-pink-500'];
+    const index = agent.id.charCodeAt(0) % colors.length;
+    return colors[index];
   };
 
   const renderAgentAvatars = () => {
-    const maxVisible = 4;
-    const visibleAgents = activeAgents.slice(0, maxVisible);
-    const remainingCount = Math.max(0, activeAgents.length - maxVisible);
+    const visibleAgents = activeAgents.slice(0, 4);
+    const hiddenCount = Math.max(0, activeAgents.length - 4);
 
     return (
       <div className="flex items-center">
         <div className="flex items-center -space-x-2">
           {/* Main Agent (Orchestrator) */}
-          {orchestrationMode && (
+          {orchestrationMode && mainAgent && (
             <div className="relative w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center border-2 border-white z-50">
               <span className="text-xs text-white">{mainAgent.icon}</span>
               {currentOrchestrationSteps.length > 0 && (
@@ -370,7 +343,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`relative w-8 h-8 p-0 ${orchestrator.getAgentColor(agent)} rounded-full flex items-center justify-center border-2 border-white hover:scale-110 transition-transform`}
+                  className={`relative w-8 h-8 p-0 ${getAgentColor(agent)} rounded-full flex items-center justify-center border-2 border-white hover:scale-110 transition-transform`}
                   style={{ zIndex: visibleAgents.length - index }}
                 >
                   <span className="text-xs text-white">{agent.icon}</span>
@@ -380,7 +353,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                 <div className="p-4 border-b">
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-10 h-10 ${orchestrator.getAgentColor(agent)} rounded-full flex items-center justify-center`}
+                      className={`w-10 h-10 ${getAgentColor(agent)} rounded-full flex items-center justify-center`}
                     >
                       <span className="text-lg text-white">{agent.icon}</span>
                     </div>
@@ -396,75 +369,55 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                     className="w-full flex items-center justify-start gap-2 px-3 py-2 text-sm text-destructive hover:bg-gray-50 cursor-pointer rounded-md transition-colors"
                     onClick={() => handleRemoveAgent(agent.id)}
                   >
-                    <UserMinus className="w-4 h-4" />
-                    Remove from chat
+                    <UserMinus className="w-3 h-3" />
+                    Remove Agent
                   </div>
                 </div>
               </PopoverContent>
             </Popover>
           ))}
 
-          {remainingCount > 0 && (
-            <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center border-2 border-white text-xs text-white font-medium">
-              +{remainingCount}
+          {/* More agents indicator */}
+          {hiddenCount > 0 && (
+            <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center border-2 border-white">
+              <span className="text-xs text-white font-medium">+{hiddenCount}</span>
             </div>
           )}
         </div>
 
-        {showAgentPanel && (
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 w-8 p-0 ml-3 rounded-full">
-                <Plus className="w-4 h-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72 p-0" align="start">
-              <div className="p-3 border-b">
-                <h4 className="font-medium">Add Agent to Chat</h4>
-                <p className="text-xs text-muted-foreground">
-                  {orchestrationMode
-                    ? 'Add specialists that the orchestrator can call upon'
-                    : 'Select an agent to join the conversation'}
-                </p>
-              </div>
-              <div className="max-h-64 overflow-y-auto">
-                {availableAgents
-                  .filter((agent) => !activeAgents.some((a) => a.id === agent.id))
-                  .map((agent) => (
-                    <div
-                      key={agent.id}
-                      className="w-full p-3 hover:bg-gray-50 flex items-center gap-3 cursor-pointer border-b last:border-b-0 transition-colors"
-                      onClick={() => handleAgentSelect(agent)}
-                    >
-                      <div
-                        className={`w-8 h-8 ${orchestrator.getAgentColor(agent)} rounded-full flex items-center justify-center flex-shrink-0`}
-                      >
-                        <span className="text-sm text-white">{agent.icon}</span>
-                      </div>
-                      <div className="flex-1 text-left">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">{agent.name}</span>
-                          <Badge
-                            variant={agent.status === 'active' ? 'default' : 'secondary'}
-                            className="text-xs"
-                          >
-                            {agent.status}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground">{agent.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                {availableAgents.filter((agent) => !activeAgents.some((a) => a.id === agent.id))
-                  .length === 0 && (
-                  <div className="p-4 text-center text-sm text-muted-foreground">
-                    All available agents are already in the chat
+        {/* Add Agent Button */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="sm" className="ml-3 h-8 w-8 p-0">
+              <Plus className="w-3 h-3" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-0" align="start">
+            <div className="p-4 border-b">
+              <h4 className="font-medium">Available Agents</h4>
+              <p className="text-sm text-muted-foreground">
+                Select agents to join the conversation
+              </p>
+            </div>
+            <div className="p-2 space-y-2 max-h-60 overflow-y-auto">
+              {availableAgents.map((agent) => (
+                <div
+                  key={agent.id}
+                  className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                  onClick={() => handleAgentSelect(agent)}
+                >
+                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                    <span className="text-sm">{agent.icon}</span>
                   </div>
-                )}
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm">{agent.name}</div>
+                    <div className="text-xs text-gray-600 truncate">{agent.description}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
     );
   };
@@ -569,118 +522,68 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                     className="h-auto p-4 flex flex-col gap-2"
                     onClick={() => handleQuickAction(action)}
                   >
-                    <action.icon className="w-4 h-4" />
-                    <span className="text-xs font-medium">{action.label}</span>
+                    <action.icon className="w-6 h-6 text-blue-600" />
+                    <div>
+                      <div className="font-medium text-sm">{action.label}</div>
+                      <div className="text-xs text-muted-foreground">{action.description}</div>
+                    </div>
                   </Button>
                 ))}
               </div>
             </div>
           )}
 
-          {messages.map((message: MessageHistory) => (
+          {/* Messages */}
+          {messages.map((message, index) => (
             <MessageRenderer
               key={message.messageId}
               message={message}
-              mode="full"
-              showTimestamp={true}
-              showActions={message.role === 'assistant'}
-              availableAgents={availableAgents}
-              mainAgent={mainAgent}
-              onOrchestrationToggle={toggleOrchestrationSteps}
-              orchestrationSteps={completedOrchestrations[message.messageId]}
-              isOrchestrationExpanded={expandedOrchestrations[message.messageId]}
-              getAgentColor={(agent) => orchestrator.getAgentColor(agent)}
+              showTimestamp={index === messages.length - 1}
+              showAgentBadge={true}
             />
           ))}
 
+          {/* Typing Indicator */}
           {isTyping && (
-            <div className="space-y-4">
-              {/* Orchestration Steps during typing */}
-              {orchestrationMode && currentOrchestrationSteps.length > 0 && (
-                <div className="p-4 rounded-lg border bg-purple-50 border-purple-200 max-w-4xl">
-                  <div className="flex items-start gap-3">
-                    <Brain className="w-6 h-6 text-purple-500 mt-0.5" />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-sm font-medium">AgentOS (Orchestration)</span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date().toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="mt-4 space-y-3">
-                        {currentOrchestrationSteps.map((step) => (
-                          <MessageRenderer
-                            key={step.messageId}
-                            message={step}
-                            mode="compact"
-                            showTimestamp={false}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                <Bot className="w-4 h-4 text-gray-500" />
+              </div>
+              <div className="bg-gray-100 rounded-2xl px-4 py-2">
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]"></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]"></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]"></div>
                 </div>
-              )}
-
-              {/* Typing indicator */}
-              <div className="flex items-center gap-3 text-muted-foreground">
-                {orchestrationMode && currentOrchestrationSteps.length > 0 ? (
-                  <Brain className="w-4 h-4 text-purple-500" />
-                ) : (
-                  <Bot className="w-4 h-4" />
-                )}
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: '0.1s' }}
-                  ></div>
-                  <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: '0.2s' }}
-                  ></div>
-                </div>
-                <span className="text-sm">
-                  {orchestrationMode && currentOrchestrationSteps.length > 0
-                    ? 'AI orchestration in progress...'
-                    : activeAgents.length > 0
-                      ? `${activeAgents.length} agent${activeAgents.length > 1 ? 's' : ''} typing...`
-                      : 'typing...'}
-                </span>
               </div>
             </div>
           )}
         </div>
 
-        {/* Input Area */}
+        {/* Message Input */}
         <div className="border-t bg-white p-4">
-          <div className="flex gap-3">
-            <div className="flex-1 relative">
+          <div className="flex items-end gap-3 max-w-4xl mx-auto">
+            <Button variant="outline" size="sm" className="mb-2">
+              <Paperclip className="w-4 h-4" />
+            </Button>
+
+            <div className="flex-1">
               <Input
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
-                placeholder={
-                  orchestrationMode
-                    ? '질문을 입력하세요... (AI가 단계별로 사고하여 최적의 전문가를 찾아드립니다)'
-                    : '메시지를 입력하세요...'
-                }
-                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                className="pr-12"
+                placeholder="메시지를 입력하세요..."
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                className="resize-none"
               />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-              >
-                <Paperclip className="w-4 h-4" />
-              </Button>
             </div>
+
             <Button
               onClick={handleSendMessage}
-              disabled={!inputMessage.trim()}
-              className="h-10 px-4"
+              disabled={!inputMessage.trim() || isTyping}
+              className="mb-2"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4 mr-2" />
+              전송
             </Button>
           </div>
         </div>
@@ -739,11 +642,13 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                           {isActive ? 'Available' : agent.status}
                         </Badge>
                       </div>
-                      <p className="text-xs text-gray-600 mb-1 font-medium">{agent.preset.name}</p>
+                      <p className="text-xs text-gray-600 mb-1 font-medium">
+                        {agent.preset?.name || 'Default Preset'}
+                      </p>
                       <p className="text-xs text-gray-500 mb-2 leading-relaxed">
                         {agent.description}
                       </p>
-                      {orchestrationMode && (
+                      {orchestrationMode && agent.keywords && (
                         <div className="flex flex-wrap gap-1.5 mt-2">
                           {agent.keywords.slice(0, 3).map((keyword) => (
                             <span

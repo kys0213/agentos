@@ -1,6 +1,6 @@
 import { Button, HStack } from '@chakra-ui/react';
 import React, { useState } from 'react';
-import PresetManager from '../pages/PresetManager';
+import { PresetManager } from './management/PresetManager';
 import ColorModeToggle from './ColorModeToggle';
 import LlmBridgeManager from './LlmBridgeManager';
 import { MCPToolsManager } from './management/McpToolManager';

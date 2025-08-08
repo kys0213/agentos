@@ -7,11 +7,13 @@ AgentOS Core의 MCP 사용량 추적 기능을 Electron Main-Renderer 간 IPC �
 ## 🏗️ 아키텍처 원칙
 
 ### 1. 책임 분리
+
 - **Main Process**: Core MCP 기능 실행, 사용량 추적, 상태 관리
 - **Renderer Process**: UI 표시, 사용자 상호작용
 - **IPC Layer**: 타입 안전한 데이터 전송, 실시간 동기화
 
 ### 2. 데이터 흐름
+
 ```
 ┌─────────────────┐    IPC     ┌─────────────────┐
 │   Renderer      │◄──────────►│   Main Process  │
@@ -27,6 +29,7 @@ AgentOS Core의 MCP 사용량 추적 기능을 Electron Main-Renderer 간 IPC �
 ```
 
 ### 3. 실시간 동기화
+
 - **Push 방식**: Main에서 Renderer로 상태 변경 알림
 - **Pull 방식**: Renderer에서 필요 시 Main에 데이터 요청
 - **Event Subscription**: 사용량 변경 시 즉시 알림
@@ -49,52 +52,56 @@ export interface McpAPI {
   getStatus: (clientName: string) => Promise<{ connected: boolean; error?: string }>;
 
   // ==================== 새로운 사용량 추적 기능들 ====================
-  
+
   /**
    * MCP 도구 메타데이터 조회
    */
   getToolMetadata: (clientName: string) => Promise<McpToolMetadata>;
-  
+
   /**
    * 모든 MCP 도구들의 메타데이터 일괄 조회
    */
   getAllToolMetadata: () => Promise<McpToolMetadata[]>;
-  
+
   /**
    * 특정 도구의 사용량 로그 조회
    */
   getUsageLogs: (clientName: string, options?: UsageLogQueryOptions) => Promise<McpUsageLog[]>;
-  
+
   /**
    * 전체 사용량 로그 조회
    */
   getAllUsageLogs: (options?: UsageLogQueryOptions) => Promise<McpUsageLog[]>;
-  
+
   /**
    * 사용량 통계 조회
    */
   getUsageStats: (clientName?: string) => Promise<McpUsageStats>;
-  
+
   /**
    * 시간별 사용량 통계 조회
    */
   getHourlyStats: (date: Date, clientName?: string) => Promise<Map<number, number>>;
-  
+
   /**
    * 기간별 사용량 로그 조회
    */
-  getUsageLogsInRange: (startDate: Date, endDate: Date, clientName?: string) => Promise<McpUsageLog[]>;
-  
+  getUsageLogsInRange: (
+    startDate: Date,
+    endDate: Date,
+    clientName?: string
+  ) => Promise<McpUsageLog[]>;
+
   /**
    * 사용량 로그 정리
    */
   clearUsageLogs: (olderThan?: Date) => Promise<{ success: boolean; clearedCount: number }>;
-  
+
   /**
    * 사용량 추적 활성화/비활성화
    */
   setUsageTracking: (clientName: string, enabled: boolean) => Promise<{ success: boolean }>;
-  
+
   /**
    * 사용량 변경 이벤트 구독
    */
@@ -214,7 +221,7 @@ export function setupMcpIpcHandlers(window: BrowserWindow) {
       if (!client) {
         throw new Error(`MCP client not found: ${clientName}`);
       }
-      
+
       const metadata = client.getMetadata();
       return metadata;
     } catch (error) {
@@ -237,7 +244,7 @@ export function setupMcpIpcHandlers(window: BrowserWindow) {
           }
         })
       );
-      
+
       return metadataList.filter(Boolean);
     } catch (error) {
       console.error('Failed to get all tool metadata:', error);
@@ -252,31 +259,31 @@ export function setupMcpIpcHandlers(window: BrowserWindow) {
       if (!client) {
         throw new Error(`MCP client not found: ${clientName}`);
       }
-      
+
       let logs = client.getUsageLogs();
-      
+
       // 필터링 및 정렬 적용
       if (options?.status) {
-        logs = logs.filter(log => log.status === options.status);
+        logs = logs.filter((log) => log.status === options.status);
       }
-      
+
       if (options?.agentId) {
-        logs = logs.filter(log => log.agentId === options.agentId);
+        logs = logs.filter((log) => log.agentId === options.agentId);
       }
-      
+
       if (options?.sortOrder === 'asc') {
         logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
       } else {
         logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
       }
-      
+
       // 페이지네이션 적용
       if (options?.offset !== undefined || options?.limit !== undefined) {
         const offset = options.offset || 0;
         const limit = options.limit || 50;
         logs = logs.slice(offset, offset + limit);
       }
-      
+
       return logs;
     } catch (error) {
       console.error('Failed to get usage logs:', error);
@@ -289,7 +296,7 @@ export function setupMcpIpcHandlers(window: BrowserWindow) {
     try {
       const clients = await registry.getAll();
       let allLogs: McpUsageLog[] = [];
-      
+
       for (const client of clients) {
         try {
           const logs = client.getUsageLogs();
@@ -298,10 +305,10 @@ export function setupMcpIpcHandlers(window: BrowserWindow) {
           console.error(`Failed to get logs for ${client.name}:`, error);
         }
       }
-      
+
       // 정렬 및 필터링 로직 적용 (위와 동일)
       // ... 생략 (동일한 필터링 로직)
-      
+
       return allLogs;
     } catch (error) {
       console.error('Failed to get all usage logs:', error);
@@ -321,19 +328,20 @@ export function setupMcpIpcHandlers(window: BrowserWindow) {
       } else {
         // 전체 통계 계산
         const clients = await registry.getAll();
-        const allStats = await Promise.all(
-          clients.map(client => client.getUsageStats())
-        );
-        
+        const allStats = await Promise.all(clients.map((client) => client.getUsageStats()));
+
         // 통계 집계
         const totalUsage = allStats.reduce((sum, stat) => sum + stat.totalUsage, 0);
         const totalErrors = allStats.reduce((sum, stat) => sum + stat.errorCount, 0);
-        const totalDuration = allStats.reduce((sum, stat) => sum + (stat.averageDuration * stat.totalUsage), 0);
+        const totalDuration = allStats.reduce(
+          (sum, stat) => sum + stat.averageDuration * stat.totalUsage,
+          0
+        );
         const lastUsedTimes = allStats
-          .map(stat => stat.lastUsedAt)
+          .map((stat) => stat.lastUsedAt)
           .filter(Boolean)
-          .map(date => date!.getTime());
-          
+          .map((date) => date!.getTime());
+
         return {
           totalUsage,
           successRate: totalUsage > 0 ? (totalUsage - totalErrors) / totalUsage : 0,
@@ -356,10 +364,10 @@ export function setupMcpIpcHandlers(window: BrowserWindow) {
       if (!currentClient) {
         throw new Error(`MCP client not found: ${clientName}`);
       }
-      
+
       // 설정 업데이트 로직 구현 필요
       // (현재 Core에서는 런타임 변경을 지원하지 않으므로 향후 구현)
-      
+
       return { success: true };
     } catch (error) {
       console.error('Failed to set usage tracking:', error);
@@ -372,22 +380,24 @@ export function setupMcpIpcHandlers(window: BrowserWindow) {
     try {
       // 모든 클라이언트의 사용량 변경 이벤트 구독
       const clients = await registry.getAll();
-      
+
       for (const client of clients) {
         if (client.isUsageTrackingEnabled()) {
           // Core에서 이벤트를 발생시키도록 수정 필요
           // 현재는 polling 방식으로 대체
           const subscriptionId = `${client.name}-usage-subscription`;
-          
+
           if (!usageSubscriptions.has(subscriptionId)) {
             let lastUsageCount = client.getMetadata().usageCount;
-            
+
             const checkUsageChanges = () => {
               const currentUsageCount = client.getMetadata().usageCount;
               if (currentUsageCount > lastUsageCount) {
-                const recentLogs = client.getUsageLogs().slice(-(currentUsageCount - lastUsageCount));
-                
-                recentLogs.forEach(log => {
+                const recentLogs = client
+                  .getUsageLogs()
+                  .slice(-(currentUsageCount - lastUsageCount));
+
+                recentLogs.forEach((log) => {
                   broadcastUsageEvent({
                     type: 'usage-logged',
                     clientName: client.name,
@@ -395,17 +405,17 @@ export function setupMcpIpcHandlers(window: BrowserWindow) {
                     timestamp: new Date(),
                   });
                 });
-                
+
                 lastUsageCount = currentUsageCount;
               }
             };
-            
+
             const interval = setInterval(checkUsageChanges, 1000); // 1초마다 체크
             usageSubscriptions.set(subscriptionId, () => clearInterval(interval));
           }
         }
       }
-      
+
       return { success: true };
     } catch (error) {
       console.error('Failed to subscribe to usage updates:', error);
@@ -416,7 +426,7 @@ export function setupMcpIpcHandlers(window: BrowserWindow) {
 
 // 정리 함수
 export function cleanupMcpIpcHandlers() {
-  usageSubscriptions.forEach(unsubscribe => unsubscribe());
+  usageSubscriptions.forEach((unsubscribe) => unsubscribe());
   usageSubscriptions.clear();
   mainWindow = null;
 }
@@ -431,10 +441,10 @@ export function cleanupMcpIpcHandlers() {
 
 import type { IpcChannel } from './ipc/IpcChannel';
 import type { McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
-import type { 
-  McpUsageUpdateEvent, 
+import type {
+  McpUsageUpdateEvent,
   UsageLogQueryOptions,
-  McpUsageDashboard 
+  McpUsageDashboard,
 } from '../../shared/types/mcp-usage-types';
 
 export class McpService {
@@ -477,7 +487,7 @@ export class McpService {
     try {
       this.usageUpdateSubscription = await this.ipcChannel.subscribeToUsageUpdates(
         (event: McpUsageUpdateEvent) => {
-          this.usageUpdateCallbacks.forEach(callback => {
+          this.usageUpdateCallbacks.forEach((callback) => {
             try {
               callback(event);
             } catch (error) {
@@ -493,7 +503,7 @@ export class McpService {
 
   onUsageUpdate(callback: (event: McpUsageUpdateEvent) => void): () => void {
     this.usageUpdateCallbacks.add(callback);
-    
+
     return () => {
       this.usageUpdateCallbacks.delete(callback);
     };
@@ -505,7 +515,7 @@ export class McpService {
     const [globalStats, allMetadata, recentLogs] = await Promise.all([
       this.getUsageStats(),
       this.getAllToolMetadata(),
-      this.getAllUsageLogs({ limit: 50, sortOrder: 'desc' })
+      this.getAllUsageLogs({ limit: 50, sortOrder: 'desc' }),
     ]);
 
     const toolStats = await Promise.all(
@@ -524,26 +534,30 @@ export class McpService {
     }
 
     recentLogs
-      .filter(log => {
+      .filter((log) => {
         const logDate = log.timestamp;
-        return logDate.getDate() === now.getDate() &&
-               logDate.getMonth() === now.getMonth() &&
-               logDate.getFullYear() === now.getFullYear();
+        return (
+          logDate.getDate() === now.getDate() &&
+          logDate.getMonth() === now.getMonth() &&
+          logDate.getFullYear() === now.getFullYear()
+        );
       })
-      .forEach(log => {
+      .forEach((log) => {
         const hour = log.timestamp.getHours();
         hourlyActivity.set(hour, (hourlyActivity.get(hour) || 0) + 1);
       });
 
     // 에러율 높은 도구들
     const problematicTools = toolStats
-      .filter(tool => tool.stats.totalUsage > 0 && tool.stats.errorCount > 0)
-      .map(tool => ({
+      .filter((tool) => tool.stats.totalUsage > 0 && tool.stats.errorCount > 0)
+      .map((tool) => ({
         clientName: tool.clientName,
         errorRate: tool.stats.errorCount / tool.stats.totalUsage,
-        lastError: recentLogs
-          .filter(log => log.toolId === tool.metadata.id && log.status === 'error')
-          .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0]?.error || 'Unknown error'
+        lastError:
+          recentLogs
+            .filter((log) => log.toolId === tool.metadata.id && log.status === 'error')
+            .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0]?.error ||
+          'Unknown error',
       }))
       .sort((a, b) => b.errorRate - a.errorRate)
       .slice(0, 5);
@@ -576,7 +590,7 @@ export interface IpcChannel {
   // ... 기존 메서드들 ...
 
   // ==================== MCP 사용량 추적 메서드들 ====================
-  
+
   getToolMetadata(clientName: string): Promise<McpToolMetadata>;
   getAllToolMetadata(): Promise<McpToolMetadata[]>;
   getUsageLogs(clientName: string, options?: UsageLogQueryOptions): Promise<McpUsageLog[]>;
@@ -642,7 +656,7 @@ export function McpUsageDashboard() {
         <div>Success Rate: {(dashboard.globalStats.successRate * 100).toFixed(1)}%</div>
         <div>Average Duration: {dashboard.globalStats.averageDuration.toFixed(0)}ms</div>
       </div>
-      
+
       {/* 시간별 차트, 도구별 통계, 최근 로그 등 UI 컴포넌트들 */}
     </div>
   );
