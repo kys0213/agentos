@@ -14,6 +14,7 @@ import {
   Image as ImageIcon,
   Link,
   Plus,
+  RefreshCw,
   Search,
   Settings,
   TrendingUp,
@@ -30,6 +31,8 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { ServiceContainer } from '../../services/ServiceContainer';
+import type { McpService } from '../../services/mcp-service';
 
 /**
  * GUI-specific extension of Core McpToolMetadata
@@ -56,133 +59,107 @@ export function MCPToolsManager() {
   const [usageLogs, setUsageLogs] = useState<GuiMcpUsageLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Mock data initialization
+  // Helper function to get icon for category
+  const getIconForCategory = (category: string): React.ReactNode => {
+    switch (category) {
+      case 'search':
+        return <Globe className="w-5 h-5" />;
+      case 'development':
+        return <Code className="w-5 h-5" />;
+      case 'creative':
+        return <ImageIcon className="w-5 h-5" />;
+      case 'data':
+        return <Database className="w-5 h-5" />;
+      case 'productivity':
+        return <FileText className="w-5 h-5" />;
+      case 'analytics':
+        return <BarChart3 className="w-5 h-5" />;
+      default:
+        return <Wrench className="w-5 h-5" />;
+    }
+  };
+
+  // Load data from ServiceContainer
   useEffect(() => {
-    setTimeout(() => {
-      const mockTools: GuiMcpTool[] = [
-        {
-          id: 'web-search',
-          name: 'Web Search',
-          description: 'Search the web for current information and news',
-          category: 'search',
-          status: 'connected',
-          version: '2.1.0',
-          provider: 'SearchAPI',
-          lastUsedAt: new Date(Date.now() - 1000 * 60 * 30),
-          usageCount: 245,
-          endpoint: 'https://api.searchapi.com/v2',
-          permissions: ['search', 'read'],
-          icon: <Globe className="w-5 h-5" />,
-        },
-        {
-          id: 'code-executor',
-          name: 'Code Executor',
-          description: 'Execute Python, JavaScript, and other code snippets safely',
-          category: 'development',
-          status: 'connected',
-          version: '1.5.2',
-          provider: 'CodeSandbox',
-          lastUsedAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-          usageCount: 89,
-          permissions: ['execute', 'file-system'],
-          icon: <Code className="w-5 h-5" />,
-        },
-        {
-          id: 'image-generator',
-          name: 'Image Generator',
-          description: 'Generate images from text descriptions using AI',
-          category: 'creative',
-          status: 'error',
-          version: '3.0.1',
-          provider: 'DALL-E API',
-          lastUsedAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-          usageCount: 156,
-          permissions: ['generate', 'read'],
-          icon: <ImageIcon className="w-5 h-5" />,
-        },
-        {
-          id: 'database-query',
-          name: 'Database Query',
-          description: 'Query SQL databases and retrieve structured data',
-          category: 'data',
-          status: 'connected',
-          version: '4.2.1',
-          provider: 'PostgreSQL',
-          lastUsedAt: new Date(Date.now() - 1000 * 60 * 15),
-          usageCount: 67,
-          permissions: ['read', 'write', 'admin'],
-          icon: <Database className="w-5 h-5" />,
-        },
-        {
-          id: 'file-processor',
-          name: 'File Processor',
-          description: 'Process various file formats (PDF, DOC, CSV, etc.)',
-          category: 'productivity',
-          status: 'pending',
-          version: '2.3.0',
-          provider: 'FileStack',
-          usageCount: 34,
-          permissions: ['read', 'write'],
-          icon: <FileText className="w-5 h-5" />,
-        },
-        {
-          id: 'analytics-api',
-          name: 'Analytics API',
-          description: 'Advanced data analytics and visualization tools',
-          category: 'analytics',
-          status: 'disconnected',
-          version: '1.8.5',
-          provider: 'Google Analytics',
-          lastUsedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-          usageCount: 123,
-          permissions: ['read'],
-          icon: <BarChart3 className="w-5 h-5" />,
-        },
-      ];
+    const loadMcpData = async () => {
+      try {
+        setIsLoading(true);
+        
+        if (ServiceContainer.has('mcp')) {
+          const mcpService = ServiceContainer.get<McpService>('mcp');
+          
+          try {
+            // Get all MCP tool metadata
+            const mcpTools = await mcpService.getAllToolMetadata();
+            
+            // Convert Core McpToolMetadata to GUI format with icons
+            const guiTools: GuiMcpTool[] = mcpTools.map((tool) => ({
+              ...tool,
+              icon: getIconForCategory(tool.category || 'other'),
+            }));
+            
+            setTools(guiTools);
+            
+            // Get usage logs if available
+            try {
+              const logs = await mcpService.getAllUsageLogs({ limit: 50 });
+              setUsageLogs(logs);
+            } catch (logError) {
+              console.warn('Usage logs not available:', logError);
+              setUsageLogs([]);
+            }
+            
+          } catch (mcpError) {
+            console.warn('MCP tools not available:', mcpError);
+            
+            // Fallback to sample data when MCP service has no tools
+            const fallbackTools: GuiMcpTool[] = [
+              {
+                id: 'web-search',
+                name: 'Web Search',
+                description: 'Search the web for current information and news',
+                category: 'search',
+                status: 'disconnected',
+                version: '2.1.0',
+                provider: 'SearchAPI',
+                usageCount: 0,
+                endpoint: 'https://api.searchapi.com/v2',
+                permissions: ['search', 'read'],
+                icon: <Globe className="w-5 h-5" />,
+              },
+              {
+                id: 'code-executor',
+                name: 'Code Executor',
+                description: 'Execute Python, JavaScript, and other code snippets safely',
+                category: 'development',
+                status: 'disconnected',
+                version: '1.5.2',
+                provider: 'CodeSandbox',
+                usageCount: 0,
+                permissions: ['execute', 'file-system'],
+                icon: <Code className="w-5 h-5" />,
+              },
+            ];
+            
+            setTools(fallbackTools);
+            setUsageLogs([]);
+          }
+        } else {
+          console.warn('MCP service not available in ServiceContainer');
+          setTools([]);
+          setUsageLogs([]);
+        }
+        
+      } catch (error) {
+        console.error('Failed to load MCP data:', error);
+        setTools([]);
+        setUsageLogs([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-      const mockLogs: GuiMcpUsageLog[] = [
-        {
-          id: 'log-1',
-          toolId: 'web-search',
-          toolName: 'Web Search',
-          agentId: 'agent-1',
-          agentName: 'Research Assistant',
-          action: 'search',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30),
-          duration: 2340,
-          status: 'success',
-          parameters: { query: 'latest AI developments 2024' },
-        },
-        {
-          id: 'log-2',
-          toolId: 'code-executor',
-          toolName: 'Code Executor',
-          agentId: 'agent-2',
-          agentName: 'Code Assistant',
-          action: 'execute',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-          duration: 5670,
-          status: 'success',
-          parameters: { language: 'python', code: 'data_analysis.py' },
-        },
-        {
-          id: 'log-3',
-          toolId: 'image-generator',
-          toolName: 'Image Generator',
-          agentId: 'agent-3',
-          agentName: 'Content Writer',
-          action: 'generate',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-          duration: 0,
-          status: 'error',
-          parameters: { prompt: 'futuristic city skyline' },
-        },
-      ];
-
-      setTools(mockTools);
-      setUsageLogs(mockLogs);
-      setIsLoading(false);
-    }, 800);
+    loadMcpData();
   }, []);
 
   const categories = [
@@ -261,6 +238,80 @@ export function MCPToolsManager() {
     return `${days}d ago`;
   };
 
+  // Tool management handlers
+  const handleConnectTool = async (toolId: string) => {
+    try {
+      if (ServiceContainer.has('mcp')) {
+        const mcpService = ServiceContainer.get<McpService>('mcp');
+        
+        // Find the tool configuration
+        const tool = tools.find(t => t.id === toolId);
+        if (tool) {
+          // Create a basic MCP config for the tool
+          const mcpConfig = {
+            type: 'streamableHttp' as const,
+            name: tool.name,
+            version: tool.version,
+            url: tool.endpoint || 'https://api.example.com/mcp',
+          };
+          
+          // Connect the tool
+          await mcpService.connect(mcpConfig);
+          
+          // Update local state
+          setTools(prev => prev.map(t => 
+            t.id === toolId ? { ...t, status: 'connected' } : t
+          ));
+        }
+      }
+    } catch (error) {
+      console.error('Failed to connect tool:', error);
+      // Update tool status to error
+      setTools(prev => prev.map(t => 
+        t.id === toolId ? { ...t, status: 'error' } : t
+      ));
+    }
+  };
+
+  const handleDisconnectTool = async (toolId: string) => {
+    try {
+      if (ServiceContainer.has('mcp')) {
+        const mcpService = ServiceContainer.get<McpService>('mcp');
+        
+        // Disconnect the tool
+        await mcpService.disconnect(toolId);
+        
+        // Update local state
+        setTools(prev => prev.map(t => 
+          t.id === toolId ? { ...t, status: 'disconnected' } : t
+        ));
+      }
+    } catch (error) {
+      console.error('Failed to disconnect tool:', error);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsLoading(true);
+    try {
+      if (ServiceContainer.has('mcp')) {
+        const mcpService = ServiceContainer.get<McpService>('mcp');
+        const mcpTools = await mcpService.getAllToolMetadata();
+        
+        const guiTools: GuiMcpTool[] = mcpTools.map((tool) => ({
+          ...tool,
+          icon: getIconForCategory(tool.category || 'other'),
+        }));
+        
+        setTools(guiTools);
+      }
+    } catch (error) {
+      console.error('Failed to refresh tools:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const connectedTools = tools.filter((t) => t.status === 'connected').length;
   const errorTools = tools.filter((t) => t.status === 'error').length;
   const totalUsage = tools.reduce((sum, tool) => sum + tool.usageCount, 0);
@@ -276,10 +327,16 @@ export function MCPToolsManager() {
               Manage Model Context Protocol tools and integrations
             </p>
           </div>
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            Add Tool
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" className="gap-2" onClick={handleRefresh}>
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              Add Tool
+            </Button>
+          </div>
         </div>
 
         {/* Quick Stats */}
@@ -533,6 +590,11 @@ export function MCPToolsManager() {
                                 <Button
                                   variant={tool.status === 'connected' ? 'destructive' : 'default'}
                                   size="sm"
+                                  onClick={() => 
+                                    tool.status === 'connected' 
+                                      ? handleDisconnectTool(tool.id)
+                                      : handleConnectTool(tool.id)
+                                  }
                                 >
                                   {tool.status === 'connected' ? (
                                     <>
