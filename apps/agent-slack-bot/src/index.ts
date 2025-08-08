@@ -1,7 +1,7 @@
 import { App, GenericMessageEvent, StaticSelectAction } from '@slack/bolt';
 import path from 'path';
 import { McpRegistry, FileBasedPresetRepository } from '@agentos/core';
-import { InMemoryLlmBridgeRegistry } from '@agentos/llm-bridge-runner';
+import { DependencyBridgeLoader } from 'llm-bridge-loader';
 import { Message } from 'llm-bridge-spec';
 import { getSettingsBlocks } from './settings-block';
 import { PresetService } from './preset-service';
@@ -60,7 +60,7 @@ app.message(async ({ message, say }) => {
 
   // Placeholder: initialize AgentOS components
   const mcpRegistry = new McpRegistry();
-  const llmBridgeRegistry = new InMemoryLlmBridgeRegistry();
+  const llmBridgeLoader = new DependencyBridgeLoader();
   const messages: Message[] = [
     {
       role: 'user',
