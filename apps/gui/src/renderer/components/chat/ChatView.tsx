@@ -62,39 +62,39 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
         // TODO: Load available agents from actual agent service when available
         // For now, provide mock structure to maintain UI functionality
         const mockAvailableAgents = [
-          { 
-            id: '1', 
-            name: 'Data Analyst', 
-            icon: '📊', 
+          {
+            id: '1',
+            name: 'Data Analyst',
+            icon: '📊',
             description: 'Data analysis expert',
             status: 'active',
             preset: { name: 'Data Analysis' },
-            keywords: ['data', 'analysis', 'visualization']
+            keywords: ['data', 'analysis', 'visualization'],
           },
-          { 
-            id: '2', 
-            name: 'Code Reviewer', 
-            icon: '🔍', 
+          {
+            id: '2',
+            name: 'Code Reviewer',
+            icon: '🔍',
             description: 'Code review specialist',
             status: 'active',
             preset: { name: 'Code Review' },
-            keywords: ['code', 'review', 'quality']
+            keywords: ['code', 'review', 'quality'],
           },
-          { 
-            id: '3', 
-            name: 'Writer', 
-            icon: '✍️', 
+          {
+            id: '3',
+            name: 'Writer',
+            icon: '✍️',
             description: 'Writing assistant',
             status: 'active',
             preset: { name: 'Writing' },
-            keywords: ['writing', 'content', 'documentation']
+            keywords: ['writing', 'content', 'documentation'],
           },
         ];
         setAvailableAgents(mockAvailableAgents);
-        
+
         const mockMainAgent = { id: 'main', name: 'AgentOS', icon: '🤖' };
         setMainAgent(mockMainAgent);
-        
+
         // Initialize with welcome message
         const welcomeMessage: MessageHistory = {
           messageId: '1',
@@ -157,15 +157,17 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
     } catch (error) {
       console.error('Failed to load chat messages:', error);
       // Fallback to basic message
-      setMessages([{
-        messageId: '1',
-        role: 'assistant',
-        content: {
-          contentType: 'text',
-          value: '대화를 불러오는 중에 문제가 발생했습니다.',
+      setMessages([
+        {
+          messageId: '1',
+          role: 'assistant',
+          content: {
+            contentType: 'text',
+            value: '대화를 불러오는 중에 문제가 발생했습니다.',
+          },
+          createdAt: new Date(),
         },
-        createdAt: new Date(),
-      }]);
+      ]);
     }
   };
 
@@ -173,7 +175,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
     try {
       const newSession = await chatService.createSession();
       setSelectedChat(newSession);
-      
+
       const welcomeMessage: MessageHistory = {
         messageId: '1',
         role: 'assistant',
@@ -211,7 +213,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
       // Send message through real service if chat is selected
       if (selectedChat) {
         const response = await chatService.sendMessage(selectedChat.sessionId, currentQuery);
-        
+
         const assistantMessage: MessageHistory = {
           messageId: (messages.length + 2).toString(),
           role: 'assistant',
@@ -224,7 +226,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
 
         setTimeout(() => {
           setIsTyping(false);
-          setMessages(prev => [...prev, assistantMessage]);
+          setMessages((prev) => [...prev, assistantMessage]);
         }, 1500);
       } else {
         // Fallback response when no chat is selected
@@ -239,7 +241,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
             },
             createdAt: new Date(),
           };
-          setMessages(prev => [...prev, fallbackResponse]);
+          setMessages((prev) => [...prev, fallbackResponse]);
         }, 1000);
       }
     } catch (error) {
@@ -255,7 +257,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
           },
           createdAt: new Date(),
         };
-        setMessages(prev => [...prev, errorMessage]);
+        setMessages((prev) => [...prev, errorMessage]);
       }, 1000);
     }
   };
@@ -297,13 +299,13 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
       run: async () => ({ messages: [], sessionId: '' }),
     } as Agent;
 
-    if (!activeAgents.find(a => a.id === newAgent.id)) {
+    if (!activeAgents.find((a) => a.id === newAgent.id)) {
       setActiveAgents([...activeAgents, newAgent]);
     }
   };
 
   const handleRemoveAgent = (agentId: string) => {
-    setActiveAgents(activeAgents.filter(a => a.id !== agentId));
+    setActiveAgents(activeAgents.filter((a) => a.id !== agentId));
     setSelectedAgentForMenu(null);
   };
 
@@ -393,7 +395,9 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
           <PopoverContent className="w-80 p-0" align="start">
             <div className="p-4 border-b">
               <h4 className="font-medium">Available Agents</h4>
-              <p className="text-sm text-muted-foreground">Select agents to join the conversation</p>
+              <p className="text-sm text-muted-foreground">
+                Select agents to join the conversation
+              </p>
             </div>
             <div className="p-2 space-y-2 max-h-60 overflow-y-auto">
               {availableAgents.map((agent) => (
@@ -562,7 +566,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
             <Button variant="outline" size="sm" className="mb-2">
               <Paperclip className="w-4 h-4" />
             </Button>
-            
+
             <div className="flex-1">
               <Input
                 value={inputMessage}
@@ -573,7 +577,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
               />
             </div>
 
-            <Button 
+            <Button
               onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isTyping}
               className="mb-2"
@@ -584,7 +588,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
           </div>
         </div>
       </div>
-      
+
       {/* Agent Selection Panel */}
       {showAgentPanel && (
         <div className="w-80 bg-muted flex flex-col border-l border-gray-100">
@@ -638,7 +642,9 @@ const ChatView: React.FC<ChatViewProps> = ({ onNavigate }) => {
                           {isActive ? 'Available' : agent.status}
                         </Badge>
                       </div>
-                      <p className="text-xs text-gray-600 mb-1 font-medium">{agent.preset?.name || 'Default Preset'}</p>
+                      <p className="text-xs text-gray-600 mb-1 font-medium">
+                        {agent.preset?.name || 'Default Preset'}
+                      </p>
                       <p className="text-xs text-gray-500 mb-2 leading-relaxed">
                         {agent.description}
                       </p>

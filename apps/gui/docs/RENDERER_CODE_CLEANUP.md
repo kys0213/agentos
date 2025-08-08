@@ -9,19 +9,22 @@ This document describes the comprehensive code cleanup performed on the `@apps/g
 ### Files Removed (19 total)
 
 #### **Duplicate Pages Components** (3 files)
+
 - `pages/McpList.tsx` - Replaced by `components/management/McpToolManager`
-- `pages/McpSettings.tsx` - Replaced by `components/management/McpToolManager`  
+- `pages/McpSettings.tsx` - Replaced by `components/management/McpToolManager`
 - `pages/PresetManager.tsx` - Replaced by `components/management/PresetManager`
 
 **Reason**: These were legacy Chakra UI-based components replaced by modern shadcn/ui-based components in the management folder.
 
 #### **Unused Bridge Implementations** (2 files)
+
 - `bridges/EchoBridge.ts`
 - `bridges/ReverseBridge.ts`
 
 **Reason**: No imports found across the codebase. These were likely experimental implementations that are no longer needed.
 
 #### **Deprecated Utilities** (3 files)
+
 - `utils/chat-manager.ts` - Already marked as deprecated
 - `utils/mcp-loader.ts` - Deprecated in favor of ServiceContainer
 - `utils/BridgeManager.ts` - Deprecated in favor of direct BridgeService usage
@@ -29,6 +32,7 @@ This document describes the comprehensive code cleanup performed on the `@apps/g
 **Reason**: All these utilities were explicitly marked as deprecated with comments directing users to use ServiceContainer or direct service access instead.
 
 #### **Mock Services** (5 files)
+
 - `services/mock/index.ts`
 - `services/mock/mock-agent-orchestrator.ts`
 - `services/mock/mock-available-agents.ts`
@@ -38,6 +42,7 @@ This document describes the comprehensive code cleanup performed on the `@apps/g
 **Reason**: These mock services were not imported or used anywhere in the codebase after the MCP Core integration.
 
 #### **Obsolete Test Files** (2 files)
+
 - `__tests__/mcp-config-store.test.ts` - Tests for deprecated utilities
 - `__tests__/mcp-list.test.tsx` - Tests for removed components
 
@@ -46,24 +51,29 @@ This document describes the comprehensive code cleanup performed on the `@apps/g
 ### Files Updated (4 total)
 
 #### **SettingsMenu.tsx**
+
 - **Change**: Updated import from `../pages/PresetManager` to `./management/PresetManager`
 - **Reason**: Use the modern management component instead of the deprecated pages version
 
 #### **SettingsContainer.tsx**
+
 - **Change**: Commented out imports of deleted pages components and replaced with placeholder text
 - **Reason**: Temporary solution until management components are fully integrated
 
 #### **ChatHistory.tsx**
+
 - **Change**: Removed import of deleted mock service `getChatSessions`
 - **Reason**: Service no longer exists, replaced with empty array placeholder
 
 #### **ChatView.tsx**
+
 - **Change**: Complete rewrite to show "Under Development" message
 - **Reason**: Previous implementation relied heavily on deleted mock services; simpler to provide placeholder until proper integration
 
 ### Files Preserved
 
 #### **message-parser.ts**
+
 - **Status**: Kept - actively used by MessageRenderer component
 - **Usage**: Provides utility functions for parsing message content
 
@@ -86,6 +96,7 @@ This document describes the comprehensive code cleanup performed on the `@apps/g
 ### Breaking Changes
 
 **None** - All removed code was either:
+
 - Already deprecated with migration paths documented
 - Unused (no imports found)
 - Duplicated by better implementations
@@ -93,11 +104,13 @@ This document describes the comprehensive code cleanup performed on the `@apps/g
 ## 📋 Remaining TODO Items
 
 ### Short Term
+
 1. **Integrate Management Components**: Replace placeholder text in SettingsContainer with actual management components
 2. **Restore Chat Functionality**: Implement ChatView with proper MCP Core integration
 3. **Update Tests**: Add tests for new management components
 
 ### Long Term
+
 1. **Service Layer Consolidation**: Complete migration to ServiceContainer pattern
 2. **Component Library Standardization**: Ensure all components use shadcn/ui consistently
 3. **Documentation Updates**: Update component documentation to reflect new architecture
@@ -109,15 +122,17 @@ This document describes the comprehensive code cleanup performed on the `@apps/g
 If you were using any of the removed components:
 
 #### Pages Components
+
 ```typescript
 // ❌ Old (removed)
 import PresetManager from '../pages/PresetManager';
 
-// ✅ New (recommended)  
+// ✅ New (recommended)
 import { PresetManager } from '../components/management/PresetManager';
 ```
 
 #### Deprecated Utilities
+
 ```typescript
 // ❌ Old (removed)
 import { createChatManager } from '../utils/chat-manager';
@@ -129,6 +144,7 @@ const chatService = ServiceContainer.get('chat');
 ```
 
 #### Mock Services
+
 ```typescript
 // ❌ Old (removed)
 import { getChatSessions } from '../services/mock';
@@ -142,6 +158,7 @@ const sessions = await chatService.listSessions();
 ### For Testing
 
 If you had tests using removed utilities:
+
 ```typescript
 // ❌ Old (removed)
 import { loadMcpFromStore } from '../utils/mcp-loader';

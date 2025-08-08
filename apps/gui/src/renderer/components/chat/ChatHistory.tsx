@@ -37,7 +37,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
   // Refactored to use actual chat service instead of mock data
   const [chatSessions, setChatSessions] = useState<ChatSessionMetadata[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const chatService = ServiceContainer.get<ChatService>('chat');
 
   // Load chat sessions from actual service
