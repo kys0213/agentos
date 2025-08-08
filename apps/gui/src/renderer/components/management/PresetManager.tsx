@@ -8,10 +8,12 @@ import {
   Edit,
   Eye,
   Filter,
+  Heart,
   Layers,
   Plus,
   Search,
   Settings,
+  Star,
   Upload,
   User,
 } from 'lucide-react';
@@ -20,130 +22,73 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
-
-// Types based on the core interface
-interface Preset {
-  id: string;
-  name: string;
-  description: string;
-  author: string;
-  createdAt: Date;
-  updatedAt: Date;
-  version: string;
-  systemPrompt: string;
-  enabledMcps?: EnabledMcp[];
-  llmBridgeName: string;
-  llmBridgeConfig: Record<string, unknown>;
-}
-
-interface EnabledMcp {
-  name: string;
-  version?: string;
-  enabledTools: string[];
-  enabledResources: string[];
-  enabledPrompts: string[];
-}
+import { useAppData } from '../../hooks/useAppData';
+import type { DesignPreset } from '../../types/design-types';
 
 export function PresetManager() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  
+  // Use real data from ServiceContainer
+  const { 
+    presets, 
+    loading,
+    handleCreatePreset, 
+    handleUpdatePreset, 
+    handleDeletePreset
+  } = useAppData();
 
-  const presets: Preset[] = [
-    {
-      id: '1',
-      name: 'Data Analysis Expert',
-      description: 'Specialized in data analysis, visualization, and statistical computing',
-      author: 'System',
-      createdAt: new Date('2024-01-15'),
-      updatedAt: new Date('2024-01-20'),
-      version: '1.2.0',
-      systemPrompt: 'You are a data analysis expert...',
-      llmBridgeName: 'openai-gpt4',
-      llmBridgeConfig: { temperature: 0.1, max_tokens: 2000 },
-      enabledMcps: [
-        {
-          name: 'python-executor',
-          enabledTools: ['execute_python', 'install_package'],
-          enabledResources: ['data_files'],
-          enabledPrompts: ['analysis_template'],
-        },
-      ],
-    },
-    {
-      id: '2',
-      name: 'Code Review Specialist',
-      description: 'Expert in code quality, security analysis, and best practices',
-      author: 'DevTeam',
-      createdAt: new Date('2024-01-10'),
-      updatedAt: new Date('2024-01-18'),
-      version: '2.1.0',
-      systemPrompt: 'You are a senior software engineer...',
-      llmBridgeName: 'openai-gpt4',
-      llmBridgeConfig: { temperature: 0.2, max_tokens: 3000 },
-      enabledMcps: [
-        {
-          name: 'github-integration',
-          enabledTools: ['analyze_pr', 'suggest_changes'],
-          enabledResources: ['code_repositories'],
-          enabledPrompts: ['review_template'],
-        },
-      ],
-    },
-    {
-      id: '3',
-      name: 'Creative Writer',
-      description: 'Specialized in creative writing, storytelling, and content creation',
-      author: 'ContentTeam',
-      createdAt: new Date('2024-01-12'),
-      updatedAt: new Date('2024-01-19'),
-      version: '1.0.0',
-      systemPrompt: 'You are a creative writing assistant...',
-      llmBridgeName: 'openai-gpt4',
-      llmBridgeConfig: { temperature: 0.8, max_tokens: 4000 },
-      enabledMcps: [],
-    },
-    {
-      id: '4',
-      name: 'Research Assistant',
-      description: 'Expert in research, fact-checking, and information synthesis',
-      author: 'Research',
-      createdAt: new Date('2024-01-08'),
-      updatedAt: new Date('2024-01-22'),
-      version: '1.5.0',
-      systemPrompt: 'You are a research specialist...',
-      llmBridgeName: 'anthropic-claude',
-      llmBridgeConfig: { temperature: 0.3, max_tokens: 3500 },
-      enabledMcps: [
-        {
-          name: 'web-search',
-          enabledTools: ['search_web', 'fetch_content'],
-          enabledResources: ['web_sources'],
-          enabledPrompts: ['research_template'],
-        },
-      ],
-    },
-  ];
-
+  // Generate categories from real data
   const categories = [
     { id: 'all', label: 'All Presets', count: presets.length },
-    { id: 'data', label: 'Data & Analytics', count: 1 },
-    { id: 'development', label: 'Development', count: 1 },
-    { id: 'creative', label: 'Creative', count: 1 },
-    { id: 'research', label: 'Research', count: 1 },
+    { id: 'favorites', label: 'Favorites', count: presets.filter(p => p.usageCount && p.usageCount > 5).length },
+    { id: 'recent', label: 'Recently Used', count: presets.filter(p => {
+      if (!p.updatedAt) return false;
+      return Date.now() - p.updatedAt.getTime() < 7 * 24 * 60 * 60 * 1000;
+    }).length },
+    { id: 'active', label: 'Active', count: presets.filter(p => p.status === 'active').length },
   ];
 
   const filteredPresets = presets.filter((preset) => {
     const matchesSearch =
       preset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       preset.description.toLowerCase().includes(searchQuery.toLowerCase());
-    // Simple category filtering - in real app this would be more sophisticated
+    
+    // Category filtering based on real data
+    if (selectedCategory === 'all') return matchesSearch;
+    if (selectedCategory === 'favorites') return matchesSearch && preset.usageCount && preset.usageCount > 5;
+    if (selectedCategory === 'recent') {
+      if (!preset.updatedAt) return false;
+      return matchesSearch && Date.now() - preset.updatedAt.getTime() < 7 * 24 * 60 * 60 * 1000;
+    }
+    if (selectedCategory === 'active') return matchesSearch && preset.status === 'active';
+    
     return matchesSearch;
   });
 
-  const getModelIcon = (bridgeName: string) => {
+  const getModelIcon = (bridgeName?: string) => {
+    if (!bridgeName) return <Code className="w-4 h-4" />;
     if (bridgeName.includes('gpt')) return <Bot className="w-4 h-4" />;
     if (bridgeName.includes('claude')) return <Cpu className="w-4 h-4" />;
     return <Code className="w-4 h-4" />;
+  };
+  
+  const toggleFavorite = async (preset: DesignPreset) => {
+    const updatedPreset = { 
+      ...preset, 
+      usageCount: (preset.usageCount || 0) + (preset.usageCount && preset.usageCount > 5 ? -1 : 1)
+    };
+    await handleUpdatePreset(updatedPreset);
+  };
+  
+  const handleCreateNewPreset = async () => {
+    const newPreset = handleCreatePreset({
+      name: 'New Preset',
+      description: 'A new preset for AI agents',
+      category: 'general',
+      status: 'active'
+    });
+    console.log('Created preset:', newPreset);
   };
 
   const formatDate = (date: Date) => {
@@ -154,9 +99,50 @@ export function PresetManager() {
     }).format(date);
   };
 
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-semibold">Preset Manager</h1>
+            <p className="text-muted-foreground">Loading preset configurations...</p>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-sm">Loading...</span>
+          </div>
+        </div>
+        
+        {/* Loading skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Card key={index} className="p-6">
+              <div className="animate-pulse">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+                    <div>
+                      <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+                      <div className="h-3 bg-gray-200 rounded w-16"></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="h-12 bg-gray-200 rounded mb-4"></div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-200 rounded"></div>
+                  <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
+      {/* Header with Loading State */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Preset Manager</h1>
@@ -169,7 +155,7 @@ export function PresetManager() {
             <Upload className="w-4 h-4" />
             Import
           </Button>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={handleCreateNewPreset}>
             <Plus className="w-4 h-4" />
             New Preset
           </Button>
@@ -213,22 +199,60 @@ export function PresetManager() {
 
       {/* Presets Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredPresets.map((preset) => (
-          <Card key={preset.id} className="p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Layers className="w-6 h-6 text-blue-600" />
+        {filteredPresets.length === 0 ? (
+          // Empty state
+          <div className="col-span-full flex flex-col items-center justify-center py-12">
+            <Layers className="w-12 h-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No presets found</h3>
+            <p className="text-muted-foreground mb-4">
+              {searchQuery ? 'Try adjusting your search terms' : 'Create your first preset to get started'}
+            </p>
+            {!searchQuery && (
+              <Button onClick={handleCreateNewPreset} className="gap-2">
+                <Plus className="w-4 h-4" />
+                Create First Preset
+              </Button>
+            )}
+          </div>
+        ) : (
+          filteredPresets.map((preset) => (
+            <Card key={preset.id} className="p-6 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center relative">
+                    <Layers className="w-6 h-6 text-blue-600" />
+                    {preset.usageCount && preset.usageCount > 5 && (
+                      <Heart className="w-3 h-3 text-red-500 absolute -top-1 -right-1 fill-current" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">{preset.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs text-muted-foreground">v{preset.version}</p>
+                      {preset.usageCount && preset.usageCount > 0 && (
+                        <Badge variant="secondary" className="text-xs">
+                          {preset.usageCount} uses
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold">{preset.name}</h3>
-                  <p className="text-xs text-muted-foreground">v{preset.version}</p>
+                <div className="flex items-center gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0"
+                    onClick={() => toggleFavorite(preset)}
+                  >
+                    <Star className={`w-4 h-4 ${
+                      preset.usageCount && preset.usageCount > 5 ? 'text-yellow-500 fill-current' : 'text-muted-foreground'
+                    }`} />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Settings className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Settings className="w-4 h-4" />
-              </Button>
-            </div>
 
             <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{preset.description}</p>
 
@@ -236,9 +260,9 @@ export function PresetManager() {
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Model</span>
                 <div className="flex items-center gap-1">
-                  {getModelIcon(preset.llmBridgeName)}
+                  {getModelIcon(preset.llmBridgeName || preset.model)}
                   <span className="font-medium text-xs">
-                    {preset.llmBridgeName.replace('-', ' ').toUpperCase()}
+                    {(preset.llmBridgeName || preset.model || 'Default').replace('-', ' ').toUpperCase()}
                   </span>
                 </div>
               </div>
@@ -285,8 +309,9 @@ export function PresetManager() {
                 <Edit className="w-3 h-3" />
               </Button>
             </div>
-          </Card>
-        ))}
+            </Card>
+          ))
+        )}
       </div>
 
       {/* Quick Stats */}
@@ -305,14 +330,14 @@ export function PresetManager() {
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-              <CheckCircle2 className="w-4 h-4 text-green-600" />
+            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+              <Heart className="w-4 h-4 text-red-600" />
             </div>
             <div>
               <p className="text-sm font-semibold">
-                {presets.filter((p) => p.enabledMcps?.length).length}
+                {presets.filter((p) => p.usageCount && p.usageCount > 5).length}
               </p>
-              <p className="text-xs text-muted-foreground">With MCP Tools</p>
+              <p className="text-xs text-muted-foreground">Favorites</p>
             </div>
           </div>
         </Card>
@@ -323,7 +348,9 @@ export function PresetManager() {
               <Bot className="w-4 h-4 text-purple-600" />
             </div>
             <div>
-              <p className="text-sm font-semibold">3</p>
+              <p className="text-sm font-semibold">
+                {new Set(presets.map(p => p.llmBridgeName || p.model).filter(Boolean)).size}
+              </p>
               <p className="text-xs text-muted-foreground">Model Types</p>
             </div>
           </div>
@@ -336,11 +363,9 @@ export function PresetManager() {
             </div>
             <div>
               <p className="text-sm font-semibold">
-                {
-                  presets.filter(
-                    (p) => Date.now() - p.updatedAt.getTime() < 7 * 24 * 60 * 60 * 1000
-                  ).length
-                }
+                {presets.filter((p) => 
+                  p.updatedAt && Date.now() - p.updatedAt.getTime() < 7 * 24 * 60 * 60 * 1000
+                ).length}
               </p>
               <p className="text-xs text-muted-foreground">Recent Updates</p>
             </div>
