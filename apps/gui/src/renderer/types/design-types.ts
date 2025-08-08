@@ -33,7 +33,16 @@ export interface DesignPreset extends CorePreset {
     vectorized: number;
     totalSize: number;
   };
-  // status는 이미 Core에 있으므로 재정의하지 않음
+  // 새 디자인에서 사용하는 추가 필드들 (Core Preset에 없음)
+  category?: string;
+  model?: string;
+  parameters?: {
+    temperature: number;
+    maxTokens: number;
+    topP: number;
+  };
+  tools?: string[];
+  status?: "active" | "idle" | "inactive";
 }
 
 /**
@@ -195,11 +204,11 @@ export interface UseAppDataReturn {
   setShowEmptyState: (show: boolean) => void;
   handleUpdateAgentStatus: (agentId: string, status: DesignAgent['status']) => void;
   handleCreatePreset: (preset: Partial<DesignPreset>) => DesignPreset;
-  handleCreateMCPTool: (mcpConfig: CoreMcpConfig) => unknown;
+  handleCreateMCPTool: (mcpConfig: CoreMcpConfig) => Promise<unknown>;
   handleCreateAgent: (agent: Partial<DesignAgent>) => DesignAgent;
   handleCreateCustomTool: (toolData: unknown) => unknown;
-  handleUpdatePreset: (preset: DesignPreset) => void;
-  handleDeletePreset: (presetId: string) => void;
+  handleUpdatePreset: (preset: DesignPreset) => Promise<void>;
+  handleDeletePreset: (presetId: string) => Promise<void>;
   getMentionableAgents: () => DesignAgent[];
   getActiveAgents: () => DesignAgent[];
 }
