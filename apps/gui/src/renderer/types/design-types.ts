@@ -202,6 +202,7 @@ export interface UseAppDataReturn {
   currentAgents: DesignAgent[];
   showEmptyState: boolean;
   setShowEmptyState: (show: boolean) => void;
+  loading: boolean; // 로딩 상태 추가
   handleUpdateAgentStatus: (agentId: string, status: DesignAgent['status']) => void;
   handleCreatePreset: (preset: Partial<DesignPreset>) => DesignPreset;
   handleCreateMCPTool: (mcpConfig: CoreMcpConfig) => Promise<unknown>;

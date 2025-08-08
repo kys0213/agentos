@@ -223,6 +223,7 @@ export function useAppData(): UseAppDataReturn {
     currentAgents: agentsToShow,
     showEmptyState,
     setShowEmptyState,
+    loading, // 로딩 상태 추가
     handleUpdateAgentStatus,
     handleCreatePreset,
     handleCreateMCPTool,
