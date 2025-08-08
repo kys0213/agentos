@@ -12,6 +12,7 @@ import { getPageTitle } from '../../utils/appUtils';
 // TODO: These will be replaced with actual migrated components
 import ChatView from '../chat/ChatView';
 import ManagementView from '../management/ManagementView';
+import Sidebar from '../management/Sidebar';
 
 /**
  * New App Layout - 새 디자인 기반으로 완전히 재작성된 버전
@@ -166,35 +167,12 @@ const NewAppLayout: React.FC = () => {
   // Management Mode: Traditional sidebar + content layout
   return (
     <div className="flex h-screen bg-background">
-      {/* TODO: Replace with new design Sidebar in Phase 2 */}
+      {/* ✅ New design Sidebar - migrated in TODO 5/12 */}
       {!isInDetailView() && (
-        <div className="w-64 bg-card border-r">
-          {/* Temporary placeholder for Sidebar */}
-          <div className="p-4">
-            <h3 className="font-semibold mb-4">Navigation</h3>
-            <div className="space-y-2">
-              {[
-                { key: 'dashboard', label: 'Dashboard' },
-                { key: 'presets', label: 'Presets' },
-                { key: 'subagents', label: 'Sub Agents' },
-                { key: 'models', label: 'Models' },
-                { key: 'tools', label: 'Tools' },
-                { key: 'toolbuilder', label: 'Tool Builder' },
-                { key: 'racp', label: 'RACP' },
-                { key: 'settings', label: 'Settings' },
-              ].map(item => (
-                <Button
-                  key={item.key}
-                  variant={activeSection === item.key ? 'default' : 'ghost'}
-                  className="w-full justify-start"
-                  onClick={() => setActiveSection(item.key as any)}
-                >
-                  {item.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
+        <Sidebar 
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+        />
       )}
       
       <main className="flex-1 overflow-hidden flex flex-col">
