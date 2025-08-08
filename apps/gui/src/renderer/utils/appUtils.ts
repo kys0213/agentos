@@ -15,7 +15,7 @@ export const getPageTitle = (
   if (creatingPreset) {
     return 'Create Preset';
   }
-  
+
   if (creatingMCPTool) {
     return 'Create MCP Tool';
   }
@@ -27,21 +27,31 @@ export const getPageTitle = (
   if (creatingCustomTool) {
     return 'Create Custom Tool';
   }
-  
+
   if (selectedPreset) {
     return selectedPreset.name;
   }
-  
+
   switch (activeSection) {
-    case 'dashboard': return 'Dashboard';
-    case 'presets': return 'Presets';
-    case 'subagents': return 'Sub Agents';
-    case 'models': return 'Models';
-    case 'tools': return 'Tools';
-    case 'toolbuilder': return 'Tool Builder';
-    case 'racp': return 'RACP';
-    case 'settings': return 'Settings';
-    case 'chat': return 'Chat';
-    default: return '';
+    case 'dashboard':
+      return 'Dashboard';
+    case 'presets':
+      return 'Presets';
+    case 'subagents':
+      return 'Sub Agents';
+    case 'models':
+      return 'Models';
+    case 'tools':
+      return 'Tools';
+    case 'toolbuilder':
+      return 'Tool Builder';
+    case 'racp':
+      return 'RACP';
+    case 'settings':
+      return 'Settings';
+    case 'chat':
+      return 'Chat';
+    default:
+      return '';
   }
 };

@@ -42,7 +42,7 @@ export interface DesignPreset extends CorePreset {
     topP: number;
   };
   tools?: string[];
-  status?: "active" | "idle" | "inactive";
+  status?: 'active' | 'idle' | 'inactive';
 }
 
 /**
@@ -55,7 +55,7 @@ export interface DesignAgent {
   name: string;
   description: string;
   category: string;
-  status: "active" | "idle" | "inactive";
+  status: 'active' | 'idle' | 'inactive';
   preset: string; // Preset ID 참조 (CorePreset.id와 매핑)
   // UI 전용 필드들
   avatar?: string;
@@ -76,16 +76,16 @@ export interface DesignChatAgent {
 /**
  * 앱 섹션 타입 확장 - 새 디자인의 모든 섹션 포함
  */
-export type AppSection = 
-  | "dashboard" 
-  | "chat" 
-  | "subagents" 
-  | "presets" 
-  | "models" 
-  | "tools" 
-  | "toolbuilder" 
-  | "racp" 
-  | "settings";
+export type AppSection =
+  | 'dashboard'
+  | 'chat'
+  | 'subagents'
+  | 'presets'
+  | 'models'
+  | 'tools'
+  | 'toolbuilder'
+  | 'racp'
+  | 'settings';
 
 /**
  * 네비게이션 상태 관리를 위한 타입들
@@ -118,10 +118,10 @@ export interface AppDataState {
 
 // ===== Core 타입들 재export (호환성을 위해) =====
 
-export type { 
+export type {
   CorePreset,
   CoreMcpConfig,
-  ChatSessionMetadata, 
+  ChatSessionMetadata,
   MessageHistory,
   ChatSessionDescription,
   SendMessageResponse,
@@ -147,7 +147,7 @@ export type CoreToDesignPreset<T extends CorePreset> = T & {
  * Design Preset을 Core Preset으로 변환 (UI 전용 필드 제거)
  */
 export type DesignToCorePreset<T extends DesignPreset> = Omit<
-  T, 
+  T,
   'usageCount' | 'knowledgeDocuments' | 'knowledgeStats'
 >;
 
@@ -164,7 +164,7 @@ export interface UseAppNavigationReturn {
   creatingMCPTool: boolean;
   creatingAgent: boolean;
   creatingCustomTool: boolean;
-  
+
   // 액션들
   setActiveSection: (section: AppSection) => void;
   handleBackToChat: () => void;
@@ -177,7 +177,7 @@ export interface UseAppNavigationReturn {
   handleStartCreateMCPTool: () => void;
   handleStartCreateAgent: () => void;
   handleStartCreateCustomTool: () => void;
-  
+
   // 유틸리티
   isInDetailView: () => boolean;
 }
