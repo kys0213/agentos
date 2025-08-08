@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppModeState } from '../../types/chat-types';
+import { AppSection } from '../../types/design-types';
 import Sidebar from './Sidebar';
 import { Button } from '../ui/button';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
@@ -11,8 +11,8 @@ import { MCPToolsManager } from './McpToolManager';
 import ChatView from '../chat/ChatView';
 
 interface ManagementViewProps {
-  activeSection: AppModeState['activeSection'];
-  onSectionChange: (section: AppModeState['activeSection']) => void;
+  activeSection: AppSection;
+  onSectionChange: (section: AppSection) => void;
   onBackToChat: () => void;
   onOpenChat?: (agentId?: number, agentName?: string, agentPreset?: string) => void;
 }
@@ -46,13 +46,18 @@ const ManagementView: React.FC<ManagementViewProps> = ({
         return <ModelManager />;
       case 'tools':
         return <MCPToolsManager />;
+      case 'toolbuilder':
+        return (
+          <div className="p-6">
+            <h1 className="text-2xl font-semibold">Tool Builder</h1>
+            <p className="text-muted-foreground">Custom tool creation interface coming soon...</p>
+          </div>
+        );
       case 'racp':
         return (
           <div className="p-6">
             <h1 className="text-2xl font-semibold">RACP</h1>
-            <p className="text-muted-foreground">
-              Remote Agent Call Protocol settings coming soon...
-            </p>
+            <p className="text-muted-foreground">Remote Agent Call Protocol settings coming soon...</p>
           </div>
         );
       case 'settings':

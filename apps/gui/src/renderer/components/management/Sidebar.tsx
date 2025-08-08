@@ -1,54 +1,101 @@
-import React from 'react';
-import { AppModeState } from '../../types/chat-types';
+import React, { useState } from 'react';
+import { AppSection } from '../../types/design-types';
 import { Button } from '../ui/button';
-import { Home, Layers, Bot, Cpu, Wrench, Network, Settings, MessageSquare } from 'lucide-react';
+import { 
+  Home, 
+  MessageSquare, 
+  Users, 
+  Settings, 
+  Zap, 
+  Bot,
+  Cpu,
+  Wrench,
+  Shield,
+  Plus,
+  Hammer,
+  Network
+} from 'lucide-react';
 
 interface SidebarProps {
-  activeSection: AppModeState['activeSection'];
-  onSectionChange: (section: AppModeState['activeSection']) => void;
+  activeSection: AppSection;
+  onSectionChange: (section: AppSection) => void;
 }
 
 /**
- * 관리 화면용 사이드바
+ * Modern collapsible sidebar with AgentOS branding
+ * Migrated from new design to replace the existing management sidebar
+ * Maintains compatibility with ServiceContainer and Core types
  */
 const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   const menuItems = [
-    { id: 'chat', label: 'Chat', icon: MessageSquare },
     { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'presets', label: 'Presets', icon: Layers },
-    { id: 'subagents', label: 'Agents', icon: Bot },
+    { id: 'chat', label: 'Chat', icon: MessageSquare },
+    { id: 'subagents', label: 'Sub Agents', icon: Users },
+    { id: 'presets', label: 'Presets', icon: Bot },
     { id: 'models', label: 'Models', icon: Cpu },
     { id: 'tools', label: 'Tools', icon: Wrench },
-    { id: 'racp', label: 'RACP', icon: Network },
+    { id: 'toolbuilder', label: 'Tool Builder', icon: Hammer },
+    { id: 'racp', label: 'RACP', icon: Shield },
     { id: 'settings', label: 'Settings', icon: Settings },
   ] as const;
 
   return (
-    <div className="w-64 bg-gray-50 border-r border-gray-100 flex flex-col">
-      <div className="p-4 border-b bg-white">
-        <h2 className="font-semibold text-lg">Management</h2>
-        <p className="text-sm text-muted-foreground">System configuration</p>
+    <div className={`bg-sidebar border-r border-sidebar-border transition-all duration-200 flex flex-col relative ${
+      isCollapsed ? 'w-16' : 'w-64'
+    }`}>
+      {/* AgentOS Brand Header */}
+      <div className="p-4 border-b border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center">
+            <Zap className="w-4 h-4 text-sidebar-primary-foreground" />
+          </div>
+          {!isCollapsed && (
+            <div>
+              <h1 className="font-semibold text-sidebar-foreground">AgentOS</h1>
+              <p className="text-xs text-sidebar-foreground/60">MCP Host Platform</p>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="flex-1 p-4">
-        <nav className="space-y-2">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeSection === item.id;
+      {/* Navigation Menu */}
+      <nav className="flex-1 p-4 space-y-2">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeSection === item.id;
+          
+          return (
+            <Button
+              key={item.id}
+              variant={isActive ? "default" : "ghost"}
+              className={`w-full justify-start gap-3 transition-colors ${
+                isActive 
+                  ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90" 
+                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              } ${isCollapsed ? 'px-3' : 'px-3'}`}
+              onClick={() => onSectionChange(item.id)}
+              title={isCollapsed ? item.label : undefined}
+            >
+              <Icon className="w-4 h-4 flex-shrink-0" />
+              {!isCollapsed && <span>{item.label}</span>}
+            </Button>
+          );
+        })}
+      </nav>
 
-            return (
-              <Button
-                key={item.id}
-                variant={isActive ? 'default' : 'ghost'}
-                className="w-full justify-start gap-3"
-                onClick={() => onSectionChange(item.id)}
-              >
-                <Icon className="w-4 h-4" />
-                {item.label}
-              </Button>
-            );
-          })}
-        </nav>
+      {/* Collapse Toggle */}
+      <div className="p-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="w-full text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? <Plus className="w-4 h-4" /> : "Collapse"}
+        </Button>
       </div>
     </div>
   );
