@@ -34,7 +34,8 @@ export class IpcChannelFactory {
     }
 
     const environment = this.detectEnvironment();
-    console.log(`Detected environment: ${environment}`);
+    const envInfo = this.getEnvironmentInfo();
+    console.log(`Detected environment: ${environment}`, envInfo);
 
     switch (environment) {
       case 'electron':
@@ -50,9 +51,15 @@ export class IpcChannelFactory {
         break;
 
       case 'web':
+        // web 환경에서는 실제 백엔드 서버와 연결할 WebIpcChannel을 사용
+        // 개발 중에는 MockIpcChannel 사용 (환경변수로 제어)
+        if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+          this._instance = new MockIpcChannel();
+        } else {
+          this._instance = new WebIpcChannel();
+        }
+        break;
       default:
-        // web 환경에서는 개발 중이므로 MockIpcChannel 사용
-        // 프로덕션에서는 실제 백엔드 서버와 연결할 WebIpcChannel을 사용
         this._instance = new MockIpcChannel();
         break;
     }
@@ -103,12 +110,27 @@ export class IpcChannelFactory {
   private static isElectronEnvironment(): boolean {
     try {
       // window.electronAPI가 존재하는지 확인
-      return (
+      const hasElectronAPI = 
         typeof window !== 'undefined' &&
         window.electronAPI !== undefined &&
-        typeof window.electronAPI === 'object'
-      );
-    } catch {
+        typeof window.electronAPI === 'object';
+      
+      // 추가 검증: process.type이 'renderer'인지 확인
+      const isRenderer = 
+        typeof process !== 'undefined' && 
+        process.type === 'renderer';
+      
+      const result = hasElectronAPI || isRenderer;
+      console.log('Electron environment check:', {
+        hasElectronAPI,
+        isRenderer,
+        result,
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
+      });
+      
+      return result;
+    } catch (error) {
+      console.log('Electron environment check failed:', error);
       return false;
     }
   }

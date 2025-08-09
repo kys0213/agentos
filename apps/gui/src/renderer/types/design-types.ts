@@ -126,7 +126,8 @@ export interface UseAppDataReturn {
   currentAgents: ReadonlyAgentMetadata[];
   showEmptyState: boolean;
   setShowEmptyState: (show: boolean) => void;
-  loading: boolean; // 로딩 상태 추가
+  loading: boolean; // 로딩 상태
+  error: Error | null; // 에러 상태 추가
   handleUpdateAgentStatus: (agentId: string, status: Agent['status']) => Promise<void>;
   handleCreatePreset: (preset: Partial<ReadonlyPreset>) => Promise<ReadonlyPreset>;
   handleCreateMCPTool: (mcpConfig: McpConfig) => Promise<unknown>;
