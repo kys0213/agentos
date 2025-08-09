@@ -13,7 +13,7 @@
 ### 사용 시나리오
 
 - [ ] **Navigation State**: 앱 섹션 간 전환, 모달/디테일 뷰 상태 관리
-- [ ] **Chat State**: 채팅 세션 활성화/최소화, 멀티 채팅 관리 
+- [ ] **Chat State**: 채팅 세션 활성화/최소화, 멀티 채팅 관리
 - [ ] **Data State**: Core 서비스를 통한 Preset, Agent, Tool 데이터 조회/변경
 - [ ] **Service Integration**: ServiceContainer를 통한 의존성 주입 및 IPC 통신
 - [ ] **Type Safety**: @agentos/core 타입 시스템과의 완전한 호환성
@@ -29,12 +29,7 @@
 
 ```typescript
 // Core 타입 직접 활용
-import { 
-  Preset, 
-  AgentMetadata, 
-  ChatSessionMetadata, 
-  MessageHistory 
-} from '@agentos/core';
+import { Preset, AgentMetadata, ChatSessionMetadata, MessageHistory } from '@agentos/core';
 
 // UI 전용 확장 타입들
 interface GuiPreset extends Preset {
@@ -61,7 +56,7 @@ interface UseAppNavigationReturn {
   selectedPreset: Preset | null;
   creatingPreset: boolean;
   isInDetailView: () => boolean;
-  
+
   // 액션들
   setActiveSection: (section: AppSection) => void;
   handleBackToChat: () => void;
@@ -72,12 +67,12 @@ interface UseAppDataReturn {
   // Core 서비스 연동 데이터
   presets: Preset[];
   agents: AgentMetadata[];
-  
+
   // 서비스 액션들
   createPreset: (preset: Omit<Preset, 'id'>) => Promise<Preset>;
   updatePreset: (preset: Preset) => Promise<void>;
   deletePreset: (id: string) => Promise<void>;
-  
+
   // 로딩 상태
   isLoading: boolean;
   error: Error | null;
@@ -87,7 +82,7 @@ interface UseChatStateReturn {
   // 채팅 UI 상태만
   activeChatAgent: ChatAgent | null;
   minimizedChats: ChatAgent[];
-  
+
   // 채팅 UI 액션들
   openChat: (agentId: string) => void;
   closeChat: () => void;
@@ -103,7 +98,7 @@ interface UseChatStateReturn {
 - [x] **[TODO 1/8]** Design 타입들을 @agentos/core 타입으로 마이그레이션
 - [x] **[TODO 2/8]** Mock 데이터 의존성 제거 및 Core 서비스 연동 준비
 
-### Phase 2: 데이터 레이어 분리 (1일) 
+### Phase 2: 데이터 레이어 분리 (1일)
 
 - [x] **[TODO 3/8]** useAppData를 ServiceContainer 기반으로 재작성
 - [x] **[TODO 4/8]** 비즈니스 로직을 Service 레이어로 이동
@@ -172,7 +167,9 @@ export function useAppData() {
 // ❌ 혼재된 Hook (개선 대상)
 export function useAppData() {
   const [data, setData] = useState(mockData); // Mock 의존성
-  const handleCreate = (item) => { /* 비즈니스 로직 */ }; // UI Hook에서 처리
+  const handleCreate = (item) => {
+    /* 비즈니스 로직 */
+  }; // UI Hook에서 처리
 }
 ```
 
@@ -183,7 +180,7 @@ export function useAppData() {
 export function usePresetData() {
   const presetService = ServiceContainer.get<PresetService>('preset');
   const bridgeService = ServiceContainer.get<BridgeService>('bridge');
-  
+
   return useQuery('presets', () => presetService.getAll());
 }
 
@@ -205,7 +202,9 @@ export function useAppData() {
 }
 
 // ❌ 커스텀 타입 중복 정의
-interface CustomPreset { /* ... */ } // Core와 중복
+interface CustomPreset {
+  /* ... */
+} // Core와 중복
 ```
 
 ## 검증 체크리스트
@@ -253,3 +252,15 @@ interface CustomPreset { /* ... */ } // Core와 중복
 - **기능 보존**: 기존 UI 동작은 모두 유지
 - **타입 호환성**: Core 타입과의 완전한 호환성 보장
 - **서비스 레이어 활용**: 기존 아키텍처 패턴 준수
+
+## 최종 검증 결과 (Step 8)
+
+- 타입체크: 워크스페이스 전체 통과 (`pnpm -w typecheck`)
+- 린트: 에러 0, 경고 다수(주로 any/unused). 기능 차단 아님. 후속 정리 이슈로 분리 권장 (`pnpm -w lint`)
+- 빌드: 모든 패키지 성공. GUI 번들 용량 경고 있음(코드 스플리팅 검토 권장) (`pnpm -w build`)
+- 테스트: 실패 0. `packages/core` 5 passed / 1 skipped, `apps/gui` 2 passed / 1 skipped, `apps/agent-slack-bot` 3 passed (`pnpm -w test`)
+- 저장소 상태: 디자인 목업 산출물 정리(언트래킹 파일 제거) 후 문서만 변경됨
+
+추가 개선 제안
+- 린트 경고 제거(Explicit any/unused 정리) 작업을 별도 PR로 진행
+- GUI 번들 코드 스플리팅 적용(동적 import, manualChunks)으로 용량 경고 해소
