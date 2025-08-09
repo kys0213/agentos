@@ -262,5 +262,6 @@ interface CustomPreset {
 - 저장소 상태: 디자인 목업 산출물 정리(언트래킹 파일 제거) 후 문서만 변경됨
 
 추가 개선 제안
+
 - 린트 경고 제거(Explicit any/unused 정리) 작업을 별도 PR로 진행
 - GUI 번들 코드 스플리팅 적용(동적 import, manualChunks)으로 용량 경고 해소
