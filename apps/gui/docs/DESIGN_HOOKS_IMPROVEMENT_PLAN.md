@@ -110,8 +110,8 @@ interface UseChatStateReturn {
 
 ### Phase 3: UI 상태 관리 최적화 (1일)
 
-- [ ] **[TODO 5/8]** useAppNavigation을 순수 UI 상태 관리로 개선
-- [ ] **[TODO 6/8]** useChatState를 채팅 UI 상태 전용으로 개선
+- [x] **[TODO 5/8]** useAppNavigation을 순수 UI 상태 관리로 개선
+- [x] **[TODO 6/8]** useChatState를 채팅 UI 상태 전용으로 개선
 
 ### Phase 4: 통합 및 검증 (0.5일)
 
@@ -140,9 +140,9 @@ interface UseChatStateReturn {
 
 **완료 조건**: Navigation과 Chat hooks가 순수 UI 상태만 관리하고, 명확한 책임 분리가 이루어짐
 
-- useAppNavigation을 네비게이션 상태 전용으로 정리
-- useChatState를 채팅 UI 상태 전용으로 정리
-- 불필요한 상태 중복 제거
+- ✅ useAppNavigation을 네비게이션 상태 전용으로 정리 (useCallback 메모이제이션)
+- ✅ useChatState를 채팅 UI 상태 전용으로 정리 (Core 타입 직접 사용)
+- ✅ 불필요한 상태 중복 제거 및 성능 최적화
 
 ### 4단계: 통합 및 검증 (TODO 7-8)
 
