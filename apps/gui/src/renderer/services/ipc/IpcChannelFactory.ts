@@ -110,24 +110,22 @@ export class IpcChannelFactory {
   private static isElectronEnvironment(): boolean {
     try {
       // window.electronAPI가 존재하는지 확인
-      const hasElectronAPI = 
+      const hasElectronAPI =
         typeof window !== 'undefined' &&
         window.electronAPI !== undefined &&
         typeof window.electronAPI === 'object';
-      
+
       // 추가 검증: process.type이 'renderer'인지 확인
-      const isRenderer = 
-        typeof process !== 'undefined' && 
-        process.type === 'renderer';
-      
+      const isRenderer = typeof process !== 'undefined' && process.type === 'renderer';
+
       const result = hasElectronAPI || isRenderer;
       console.log('Electron environment check:', {
         hasElectronAPI,
         isRenderer,
         result,
-        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
       });
-      
+
       return result;
     } catch (error) {
       console.log('Electron environment check failed:', error);
