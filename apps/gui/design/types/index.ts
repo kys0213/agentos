@@ -1,4 +1,4 @@
-// Core 타입들을 직접 사용 - renderer/types/design-types.ts와 동일한 패턴
+// Core 타입을 직접 사용
 import type { Preset, AgentMetadata, ReadonlyAgentMetadata, KnowledgeState } from '@agentos/core';
 
 // Core 타입 재내보내기
@@ -11,6 +11,7 @@ export interface ChatAgent {
   preset: string;
 }
 
+// AppSection - 애플리케이션 섹션 타입 (두 위치에서 사용되므로 유지)
 export type AppSection =
   | 'dashboard'
   | 'chat'

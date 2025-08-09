@@ -1,16 +1,21 @@
 /**
- * 새 디자인 타입들을 기존 Core 타입과 매핑하는 호환성 레이어
- * Design/types를 Core 타입과 통합하여 타입 안전성 보장
+ * UI 상태 관리 및 디자인 타입들
+ * Core 타입을 직접 활용하여 타입 안전성 보장
+ * chat-types.ts 내용 통합
  */
 
 import type {
   Agent,
   ChatSessionMetadata,
+  MessageHistory,
   McpConfig,
   Preset,
   ReadonlyAgentMetadata,
   ReadonlyPreset,
 } from '@agentos/core';
+
+// Core 타입 re-export (chat-types.ts에서 이동)
+export type { ChatSessionMetadata, MessageHistory };
 
 /**
  * 앱 섹션 타입
@@ -27,6 +32,21 @@ export type AppSection =
   | 'settings';
 
 export type MinimizedAgent = Pick<ReadonlyAgentMetadata, 'id' | 'name' | 'icon'>;
+
+// QuickAction 타입 (chat-types.ts에서 이동)
+export interface QuickAction {
+  id: string;
+  label: string;
+  icon: React.ComponentType<Record<string, unknown>>;
+  description: string;
+  category: 'chat' | 'management' | 'settings' | 'navigation';
+}
+
+// 앱 모드 상태 관리 (chat-types.ts에서 이동)
+export interface AppModeState {
+  mode: 'chat' | 'management';
+  activeSection: AppSection;
+}
 
 /**
  * 네비게이션 상태 관리를 위한 타입들
