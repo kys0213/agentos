@@ -1,11 +1,9 @@
 ---
-
 title: Android, iOS 웹뷰에서 딥링크 열기
 description: 각 딥링크 유형의 특징과 차이점을 자세히 알아보고, Android와 iOS 웹뷰에서 딥링크로 국내 카드앱·은행앱으로 이동하는 예시를 살펴볼게요.
 keyword: 딥링크, 모바일, URL 스킴, 웹뷰, android, ios
 publishedAt: 2023-3-27
 thumbnailSrc: https://static.toss.im/assets/payments/contents/payments-thumb-7.jpg
-
 ---
 
 # Android, iOS 웹뷰에서 딥링크 열기
