@@ -76,8 +76,8 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
   } = appData;
 
   // Create handlers that combine navigation and data operations (like design/App.tsx)
-  const onCreatePreset = (newPreset: any) => {
-    const preset = handleCreatePreset(newPreset);
+  const onCreatePreset = async (newPreset: any) => {
+    const preset = await handleCreatePreset(newPreset);
     handleSelectPreset(preset);
     return preset;
   };

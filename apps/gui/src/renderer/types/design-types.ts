@@ -127,11 +127,11 @@ export interface UseAppDataReturn {
   showEmptyState: boolean;
   setShowEmptyState: (show: boolean) => void;
   loading: boolean; // 로딩 상태 추가
-  handleUpdateAgentStatus: (agentId: string, status: Agent['status']) => void;
-  handleCreatePreset: (preset: Partial<ReadonlyPreset>) => ReadonlyPreset;
+  handleUpdateAgentStatus: (agentId: string, status: Agent['status']) => Promise<void>;
+  handleCreatePreset: (preset: Partial<ReadonlyPreset>) => Promise<ReadonlyPreset>;
   handleCreateMCPTool: (mcpConfig: McpConfig) => Promise<unknown>;
-  handleCreateAgent: (agent: Partial<ReadonlyAgentMetadata>) => ReadonlyAgentMetadata;
-  handleCreateCustomTool: (toolData: unknown) => unknown;
+  handleCreateAgent: (agent: Partial<ReadonlyAgentMetadata>) => Promise<ReadonlyAgentMetadata>;
+  handleCreateCustomTool: (toolData: unknown) => Promise<unknown>;
   handleUpdatePreset: (preset: Preset) => Promise<void>;
   handleDeletePreset: (presetId: string) => Promise<void>;
   getMentionableAgents: () => ReadonlyAgentMetadata[];
