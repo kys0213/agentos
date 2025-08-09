@@ -12,6 +12,7 @@ import type {
   PaginationOptions,
   LlmBridgeConfig,
   McpToolArgs,
+  AgentMetadata,
 } from '../../types/core-types';
 import type { McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
 import type {
@@ -591,5 +592,66 @@ export class MockIpcChannel implements IpcChannel {
     }, 2000);
 
     return () => clearInterval(interval);
+  }
+
+  // ==================== Agent 관련 메서드들 (Mock 구현) ====================
+
+  private mockAgents: AgentMetadata[] = [];
+
+  async getAllAgents(): Promise<AgentMetadata[]> {
+    await this.delay();
+    return this.mockAgents;
+  }
+
+  async createAgent(agent: AgentMetadata): Promise<{ success: boolean }> {
+    await this.delay();
+    this.mockAgents.push({
+      ...agent,
+      lastUsed: new Date(),
+    });
+    return { success: true };
+  }
+
+  async updateAgent(agent: AgentMetadata): Promise<{ success: boolean }> {
+    await this.delay();
+
+    const index = this.mockAgents.findIndex((a) => a.id === agent.id);
+    if (index !== -1) {
+      this.mockAgents[index] = {
+        ...agent,
+      };
+      return { success: true };
+    }
+
+    return { success: false };
+  }
+
+  async deleteAgent(id: string): Promise<{ success: boolean }> {
+    await this.delay();
+
+    const index = this.mockAgents.findIndex((a) => a.id === id);
+    if (index !== -1) {
+      this.mockAgents.splice(index, 1);
+      return { success: true };
+    }
+
+    return { success: false };
+  }
+
+  async getAgent(id: string): Promise<AgentMetadata | null> {
+    await this.delay();
+    return this.mockAgents.find((a) => a.id === id) || null;
+  }
+
+  async getAvailableAgents(): Promise<AgentMetadata[]> {
+    await this.delay();
+    return this.mockAgents.filter((agent) => 
+      agent.status === 'active' || agent.status === 'idle'
+    );
+  }
+
+  async getActiveAgents(): Promise<AgentMetadata[]> {
+    await this.delay();
+    return this.mockAgents.filter((agent) => agent.status === 'active');
   }
 }

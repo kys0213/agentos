@@ -5,6 +5,7 @@ import { ChatService } from './services/chat-service';
 import { BridgeService } from './services/bridge-service';
 import { McpService } from './services/mcp-service';
 import { PresetService } from './services/preset-service';
+import { AgentService } from './services/agent-service';
 
 /**
  * Bootstrap 결과 타입
@@ -15,6 +16,7 @@ export interface BootstrapResult {
   bridgeService: BridgeService;
   mcpService: McpService;
   presetService: PresetService;
+  agentService: AgentService;
 }
 
 /**
@@ -33,6 +35,7 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
   const bridgeService = new BridgeService(channel);
   const mcpService = new McpService(channel);
   const presetService = new PresetService(channel);
+  const agentService = new AgentService(channel);
 
   console.log('⚙️ All services created with IpcChannel dependency injection');
 
@@ -42,6 +45,7 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
   ServiceContainer.register('bridge', bridgeService);
   ServiceContainer.register('mcp', mcpService);
   ServiceContainer.register('preset', presetService);
+  ServiceContainer.register('agent', agentService);
 
   console.log('📦 All services registered in ServiceContainer');
   console.log('✅ Bootstrap completed successfully');
@@ -55,6 +59,7 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
     bridgeService,
     mcpService,
     presetService,
+    agentService,
   };
 }
 
@@ -67,6 +72,7 @@ export const Services = {
   getBridge: (): BridgeService => ServiceContainer.get<BridgeService>('bridge'),
   getMcp: (): McpService => ServiceContainer.get<McpService>('mcp'),
   getPreset: (): PresetService => ServiceContainer.get<PresetService>('preset'),
+  getAgent: (): AgentService => ServiceContainer.get<AgentService>('agent'),
   getIpcChannel: (): IpcChannel => ServiceContainer.get<IpcChannel>('ipcChannel'),
 } as const;
 
@@ -74,7 +80,7 @@ export const Services = {
  * Bootstrap이 완료되었는지 확인하는 함수
  */
 export function isBootstrapped(): boolean {
-  const requiredServices = ['chat', 'bridge', 'mcp', 'preset', 'ipcChannel'];
+  const requiredServices = ['chat', 'bridge', 'mcp', 'preset', 'agent', 'ipcChannel'];
   return requiredServices.every((service) => ServiceContainer.has(service));
 }
 

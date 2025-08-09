@@ -6,7 +6,7 @@ import { McpConfig } from '../components/MCPToolAdd';
 
 // ServiceContainer와 서비스들 import (renderer와 동일한 패턴)
 import { ServiceContainer } from '../../src/renderer/services/ServiceContainer';
-import type { PresetService, McpService } from '../../src/renderer/types/core-types';
+import type { PresetService, McpService, AgentService } from '../../src/renderer/types/core-types';
 import type { UseAppDataReturn } from '../../src/renderer/types/design-types';
 
 /**
@@ -33,9 +33,15 @@ export function useAppData(): UseAppDataReturn {
           setPresets(corePresets);
         }
 
-        // TODO: Agent 데이터는 현재 Core에 없으므로 임시로 빈 배열
-        // 실제로는 AgentManager나 별도 서비스에서 로드해야 함
-        setAgents([]);
+        // AgentService를 통해 Agent 데이터 로드
+        if (ServiceContainer.has('agent')) {
+          const agentService = ServiceContainer.get<AgentService>('agent');
+          const coreAgents = await agentService.getAll();
+          setAgents(coreAgents);
+        } else {
+          // Agent 서비스가 없는 경우 빈 배열
+          setAgents([]);
+        }
       } catch (err) {
         const errorObj = err instanceof Error ? err : new Error(String(err));
         console.error('Failed to load app data:', errorObj);
@@ -107,7 +113,7 @@ export function useAppData(): UseAppDataReturn {
       throw new Error('Preset is required');
     }
 
-    // TODO: Agent는 현재 Core에 없으므로 클라이언트 상태로만 관리
+    // AgentService를 통해 Agent 생성
     const agent: AgentMetadata = {
       id: `agent-${Date.now()}`,
       name: newAgentData.name || '',
@@ -120,6 +126,13 @@ export function useAppData(): UseAppDataReturn {
       sessionCount: 0,
       usageCount: 0,
     };
+
+    // 실제 Core 서비스에 생성 요청
+    if (ServiceContainer.has('agent')) {
+      const agentService = ServiceContainer.get<AgentService>('agent');
+      // TODO: 실제 구현에서는 await agentService.create(agent)를 사용
+      // 현재는 IPC 채널 구현이 필요하므로 클라이언트 상태로만 관리
+    }
 
     setAgents((prev: AgentMetadata[]) => [...prev, agent]);
     return agent;

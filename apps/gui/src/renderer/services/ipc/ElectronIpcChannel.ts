@@ -11,6 +11,7 @@ import type {
   PaginationOptions,
   LlmBridgeConfig,
   McpToolArgs,
+  AgentMetadata,
 } from '../../types/core-types';
 import type { McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
 import type {
@@ -216,5 +217,42 @@ export class ElectronIpcChannel implements IpcChannel {
 
   async getPreset(id: string): Promise<Preset | null> {
     return this.electronAPI.preset.get(id);
+  }
+
+  // ==================== Agent 관련 메서드들 (TODO: Main Process 구현 필요) ====================
+
+  async getAllAgents(): Promise<AgentMetadata[]> {
+    // TODO: Main Process에 Agent API 구현 필요
+    return [];
+  }
+
+  async createAgent(_agent: AgentMetadata): Promise<{ success: boolean }> {
+    // TODO: Main Process에 Agent API 구현 필요
+    return { success: false };
+  }
+
+  async updateAgent(_agent: AgentMetadata): Promise<{ success: boolean }> {
+    // TODO: Main Process에 Agent API 구현 필요
+    return { success: false };
+  }
+
+  async deleteAgent(_id: string): Promise<{ success: boolean }> {
+    // TODO: Main Process에 Agent API 구현 필요
+    return { success: false };
+  }
+
+  async getAgent(_id: string): Promise<AgentMetadata | null> {
+    // TODO: Main Process에 Agent API 구현 필요
+    return null;
+  }
+
+  async getAvailableAgents(): Promise<AgentMetadata[]> {
+    // TODO: Main Process에 Agent API 구현 필요
+    return [];
+  }
+
+  async getActiveAgents(): Promise<AgentMetadata[]> {
+    // TODO: Main Process에 Agent API 구현 필요
+    return [];
   }
 }

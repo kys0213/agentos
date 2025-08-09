@@ -27,6 +27,7 @@ import type {
   McpToolArgs,
   ChromeExtensionMessage,
   ChromeExtensionResponse,
+  AgentMetadata,
 } from '../../types/core-types';
 import type { McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
 import type {
@@ -245,5 +246,35 @@ export class ChromeExtensionIpcChannel implements IpcChannel {
     _callback: (event: McpUsageUpdateEvent) => void
   ): Promise<() => void> {
     throw new Error('MCP usage tracking not implemented in Chrome Extension environment');
+  }
+
+  // ==================== Agent 관련 메서드들 (Stub 구현) ====================
+
+  async getAllAgents(): Promise<AgentMetadata[]> {
+    throw new Error('Agent management not implemented in Chrome Extension environment');
+  }
+
+  async createAgent(_agent: AgentMetadata): Promise<{ success: boolean }> {
+    throw new Error('Agent management not implemented in Chrome Extension environment');
+  }
+
+  async updateAgent(_agent: AgentMetadata): Promise<{ success: boolean }> {
+    throw new Error('Agent management not implemented in Chrome Extension environment');
+  }
+
+  async deleteAgent(_id: string): Promise<{ success: boolean }> {
+    throw new Error('Agent management not implemented in Chrome Extension environment');
+  }
+
+  async getAgent(_id: string): Promise<AgentMetadata | null> {
+    throw new Error('Agent management not implemented in Chrome Extension environment');
+  }
+
+  async getAvailableAgents(): Promise<AgentMetadata[]> {
+    throw new Error('Agent management not implemented in Chrome Extension environment');
+  }
+
+  async getActiveAgents(): Promise<AgentMetadata[]> {
+    throw new Error('Agent management not implemented in Chrome Extension environment');
   }
 }

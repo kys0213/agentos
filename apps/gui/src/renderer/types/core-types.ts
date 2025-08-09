@@ -8,10 +8,12 @@ import type {
   Preset,
   EnabledMcp,
   McpConfig,
+  AgentMetadata,
+  ReadonlyAgentMetadata,
 } from '@agentos/core';
 
 // Re-export core types
-export type { ChatSessionMetadata, MessageHistory, Preset, EnabledMcp, McpConfig };
+export type { ChatSessionMetadata, MessageHistory, Preset, EnabledMcp, McpConfig, AgentMetadata, ReadonlyAgentMetadata };
 
 // Type alias for backward compatibility
 export type ChatSessionDescription = ChatSessionMetadata;
@@ -109,6 +111,7 @@ export interface ServiceRegistry {
   bridge: BridgeService;
   mcp: McpService;
   preset: PresetService;
+  agent: AgentService;
   ipcChannel: IpcChannel;
 }
 
@@ -138,6 +141,16 @@ export interface PresetService {
   create(preset: Preset): Promise<{ success: boolean }>;
   update(preset: Preset): Promise<{ success: boolean }>;
   delete(id: string): Promise<{ success: boolean }>;
+}
+
+export interface AgentService {
+  getAll(): Promise<AgentMetadata[]>;
+  create(agent: AgentMetadata): Promise<{ success: boolean }>;
+  update(agent: AgentMetadata): Promise<{ success: boolean }>;
+  delete(id: string): Promise<{ success: boolean }>;
+  get(id: string): Promise<AgentMetadata | null>;
+  getAvailable(): Promise<AgentMetadata[]>;
+  getActive(): Promise<AgentMetadata[]>;
 }
 
 // IpcChannel interface - forward declaration for ServiceRegistry

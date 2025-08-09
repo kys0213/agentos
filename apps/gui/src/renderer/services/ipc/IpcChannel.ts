@@ -10,6 +10,7 @@ import type {
   PaginationOptions,
   LlmBridgeConfig,
   McpToolArgs,
+  AgentMetadata,
 } from '../../types/core-types';
 import type { McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
 import type {
@@ -218,6 +219,43 @@ export interface IpcChannel {
    * 특정 프리셋 조회
    */
   getPreset(id: string): Promise<Preset | null>;
+
+  // ==================== Agent 관련 메서드들 ====================
+
+  /**
+   * 모든 Agent 조회
+   */
+  getAllAgents(): Promise<AgentMetadata[]>;
+
+  /**
+   * Agent 생성
+   */
+  createAgent(agent: AgentMetadata): Promise<{ success: boolean }>;
+
+  /**
+   * Agent 업데이트
+   */
+  updateAgent(agent: AgentMetadata): Promise<{ success: boolean }>;
+
+  /**
+   * Agent 삭제
+   */
+  deleteAgent(id: string): Promise<{ success: boolean }>;
+
+  /**
+   * 특정 Agent 조회
+   */
+  getAgent(id: string): Promise<AgentMetadata | null>;
+
+  /**
+   * 사용 가능한 Agent들 조회 (active 또는 idle)
+   */
+  getAvailableAgents(): Promise<AgentMetadata[]>;
+
+  /**
+   * 활성 Agent들 조회 (active 또는 busy)
+   */
+  getActiveAgents(): Promise<AgentMetadata[]>;
 }
 
 /**
