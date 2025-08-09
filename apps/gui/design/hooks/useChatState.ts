@@ -5,7 +5,7 @@ export function useChatState() {
   const [activeChatAgent, setActiveChatAgent] = useState<ChatAgent | null>(null);
   const [minimizedChats, setMinimizedChats] = useState<ChatAgent[]>([]);
 
-  const handleOpenChat = (agentId: number, agentName: string, agentPreset: string) => {
+  const handleOpenChat = (agentId: string, agentName: string, agentPreset: string) => {
     setActiveChatAgent({
       id: agentId,
       name: agentName,

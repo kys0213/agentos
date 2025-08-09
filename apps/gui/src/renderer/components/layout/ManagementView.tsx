@@ -1,20 +1,21 @@
-import React from 'react';
-import Sidebar from './Sidebar';
-import { Button } from '../ui/button';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
+import React from 'react';
 import { Dashboard } from '../dashboard/Dashboard';
+import { MCPToolsManager } from '../mcp/McpToolManager';
+import { ModelManager } from '../model/ModelManager';
 import { PresetManager } from '../preset/PresetManager';
 import { SubAgentManager } from '../sub-agent/SubAgentManager';
-import { ModelManager } from '../model/ModelManager';
-import { MCPToolsManager } from '../mcp/McpToolManager';
 import { ToolBuilder } from '../tool/ToolBuilder';
+import { Button } from '../ui/button';
+import Sidebar from './Sidebar';
 
 // Import new design hooks like design/App.tsx
-import { useChatState } from '../../hooks/useChatState';
 import { useAppData } from '../../hooks/useAppData';
-import { getPageTitle } from '../../utils/appUtils';
+import { useChatState } from '../../hooks/useChatState';
 import { UseAppNavigationReturn } from '../../types/design-types';
-import { AgentMetadata } from '@agentos/core';
+import { getPageTitle } from '../../utils/appUtils';
+import { RACPManager } from '../racp/RACPManager';
+import { SettingsManager } from '../settings/SettingManager';
 
 interface ManagementViewProps {
   navigation: UseAppNavigationReturn;
@@ -293,15 +294,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
       case 'dashboard':
         return <Dashboard onOpenChat={handleOpenChat} />;
       case 'presets':
-        return (
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-semibold">Preset Manager</h1>
-              <Button onClick={handleStartCreatePreset}>Create Preset</Button>
-            </div>
-            <PresetManager />
-          </div>
-        );
+        return <PresetManager />;
       case 'subagents':
         if (currentAgents.length === 0 && !showEmptyState) {
           return (
@@ -335,45 +328,13 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
       case 'models':
         return <ModelManager />;
       case 'tools':
-        return (
-          <div>
-            <div className="p-6 border-b">
-              <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-semibold">MCP Tools</h1>
-                <Button onClick={handleStartCreateMCPTool}>Add Tool</Button>
-              </div>
-            </div>
-            <MCPToolsManager />
-          </div>
-        );
+        return <MCPToolsManager />;
       case 'toolbuilder':
-        return (
-          <div>
-            <div className="p-6 border-b">
-              <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-semibold">Tool Builder</h1>
-                <Button onClick={handleStartCreateCustomTool}>Create Tool</Button>
-              </div>
-            </div>
-            <ToolBuilder onCreateTool={handleStartCreateCustomTool} />
-          </div>
-        );
+        return <ToolBuilder onCreateTool={handleStartCreateCustomTool} />;
       case 'racp':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-semibold">RACP Manager</h1>
-            <p className="text-muted-foreground">
-              Remote Agent Call Protocol settings coming soon...
-            </p>
-          </div>
-        );
+        return <RACPManager />;
       case 'settings':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-semibold">Settings</h1>
-            <p className="text-muted-foreground">Application settings coming soon...</p>
-          </div>
-        );
+        return <SettingsManager />;
       default:
         return null;
     }

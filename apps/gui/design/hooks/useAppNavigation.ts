@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Preset, Agent, ChatAgent, AppSection } from '../types';
+import { Preset, AgentMetadata, ChatAgent, AppSection } from '../types';
 import { McpConfig } from '../components/MCPToolAdd';
 
 export function useAppNavigation() {

@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Preset, Agent } from '../types';
+import { Preset, AgentMetadata } from '../types';
 import { mockPresets, mockAgents } from '../data/mockData';
 import { McpConfig } from '../components/MCPToolAdd';
 
 export function useAppData() {
   const [presets, setPresets] = useState<Preset[]>(mockPresets);
-  const [agents, setAgents] = useState<Agent[]>(mockAgents);
+  const [agents, setAgents] = useState<AgentMetadata[]>(mockAgents);
   const [showEmptyState, setShowEmptyState] = useState(false);
 
   const currentAgents = showEmptyState ? [] : agents;
@@ -37,12 +37,13 @@ export function useAppData() {
     return mcpConfig;
   };
 
-  const handleCreateAgent = (newAgent: Omit<Agent, 'id' | 'usageCount' | 'lastUsed'>) => {
-    const agent: Agent = {
+  const handleCreateAgent = (newAgent: Omit<AgentMetadata, 'id' | 'usageCount' | 'lastUsed' | 'sessionCount'>) => {
+    const agent: AgentMetadata = {
       ...newAgent,
       id: `agent-${Date.now()}`,
       usageCount: 0,
       lastUsed: undefined,
+      sessionCount: 0,
     };
 
     setAgents((prev) => [...prev, agent]);
