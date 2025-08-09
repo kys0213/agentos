@@ -23,46 +23,50 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { useAppData } from '../../hooks/useAppData';
-import type { DesignPreset } from '../../types/design-types';
+import { Preset } from '@agentos/core';
 
 export function PresetManager() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  
+
   // Use real data from ServiceContainer
-  const { 
-    presets, 
-    loading,
-    handleCreatePreset, 
-    handleUpdatePreset, 
-    handleDeletePreset
-  } = useAppData();
+  const { presets, loading, handleCreatePreset, handleUpdatePreset, handleDeletePreset } =
+    useAppData();
 
   // Generate categories from real data
   const categories = [
     { id: 'all', label: 'All Presets', count: presets.length },
-    { id: 'favorites', label: 'Favorites', count: presets.filter(p => p.usageCount && p.usageCount > 5).length },
-    { id: 'recent', label: 'Recently Used', count: presets.filter(p => {
-      if (!p.updatedAt) return false;
-      return Date.now() - p.updatedAt.getTime() < 7 * 24 * 60 * 60 * 1000;
-    }).length },
-    { id: 'active', label: 'Active', count: presets.filter(p => p.status === 'active').length },
+    {
+      id: 'favorites',
+      label: 'Favorites',
+      count: presets.filter((p) => p.usageCount && p.usageCount > 5).length,
+    },
+    {
+      id: 'recent',
+      label: 'Recently Used',
+      count: presets.filter((p) => {
+        if (!p.updatedAt) return false;
+        return Date.now() - p.updatedAt.getTime() < 7 * 24 * 60 * 60 * 1000;
+      }).length,
+    },
+    { id: 'active', label: 'Active', count: presets.filter((p) => p.status === 'active').length },
   ];
 
   const filteredPresets = presets.filter((preset) => {
     const matchesSearch =
       preset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       preset.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     // Category filtering based on real data
     if (selectedCategory === 'all') return matchesSearch;
-    if (selectedCategory === 'favorites') return matchesSearch && preset.usageCount && preset.usageCount > 5;
+    if (selectedCategory === 'favorites')
+      return matchesSearch && preset.usageCount && preset.usageCount > 5;
     if (selectedCategory === 'recent') {
       if (!preset.updatedAt) return false;
       return matchesSearch && Date.now() - preset.updatedAt.getTime() < 7 * 24 * 60 * 60 * 1000;
     }
     if (selectedCategory === 'active') return matchesSearch && preset.status === 'active';
-    
+
     return matchesSearch;
   });
 
@@ -72,21 +76,24 @@ export function PresetManager() {
     if (bridgeName.includes('claude')) return <Cpu className="w-4 h-4" />;
     return <Code className="w-4 h-4" />;
   };
-  
-  const toggleFavorite = async (preset: DesignPreset) => {
-    const updatedPreset = { 
-      ...preset, 
-      usageCount: (preset.usageCount || 0) + (preset.usageCount && preset.usageCount > 5 ? -1 : 1)
+
+  const toggleFavorite = async (preset: Preset) => {
+    const updatedPreset = {
+      ...preset,
+      usageCount: (preset.usageCount || 0) + (preset.usageCount && preset.usageCount > 5 ? -1 : 1),
     };
     await handleUpdatePreset(updatedPreset);
   };
-  
+
   const handleCreateNewPreset = async () => {
     const newPreset = handleCreatePreset({
+      id: 'new-preset',
       name: 'New Preset',
       description: 'A new preset for AI agents',
-      category: 'general',
-      status: 'active'
+      author: 'Unknown',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      version: '1.0.0',
     });
     console.log('Created preset:', newPreset);
   };
@@ -112,7 +119,7 @@ export function PresetManager() {
             <span className="text-sm">Loading...</span>
           </div>
         </div>
-        
+
         {/* Loading skeleton */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, index) => (
@@ -205,7 +212,9 @@ export function PresetManager() {
             <Layers className="w-12 h-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No presets found</h3>
             <p className="text-muted-foreground mb-4">
-              {searchQuery ? 'Try adjusting your search terms' : 'Create your first preset to get started'}
+              {searchQuery
+                ? 'Try adjusting your search terms'
+                : 'Create your first preset to get started'}
             </p>
             {!searchQuery && (
               <Button onClick={handleCreateNewPreset} className="gap-2">
@@ -238,15 +247,19 @@ export function PresetManager() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="h-8 w-8 p-0"
                     onClick={() => toggleFavorite(preset)}
                   >
-                    <Star className={`w-4 h-4 ${
-                      preset.usageCount && preset.usageCount > 5 ? 'text-yellow-500 fill-current' : 'text-muted-foreground'
-                    }`} />
+                    <Star
+                      className={`w-4 h-4 ${
+                        preset.usageCount && preset.usageCount > 5
+                          ? 'text-yellow-500 fill-current'
+                          : 'text-muted-foreground'
+                      }`}
+                    />
                   </Button>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                     <Settings className="w-4 h-4" />
@@ -254,61 +267,63 @@ export function PresetManager() {
                 </div>
               </div>
 
-            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{preset.description}</p>
+              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                {preset.description}
+              </p>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Model</span>
-                <div className="flex items-center gap-1">
-                  {getModelIcon(preset.llmBridgeName || preset.model)}
-                  <span className="font-medium text-xs">
-                    {(preset.llmBridgeName || preset.model || 'Default').replace('-', ' ').toUpperCase()}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Author</span>
-                <div className="flex items-center gap-1">
-                  <User className="w-3 h-3" />
-                  <span className="font-medium text-xs">{preset.author}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Updated</span>
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
-                  <span className="font-medium text-xs">{formatDate(preset.updatedAt)}</span>
-                </div>
-              </div>
-
-              {preset.enabledMcps && preset.enabledMcps.length > 0 && (
-                <div>
-                  <p className="text-xs text-muted-foreground mb-2">MCP Tools</p>
-                  <div className="flex flex-wrap gap-1">
-                    {preset.enabledMcps.map((mcp, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {mcp.name}
-                      </Badge>
-                    ))}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Model</span>
+                  <div className="flex items-center gap-1">
+                    {getModelIcon(preset.llmBridgeName)}
+                    <span className="font-medium text-xs">
+                      {(preset.llmBridgeName || 'Default').replace('-', ' ').toUpperCase()}
+                    </span>
                   </div>
                 </div>
-              )}
-            </div>
 
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-              <Button size="sm" className="flex-1">
-                <Eye className="w-3 h-3 mr-1" />
-                View
-              </Button>
-              <Button variant="outline" size="sm">
-                <Copy className="w-3 h-3" />
-              </Button>
-              <Button variant="outline" size="sm">
-                <Edit className="w-3 h-3" />
-              </Button>
-            </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Author</span>
+                  <div className="flex items-center gap-1">
+                    <User className="w-3 h-3" />
+                    <span className="font-medium text-xs">{preset.author}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Updated</span>
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    <span className="font-medium text-xs">{formatDate(preset.updatedAt)}</span>
+                  </div>
+                </div>
+
+                {preset.enabledMcps && preset.enabledMcps.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">MCP Tools</p>
+                    <div className="flex flex-wrap gap-1">
+                      {preset.enabledMcps.map((mcp, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {mcp.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+                <Button size="sm" className="flex-1">
+                  <Eye className="w-3 h-3 mr-1" />
+                  View
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Copy className="w-3 h-3" />
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Edit className="w-3 h-3" />
+                </Button>
+              </div>
             </Card>
           ))
         )}
@@ -349,7 +364,7 @@ export function PresetManager() {
             </div>
             <div>
               <p className="text-sm font-semibold">
-                {new Set(presets.map(p => p.llmBridgeName || p.model).filter(Boolean)).size}
+                {new Set(presets.map((p) => p.llmBridgeName).filter(Boolean)).size}
               </p>
               <p className="text-xs text-muted-foreground">Model Types</p>
             </div>
@@ -363,9 +378,12 @@ export function PresetManager() {
             </div>
             <div>
               <p className="text-sm font-semibold">
-                {presets.filter((p) => 
-                  p.updatedAt && Date.now() - p.updatedAt.getTime() < 7 * 24 * 60 * 60 * 1000
-                ).length}
+                {
+                  presets.filter(
+                    (p) =>
+                      p.updatedAt && Date.now() - p.updatedAt.getTime() < 7 * 24 * 60 * 60 * 1000
+                  ).length
+                }
               </p>
               <p className="text-xs text-muted-foreground">Recent Updates</p>
             </div>

@@ -1,9 +1,6 @@
 import { useState } from 'react';
-import type { 
-  AppSection, 
-  DesignPreset,
-  UseAppNavigationReturn 
-} from '../types/design-types';
+import type { AppSection, UseAppNavigationReturn } from '../types/design-types';
+import { ReadonlyPreset } from '@agentos/core';
 
 /**
  * App navigation state management hook
@@ -12,7 +9,7 @@ import type {
  */
 export function useAppNavigation(): UseAppNavigationReturn {
   const [activeSection, setActiveSection] = useState<AppSection>('chat');
-  const [selectedPreset, setSelectedPreset] = useState<DesignPreset | null>(null);
+  const [selectedPreset, setSelectedPreset] = useState<ReadonlyPreset | null>(null);
   const [creatingPreset, setCreatingPreset] = useState(false);
   const [creatingMCPTool, setCreatingMCPTool] = useState(false);
   const [creatingAgent, setCreatingAgent] = useState(false);
@@ -31,7 +28,7 @@ export function useAppNavigation(): UseAppNavigationReturn {
     resetCreateStates();
   };
 
-  const handleSelectPreset = (preset: DesignPreset) => {
+  const handleSelectPreset = (preset: ReadonlyPreset) => {
     setSelectedPreset(preset);
     resetCreateStates();
   };
@@ -99,10 +96,10 @@ export function useAppNavigation(): UseAppNavigationReturn {
 
   const isInDetailView = () => {
     return !!(
-      selectedPreset || 
-      creatingPreset || 
-      creatingMCPTool || 
-      creatingAgent || 
+      selectedPreset ||
+      creatingPreset ||
+      creatingMCPTool ||
+      creatingAgent ||
       creatingCustomTool
     );
   };
@@ -115,7 +112,7 @@ export function useAppNavigation(): UseAppNavigationReturn {
     creatingMCPTool,
     creatingAgent,
     creatingCustomTool,
-    
+
     // Actions
     setActiveSection,
     handleBackToChat,

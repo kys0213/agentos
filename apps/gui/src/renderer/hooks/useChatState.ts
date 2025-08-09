@@ -1,9 +1,6 @@
 import { useState } from 'react';
-import type {
-  DesignChatAgent,
-  DesignAgent,
-  UseChatStateReturn,
-} from '../types/design-types';
+import type { UseChatStateReturn } from '../types/design-types';
+import { ReadonlyAgentMetadata } from '@agentos/core';
 
 /**
  * Chat state management hook
@@ -11,23 +8,14 @@ import type {
  * 새 디자인의 채팅 상태 로직을 Core 타입과 호환되도록 구현
  */
 export function useChatState(): UseChatStateReturn {
-  const [activeChatAgent, setActiveChatAgent] = useState<DesignChatAgent | null>(null);
-  const [minimizedChats, setMinimizedChats] = useState<DesignChatAgent[]>([]);
+  const [activeChatAgent, setActiveChatAgent] = useState<ReadonlyAgentMetadata | null>(null);
+  const [minimizedChats, setMinimizedChats] = useState<ReadonlyAgentMetadata[]>([]);
 
-  const handleOpenChat = (agent: DesignAgent) => {
-    // DesignAgent를 DesignChatAgent로 변환
-    const chatAgent: DesignChatAgent = {
-      id: parseInt(agent.id) || Date.now(), // string id를 number로 변환
-      name: agent.name,
-      preset: agent.preset,
-    };
-    
-    setActiveChatAgent(chatAgent);
-    
+  const handleOpenChat = (agent: ReadonlyAgentMetadata) => {
+    setActiveChatAgent(agent);
+
     // 최소화된 채팅에서 제거 (이미 열려있던 경우)
-    setMinimizedChats(prev => 
-      prev.filter(chat => chat.id !== chatAgent.id)
-    );
+    setMinimizedChats((prev) => prev.filter((chat) => chat.id !== agent.id));
   };
 
   const handleCloseChat = () => {
@@ -36,23 +24,14 @@ export function useChatState(): UseChatStateReturn {
 
   const handleMinimizeChat = () => {
     if (activeChatAgent) {
-      setMinimizedChats(prev => {
-        // 이미 최소화된 채팅에 없는 경우에만 추가
-        const exists = prev.some(chat => chat.id === activeChatAgent.id);
-        if (!exists) {
-          return [...prev, activeChatAgent];
-        }
-        return prev;
-      });
+      setMinimizedChats((prev) => [...prev, activeChatAgent]);
       setActiveChatAgent(null);
     }
   };
 
-  const handleRestoreChat = (chat: DesignChatAgent) => {
+  const handleRestoreChat = (chat: ReadonlyAgentMetadata) => {
     setActiveChatAgent(chat);
-    setMinimizedChats(prev => 
-      prev.filter(c => c.id !== chat.id)
-    );
+    setMinimizedChats((prev) => prev.filter((c) => c.id !== chat.id));
   };
 
   return {

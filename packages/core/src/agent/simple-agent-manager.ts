@@ -1,5 +1,5 @@
 import { UserMessage } from 'llm-bridge-spec';
-import { Agent, AgentStatus, AgentExecuteOptions, AgentRunResult } from './agent';
+import { Agent, AgentStatus, AgentExecuteOptions, AgentChatResult } from './agent';
 import {
   AgentSearchQuery,
   AgentManagerStats,
@@ -47,9 +47,9 @@ export class SimpleAgentManager implements AgentManager {
     const agent = this.agents.get(agentId)!;
 
     // 실행 중인 Agent는 등록 해제할 수 없음
-    if (agent.status === 'busy') {
+    if (agent.status === 'active') {
       throw new AgentManagerError(
-        `Cannot unregister agent '${agentId}' while it's busy`,
+        `Cannot unregister agent '${agentId}' while it's active`,
         AGENT_MANAGER_ERROR_CODES.OPERATION_FAILED
       );
     }
@@ -75,7 +75,7 @@ export class SimpleAgentManager implements AgentManager {
 
   async getActiveAgents(pagination?: CursorPagination): Promise<CursorPaginationResult<Agent>> {
     const activeAgents = Array.from(this.agents.values()).filter(
-      (agent) => agent.status === 'active' || agent.status === 'busy'
+      (agent) => agent.status === 'active'
     );
     return this.paginateResults(activeAgents, pagination);
   }
@@ -120,7 +120,7 @@ export class SimpleAgentManager implements AgentManager {
     agentId: string,
     messages: UserMessage[],
     options?: AgentExecuteOptions
-  ): Promise<AgentRunResult> {
+  ): Promise<AgentChatResult> {
     const agent = this.agents.get(agentId);
     if (!agent) {
       throw new AgentManagerError(
@@ -130,7 +130,7 @@ export class SimpleAgentManager implements AgentManager {
     }
 
     try {
-      const result = await agent.run(messages, options);
+      const result = await agent.chat(messages, options);
       return result;
     } catch (error) {
       throw new AgentManagerError(
@@ -174,8 +174,8 @@ export class SimpleAgentManager implements AgentManager {
     const agentsByStatus: Record<AgentStatus, number> = {
       active: 0,
       idle: 0,
-      busy: 0,
       error: 0,
+      inactive: 0,
     };
 
     let totalActiveSessions = 0;
@@ -185,9 +185,9 @@ export class SimpleAgentManager implements AgentManager {
       agentsByStatus[agent.status]++;
       totalActiveSessions += agent.sessionCount;
 
-      if (agent.lastActivity) {
-        if (!lastActivity || agent.lastActivity > lastActivity) {
-          lastActivity = agent.lastActivity;
+      if (agent.lastUsed) {
+        if (!lastActivity || agent.lastUsed > lastActivity) {
+          lastActivity = agent.lastUsed;
         }
       }
     }

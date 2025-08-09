@@ -1,17 +1,16 @@
-import { Activity, Bot, Cpu, Layers, MessageSquare, TrendingUp } from 'lucide-react';
+import { Activity, Bot, Cpu, Layers, MessageSquare } from 'lucide-react';
+import { useAppData } from '../../hooks/useAppData';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { useAppData } from '../../hooks/useAppData';
-import type { DesignAgent } from '../../types/design-types';
 
 interface DashboardProps {
-  onOpenChat?: (agentId: number, agentName: string, agentPreset: string) => void;
+  onOpenChat?: (agentId: string) => void;
 }
 
 export function Dashboard({ onOpenChat }: DashboardProps) {
   const { presets, currentAgents, loading, handleCreateAgent } = useAppData();
-  
+
   // Real-time stats from actual data
   const stats = [
     {
@@ -24,7 +23,7 @@ export function Dashboard({ onOpenChat }: DashboardProps) {
     {
       title: 'Sub Agents',
       value: currentAgents.length.toString(),
-      change: `${currentAgents.filter(a => a.status === 'active').length} active`,
+      change: `${currentAgents.filter((a) => a.status === 'active').length} active`,
       icon: Bot,
       color: 'text-green-600',
     },
@@ -38,7 +37,7 @@ export function Dashboard({ onOpenChat }: DashboardProps) {
     {
       title: 'Presets',
       value: presets.length.toString(),
-      change: `${presets.filter(p => p.usageCount && p.usageCount > 0).length} in use`,
+      change: `${presets.filter((p) => p.usageCount && p.usageCount > 0).length} in use`,
       icon: Layers,
       color: 'text-orange-600',
     },
@@ -49,16 +48,16 @@ export function Dashboard({ onOpenChat }: DashboardProps) {
     {
       id: 1,
       type: 'chat',
-      title: `Chat available with ${currentAgents.find(a => a.category === 'analysis')?.name || 'Data Analyzer'}`,
+      title: `Chat available with ${currentAgents.find((a) => a.keywords.includes('general'))?.name || 'General'}`,
       time: 'Ready now',
-      agent: currentAgents.find(a => a.category === 'analysis')?.name || 'Data Analyzer',
+      agent: currentAgents.find((a) => a.keywords.includes('general'))?.name || 'General',
     },
     {
       id: 2,
       type: 'agent',
-      title: `${currentAgents.find(a => a.category === 'development')?.name || 'Code Assistant'} agent ready`,
+      title: `${currentAgents.find((a) => a.keywords.includes('general'))?.name || 'General'} agent ready`,
       time: 'Available',
-      agent: currentAgents.find(a => a.category === 'development')?.name || 'Code Assistant',
+      agent: currentAgents.find((a) => a.keywords.includes('general'))?.name || 'General',
     },
     {
       id: 3,
@@ -77,17 +76,19 @@ export function Dashboard({ onOpenChat }: DashboardProps) {
   ];
 
   // Smart quick actions based on available agents and presets
-  const bestAgent = currentAgents.find(a => a.status === 'active') || currentAgents[0];
-  const favoritePreset = presets.find(p => p.usageCount && p.usageCount > 0) || presets[0];
-  
+  const bestAgent = currentAgents.find((a) => a.status === 'active') || currentAgents[0];
+  const favoritePreset = presets.find((p) => p.usageCount && p.usageCount > 0) || presets[0];
+
   const quickActions = [
     {
       title: 'Start New Chat',
-      description: bestAgent ? `Chat with ${bestAgent.name}` : 'Begin a conversation with an AI agent',
+      description: bestAgent
+        ? `Chat with ${bestAgent.name}`
+        : 'Begin a conversation with an AI agent',
       icon: MessageSquare,
       action: () => {
         if (bestAgent) {
-          onOpenChat?.(parseInt(bestAgent.id), bestAgent.name, favoritePreset?.name || 'Default');
+          onOpenChat?.(bestAgent.id);
         }
       },
       color: 'bg-blue-500',
@@ -101,7 +102,7 @@ export function Dashboard({ onOpenChat }: DashboardProps) {
         const newAgent = handleCreateAgent({
           name: `Agent ${currentAgents.length + 1}`,
           description: 'A new AI assistant',
-          category: 'general'
+          keywords: ['general'],
         });
         console.log('Created agent:', newAgent);
       },
@@ -109,11 +110,13 @@ export function Dashboard({ onOpenChat }: DashboardProps) {
     },
     {
       title: 'Popular Preset',
-      description: favoritePreset ? `Use ${favoritePreset.name}` : 'Configure agent presets and prompts',
+      description: favoritePreset
+        ? `Use ${favoritePreset.name}`
+        : 'Configure agent presets and prompts',
       icon: Layers,
       action: () => {
         if (favoritePreset && bestAgent) {
-          onOpenChat?.(parseInt(bestAgent.id), bestAgent.name, favoritePreset.name);
+          onOpenChat?.(bestAgent.id);
         }
       },
       color: 'bg-purple-500',
@@ -123,7 +126,8 @@ export function Dashboard({ onOpenChat }: DashboardProps) {
       title: 'System Overview',
       description: `${currentAgents.length} agents, ${presets.length} presets ready`,
       icon: Activity,
-      action: () => console.log('System status:', { agents: currentAgents.length, presets: presets.length }),
+      action: () =>
+        console.log('System status:', { agents: currentAgents.length, presets: presets.length }),
       color: 'bg-orange-500',
     },
   ];
@@ -141,7 +145,7 @@ export function Dashboard({ onOpenChat }: DashboardProps) {
             <span className="text-sm">Loading...</span>
           </div>
         </div>
-        
+
         {/* Loading skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -257,26 +261,32 @@ export function Dashboard({ onOpenChat }: DashboardProps) {
         <h3 className="text-lg font-semibold mb-4">System Status</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${
-              currentAgents.length > 0 ? 'bg-green-500' : 'bg-red-500'
-            }`}></div>
+            <div
+              className={`w-3 h-3 rounded-full ${
+                currentAgents.length > 0 ? 'bg-green-500' : 'bg-red-500'
+              }`}
+            ></div>
             <div>
               <p className="text-sm font-medium">Agent Services</p>
               <p className="text-xs text-muted-foreground">
-                {currentAgents.length > 0 
-                  ? `${currentAgents.filter(a => a.status === 'active').length}/${currentAgents.length} agents ready`
+                {currentAgents.length > 0
+                  ? `${currentAgents.filter((a) => a.status === 'active').length}/${currentAgents.length} agents ready`
                   : 'No agents configured'}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${
-              presets.length > 0 ? 'bg-green-500' : 'bg-yellow-500'
-            }`}></div>
+            <div
+              className={`w-3 h-3 rounded-full ${
+                presets.length > 0 ? 'bg-green-500' : 'bg-yellow-500'
+              }`}
+            ></div>
             <div>
               <p className="text-sm font-medium">Preset Library</p>
               <p className="text-xs text-muted-foreground">
-                {presets.length > 0 ? `${presets.length} presets available` : 'No presets configured'}
+                {presets.length > 0
+                  ? `${presets.length} presets available`
+                  : 'No presets configured'}
               </p>
             </div>
           </div>

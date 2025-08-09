@@ -1,20 +1,19 @@
+import {
+  Bot,
+  Cpu,
+  Hammer,
+  Home,
+  MessageSquare,
+  Plus,
+  Settings,
+  Shield,
+  Users,
+  Wrench,
+  Zap,
+} from 'lucide-react';
 import React, { useState } from 'react';
 import { AppSection } from '../../types/design-types';
 import { Button } from '../ui/button';
-import { 
-  Home, 
-  MessageSquare, 
-  Users, 
-  Settings, 
-  Zap, 
-  Bot,
-  Cpu,
-  Wrench,
-  Shield,
-  Plus,
-  Hammer,
-  Network
-} from 'lucide-react';
 
 interface SidebarProps {
   activeSection: AppSection;
@@ -42,9 +41,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => 
   ] as const;
 
   return (
-    <div className={`bg-sidebar border-r border-sidebar-border transition-all duration-200 flex flex-col relative ${
-      isCollapsed ? 'w-16' : 'w-64'
-    }`}>
+    <div
+      className={`bg-sidebar border-r border-sidebar-border transition-all duration-200 flex flex-col relative ${
+        isCollapsed ? 'w-16' : 'w-64'
+      }`}
+    >
       {/* AgentOS Brand Header */}
       <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
@@ -65,15 +66,15 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => 
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeSection === item.id;
-          
+
           return (
             <Button
               key={item.id}
-              variant={isActive ? "default" : "ghost"}
+              variant={isActive ? 'default' : 'ghost'}
               className={`w-full justify-start gap-3 transition-colors ${
-                isActive 
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90" 
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                isActive
+                  ? 'bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90'
+                  : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
               } ${isCollapsed ? 'px-3' : 'px-3'}`}
               onClick={() => onSectionChange(item.id)}
               title={isCollapsed ? item.label : undefined}
@@ -92,9 +93,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => 
           size="sm"
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="w-full text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
-          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          {isCollapsed ? <Plus className="w-4 h-4" /> : "Collapse"}
+          {isCollapsed ? <Plus className="w-4 h-4" /> : 'Collapse'}
         </Button>
       </div>
     </div>

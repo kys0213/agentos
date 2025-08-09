@@ -1,27 +1,27 @@
-import { Sidebar } from "./components/Sidebar";
-import { ChatView } from "./components/ChatView";
-import { Dashboard } from "./components/Dashboard";
-import { PresetList } from "./components/PresetList";
-import { PresetDetail } from "./components/PresetDetail";
-import { PresetCreate } from "./components/PresetCreate";
-import { MCPToolCreate } from "./components/MCPToolCreate";
-import { AgentCreate } from "./components/AgentCreate";
-import { SubAgentManager } from "./components/SubAgentManager";
-import { ModelManager } from "./components/ModelManager";
-import { MCPToolsManager } from "./components/MCPToolsManager";
-import { SettingsManager } from "./components/SettingsManager";
-import { RACPManager } from "./components/RACPManager";
-import { ToolBuilder } from "./components/ToolBuilder";
-import { ToolBuilderCreate } from "./components/ToolBuilderCreate";
-import { ChatInterface } from "./components/ChatInterface";
-import { EmptyState } from "./components/EmptyState";
-import { Button } from "./components/ui/button";
-import { MessageSquare, ArrowLeft } from "lucide-react";
+import { Sidebar } from './components/Sidebar';
+import { ChatView } from './components/ChatView';
+import { Dashboard } from './components/Dashboard';
+import { PresetList } from './components/PresetList';
+import { PresetDetail } from './components/PresetDetail';
+import { PresetCreate } from './components/PresetCreate';
+import { MCPToolCreate } from './components/MCPToolCreate';
+import { AgentCreate } from './components/AgentCreate';
+import { SubAgentManager } from './components/SubAgentManager';
+import { ModelManager } from './components/ModelManager';
+import { MCPToolsManager } from './components/MCPToolsManager';
+import { SettingsManager } from './components/SettingsManager';
+import { RACPManager } from './components/RACPManager';
+import { ToolBuilder } from './components/ToolBuilder';
+import { ToolBuilderCreate } from './components/ToolBuilderCreate';
+import { ChatInterface } from './components/ChatInterface';
+import { EmptyState } from './components/EmptyState';
+import { Button } from './components/ui/button';
+import { MessageSquare, ArrowLeft } from 'lucide-react';
 
-import { useAppNavigation } from "./hooks/useAppNavigation";
-import { useChatState } from "./hooks/useChatState";
-import { useAppData } from "./hooks/useAppData";
-import { getPageTitle } from "./utils/appUtils";
+import { useAppNavigation } from './hooks/useAppNavigation';
+import { useChatState } from './hooks/useChatState';
+import { useAppData } from './hooks/useAppData';
+import { getPageTitle } from './utils/appUtils';
 
 export default function App() {
   const navigation = useAppNavigation();
@@ -46,7 +46,7 @@ export default function App() {
     handleStartCreateMCPTool,
     handleStartCreateAgent,
     handleStartCreateCustomTool,
-    isInDetailView
+    isInDetailView,
   } = navigation;
 
   const {
@@ -55,7 +55,7 @@ export default function App() {
     handleOpenChat,
     handleCloseChat,
     handleMinimizeChat,
-    handleRestoreChat
+    handleRestoreChat,
   } = chatState;
 
   const {
@@ -71,7 +71,7 @@ export default function App() {
     handleUpdatePreset,
     handleDeletePreset,
     getMentionableAgents,
-    getActiveAgents
+    getActiveAgents,
   } = appData;
 
   // Create handlers that combine navigation and data operations
@@ -85,21 +85,21 @@ export default function App() {
   const onCreateMCPTool = (mcpConfig: any) => {
     const tool = handleCreateMCPTool(mcpConfig);
     setCreatingMCPTool(false);
-    setActiveSection("tools");
+    setActiveSection('tools');
     return tool;
   };
 
   const onCreateAgent = (newAgent: any) => {
     const agent = handleCreateAgent(newAgent);
     setCreatingAgent(false);
-    setActiveSection("subagents");
+    setActiveSection('subagents');
     return agent;
   };
 
   const onCreateCustomTool = (toolData: any) => {
     const tool = handleCreateCustomTool(toolData);
     setCreatingCustomTool(false);
-    setActiveSection("toolbuilder");
+    setActiveSection('toolbuilder');
     return tool;
   };
 
@@ -136,8 +136,8 @@ export default function App() {
 
     if (selectedPreset) {
       return (
-        <PresetDetail 
-          preset={selectedPreset} 
+        <PresetDetail
+          preset={selectedPreset}
           onBack={handleBackToPresets}
           onUpdate={onUpdatePreset}
           onDelete={onDeletePreset}
@@ -146,17 +146,17 @@ export default function App() {
     }
 
     switch (activeSection) {
-      case "dashboard":
+      case 'dashboard':
         return <Dashboard onOpenChat={handleOpenChat} />;
-      case "presets":
+      case 'presets':
         return (
-          <PresetList 
+          <PresetList
             presets={presets}
             onSelectPreset={handleSelectPreset}
             onCreatePreset={handleStartCreatePreset}
           />
         );
-      case "subagents":
+      case 'subagents':
         if (currentAgents.length === 0) {
           return (
             <div className="p-6 h-full flex items-center justify-center">
@@ -168,8 +168,8 @@ export default function App() {
                   actionLabel="Create First Agent"
                   onAction={handleStartCreateAgent}
                   secondaryAction={{
-                    label: "View Templates",
-                    onClick: () => console.log("Show agent templates")
+                    label: 'View Templates',
+                    onClick: () => console.log('Show agent templates'),
                   }}
                 />
               </div>
@@ -177,22 +177,22 @@ export default function App() {
           );
         }
         return (
-          <SubAgentManager 
+          <SubAgentManager
             agents={currentAgents}
             onUpdateAgentStatus={handleUpdateAgentStatus}
             onOpenChat={handleOpenChat}
             onCreateAgent={handleStartCreateAgent}
           />
         );
-      case "models":
+      case 'models':
         return <ModelManager />;
-      case "tools":
+      case 'tools':
         return <MCPToolsManager onCreateTool={handleStartCreateMCPTool} />;
-      case "toolbuilder":
+      case 'toolbuilder':
         return <ToolBuilder onCreateTool={handleStartCreateCustomTool} />;
-      case "racp":
+      case 'racp':
         return <RACPManager />;
-      case "settings":
+      case 'settings':
         return <SettingsManager />;
       default:
         return null;
@@ -209,7 +209,7 @@ export default function App() {
   );
 
   // Chat Mode: Full screen ChatView with integrated ChatHistory sidebar
-  if (activeSection === "chat") {
+  if (activeSection === 'chat') {
     if (currentAgents.length === 0) {
       return (
         <div className="h-screen bg-background flex items-center justify-center">
@@ -219,10 +219,10 @@ export default function App() {
               title="Welcome to AgentOS"
               description="To start chatting, you'll need to create at least one AI agent. Agents are your AI-powered assistants that can help with various tasks."
               actionLabel="Create First Agent"
-              onAction={() => setActiveSection("subagents")}
+              onAction={() => setActiveSection('subagents')}
               secondaryAction={{
-                label: "Explore Features",
-                onClick: () => setActiveSection("dashboard")
+                label: 'Explore Features',
+                onClick: () => setActiveSection('dashboard'),
               }}
             />
           </div>
@@ -232,7 +232,7 @@ export default function App() {
 
     return (
       <div className="h-screen bg-background">
-        <ChatView 
+        <ChatView
           onNavigate={setActiveSection}
           agents={currentAgents}
           mentionableAgents={getMentionableAgents()}
@@ -246,57 +246,42 @@ export default function App() {
   return (
     <div className="flex h-screen bg-background">
       {!isInDetailView() && (
-        <Sidebar
-          activeSection={activeSection}
-          onSectionChange={setActiveSection}
-        />
+        <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       )}
-      
+
       <main className="flex-1 overflow-hidden flex flex-col">
         {!isInDetailView() && (
           <div className="border-b bg-white p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleBackToChat}
-                  className="gap-2"
-                >
+                <Button variant="outline" size="sm" onClick={handleBackToChat} className="gap-2">
                   <ArrowLeft className="w-4 h-4" />
                   Back to Chat
                 </Button>
                 <div className="w-px h-6 bg-border"></div>
                 <h1 className="text-lg font-semibold">{pageTitle}</h1>
               </div>
-              
+
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleBackToChat}
-                  className="gap-2"
-                >
+                <Button variant="outline" size="sm" onClick={handleBackToChat} className="gap-2">
                   <MessageSquare className="w-4 h-4" />
                   Open Chat
                 </Button>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setShowEmptyState(!showEmptyState)}
                   className="gap-2"
                 >
-                  {showEmptyState ? "Show Agents" : "Demo Empty State"}
+                  {showEmptyState ? 'Show Agents' : 'Demo Empty State'}
                 </Button>
               </div>
             </div>
           </div>
         )}
 
-        <div className="flex-1 overflow-hidden">
-          {renderManagementContent()}
-        </div>
+        <div className="flex-1 overflow-hidden">{renderManagementContent()}</div>
       </main>
 
       {activeChatAgent && (
@@ -319,7 +304,7 @@ export default function App() {
               onClick={() => handleRestoreChat(chat)}
               className="status-idle px-3 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
             >
-              {chat.name.split(" ")[0]}
+              {chat.name.split(' ')[0]}
             </button>
           ))}
         </div>

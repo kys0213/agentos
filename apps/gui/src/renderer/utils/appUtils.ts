@@ -1,4 +1,5 @@
-import type { AppSection, DesignPreset } from '../types/design-types';
+import { Preset } from '@agentos/core';
+import type { AppSection } from '../types/design-types';
 
 /**
  * Get page title based on current navigation state
@@ -9,7 +10,7 @@ export const getPageTitle = (
   creatingMCPTool: boolean,
   creatingAgent: boolean,
   creatingCustomTool: boolean,
-  selectedPreset: DesignPreset | null,
+  selectedPreset: Preset | null,
   activeSection: AppSection
 ): string => {
   if (creatingPreset) {

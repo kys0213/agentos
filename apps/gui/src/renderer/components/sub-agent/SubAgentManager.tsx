@@ -1,3 +1,4 @@
+import { Agent, ReadonlyAgentMetadata } from '@agentos/core';
 import {
   Bot,
   Filter,
@@ -9,86 +10,171 @@ import {
   Search,
   Settings,
   Star,
-  Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useAppData } from '../../hooks/useAppData';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
-import { useAppData } from '../../hooks/useAppData';
-import type { DesignAgent } from '../../types/design-types';
 
 interface SubAgentManagerProps {
-  onOpenChat?: (agentId: number, agentName: string, agentPreset: string) => void;
+  onOpenChat?: (agentId: string) => void;
 }
 
 export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  
-  // Use real data from ServiceContainer
-  const { 
-    currentAgents, 
-    loading,
-    handleCreateAgent, 
-    handleUpdateAgentStatus
-  } = useAppData();
-  
-  // If no agents exist, create some sample agents for demonstration
-  const agents = currentAgents.length === 0 ? [
+
+  // TODO: 이 부분 수정 필요
+  const { currentAgents, loading, handleCreateAgent, handleUpdateAgentStatus } = useAppData();
+
+  const defaultAgents: ReadonlyAgentMetadata[] = [
     {
       id: '1',
       name: 'Data Analyzer Pro',
       description: 'Advanced data analysis and visualization specialist',
-      category: 'analysis',
-      preset: 'Data Analysis Expert',
-      status: 'active' as const,
+      keywords: ['data analysis', 'visualization', 'sql', 'python'],
+      icon: '🔍',
+      preset: {
+        id: 'preset-1',
+        name: 'Data Analysis Expert',
+        description: 'Advanced data analysis and visualization specialist',
+        author: 'John Doe',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        version: '1.0.0',
+        systemPrompt: 'You are a data analysis and visualization specialist',
+        enabledMcps: [],
+        llmBridgeName: 'openai',
+        llmBridgeConfig: {},
+        status: 'active',
+        usageCount: 45,
+        knowledgeDocuments: 45,
+        knowledgeStats: {
+          indexed: 45,
+          vectorized: 45,
+          totalSize: 45,
+        },
+        category: ['general'],
+      },
+      status: 'active',
+      sessionCount: 45,
       lastUsed: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago
       usageCount: 45,
-      tags: ['Data Analysis', 'Visualization', 'SQL', 'Python'],
     },
     {
       id: '2',
       name: 'Code Reviewer',
       description: 'Code quality assurance and debugging expert',
-      category: 'development',
-      preset: 'Development Helper',
-      status: 'active' as const,
-      lastUsed: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
+      keywords: ['code review', 'debugging', 'testing', 'documentation'],
+      icon: '💻',
+      preset: {
+        id: 'preset-2',
+        name: 'Development Helper',
+        description: 'Code quality assurance and debugging expert',
+        author: 'Jane Doe',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        version: '1.0.0',
+        systemPrompt: 'You are a code quality assurance and debugging expert',
+        enabledMcps: [],
+        llmBridgeName: 'openai',
+        llmBridgeConfig: {},
+        status: 'active',
+        usageCount: 32,
+        knowledgeDocuments: 32,
+        knowledgeStats: {
+          indexed: 32,
+          vectorized: 32,
+          totalSize: 32,
+        },
+        category: ['general'],
+      },
+      status: 'active',
+      sessionCount: 32,
+      lastUsed: new Date(Date.now() - 1 * 60 * 1000), // 1 minute ago
       usageCount: 32,
-      tags: ['Code Review', 'Debugging', 'Testing', 'Documentation'],
     },
     {
       id: '3',
       name: 'Content Creator',
       description: 'Creative writing and content generation assistant',
-      category: 'content',
-      preset: 'Writing Specialist',
-      status: 'idle' as const,
-      lastUsed: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      keywords: ['writing', 'editing', 'seo', 'marketing'],
+      icon: '📝',
+      preset: {
+        id: 'preset-3',
+        name: 'Writing Specialist',
+        description: 'Creative writing and content generation assistant',
+        author: 'John Doe',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        version: '1.0.0',
+        systemPrompt: 'You are a creative writing and content generation assistant',
+        enabledMcps: [],
+        llmBridgeName: 'openai',
+        llmBridgeConfig: {},
+        status: 'active',
+        usageCount: 28,
+        knowledgeDocuments: 28,
+        knowledgeStats: {
+          indexed: 28,
+          vectorized: 28,
+          totalSize: 28,
+        },
+        category: ['general'],
+      },
+      status: 'active',
+      sessionCount: 28,
+      lastUsed: new Date(Date.now() - 1 * 60 * 1000), // 1 minute ago
       usageCount: 28,
-      tags: ['Writing', 'Editing', 'SEO', 'Marketing'],
     },
     {
       id: '4',
       name: 'Research Assistant',
       description: 'Information gathering and analysis specialist',
-      category: 'research',
-      preset: 'Research Specialist',
-      status: 'active' as const,
-      lastUsed: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
+      keywords: ['research', 'fact-checking', 'analysis', 'summarization'],
+      icon: '🔍',
+      preset: {
+        id: 'preset-4',
+        name: 'Research Specialist',
+        description: 'Information gathering and analysis specialist',
+        author: 'John Doe',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        version: '1.0.0',
+        systemPrompt:
+          'You are a research assistant that can help with gathering and analyzing information',
+        enabledMcps: [],
+        llmBridgeName: 'openai',
+        llmBridgeConfig: {},
+        status: 'active',
+        usageCount: 52,
+        knowledgeDocuments: 52,
+        knowledgeStats: {
+          indexed: 52,
+          vectorized: 52,
+          totalSize: 52,
+        },
+        category: ['general'],
+      },
+      status: 'active',
+      sessionCount: 52,
+      lastUsed: new Date(Date.now() - 1 * 60 * 1000), // 1 minute ago
       usageCount: 52,
-      tags: ['Research', 'Fact-checking', 'Analysis', 'Summarization'],
     },
-  ] : currentAgents;
+  ];
+
+  // If no agents exist, create some sample agents for demonstration
+  const agents: ReadonlyAgentMetadata[] =
+    currentAgents.length === 0 ? defaultAgents : currentAgents;
 
   const filteredAgents = agents.filter((agent) => {
     const matchesSearch =
       agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       agent.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agent.category.toLowerCase().includes(searchQuery.toLowerCase());
-    
+      agent.keywords.some((keyword) => keyword.toLowerCase().includes(searchQuery.toLowerCase()));
+
     // Category filtering
     if (selectedCategory === 'all') return matchesSearch;
     if (selectedCategory === 'active') return matchesSearch && agent.status === 'active';
@@ -97,20 +183,24 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
       if (!agent.lastUsed) return false;
       return matchesSearch && Date.now() - agent.lastUsed.getTime() < 24 * 60 * 60 * 1000; // Last 24h
     }
-    
+
     return matchesSearch;
   });
-  
+
   const categories = [
     { id: 'all', label: 'All Agents', count: agents.length },
-    { id: 'active', label: 'Active', count: agents.filter(a => a.status === 'active').length },
-    { id: 'idle', label: 'Idle', count: agents.filter(a => a.status === 'idle').length },
-    { id: 'recent', label: 'Recent', count: agents.filter(a => 
-      a.lastUsed && Date.now() - a.lastUsed.getTime() < 24 * 60 * 60 * 1000
-    ).length },
+    { id: 'active', label: 'Active', count: agents.filter((a) => a.status === 'active').length },
+    { id: 'idle', label: 'Idle', count: agents.filter((a) => a.status === 'idle').length },
+    {
+      id: 'recent',
+      label: 'Recent',
+      count: agents.filter(
+        (a) => a.lastUsed && Date.now() - a.lastUsed.getTime() < 24 * 60 * 60 * 1000
+      ).length,
+    },
   ];
 
-  const getStatusColor = (status: DesignAgent['status']) => {
+  const getStatusColor = (status: Agent['status']) => {
     switch (status) {
       case 'active':
         return 'bg-green-500';
@@ -123,10 +213,11 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
     }
   };
 
-  const getPerformanceScore = (agent: DesignAgent) => {
+  const getPerformanceScore = (agent: ReadonlyAgentMetadata) => {
     // Calculate performance based on usage count and recency
     const baseScore = Math.min(90, (agent.usageCount / 10) * 20); // Up to 90% from usage
-    const recencyBonus = agent.lastUsed && Date.now() - agent.lastUsed.getTime() < 7 * 24 * 60 * 60 * 1000 ? 10 : 0;
+    const recencyBonus =
+      agent.lastUsed && Date.now() - agent.lastUsed.getTime() < 7 * 24 * 60 * 60 * 1000 ? 10 : 0;
     return Math.min(100, baseScore + recencyBonus);
   };
 
@@ -135,7 +226,7 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
     if (performance >= 75) return 'text-yellow-600';
     return 'text-red-600';
   };
-  
+
   const formatLastActive = (lastUsed?: Date) => {
     if (!lastUsed) return 'Never';
     const now = Date.now();
@@ -143,18 +234,39 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
     const minutes = Math.floor(diff / (1000 * 60));
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
-    
+
     if (minutes < 1) return 'Just now';
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     return `${days}d ago`;
   };
-  
+
   const handleCreateNewAgent = () => {
     const newAgent = handleCreateAgent({
       name: `Agent ${agents.length + 1}`,
       description: 'A new AI assistant ready to help',
-      category: 'general'
+      preset: {
+        id: 'preset-1',
+        name: 'Data Analysis Expert',
+        description: 'Advanced data analysis and visualization specialist',
+        author: 'John Doe',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        version: '1.0.0',
+        systemPrompt: 'You are a data analysis and visualization specialist',
+        enabledMcps: [],
+        llmBridgeName: 'openai',
+        llmBridgeConfig: {},
+        status: 'active',
+        usageCount: 45,
+        knowledgeDocuments: 45,
+        knowledgeStats: {
+          indexed: 45,
+          vectorized: 45,
+          totalSize: 45,
+        },
+        category: ['general'],
+      },
     });
     console.log('Created agent:', newAgent);
   };
@@ -172,7 +284,7 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
             <span className="text-sm">Loading...</span>
           </div>
         </div>
-        
+
         {/* Loading skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, index) => (
@@ -231,7 +343,7 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
             Filter
           </Button>
         </div>
-        
+
         {/* Categories */}
         <div className="flex items-center gap-2 overflow-x-auto">
           {categories.map((category) => (
@@ -259,7 +371,9 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
             <Bot className="w-12 h-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No agents found</h3>
             <p className="text-muted-foreground mb-4">
-              {searchQuery ? 'Try adjusting your search terms' : 'Create your first agent to get started'}
+              {searchQuery
+                ? 'Try adjusting your search terms'
+                : 'Create your first agent to get started'}
             </p>
             {!searchQuery && (
               <Button onClick={handleCreateNewAgent} className="gap-2">
@@ -284,9 +398,15 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
                     <div>
                       <h3 className="font-semibold">{agent.name}</h3>
                       <div className="flex items-center gap-2 mt-1">
-                        <div className={`w-2 h-2 ${getStatusColor(agent.status)} rounded-full`}></div>
-                        <span className="text-xs text-muted-foreground capitalize">{agent.status}</span>
-                        <Badge variant="outline" className="text-xs">{agent.category}</Badge>
+                        <div
+                          className={`w-2 h-2 ${getStatusColor(agent.status)} rounded-full`}
+                        ></div>
+                        <span className="text-xs text-muted-foreground capitalize">
+                          {agent.status}
+                        </span>
+                        <Badge variant="outline" className="text-xs">
+                          {agent.keywords}
+                        </Badge>
                       </div>
                     </div>
                   </div>
@@ -295,7 +415,7 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
                   </Button>
                 </div>
 
-            <p className="text-sm text-muted-foreground mb-4">{agent.description}</p>
+                <p className="text-sm text-muted-foreground mb-4">{agent.description}</p>
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
@@ -315,18 +435,18 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
                     <span className="font-semibold">{formatLastActive(agent.lastUsed)}</span>
                   </div>
 
-                  {agent.tags && agent.tags.length > 0 && (
+                  {agent.keywords && agent.keywords.length > 0 && (
                     <div>
                       <p className="text-xs text-muted-foreground mb-2">Capabilities</p>
                       <div className="flex flex-wrap gap-1">
-                        {agent.tags.slice(0, 3).map((tag) => (
+                        {agent.keywords.slice(0, 3).map((tag) => (
                           <Badge key={tag} variant="secondary" className="text-xs">
                             {tag}
                           </Badge>
                         ))}
-                        {agent.tags.length > 3 && (
+                        {agent.keywords.length > 3 && (
                           <Badge variant="secondary" className="text-xs">
-                            +{agent.tags.length - 3}
+                            +{agent.keywords.length - 3}
                           </Badge>
                         )}
                       </div>
@@ -335,26 +455,26 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
                 </div>
 
                 <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                  <Button
-                    size="sm"
-                    className="flex-1 gap-2"
-                    onClick={() => onOpenChat?.(parseInt(agent.id), agent.name, agent.preset)}
-                  >
+                  <Button size="sm" className="flex-1 gap-2" onClick={() => onOpenChat?.(agent.id)}>
                     <MessageSquare className="w-3 h-3" />
                     Chat
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="gap-2"
-                    onClick={() => handleUpdateAgentStatus(agent.id, 
-                      agent.status === 'active' ? 'idle' : 'active'
-                    )}
-                  >
-                    {agent.status === 'active' ? 
-                      <Pause className="w-3 h-3" /> : 
-                      <Play className="w-3 h-3" />
+                    onClick={() =>
+                      handleUpdateAgentStatus(
+                        agent.id,
+                        agent.status === 'active' ? 'idle' : 'active'
+                      )
                     }
+                  >
+                    {agent.status === 'active' ? (
+                      <Pause className="w-3 h-3" />
+                    ) : (
+                      <Play className="w-3 h-3" />
+                    )}
                   </Button>
                   <Button variant="outline" size="sm" className="gap-2">
                     <Settings className="w-3 h-3" />
@@ -417,9 +537,12 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
             </div>
             <div>
               <p className="text-sm font-semibold">
-                {agents.length > 0 ? Math.round(
-                  agents.reduce((sum, agent) => sum + getPerformanceScore(agent), 0) / agents.length
-                ) : 0}
+                {agents.length > 0
+                  ? Math.round(
+                      agents.reduce((sum, agent) => sum + getPerformanceScore(agent), 0) /
+                        agents.length
+                    )
+                  : 0}
                 %
               </p>
               <p className="text-xs text-muted-foreground">Avg Performance</p>

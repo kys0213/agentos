@@ -1,263 +1,157 @@
-import { AgentMetadata, ChatSessionMetadata } from '@agentos/core';
-import MessageRenderer from './MessageRenderer';
-import {
-  Archive,
-  Bot,
-  Cpu,
-  Home,
-  Layers,
-  Network,
-  Plus,
-  Search,
-  Settings,
-  Wrench,
-} from 'lucide-react';
-import React, { useState, useEffect } from 'react';
-import AutoSizer from 'react-virtualized-auto-sizer';
-import { FixedSizeList as List } from 'react-window';
-import { AppModeState } from '../../types/chat-types';
+import { Archive, Bot, MessageSquare, MoreVertical, Pin, Plus, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { ServiceContainer } from '../../services/ServiceContainer';
-import type { ChatService } from '../../services/chat-service';
+import { Input } from '../ui/input';
+import { ChatSessionMetadata } from '@agentos/core';
+import MessageRenderer from './MessageRenderer';
 
 interface ChatHistoryProps {
-  onSelectChat: (chat: ChatSessionMetadata) => void;
-  onNewChat: () => void;
+  onSelectChat: (chatId: string) => void;
   selectedChatId?: string;
-  onNavigate: (section: AppModeState['activeSection']) => void;
 }
 
-const ChatHistory: React.FC<ChatHistoryProps> = ({
-  onSelectChat,
-  onNewChat,
-  selectedChatId,
-  onNavigate,
-}) => {
-  // Refactored to use actual chat service instead of mock data
+export function ChatHistory({ onSelectChat, selectedChatId }: ChatHistoryProps) {
+  const [searchQuery, setSearchQuery] = useState('');
   const [chatSessions, setChatSessions] = useState<ChatSessionMetadata[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const chatService = ServiceContainer.get<ChatService>('chat');
-
-  // Load chat sessions from actual service
+  // TODO: get chat sessions from backend
   useEffect(() => {
-    const loadChatSessions = async () => {
-      try {
-        setIsLoading(true);
-        const sessions = await chatService.listSessions();
-        setChatSessions(sessions);
-      } catch (error) {
-        console.error('Failed to load chat sessions:', error);
-        // Graceful fallback - maintain empty array
-        setChatSessions([]);
-      } finally {
-        setIsLoading(false);
-      }
+    // TODO: get chat sessions from backend
+    setChatSessions([]);
+  }, []);
+
+  // Group chats by date
+  const groupChatsByDate = (sessions: ChatSessionMetadata[]) => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const lastWeek = new Date(today);
+    lastWeek.setDate(lastWeek.getDate() - 7);
+
+    const groups = {
+      today: sessions.filter(
+        (session) => session.updatedAt.toDateString() === today.toDateString()
+      ),
+      yesterday: sessions.filter(
+        (session) => session.updatedAt.toDateString() === yesterday.toDateString()
+      ),
+      thisWeek: sessions.filter(
+        (session) =>
+          session.updatedAt > lastWeek &&
+          session.updatedAt.toDateString() !== today.toDateString() &&
+          session.updatedAt.toDateString() !== yesterday.toDateString()
+      ),
+      older: sessions.filter((session) => session.updatedAt <= lastWeek),
     };
 
-    loadChatSessions();
-  }, [chatService]);
+    return groups;
+  };
 
-  const quickNavItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'presets', label: 'Presets', icon: Layers },
-    { id: 'subagents', label: 'Agents', icon: Bot },
-    { id: 'models', label: 'Models', icon: Cpu },
-    { id: 'tools', label: 'Tools', icon: Wrench },
-    { id: 'racp', label: 'RACP', icon: Network },
-    { id: 'settings', label: 'Settings', icon: Settings },
-  ];
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
-  const items = chatSessions;
+  const groupedChats = groupChatsByDate(chatSessions);
 
-  // Show loading state if data is being loaded
-  if (isLoading) {
-    return (
-      <div className="w-80 bg-muted flex flex-col h-full border-r border-gray-100">
-        <div className="px-4 py-4 border-b bg-background">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold text-lg">Chats</h2>
-            <Button variant="outline" size="sm" onClick={onNewChat}>
-              <Plus className="w-4 h-4" />
-            </Button>
-          </div>
+  const ChatItem = ({ session }: { session: ChatSessionMetadata }) => (
+    <div
+      key={session.sessionId}
+      className={`p-3 rounded-lg cursor-pointer transition-colors group ${
+        selectedChatId === session.sessionId
+          ? 'bg-blue-50 border border-blue-200'
+          : 'hover:bg-gray-50'
+      }`}
+      onClick={() => onSelectChat(session.sessionId)}
+    >
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <h4 className="text-sm font-medium truncate">{session.title}</h4>
         </div>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center text-gray-500">
-            <div className="animate-spin w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full mx-auto mb-2"></div>
-            <p className="text-sm">Loading chats...</p>
-          </div>
+        <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0">
+          <MoreVertical className="w-3 h-3" />
+        </Button>
+      </div>
+
+      {session.recentMessages.length > 0 && (
+        <MessageRenderer message={session.recentMessages[0]} mode="compact" />
+      )}
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <Bot className="w-3 h-3 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">{session.joinedAgents[0].name}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-xs px-1.5 py-0">
+            {session.totalMessages}
+          </Badge>
+          <span className="text-xs text-muted-foreground">{formatTime(session.updatedAt)}</span>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 
-  const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
-    const chat = items[index];
-
-    const presentAgent = chat.joinedAgents[0] || {
-      id: 'main-orchestrator',
-      name: 'Main Orchestrator',
-      description: 'Main Orchestrator',
-      icon: '🔍',
-      keywords: ['main', 'orchestrator'],
-    };
+  const renderChatGroup = (title: string, chats: ChatSessionMetadata[]) => {
+    if (chats.length === 0) return null;
 
     return (
-      <div style={style} className="px-3">
-        <div
-          key={chat.sessionId}
-          className={`px-4 py-4 rounded-lg cursor-pointer transition-all duration-200 mb-3 mx-1 ${
-            selectedChatId === chat.sessionId
-              ? 'bg-blue-50 border border-blue-200 shadow-sm'
-              : 'hover:bg-gray-50 hover:shadow-sm'
-          }`}
-          onClick={() => onSelectChat(chat)}
-        >
-          <div className="flex items-start gap-3">
-            <div
-              className={`w-9 h-9 ${getAgentColor(chat.joinedAgents)} rounded-full flex items-center justify-center flex-shrink-0 shadow-sm`}
-            >
-              <span className="text-sm text-white font-semibold">
-                {presentAgent.name
-                  .split(' ')
-                  .map((word) => word[0])
-                  .join('')}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-semibold text-sm truncate text-gray-900">{chat.title}</h4>
-                <span className="text-xs text-gray-500 flex-shrink-0 ml-3">
-                  {formatTimestamp(chat.createdAt)}
-                </span>
-              </div>
-              <MessageRenderer
-                message={chat.recentMessages[0]}
-                mode="preview"
-                showTimestamp={false}
-                showAgentBadge={false}
-                className="mb-3"
-              />
-              <div className="flex items-center justify-between">
-                <Badge variant="secondary" className="text-xs font-medium">
-                  {presentAgent.name}
-                </Badge>
-                <span className="text-xs text-gray-500 font-medium">
-                  {chat.totalMessages} messages
-                </span>
-              </div>
-            </div>
-          </div>
+      <div className="mb-4">
+        <h5 className="text-xs font-medium text-muted-foreground mb-2 px-2">{title}</h5>
+        <div className="space-y-1">
+          {chats.map((chat) => (
+            <ChatItem key={chat.sessionId} session={chat} />
+          ))}
         </div>
       </div>
     );
   };
 
   return (
-    <div className="w-80 bg-muted flex flex-col h-full border-r border-gray-100">
-      {/* 고정 헤더 */}
-      <div className="px-4 py-4 border-b bg-background">
+    <div className="w-80 border-r bg-white flex flex-col h-full">
+      {/* Header */}
+      <div className="p-4 border-b">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold text-lg">Chats</h2>
-          <Button variant="outline" size="sm" onClick={onNewChat}>
+          <h2 className="text-lg font-semibold">Chats</h2>
+          <Button size="sm">
             <Plus className="w-4 h-4" />
           </Button>
         </div>
+
+        {/* Search */}
         <div className="relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
+          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+          <Input
             placeholder="Search conversations..."
-            className="w-full pl-10 pr-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 h-9"
           />
         </div>
       </div>
 
-      {/* 스크롤 가능한 채팅 목록 */}
-      <div className="flex-1 overflow-y-auto">
-        <AutoSizer>
-          {({ height, width }) => (
-            <List height={height} itemCount={items.length} itemSize={140} width={width}>
-              {Row}
-            </List>
-          )}
-        </AutoSizer>
-      </div>
+      {/* Chat List */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {renderChatGroup('Today', groupedChats.today)}
+        {renderChatGroup('Yesterday', groupedChats.yesterday)}
+        {renderChatGroup('This Week', groupedChats.thisWeek)}
+        {renderChatGroup('Older', groupedChats.older)}
 
-      {/* 고정 푸터 */}
-      <div className="border-t bg-background px-4 py-3">
-        {chatSessions.length > 0 && (
-          <div className="pb-3 border-b">
-            <div className="flex items-center gap-2 mb-2">
-              <Archive className="w-3 h-3 text-gray-500" />
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Archived ({chatSessions.length})
-              </span>
-            </div>
+        {/* Empty State */}
+        {Object.values(groupedChats).every((group) => group.length === 0) && (
+          <div className="text-center py-8">
+            <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground mb-2">
+              {searchQuery ? 'No chats found' : 'No conversations yet'}
+            </p>
+            {!searchQuery && (
+              <Button variant="outline" size="sm">
+                Start your first chat
+              </Button>
+            )}
           </div>
         )}
-        {/* Quick Navigation */}
-        <div className="space-y-2">
-          <h4 className="text-xs font-medium text-muted-foreground mb-2">Quick Access</h4>
-          <div className="grid grid-cols-2 gap-1">
-            {quickNavItems.slice(0, 6).map((item) => {
-              const Icon = item.icon;
-              return (
-                <Button
-                  key={item.id}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onNavigate(item.id as AppModeState['activeSection'])}
-                  className="h-8 text-xs justify-start gap-2 px-2"
-                >
-                  <Icon className="w-3 h-3" />
-                  {item.label}
-                </Button>
-              );
-            })}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onNavigate('settings')}
-            className="w-full h-8 text-xs gap-2"
-          >
-            <Settings className="w-3 h-3" />
-            Settings
-          </Button>
-        </div>
       </div>
     </div>
   );
-};
-
-const formatTimestamp = (timestamp: Date) => {
-  const now = new Date();
-  const diffMs = now.getTime() - timestamp.getTime();
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffHours < 1) return 'now';
-  if (diffHours < 24) return `${diffHours}h`;
-  if (diffDays < 7) return `${diffDays}d`;
-  return timestamp.toLocaleDateString();
-};
-
-const getAgentColors = (agentMetadata: AgentMetadata[]) => {
-  const colors: { [key: string]: string } = {
-    'Data Analyzer': 'bg-blue-500',
-    'Code Assistant': 'bg-green-500',
-    'Content Writer': 'bg-purple-500',
-    'Research Assistant': 'bg-orange-500',
-  };
-  return agentMetadata.map((agent) => colors[agent.id] || 'bg-gray-500');
-};
-
-const getAgentColor = (agentMetadata: AgentMetadata[]) => {
-  const colors = getAgentColors(agentMetadata);
-  return colors[0];
-};
-
-export default ChatHistory;
+}

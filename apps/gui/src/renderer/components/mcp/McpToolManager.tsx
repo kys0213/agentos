@@ -84,22 +84,22 @@ export function MCPToolsManager() {
     const loadMcpData = async () => {
       try {
         setIsLoading(true);
-        
+
         if (ServiceContainer.has('mcp')) {
           const mcpService = ServiceContainer.get<McpService>('mcp');
-          
+
           try {
             // Get all MCP tool metadata
             const mcpTools = await mcpService.getAllToolMetadata();
-            
+
             // Convert Core McpToolMetadata to GUI format with icons
             const guiTools: GuiMcpTool[] = mcpTools.map((tool) => ({
               ...tool,
               icon: getIconForCategory(tool.category || 'other'),
             }));
-            
+
             setTools(guiTools);
-            
+
             // Get usage logs if available
             try {
               const logs = await mcpService.getAllUsageLogs({ limit: 50 });
@@ -108,10 +108,9 @@ export function MCPToolsManager() {
               console.warn('Usage logs not available:', logError);
               setUsageLogs([]);
             }
-            
           } catch (mcpError) {
             console.warn('MCP tools not available:', mcpError);
-            
+
             // Fallback to sample data when MCP service has no tools
             const fallbackTools: GuiMcpTool[] = [
               {
@@ -140,7 +139,7 @@ export function MCPToolsManager() {
                 icon: <Code className="w-5 h-5" />,
               },
             ];
-            
+
             setTools(fallbackTools);
             setUsageLogs([]);
           }
@@ -149,7 +148,6 @@ export function MCPToolsManager() {
           setTools([]);
           setUsageLogs([]);
         }
-        
       } catch (error) {
         console.error('Failed to load MCP data:', error);
         setTools([]);
@@ -243,9 +241,9 @@ export function MCPToolsManager() {
     try {
       if (ServiceContainer.has('mcp')) {
         const mcpService = ServiceContainer.get<McpService>('mcp');
-        
+
         // Find the tool configuration
-        const tool = tools.find(t => t.id === toolId);
+        const tool = tools.find((t) => t.id === toolId);
         if (tool) {
           // Create a basic MCP config for the tool
           const mcpConfig = {
@@ -254,22 +252,20 @@ export function MCPToolsManager() {
             version: tool.version,
             url: tool.endpoint || 'https://api.example.com/mcp',
           };
-          
+
           // Connect the tool
           await mcpService.connect(mcpConfig);
-          
+
           // Update local state
-          setTools(prev => prev.map(t => 
-            t.id === toolId ? { ...t, status: 'connected' } : t
-          ));
+          setTools((prev) =>
+            prev.map((t) => (t.id === toolId ? { ...t, status: 'connected' } : t))
+          );
         }
       }
     } catch (error) {
       console.error('Failed to connect tool:', error);
       // Update tool status to error
-      setTools(prev => prev.map(t => 
-        t.id === toolId ? { ...t, status: 'error' } : t
-      ));
+      setTools((prev) => prev.map((t) => (t.id === toolId ? { ...t, status: 'error' } : t)));
     }
   };
 
@@ -277,14 +273,14 @@ export function MCPToolsManager() {
     try {
       if (ServiceContainer.has('mcp')) {
         const mcpService = ServiceContainer.get<McpService>('mcp');
-        
+
         // Disconnect the tool
         await mcpService.disconnect(toolId);
-        
+
         // Update local state
-        setTools(prev => prev.map(t => 
-          t.id === toolId ? { ...t, status: 'disconnected' } : t
-        ));
+        setTools((prev) =>
+          prev.map((t) => (t.id === toolId ? { ...t, status: 'disconnected' } : t))
+        );
       }
     } catch (error) {
       console.error('Failed to disconnect tool:', error);
@@ -297,12 +293,12 @@ export function MCPToolsManager() {
       if (ServiceContainer.has('mcp')) {
         const mcpService = ServiceContainer.get<McpService>('mcp');
         const mcpTools = await mcpService.getAllToolMetadata();
-        
+
         const guiTools: GuiMcpTool[] = mcpTools.map((tool) => ({
           ...tool,
           icon: getIconForCategory(tool.category || 'other'),
         }));
-        
+
         setTools(guiTools);
       }
     } catch (error) {
@@ -590,8 +586,8 @@ export function MCPToolsManager() {
                                 <Button
                                   variant={tool.status === 'connected' ? 'destructive' : 'default'}
                                   size="sm"
-                                  onClick={() => 
-                                    tool.status === 'connected' 
+                                  onClick={() =>
+                                    tool.status === 'connected'
                                       ? handleDisconnectTool(tool.id)
                                       : handleConnectTool(tool.id)
                                   }

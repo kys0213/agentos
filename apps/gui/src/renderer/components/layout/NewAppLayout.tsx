@@ -7,7 +7,7 @@ import { useAppData } from '../../hooks/useAppData';
 
 // Temporary imports for components that will be migrated in Phase 2
 // TODO: These will be replaced with actual migrated components
-import ChatView from '../chat/ChatView';
+import { ChatView } from '../chat/ChatView';
 import ManagementView from './ManagementView';
 
 /**
@@ -20,6 +20,7 @@ import ManagementView from './ManagementView';
  */
 const NewAppLayout: React.FC = () => {
   const navigation = useAppNavigation();
+
   const appData = useAppData();
 
   const { activeSection, setActiveSection } = navigation;
@@ -55,6 +56,9 @@ const NewAppLayout: React.FC = () => {
       <div className="h-screen bg-background">
         <ChatView
           onNavigate={setActiveSection}
+          agents={currentAgents}
+          mentionableAgents={currentAgents}
+          activeAgents={currentAgents}
           // Pass agents and mentionable agents when ChatView is updated
         />
       </div>
@@ -62,7 +66,7 @@ const NewAppLayout: React.FC = () => {
   }
 
   // Management Mode: ManagementView now handles its own navigation
-  return <ManagementView />;
+  return <ManagementView navigation={navigation} />;
 };
 
 export default NewAppLayout;

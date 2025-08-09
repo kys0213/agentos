@@ -10,21 +10,21 @@ import { MCPToolsManager } from '../mcp/McpToolManager';
 import { ToolBuilder } from '../tool/ToolBuilder';
 
 // Import new design hooks like design/App.tsx
-import { useAppNavigation } from '../../hooks/useAppNavigation';
 import { useChatState } from '../../hooks/useChatState';
 import { useAppData } from '../../hooks/useAppData';
 import { getPageTitle } from '../../utils/appUtils';
+import { UseAppNavigationReturn } from '../../types/design-types';
+import { AgentMetadata } from '@agentos/core';
 
 interface ManagementViewProps {
-  onOpenChat?: (agentId?: number, agentName?: string, agentPreset?: string) => void;
+  navigation: UseAppNavigationReturn;
 }
 
 /**
  * 관리 화면 - design/App.tsx 패턴을 따라 navigation을 직접 관리
  */
-const ManagementView: React.FC<ManagementViewProps> = ({ onOpenChat }) => {
+const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
   // Use hooks directly like design/App.tsx
-  const navigation = useAppNavigation();
   const chatState = useChatState();
   const appData = useAppData();
 
@@ -113,19 +113,15 @@ const ManagementView: React.FC<ManagementViewProps> = ({ onOpenChat }) => {
     }
   };
 
-  const handleOpenChat = (agentId?: number, agentName?: string, agentPreset?: string) => {
+  const handleOpenChat = (agentId: string) => {
     // Convert to DesignAgent format for new hooks (like NewAppLayout)
-    const agent = {
-      id: (agentId ?? 'unknown').toString(),
-      name: agentName ?? 'Unknown Agent',
-      preset: agentPreset ?? 'default',
-      description: '',
-      category: 'general',
-      status: 'active' as const,
-      usageCount: 0,
-    };
-    handleOpenChatFromHook(agent);
-    onOpenChat?.(agentId, agentName, agentPreset);
+
+    const agent = currentAgents.find((agent) => agent.id === agentId);
+
+    if (agent) {
+      handleOpenChatFromHook(agent);
+    }
+
     handleBackToChat();
   };
 
@@ -453,7 +449,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ onOpenChat }) => {
               </div>
             </div>
             <div className="text-sm text-muted-foreground mb-2">
-              Preset: {activeChatAgent.preset}
+              Preset: {activeChatAgent.preset.name}
             </div>
             <div className="border rounded p-2 bg-background">
               <p className="text-sm text-muted-foreground">Chat interface coming soon...</p>
