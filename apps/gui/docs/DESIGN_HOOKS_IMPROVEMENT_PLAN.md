@@ -105,7 +105,7 @@ interface UseChatStateReturn {
 
 ### Phase 2: 데이터 레이어 분리 (1일) 
 
-- [ ] **[TODO 3/8]** useAppData를 ServiceContainer 기반으로 재작성
+- [x] **[TODO 3/8]** useAppData를 ServiceContainer 기반으로 재작성
 - [ ] **[TODO 4/8]** 비즈니스 로직을 Service 레이어로 이동
 
 ### Phase 3: UI 상태 관리 최적화 (1일)

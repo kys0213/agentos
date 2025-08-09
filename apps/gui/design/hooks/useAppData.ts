@@ -7,12 +7,14 @@ import { McpConfig } from '../components/MCPToolAdd';
 // ServiceContainer와 서비스들 import (renderer와 동일한 패턴)
 import { ServiceContainer } from '../../src/renderer/services/ServiceContainer';
 import type { PresetService, McpService } from '../../src/renderer/types/core-types';
+import type { UseAppDataReturn } from '../../src/renderer/types/design-types';
 
 /**
  * Design 폴더용 useAppData - ServiceContainer 기반으로 재작성
  * Mock 데이터 의존성 제거하고 Core 서비스와 연동
+ * renderer/hooks/useAppData.ts와 동일한 패턴 및 타입 적용
  */
-export function useAppData() {
+export function useAppData(): UseAppDataReturn {
   const [presets, setPresets] = useState<Preset[]>([]);
   const [agents, setAgents] = useState<AgentMetadata[]>([]);
   const [showEmptyState, setShowEmptyState] = useState(false);
@@ -34,8 +36,9 @@ export function useAppData() {
         // TODO: Agent 데이터는 현재 Core에 없으므로 임시로 빈 배열
         // 실제로는 AgentManager나 별도 서비스에서 로드해야 함
         setAgents([]);
-      } catch (error) {
-        console.error('Failed to load app data:', error);
+      } catch (err) {
+        const errorObj = err instanceof Error ? err : new Error(String(err));
+        console.error('Failed to load app data:', errorObj);
         // 에러 발생 시 빈 상태로 설정
         setPresets([]);
         setAgents([]);
@@ -49,44 +52,39 @@ export function useAppData() {
 
   const currentAgents = showEmptyState ? [] : agents;
 
-  const handleUpdateAgentStatus = (agentId: string, newStatus: 'active' | 'idle' | 'inactive') => {
-    setAgents((prev) =>
-      prev.map((agent) => (agent.id === agentId ? { ...agent, status: newStatus } : agent))
+  const handleUpdateAgentStatus = (agentId: string, newStatus: AgentMetadata['status']) => {
+    setAgents((prev: AgentMetadata[]) =>
+      prev.map((agent: AgentMetadata) => (agent.id === agentId ? { ...agent, status: newStatus } : agent))
     );
   };
 
-  const handleCreatePreset = async (
-    newPreset: Omit<Preset, 'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'knowledgeDocuments' | 'knowledgeStats'>
-  ): Promise<Preset> => {
-    try {
-      const preset: Preset = {
-        ...newPreset,
-        id: `preset-${Date.now()}`,
-        author: 'User',
-        version: '1.0.0',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        usageCount: 0,
-        knowledgeDocuments: 0,
-        knowledgeStats: {
-          indexed: 0,
-          vectorized: 0,
-          totalSize: 0,
-        },
-      };
+  const handleCreatePreset = (newPresetData: Partial<Preset>): Preset => {
+    // 임시로 클라이언트 상태로만 생성 (실제로는 async로 Core 서비스와 연동)
+    const preset: Preset = {
+      id: `preset-${Date.now()}`,
+      name: newPresetData.name || '',
+      description: newPresetData.description || '',
+      author: 'User',
+      version: '1.0.0',
+      systemPrompt: newPresetData.systemPrompt || '',
+      enabledMcps: [],
+      llmBridgeName: 'default',
+      llmBridgeConfig: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      category: newPresetData.category || ['general'],
+      status: newPresetData.status || 'active',
+      usageCount: 0,
+      knowledgeDocuments: 0,
+      knowledgeStats: {
+        indexed: 0,
+        vectorized: 0,
+        totalSize: 0,
+      },
+    };
 
-      // ServiceContainer를 통해 Core 서비스에 생성 요청
-      if (ServiceContainer.has('preset')) {
-        const presetService = ServiceContainer.get<PresetService>('preset');
-        await presetService.create(preset);
-      }
-
-      setPresets((prev) => [...prev, preset]);
-      return preset;
-    } catch (error) {
-      console.error('Failed to create preset:', error);
-      throw error;
-    }
+    setPresets((prev) => [...prev, preset]);
+    return preset;
   };
 
   const handleCreateMCPTool = async (mcpConfig: McpConfig): Promise<McpConfig> => {
@@ -104,16 +102,26 @@ export function useAppData() {
     }
   };
 
-  const handleCreateAgent = (newAgent: Omit<AgentMetadata, 'id' | 'usageCount' | 'lastUsed' | 'sessionCount'>) => {
+  const handleCreateAgent = (newAgentData: Partial<AgentMetadata>): AgentMetadata => {
+    if (!newAgentData.preset) {
+      throw new Error('Preset is required');
+    }
+
+    // TODO: Agent는 현재 Core에 없으므로 클라이언트 상태로만 관리
     const agent: AgentMetadata = {
-      ...newAgent,
       id: `agent-${Date.now()}`,
-      usageCount: 0,
+      name: newAgentData.name || '',
+      description: newAgentData.description || '',
+      status: newAgentData.status || 'active',
+      preset: newAgentData.preset,
+      keywords: newAgentData.keywords || [],
+      icon: newAgentData.icon || '',
       lastUsed: undefined,
       sessionCount: 0,
+      usageCount: 0,
     };
 
-    setAgents((prev) => [...prev, agent]);
+    setAgents((prev: AgentMetadata[]) => [...prev, agent]);
     return agent;
   };
 
@@ -166,10 +174,12 @@ export function useAppData() {
     return currentAgents.filter((agent) => agent.status === 'active');
   };
 
+  // renderer 패턴과 동일하게 agentsToShow 로직 적용
+  const agentsToShow = showEmptyState ? [] : currentAgents;
+
   return {
     presets,
-    agents,
-    currentAgents,
+    currentAgents: agentsToShow, // showEmptyState 로직 적용
     showEmptyState,
     setShowEmptyState,
     loading, // 로딩 상태 추가
