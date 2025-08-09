@@ -1,15 +1,15 @@
-import { useState, useRef, useEffect, KeyboardEvent } from "react";
-import { Textarea } from "./ui/textarea";
-import { Button } from "./ui/button";
-import { MentionAutocomplete } from "./MentionAutocomplete";
-import { Send, AtSign } from "lucide-react";
+import { useState, useRef, useEffect, KeyboardEvent } from 'react';
+import { Textarea } from './ui/textarea';
+import { Button } from './ui/button';
+import { MentionAutocomplete } from './MentionAutocomplete';
+import { Send, AtSign } from 'lucide-react';
 
 interface Agent {
   id: string;
   name: string;
   description: string;
   category: string;
-  status: "active" | "idle" | "inactive";
+  status: 'active' | 'idle' | 'inactive';
   preset: string;
   avatar?: string;
   lastUsed?: Date;
@@ -26,53 +26,54 @@ interface MessageInputWithMentionsProps {
 export function MessageInputWithMentions({
   mentionableAgents,
   onSendMessage,
-  placeholder = "Type a message... (Use @ to mention agents)",
-  disabled = false
+  placeholder = 'Type a message... (Use @ to mention agents)',
+  disabled = false,
 }: MessageInputWithMentionsProps) {
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
   const [showMentions, setShowMentions] = useState(false);
-  const [mentionQuery, setMentionQuery] = useState("");
+  const [mentionQuery, setMentionQuery] = useState('');
   const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const [mentionedAgents, setMentionedAgents] = useState<Agent[]>([]);
-  
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const mentionStartRef = useRef<number>(-1);
 
-  const filteredAgents = mentionableAgents.filter(agent => 
-    agent.name.toLowerCase().includes(mentionQuery.toLowerCase()) ||
-    agent.description.toLowerCase().includes(mentionQuery.toLowerCase()) ||
-    agent.category.toLowerCase().includes(mentionQuery.toLowerCase())
+  const filteredAgents = mentionableAgents.filter(
+    (agent) =>
+      agent.name.toLowerCase().includes(mentionQuery.toLowerCase()) ||
+      agent.description.toLowerCase().includes(mentionQuery.toLowerCase()) ||
+      agent.category.toLowerCase().includes(mentionQuery.toLowerCase())
   );
 
   // Handle input changes and detect @ mentions
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     const cursorPosition = e.target.selectionStart;
-    
+
     setMessage(value);
 
     // Check for @ mention
     const textBeforeCursor = value.slice(0, cursorPosition);
     const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
-    
+
     if (mentionMatch) {
       const query = mentionMatch[1];
       mentionStartRef.current = cursorPosition - mentionMatch[0].length;
-      
+
       setMentionQuery(query);
       setSelectedMentionIndex(0);
-      
+
       // Calculate position for mention dropdown
       const textarea = textareaRef.current;
       if (textarea) {
         const rect = textarea.getBoundingClientRect();
         setMentionPosition({
           top: rect.bottom + 4,
-          left: rect.left
+          left: rect.left,
         });
       }
-      
+
       setShowMentions(true);
     } else {
       setShowMentions(false);
@@ -83,30 +84,26 @@ export function MessageInputWithMentions({
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (showMentions && filteredAgents.length > 0) {
       switch (e.key) {
-        case "ArrowDown":
+        case 'ArrowDown':
           e.preventDefault();
-          setSelectedMentionIndex(prev => 
-            prev < filteredAgents.length - 1 ? prev + 1 : 0
-          );
+          setSelectedMentionIndex((prev) => (prev < filteredAgents.length - 1 ? prev + 1 : 0));
           break;
-        case "ArrowUp":
+        case 'ArrowUp':
           e.preventDefault();
-          setSelectedMentionIndex(prev => 
-            prev > 0 ? prev - 1 : filteredAgents.length - 1
-          );
+          setSelectedMentionIndex((prev) => (prev > 0 ? prev - 1 : filteredAgents.length - 1));
           break;
-        case "Enter":
+        case 'Enter':
           e.preventDefault();
           if (filteredAgents[selectedMentionIndex]) {
             selectAgent(filteredAgents[selectedMentionIndex]);
           }
           break;
-        case "Escape":
+        case 'Escape':
           e.preventDefault();
           setShowMentions(false);
           break;
       }
-    } else if (e.key === "Enter" && !e.shiftKey) {
+    } else if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -117,18 +114,18 @@ export function MessageInputWithMentions({
     const beforeMention = message.slice(0, mentionStartRef.current);
     const afterMention = message.slice(textareaRef.current?.selectionStart || 0);
     const newMessage = beforeMention + `@${agent.name} ` + afterMention;
-    
+
     setMessage(newMessage);
     setShowMentions(false);
-    
+
     // Add to mentioned agents if not already included
-    if (!mentionedAgents.find(a => a.id === agent.id)) {
-      setMentionedAgents(prev => [...prev, agent]);
+    if (!mentionedAgents.find((a) => a.id === agent.id)) {
+      setMentionedAgents((prev) => [...prev, agent]);
     }
-    
+
     // Focus back to textarea
     textareaRef.current?.focus();
-    
+
     // Set cursor position after the mention
     setTimeout(() => {
       const newCursorPos = beforeMention.length + agent.name.length + 2; // +2 for @ and space
@@ -143,13 +140,15 @@ export function MessageInputWithMentions({
       const mentionRegex = /@(\w+)/g;
       const matches = [...message.matchAll(mentionRegex)];
       const currentMentions = matches
-        .map(match => mentionableAgents.find(agent => 
-          agent.name.toLowerCase().includes(match[1].toLowerCase())
-        ))
+        .map((match) =>
+          mentionableAgents.find((agent) =>
+            agent.name.toLowerCase().includes(match[1].toLowerCase())
+          )
+        )
         .filter(Boolean) as Agent[];
-      
+
       onSendMessage(message.trim(), currentMentions);
-      setMessage("");
+      setMessage('');
       setMentionedAgents([]);
       setShowMentions(false);
     }
@@ -164,8 +163,8 @@ export function MessageInputWithMentions({
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = Math.min(textarea.scrollHeight, 120) + "px";
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
     }
   }, [message]);
 
@@ -181,9 +180,9 @@ export function MessageInputWithMentions({
             placeholder={placeholder}
             disabled={disabled}
             className="min-h-[44px] max-h-[120px] resize-none pr-12"
-            style={{ paddingRight: "3rem" }}
+            style={{ paddingRight: '3rem' }}
           />
-          
+
           {/* @ hint button */}
           <Button
             variant="ghost"
@@ -193,7 +192,7 @@ export function MessageInputWithMentions({
               const textarea = textareaRef.current;
               if (textarea) {
                 const cursorPos = textarea.selectionStart;
-                const newMessage = message.slice(0, cursorPos) + "@" + message.slice(cursorPos);
+                const newMessage = message.slice(0, cursorPos) + '@' + message.slice(cursorPos);
                 setMessage(newMessage);
                 textarea.focus();
                 setTimeout(() => {
@@ -206,7 +205,7 @@ export function MessageInputWithMentions({
             <AtSign className="w-3 h-3" />
           </Button>
         </div>
-        
+
         <Button
           onClick={handleSend}
           disabled={disabled || !message.trim()}
@@ -229,16 +228,13 @@ export function MessageInputWithMentions({
           selectedIndex={selectedMentionIndex}
         />
       )}
-      
+
       {/* Show mentioned agents */}
       {mentionedAgents.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">
           <span className="text-xs text-muted-foreground">Mentioned:</span>
-          {mentionedAgents.map(agent => (
-            <span
-              key={agent.id}
-              className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded"
-            >
+          {mentionedAgents.map((agent) => (
+            <span key={agent.id} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
               @{agent.name}
             </span>
           ))}

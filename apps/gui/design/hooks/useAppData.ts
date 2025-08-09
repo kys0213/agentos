@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Preset, Agent } from "../types";
-import { mockPresets, mockAgents } from "../data/mockData";
-import { McpConfig } from "../components/MCPToolAdd";
+import { useState } from 'react';
+import { Preset, Agent } from '../types';
+import { mockPresets, mockAgents } from '../data/mockData';
+import { McpConfig } from '../components/MCPToolAdd';
 
 export function useAppData() {
   const [presets, setPresets] = useState<Preset[]>(mockPresets);
@@ -10,23 +10,25 @@ export function useAppData() {
 
   const currentAgents = showEmptyState ? [] : agents;
 
-  const handleUpdateAgentStatus = (agentId: string, newStatus: "active" | "idle" | "inactive") => {
-    setAgents(prev => prev.map(agent => 
-      agent.id === agentId ? { ...agent, status: newStatus } : agent
-    ));
+  const handleUpdateAgentStatus = (agentId: string, newStatus: 'active' | 'idle' | 'inactive') => {
+    setAgents((prev) =>
+      prev.map((agent) => (agent.id === agentId ? { ...agent, status: newStatus } : agent))
+    );
   };
 
-  const handleCreatePreset = (newPreset: Omit<Preset, 'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'knowledgeDocuments'>) => {
+  const handleCreatePreset = (
+    newPreset: Omit<Preset, 'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'knowledgeDocuments'>
+  ) => {
     const preset: Preset = {
       ...newPreset,
       id: `preset-${Date.now()}`,
       createdAt: new Date(),
       updatedAt: new Date(),
       usageCount: 0,
-      knowledgeDocuments: 0
+      knowledgeDocuments: 0,
     };
-    
-    setPresets(prev => [...prev, preset]);
+
+    setPresets((prev) => [...prev, preset]);
     return preset;
   };
 
@@ -40,10 +42,10 @@ export function useAppData() {
       ...newAgent,
       id: `agent-${Date.now()}`,
       usageCount: 0,
-      lastUsed: undefined
+      lastUsed: undefined,
     };
-    
-    setAgents(prev => [...prev, agent]);
+
+    setAgents((prev) => [...prev, agent]);
     return agent;
   };
 
@@ -53,23 +55,23 @@ export function useAppData() {
   };
 
   const handleUpdatePreset = (updatedPreset: Preset) => {
-    setPresets(prev => prev.map(preset => 
-      preset.id === updatedPreset.id 
-        ? { ...updatedPreset, updatedAt: new Date() }
-        : preset
-    ));
+    setPresets((prev) =>
+      prev.map((preset) =>
+        preset.id === updatedPreset.id ? { ...updatedPreset, updatedAt: new Date() } : preset
+      )
+    );
   };
 
   const handleDeletePreset = (presetId: string) => {
-    setPresets(prev => prev.filter(preset => preset.id !== presetId));
+    setPresets((prev) => prev.filter((preset) => preset.id !== presetId));
   };
 
   const getMentionableAgents = () => {
-    return currentAgents.filter(agent => agent.status === "active" || agent.status === "idle");
+    return currentAgents.filter((agent) => agent.status === 'active' || agent.status === 'idle');
   };
 
   const getActiveAgents = () => {
-    return currentAgents.filter(agent => agent.status === "active");
+    return currentAgents.filter((agent) => agent.status === 'active');
   };
 
   return {
@@ -86,6 +88,6 @@ export function useAppData() {
     handleUpdatePreset,
     handleDeletePreset,
     getMentionableAgents,
-    getActiveAgents
+    getActiveAgents,
   };
 }

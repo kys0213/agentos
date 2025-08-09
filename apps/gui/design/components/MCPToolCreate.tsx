@@ -1,24 +1,30 @@
-import { useState } from "react";
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Textarea } from "./ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Progress } from "./ui/progress";
-import { ScrollArea } from "./ui/scroll-area";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
-import { Alert, AlertDescription } from "./ui/alert";
-import { McpConfig, StdioMcpConfig, StreamableHttpMcpConfig, WebSocketMcpConfig, SseMcpConfig } from "./MCPToolAdd";
-import { 
-  ArrowLeft, 
-  Save, 
-  Terminal, 
-  Globe, 
-  Wifi, 
-  Zap, 
+import { useState } from 'react';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Textarea } from './ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Progress } from './ui/progress';
+import { ScrollArea } from './ui/scroll-area';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import { Alert, AlertDescription } from './ui/alert';
+import {
+  McpConfig,
+  StdioMcpConfig,
+  StreamableHttpMcpConfig,
+  WebSocketMcpConfig,
+  SseMcpConfig,
+} from './MCPToolAdd';
+import {
+  ArrowLeft,
+  Save,
+  Terminal,
+  Globe,
+  Wifi,
+  Zap,
   Settings,
   Plus,
   X,
@@ -38,8 +44,8 @@ import {
   Network,
   Database,
   Key,
-  FileText
-} from "lucide-react";
+  FileText,
+} from 'lucide-react';
 
 interface MCPToolCreateProps {
   onBack: () => void;
@@ -62,7 +68,7 @@ interface TroubleshootingGuide {
 }
 
 export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState('overview');
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 5;
 
@@ -80,8 +86,8 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
     network: {
       timeoutMs: 5000,
       maxTotalTimeoutMs: 30000,
-      maxConnectionIdleTimeoutMs: 60000
-    }
+      maxConnectionIdleTimeoutMs: 60000,
+    },
   });
 
   // Environment variables and headers
@@ -101,7 +107,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
       icon: <Terminal className="w-6 h-6" />,
       recommended: true,
       complexity: 'Simple',
-      useCase: 'Local tools and scripts'
+      useCase: 'Local tools and scripts',
     },
     {
       type: 'streamableHttp' as const,
@@ -110,7 +116,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
       icon: <Globe className="w-6 h-6" />,
       recommended: false,
       complexity: 'Medium',
-      useCase: 'Web APIs and services'
+      useCase: 'Web APIs and services',
     },
     {
       type: 'websocket' as const,
@@ -119,7 +125,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
       icon: <Wifi className="w-6 h-6" />,
       recommended: false,
       complexity: 'Medium',
-      useCase: 'Real-time applications'
+      useCase: 'Real-time applications',
     },
     {
       type: 'sse' as const,
@@ -128,138 +134,144 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
       icon: <Zap className="w-6 h-6" />,
       deprecated: true,
       complexity: 'Legacy',
-      useCase: 'Legacy systems only'
-    }
+      useCase: 'Legacy systems only',
+    },
   ];
 
   const troubleshootingGuides: TroubleshootingGuide[] = [
     {
-      issue: "Command not found",
-      description: "The specified command or executable cannot be found in the system PATH",
+      issue: 'Command not found',
+      description: 'The specified command or executable cannot be found in the system PATH',
       solutions: [
-        "Verify the command exists and is executable",
-        "Use absolute path to the executable",
-        "Check if required dependencies are installed",
-        "Ensure the working directory is correct"
+        'Verify the command exists and is executable',
+        'Use absolute path to the executable',
+        'Check if required dependencies are installed',
+        'Ensure the working directory is correct',
       ],
-      isCommon: true
+      isCommon: true,
     },
     {
-      issue: "Permission denied",
-      description: "Insufficient permissions to execute the command or access resources",
+      issue: 'Permission denied',
+      description: 'Insufficient permissions to execute the command or access resources',
       solutions: [
-        "Check file permissions (chmod +x)",
-        "Run with appropriate user privileges",
-        "Verify directory access permissions",
-        "Check if SELinux/AppArmor is blocking execution"
+        'Check file permissions (chmod +x)',
+        'Run with appropriate user privileges',
+        'Verify directory access permissions',
+        'Check if SELinux/AppArmor is blocking execution',
       ],
-      isCommon: true
+      isCommon: true,
     },
     {
-      issue: "Connection timeout",
-      description: "Unable to establish connection within the specified timeout period",
+      issue: 'Connection timeout',
+      description: 'Unable to establish connection within the specified timeout period',
       solutions: [
-        "Increase timeout values in network settings",
-        "Check network connectivity and firewall rules",
-        "Verify the target service is running",
-        "Test connection manually with curl or telnet"
+        'Increase timeout values in network settings',
+        'Check network connectivity and firewall rules',
+        'Verify the target service is running',
+        'Test connection manually with curl or telnet',
       ],
-      isCommon: true
+      isCommon: true,
     },
     {
-      issue: "Invalid URL or endpoint",
-      description: "The specified URL is malformed or the endpoint is not accessible",
+      issue: 'Invalid URL or endpoint',
+      description: 'The specified URL is malformed or the endpoint is not accessible',
       solutions: [
-        "Verify URL format and protocol (http/https/ws/wss)",
-        "Check if the service is running on the specified port",
-        "Test the endpoint with a browser or API client",
-        "Ensure DNS resolution is working"
+        'Verify URL format and protocol (http/https/ws/wss)',
+        'Check if the service is running on the specified port',
+        'Test the endpoint with a browser or API client',
+        'Ensure DNS resolution is working',
       ],
-      isCommon: true
+      isCommon: true,
     },
     {
-      issue: "Authentication failed",
-      description: "API key, token, or credentials are invalid or expired",
+      issue: 'Authentication failed',
+      description: 'API key, token, or credentials are invalid or expired',
       solutions: [
-        "Verify API key or token is correct and active",
-        "Check authentication headers format",
+        'Verify API key or token is correct and active',
+        'Check authentication headers format',
         "Ensure credentials haven't expired",
-        "Test authentication separately"
+        'Test authentication separately',
       ],
-      isCommon: false
+      isCommon: false,
     },
     {
-      issue: "Protocol mismatch",
-      description: "The MCP protocol version or format is incompatible",
+      issue: 'Protocol mismatch',
+      description: 'The MCP protocol version or format is incompatible',
       solutions: [
-        "Check MCP protocol version compatibility",
-        "Verify message format and structure",
-        "Update to latest MCP specification",
-        "Check for protocol-specific requirements"
+        'Check MCP protocol version compatibility',
+        'Verify message format and structure',
+        'Update to latest MCP specification',
+        'Check for protocol-specific requirements',
       ],
-      isCommon: false
-    }
+      isCommon: false,
+    },
   ];
 
   const updateFormData = (updates: Partial<typeof formData>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
+    setFormData((prev) => ({ ...prev, ...updates }));
   };
 
   const addEnvVar = () => {
-    setEnvVars(prev => [...prev, { key: '', value: '' }]);
+    setEnvVars((prev) => [...prev, { key: '', value: '' }]);
   };
 
   const updateEnvVar = (index: number, field: 'key' | 'value', value: string) => {
-    setEnvVars(prev => prev.map((env, i) => 
-      i === index ? { ...env, [field]: value } : env
-    ));
+    setEnvVars((prev) => prev.map((env, i) => (i === index ? { ...env, [field]: value } : env)));
   };
 
   const removeEnvVar = (index: number) => {
-    setEnvVars(prev => prev.filter((_, i) => i !== index));
+    setEnvVars((prev) => prev.filter((_, i) => i !== index));
   };
 
   const addHeader = () => {
-    setHeaders(prev => [...prev, { key: '', value: '' }]);
+    setHeaders((prev) => [...prev, { key: '', value: '' }]);
   };
 
   const updateHeader = (index: number, field: 'key' | 'value', value: string) => {
-    setHeaders(prev => prev.map((header, i) => 
-      i === index ? { ...header, [field]: value } : header
-    ));
+    setHeaders((prev) =>
+      prev.map((header, i) => (i === index ? { ...header, [field]: value } : header))
+    );
   };
 
   const removeHeader = (index: number) => {
-    setHeaders(prev => prev.filter((_, i) => i !== index));
+    setHeaders((prev) => prev.filter((_, i) => i !== index));
   };
 
   const runConnectionTest = async () => {
     setIsTestingConnection(true);
     setFinalTestResult(null);
-    
+
     const tests: ConnectionTest[] = [
       { step: 'Validating configuration', status: 'pending', message: 'Checking form data...' },
-      { step: 'Testing network connectivity', status: 'pending', message: 'Checking network access...' },
-      { step: 'Verifying permissions', status: 'pending', message: 'Checking access permissions...' },
+      {
+        step: 'Testing network connectivity',
+        status: 'pending',
+        message: 'Checking network access...',
+      },
+      {
+        step: 'Verifying permissions',
+        status: 'pending',
+        message: 'Checking access permissions...',
+      },
       { step: 'Testing MCP protocol', status: 'pending', message: 'Validating MCP compliance...' },
-      { step: 'Final validation', status: 'pending', message: 'Running final checks...' }
+      { step: 'Final validation', status: 'pending', message: 'Running final checks...' },
     ];
 
     setConnectionTests(tests);
 
     // Simulate step-by-step testing
     for (let i = 0; i < tests.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 1000));
+
       const updatedTests = [...tests];
       updatedTests[i].status = 'running';
       setConnectionTests([...updatedTests]);
 
-      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1500));
+      await new Promise((resolve) => setTimeout(resolve, 500 + Math.random() * 1500));
 
       // Simulate different outcomes
       const shouldFail = Math.random() < 0.2; // 20% chance of failure
-      
+
       if (shouldFail && i === 1) {
         // Network connectivity failure
         updatedTests[i] = {
@@ -267,7 +279,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
           status: 'error',
           message: 'Connection timeout',
           details: 'Unable to connect to the specified endpoint within 5 seconds',
-          suggestion: 'Check network connectivity and increase timeout values'
+          suggestion: 'Check network connectivity and increase timeout values',
         };
         setConnectionTests([...updatedTests]);
         setFinalTestResult('error');
@@ -279,8 +291,14 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
           ...updatedTests[i],
           status: 'error',
           message: 'Permission denied',
-          details: formData.type === 'stdio' ? 'Command is not executable or path not found' : 'API authentication failed',
-          suggestion: formData.type === 'stdio' ? 'Check file permissions and PATH' : 'Verify API key and authentication headers'
+          details:
+            formData.type === 'stdio'
+              ? 'Command is not executable or path not found'
+              : 'API authentication failed',
+          suggestion:
+            formData.type === 'stdio'
+              ? 'Check file permissions and PATH'
+              : 'Verify API key and authentication headers',
         };
         setConnectionTests([...updatedTests]);
         setFinalTestResult('error');
@@ -293,17 +311,17 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
           'Network connectivity established',
           'Permissions verified',
           'MCP protocol compliance confirmed',
-          'All checks passed successfully'
+          'All checks passed successfully',
         ];
-        
+
         updatedTests[i] = {
           ...updatedTests[i],
           status: 'success',
           message: successMessages[i],
-          details: i === tests.length - 1 ? 'MCP tool is ready for deployment' : undefined
+          details: i === tests.length - 1 ? 'MCP tool is ready for deployment' : undefined,
         };
       }
-      
+
       setConnectionTests([...updatedTests]);
     }
 
@@ -315,16 +333,22 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
     if (!isFormValid()) return;
 
     let finalConfig: McpConfig;
-    
-    const envObj = envVars.reduce((acc, env) => {
-      if (env.key && env.value) acc[env.key] = env.value;
-      return acc;
-    }, {} as Record<string, string>);
-    
-    const headersObj = headers.reduce((acc, header) => {
-      if (header.key && header.value) acc[header.key] = header.value;
-      return acc;
-    }, {} as Record<string, string>);
+
+    const envObj = envVars.reduce(
+      (acc, env) => {
+        if (env.key && env.value) acc[env.key] = env.value;
+        return acc;
+      },
+      {} as Record<string, string>
+    );
+
+    const headersObj = headers.reduce(
+      (acc, header) => {
+        if (header.key && header.value) acc[header.key] = header.value;
+        return acc;
+      },
+      {} as Record<string, string>
+    );
 
     switch (formData.type) {
       case 'stdio':
@@ -336,7 +360,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
           args: formData.args.filter(Boolean),
           env: Object.keys(envObj).length > 0 ? envObj : undefined,
           cwd: formData.cwd || undefined,
-          network: formData.network
+          network: formData.network,
         } as StdioMcpConfig;
         break;
       case 'streamableHttp':
@@ -346,7 +370,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
           version: formData.version,
           url: formData.url,
           headers: Object.keys(headersObj).length > 0 ? headersObj : undefined,
-          network: formData.network
+          network: formData.network,
         } as StreamableHttpMcpConfig;
         break;
       case 'websocket':
@@ -355,7 +379,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
           name: formData.name,
           version: formData.version,
           url: formData.url,
-          network: formData.network
+          network: formData.network,
         } as WebSocketMcpConfig;
         break;
       case 'sse':
@@ -365,7 +389,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
           version: formData.version,
           url: formData.url,
           headers: Object.keys(headersObj).length > 0 ? headersObj : undefined,
-          network: formData.network
+          network: formData.network,
         } as SseMcpConfig;
         break;
     }
@@ -375,7 +399,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
 
   const isFormValid = () => {
     if (!formData.name || !formData.version) return false;
-    
+
     switch (formData.type) {
       case 'stdio':
         return !!formData.command;
@@ -390,23 +414,35 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
 
   const getStepFromTab = (tab: string) => {
     switch (tab) {
-      case "overview": return 1;
-      case "type": return 2;
-      case "configuration": return 3;
-      case "testing": return 4;
-      case "deployment": return 5;
-      default: return 1;
+      case 'overview':
+        return 1;
+      case 'type':
+        return 2;
+      case 'configuration':
+        return 3;
+      case 'testing':
+        return 4;
+      case 'deployment':
+        return 5;
+      default:
+        return 1;
     }
   };
 
   const getTabFromStep = (step: number) => {
     switch (step) {
-      case 1: return "overview";
-      case 2: return "type";
-      case 3: return "configuration";
-      case 4: return "testing";
-      case 5: return "deployment";
-      default: return "overview";
+      case 1:
+        return 'overview';
+      case 2:
+        return 'type';
+      case 3:
+        return 'configuration';
+      case 4:
+        return 'testing';
+      case 5:
+        return 'deployment';
+      default:
+        return 'overview';
     }
   };
 
@@ -437,16 +473,11 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
       <div className="flex-shrink-0 p-6 border-b">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onBack}
-              className="gap-2"
-            >
+            <Button variant="outline" size="sm" onClick={onBack} className="gap-2">
               <ArrowLeft className="w-4 h-4" />
               Back to Tools
             </Button>
-            
+
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-50 to-indigo-100 rounded-lg flex items-center justify-center">
                 <div className="text-purple-600">
@@ -454,22 +485,16 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                 </div>
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-foreground">
-                  Add MCP Tool
-                </h1>
+                <h1 className="text-2xl font-semibold text-foreground">Add MCP Tool</h1>
                 <p className="text-muted-foreground">
                   Configure and deploy a Model Context Protocol tool
                 </p>
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
-            <Button 
-              onClick={handleCreate}
-              disabled={!isFormValid()}
-              className="gap-2"
-            >
+            <Button onClick={handleCreate} disabled={!isFormValid()} className="gap-2">
               <Save className="w-4 h-4" />
               Deploy Tool
             </Button>
@@ -479,17 +504,27 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
         {/* Progress */}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Step {currentStep} of {totalSteps}</span>
-            <span className="font-medium">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
+            <span className="text-muted-foreground">
+              Step {currentStep} of {totalSteps}
+            </span>
+            <span className="font-medium">
+              {Math.round((currentStep / totalSteps) * 100)}% Complete
+            </span>
           </div>
           <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
-          
+
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className={currentStep >= 1 ? "text-foreground font-medium" : ""}>Overview</span>
-            <span className={currentStep >= 2 ? "text-foreground font-medium" : ""}>Connection Type</span>
-            <span className={currentStep >= 3 ? "text-foreground font-medium" : ""}>Configuration</span>
-            <span className={currentStep >= 4 ? "text-foreground font-medium" : ""}>Testing</span>
-            <span className={currentStep >= 5 ? "text-foreground font-medium" : ""}>Deployment</span>
+            <span className={currentStep >= 1 ? 'text-foreground font-medium' : ''}>Overview</span>
+            <span className={currentStep >= 2 ? 'text-foreground font-medium' : ''}>
+              Connection Type
+            </span>
+            <span className={currentStep >= 3 ? 'text-foreground font-medium' : ''}>
+              Configuration
+            </span>
+            <span className={currentStep >= 4 ? 'text-foreground font-medium' : ''}>Testing</span>
+            <span className={currentStep >= 5 ? 'text-foreground font-medium' : ''}>
+              Deployment
+            </span>
           </div>
         </div>
       </div>
@@ -514,8 +549,9 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                     <h3 className="text-lg font-semibold text-foreground">What is an MCP Tool?</h3>
                   </div>
                   <p className="text-muted-foreground mb-4">
-                    Model Context Protocol (MCP) tools provide a standardized way to extend AI agents with external capabilities. 
-                    These tools can access databases, APIs, local files, or execute code to help agents perform complex tasks.
+                    Model Context Protocol (MCP) tools provide a standardized way to extend AI
+                    agents with external capabilities. These tools can access databases, APIs, local
+                    files, or execute code to help agents perform complex tasks.
                   </p>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-3">
@@ -567,7 +603,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                           className="mt-1"
                         />
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="tool-description">Description</Label>
                         <Textarea
@@ -595,8 +631,8 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
 
                       <div>
                         <Label htmlFor="tool-category">Category</Label>
-                        <Select 
-                          value={formData.category} 
+                        <Select
+                          value={formData.category}
                           onValueChange={(value) => updateFormData({ category: value })}
                         >
                           <SelectTrigger className="mt-1">
@@ -630,11 +666,14 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
             <TabsContent value="type" className="h-full">
               <div className="max-w-4xl mx-auto space-y-6">
                 <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Choose Connection Type</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-4">
+                    Choose Connection Type
+                  </h3>
                   <p className="text-muted-foreground mb-6">
-                    Select how your MCP tool will communicate with the system. Each type has different use cases and requirements.
+                    Select how your MCP tool will communicate with the system. Each type has
+                    different use cases and requirements.
                   </p>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {connectionTypes.map((type) => (
                       <Card
@@ -652,12 +691,18 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                             <div className="flex items-center gap-2 mb-2">
                               <h4 className="font-medium text-foreground">{type.name}</h4>
                               {type.recommended && (
-                                <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs bg-green-50 text-green-700 border-green-200"
+                                >
                                   Recommended
                                 </Badge>
                               )}
                               {type.deprecated && (
-                                <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs bg-orange-50 text-orange-700 border-orange-200"
+                                >
                                   Deprecated
                                 </Badge>
                               )}
@@ -701,7 +746,9 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                   <Card className="p-6">
                     <div className="flex items-center gap-2 mb-4">
                       <Terminal className="w-5 h-5 text-blue-500" />
-                      <h3 className="text-lg font-semibold text-foreground">Standard I/O Configuration</h3>
+                      <h3 className="text-lg font-semibold text-foreground">
+                        Standard I/O Configuration
+                      </h3>
                     </div>
                     <div className="space-y-6">
                       <div>
@@ -717,15 +764,19 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                           Full path to the executable or command to run
                         </p>
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="stdio-args">Arguments (one per line)</Label>
                         <Textarea
                           id="stdio-args"
                           value={formData.args.join('\n')}
-                          onChange={(e) => updateFormData({ 
-                            args: e.target.value ? e.target.value.split('\n').filter(Boolean) : []
-                          })}
+                          onChange={(e) =>
+                            updateFormData({
+                              args: e.target.value
+                                ? e.target.value.split('\n').filter(Boolean)
+                                : [],
+                            })
+                          }
                           placeholder="--config=/path/to/config.json&#10;--verbose&#10;--port=8080"
                           className="mt-1 font-mono"
                           rows={4}
@@ -755,8 +806,15 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                         {envVars.length === 0 ? (
                           <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
                             <Key className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-                            <p className="text-sm text-muted-foreground">No environment variables set</p>
-                            <Button variant="outline" size="sm" onClick={addEnvVar} className="mt-3 gap-1">
+                            <p className="text-sm text-muted-foreground">
+                              No environment variables set
+                            </p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={addEnvVar}
+                              className="mt-3 gap-1"
+                            >
                               <Plus className="w-3 h-3" />
                               Add First Variable
                             </Button>
@@ -794,13 +852,23 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                   </Card>
                 )}
 
-                {(formData.type === 'streamableHttp' || formData.type === 'websocket' || formData.type === 'sse') && (
+                {(formData.type === 'streamableHttp' ||
+                  formData.type === 'websocket' ||
+                  formData.type === 'sse') && (
                   <Card className="p-6">
                     <div className="flex items-center gap-2 mb-4">
-                      {formData.type === 'websocket' ? <Wifi className="w-5 h-5 text-blue-500" /> : <Globe className="w-5 h-5 text-blue-500" />}
+                      {formData.type === 'websocket' ? (
+                        <Wifi className="w-5 h-5 text-blue-500" />
+                      ) : (
+                        <Globe className="w-5 h-5 text-blue-500" />
+                      )}
                       <h3 className="text-lg font-semibold text-foreground">
-                        {formData.type === 'streamableHttp' ? 'HTTP Streaming' : 
-                         formData.type === 'websocket' ? 'WebSocket' : 'Server-Sent Events'} Configuration
+                        {formData.type === 'streamableHttp'
+                          ? 'HTTP Streaming'
+                          : formData.type === 'websocket'
+                            ? 'WebSocket'
+                            : 'Server-Sent Events'}{' '}
+                        Configuration
                       </h3>
                     </div>
                     <div className="space-y-6">
@@ -811,9 +879,11 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                           value={formData.url}
                           onChange={(e) => updateFormData({ url: e.target.value })}
                           placeholder={
-                            formData.type === 'websocket' ? 'ws://localhost:8080/mcp' :
-                            formData.type === 'sse' ? 'http://localhost:8080/events' :
-                            'http://localhost:8080/mcp'
+                            formData.type === 'websocket'
+                              ? 'ws://localhost:8080/mcp'
+                              : formData.type === 'sse'
+                                ? 'http://localhost:8080/events'
+                                : 'http://localhost:8080/mcp'
                           }
                           className="mt-1 font-mono"
                         />
@@ -826,7 +896,12 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                         <div>
                           <div className="flex items-center justify-between mb-3">
                             <Label>Headers</Label>
-                            <Button variant="outline" size="sm" onClick={addHeader} className="gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={addHeader}
+                              className="gap-1"
+                            >
                               <Plus className="w-3 h-3" />
                               Add Header
                             </Button>
@@ -835,7 +910,12 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                             <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
                               <FileText className="w-8 h-8 text-gray-400 mx-auto mb-3" />
                               <p className="text-sm text-muted-foreground">No custom headers set</p>
-                              <Button variant="outline" size="sm" onClick={addHeader} className="mt-3 gap-1">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={addHeader}
+                                className="mt-3 gap-1"
+                              >
                                 <Plus className="w-3 h-3" />
                                 Add First Header
                               </Button>
@@ -887,15 +967,19 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                         id="timeout"
                         type="number"
                         value={formData.network.timeoutMs}
-                        onChange={(e) => updateFormData({
-                          network: {
-                            ...formData.network,
-                            timeoutMs: parseInt(e.target.value) || 5000
-                          }
-                        })}
+                        onChange={(e) =>
+                          updateFormData({
+                            network: {
+                              ...formData.network,
+                              timeoutMs: parseInt(e.target.value) || 5000,
+                            },
+                          })
+                        }
                         className="mt-1"
                       />
-                      <p className="text-xs text-muted-foreground mt-1">Initial connection timeout</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Initial connection timeout
+                      </p>
                     </div>
                     <div>
                       <Label htmlFor="max-timeout">Max Total Timeout (ms)</Label>
@@ -903,15 +987,19 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                         id="max-timeout"
                         type="number"
                         value={formData.network.maxTotalTimeoutMs}
-                        onChange={(e) => updateFormData({
-                          network: {
-                            ...formData.network,
-                            maxTotalTimeoutMs: parseInt(e.target.value) || 30000
-                          }
-                        })}
+                        onChange={(e) =>
+                          updateFormData({
+                            network: {
+                              ...formData.network,
+                              maxTotalTimeoutMs: parseInt(e.target.value) || 30000,
+                            },
+                          })
+                        }
                         className="mt-1"
                       />
-                      <p className="text-xs text-muted-foreground mt-1">Maximum operation timeout</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Maximum operation timeout
+                      </p>
                     </div>
                     <div>
                       <Label htmlFor="idle-timeout">Idle Timeout (ms)</Label>
@@ -919,12 +1007,14 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                         id="idle-timeout"
                         type="number"
                         value={formData.network.maxConnectionIdleTimeoutMs}
-                        onChange={(e) => updateFormData({
-                          network: {
-                            ...formData.network,
-                            maxConnectionIdleTimeoutMs: parseInt(e.target.value) || 60000
-                          }
-                        })}
+                        onChange={(e) =>
+                          updateFormData({
+                            network: {
+                              ...formData.network,
+                              maxConnectionIdleTimeoutMs: parseInt(e.target.value) || 60000,
+                            },
+                          })
+                        }
                         className="mt-1"
                       />
                       <p className="text-xs text-muted-foreground mt-1">Connection idle timeout</p>
@@ -956,7 +1046,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                         Verify your MCP tool configuration and test connectivity before deployment.
                       </p>
                     </div>
-                    <Button 
+                    <Button
                       onClick={runConnectionTest}
                       disabled={isTestingConnection || !isFormValid()}
                       className="gap-2"
@@ -977,7 +1067,9 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                       <div className="space-y-2">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Name:</span>
-                          <span className="font-medium font-mono">{formData.name || 'Not set'}</span>
+                          <span className="font-medium font-mono">
+                            {formData.name || 'Not set'}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Type:</span>
@@ -994,7 +1086,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                             {formData.type === 'stdio' ? 'Command:' : 'URL:'}
                           </span>
                           <span className="font-medium font-mono text-xs truncate">
-                            {formData.type === 'stdio' 
+                            {formData.type === 'stdio'
                               ? formData.command || 'Not set'
                               : formData.url || 'Not set'}
                           </span>
@@ -1018,19 +1110,31 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                       {connectionTests.map((test, index) => (
                         <div key={index} className="flex items-start gap-3 p-3 border rounded-lg">
                           <div className="flex-shrink-0 mt-0.5">
-                            {test.status === 'pending' && <Clock className="w-4 h-4 text-gray-400" />}
-                            {test.status === 'running' && <Loader2 className="w-4 h-4 animate-spin text-blue-500" />}
-                            {test.status === 'success' && <CheckCircle className="w-4 h-4 text-green-500" />}
-                            {test.status === 'error' && <AlertCircle className="w-4 h-4 text-red-500" />}
+                            {test.status === 'pending' && (
+                              <Clock className="w-4 h-4 text-gray-400" />
+                            )}
+                            {test.status === 'running' && (
+                              <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                            )}
+                            {test.status === 'success' && (
+                              <CheckCircle className="w-4 h-4 text-green-500" />
+                            )}
+                            {test.status === 'error' && (
+                              <AlertCircle className="w-4 h-4 text-red-500" />
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
                               <h5 className="font-medium text-foreground">{test.step}</h5>
-                              <Badge 
+                              <Badge
                                 variant={
-                                  test.status === 'success' ? 'default' :
-                                  test.status === 'error' ? 'destructive' :
-                                  test.status === 'running' ? 'outline' : 'secondary'
+                                  test.status === 'success'
+                                    ? 'default'
+                                    : test.status === 'error'
+                                      ? 'destructive'
+                                      : test.status === 'running'
+                                        ? 'outline'
+                                        : 'secondary'
                                 }
                                 className="text-xs"
                               >
@@ -1059,15 +1163,25 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
 
                   {/* Final Result */}
                   {finalTestResult && (
-                    <Alert className={finalTestResult === 'success' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
+                    <Alert
+                      className={
+                        finalTestResult === 'success'
+                          ? 'border-green-200 bg-green-50'
+                          : 'border-red-200 bg-red-50'
+                      }
+                    >
                       {finalTestResult === 'success' ? (
                         <CheckCircle className="w-4 h-4 text-green-600" />
                       ) : (
                         <AlertTriangle className="w-4 h-4 text-red-600" />
                       )}
-                      <AlertDescription className={finalTestResult === 'success' ? 'text-green-800' : 'text-red-800'}>
-                        {finalTestResult === 'success' 
-                          ? 'All tests passed! Your MCP tool is ready for deployment.' 
+                      <AlertDescription
+                        className={
+                          finalTestResult === 'success' ? 'text-green-800' : 'text-red-800'
+                        }
+                      >
+                        {finalTestResult === 'success'
+                          ? 'All tests passed! Your MCP tool is ready for deployment.'
                           : 'Tests failed. Please review the errors above and adjust your configuration.'}
                       </AlertDescription>
                     </Alert>
@@ -1083,14 +1197,17 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                   <p className="text-muted-foreground mb-4">
                     Common issues and their solutions when setting up MCP tools.
                   </p>
-                  
+
                   <div className="space-y-3">
                     {troubleshootingGuides.map((guide, index) => (
                       <Collapsible key={index}>
                         <CollapsibleTrigger className="flex items-center justify-between w-full p-3 text-left hover:bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-3">
                             {guide.isCommon && (
-                              <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                              <Badge
+                                variant="outline"
+                                className="text-xs bg-orange-50 text-orange-700 border-orange-200"
+                              >
                                 Common
                               </Badge>
                             )}
@@ -1104,7 +1221,10 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                             <h5 className="text-sm font-medium text-foreground">Solutions:</h5>
                             <ul className="space-y-1">
                               {guide.solutions.map((solution, sIndex) => (
-                                <li key={sIndex} className="text-sm text-muted-foreground flex items-start gap-2">
+                                <li
+                                  key={sIndex}
+                                  className="text-sm text-muted-foreground flex items-start gap-2"
+                                >
                                   <span className="text-blue-500 mt-1">•</span>
                                   <span>{solution}</span>
                                 </li>
@@ -1123,9 +1243,9 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                     <ArrowLeft className="w-4 h-4" />
                     Previous: Configuration
                   </Button>
-                  <Button 
-                    onClick={handleNextStep} 
-                    disabled={finalTestResult !== 'success'} 
+                  <Button
+                    onClick={handleNextStep}
+                    disabled={finalTestResult !== 'success'}
                     className="gap-2"
                   >
                     Next: Deployment
@@ -1143,7 +1263,8 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                     <h3 className="text-lg font-semibold text-foreground">Ready for Deployment</h3>
                   </div>
                   <p className="text-muted-foreground mb-6">
-                    Your MCP tool has been successfully configured and tested. Review the final configuration before deployment.
+                    Your MCP tool has been successfully configured and tested. Review the final
+                    configuration before deployment.
                   </p>
 
                   {/* Final Configuration */}
@@ -1156,30 +1277,40 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                       </Button>
                     </div>
                     <pre className="text-xs font-mono text-foreground bg-white p-3 rounded border overflow-x-auto">
-                      {JSON.stringify({
-                        type: formData.type,
-                        name: formData.name,
-                        version: formData.version,
-                        ...(formData.type === 'stdio' && {
-                          command: formData.command,
-                          args: formData.args.filter(Boolean),
-                          ...(envVars.length > 0 && {
-                            env: envVars.reduce((acc, env) => {
-                              if (env.key && env.value) acc[env.key] = env.value;
-                              return acc;
-                            }, {} as Record<string, string>)
+                      {JSON.stringify(
+                        {
+                          type: formData.type,
+                          name: formData.name,
+                          version: formData.version,
+                          ...(formData.type === 'stdio' && {
+                            command: formData.command,
+                            args: formData.args.filter(Boolean),
+                            ...(envVars.length > 0 && {
+                              env: envVars.reduce(
+                                (acc, env) => {
+                                  if (env.key && env.value) acc[env.key] = env.value;
+                                  return acc;
+                                },
+                                {} as Record<string, string>
+                              ),
+                            }),
+                            ...(formData.cwd && { cwd: formData.cwd }),
                           }),
-                          ...(formData.cwd && { cwd: formData.cwd })
-                        }),
-                        ...(formData.type !== 'stdio' && { url: formData.url }),
-                        ...(headers.length > 0 && {
-                          headers: headers.reduce((acc, header) => {
-                            if (header.key && header.value) acc[header.key] = header.value;
-                            return acc;
-                          }, {} as Record<string, string>)
-                        }),
-                        network: formData.network
-                      }, null, 2)}
+                          ...(formData.type !== 'stdio' && { url: formData.url }),
+                          ...(headers.length > 0 && {
+                            headers: headers.reduce(
+                              (acc, header) => {
+                                if (header.key && header.value) acc[header.key] = header.value;
+                                return acc;
+                              },
+                              {} as Record<string, string>
+                            ),
+                          }),
+                          network: formData.network,
+                        },
+                        null,
+                        2
+                      )}
                     </pre>
                   </div>
 
@@ -1187,8 +1318,9 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                   <Alert className="mb-6">
                     <Shield className="w-4 h-4" />
                     <AlertDescription>
-                      <strong>Security Note:</strong> Ensure that your MCP tool follows security best practices, 
-                      including input validation, secure credential storage, and proper error handling.
+                      <strong>Security Note:</strong> Ensure that your MCP tool follows security
+                      best practices, including input validation, secure credential storage, and
+                      proper error handling.
                     </AlertDescription>
                   </Alert>
 
@@ -1224,7 +1356,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                     <ArrowLeft className="w-4 h-4" />
                     Previous: Testing
                   </Button>
-                  <Button 
+                  <Button
                     onClick={handleCreate}
                     disabled={!isFormValid() || finalTestResult !== 'success'}
                     className="gap-2"

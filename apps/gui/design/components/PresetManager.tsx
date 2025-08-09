@@ -1,16 +1,16 @@
-import { useState, useEffect } from "react";
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { Input } from "./ui/input";
-import { ScrollArea } from "./ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import { DynamicFormRenderer } from "./DynamicFormRenderer";
-import { KnowledgeBaseManager } from "./KnowledgeBaseManager";
-import { 
-  Plus, 
-  Search, 
+import { useState, useEffect } from 'react';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Input } from './ui/input';
+import { ScrollArea } from './ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { DynamicFormRenderer } from './DynamicFormRenderer';
+import { KnowledgeBaseManager } from './KnowledgeBaseManager';
+import {
+  Plus,
+  Search,
   Filter,
   MoreHorizontal,
   Edit,
@@ -30,8 +30,8 @@ import {
   BarChart3,
   Folder,
   FolderOpen,
-  Archive
-} from "lucide-react";
+  Archive,
+} from 'lucide-react';
 
 interface Agent {
   id: number;
@@ -39,7 +39,7 @@ interface Agent {
   description: string;
   category: string;
   preset: string;
-  status: "active" | "draft" | "archived";
+  status: 'active' | 'draft' | 'archived';
   lastUsed?: Date;
   usageCount: number;
   isDefault?: boolean;
@@ -60,7 +60,7 @@ interface Preset {
     topP: number;
   };
   tools: string[];
-  status: "active" | "draft";
+  status: 'active' | 'draft';
   createdAt: Date;
   updatedAt: Date;
   usageCount: number;
@@ -73,9 +73,9 @@ interface Preset {
 }
 
 export function PresetManager() {
-  const [activeTab, setActiveTab] = useState("list");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [activeTab, setActiveTab] = useState('list');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createWizardOpen, setCreateWizardOpen] = useState(false);
@@ -88,19 +88,21 @@ export function PresetManager() {
     setTimeout(() => {
       const mockPresets: Preset[] = [
         {
-          id: "project-research-001",
-          name: "Research Assistant",
-          description: "Specialized in gathering, analyzing, and synthesizing information from various sources",
-          category: "research",
-          model: "gpt-4",
-          systemPrompt: "You are a research assistant that helps users find and analyze information...",
+          id: 'project-research-001',
+          name: 'Research Assistant',
+          description:
+            'Specialized in gathering, analyzing, and synthesizing information from various sources',
+          category: 'research',
+          model: 'gpt-4',
+          systemPrompt:
+            'You are a research assistant that helps users find and analyze information...',
           parameters: {
             temperature: 0.7,
             maxTokens: 2048,
-            topP: 0.9
+            topP: 0.9,
           },
-          tools: ["web-search", "database-query", "file-processor"],
-          status: "active",
+          tools: ['web-search', 'database-query', 'file-processor'],
+          status: 'active',
           createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
           updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
           usageCount: 342,
@@ -108,23 +110,23 @@ export function PresetManager() {
           knowledgeStats: {
             indexed: 12,
             vectorized: 8,
-            totalSize: 45600
-          }
+            totalSize: 45600,
+          },
         },
         {
-          id: "project-code-002",
-          name: "Code Assistant",
-          description: "Expert in software development, debugging, and code optimization",
-          category: "development",
-          model: "gpt-4",
-          systemPrompt: "You are a programming expert that helps with code development...",
+          id: 'project-code-002',
+          name: 'Code Assistant',
+          description: 'Expert in software development, debugging, and code optimization',
+          category: 'development',
+          model: 'gpt-4',
+          systemPrompt: 'You are a programming expert that helps with code development...',
           parameters: {
             temperature: 0.3,
             maxTokens: 4096,
-            topP: 0.8
+            topP: 0.8,
           },
-          tools: ["code-executor", "file-processor"],
-          status: "active",
+          tools: ['code-executor', 'file-processor'],
+          status: 'active',
           createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14),
           updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
           usageCount: 189,
@@ -132,23 +134,23 @@ export function PresetManager() {
           knowledgeStats: {
             indexed: 8,
             vectorized: 6,
-            totalSize: 23400
-          }
+            totalSize: 23400,
+          },
         },
         {
-          id: "project-content-003",
-          name: "Content Writer",
-          description: "Creative writing specialist for marketing, articles, and documentation",
-          category: "creative",
-          model: "gpt-3.5-turbo",
-          systemPrompt: "You are a professional content writer...",
+          id: 'project-content-003',
+          name: 'Content Writer',
+          description: 'Creative writing specialist for marketing, articles, and documentation',
+          category: 'creative',
+          model: 'gpt-3.5-turbo',
+          systemPrompt: 'You are a professional content writer...',
           parameters: {
             temperature: 0.9,
             maxTokens: 2048,
-            topP: 0.95
+            topP: 0.95,
           },
-          tools: ["image-generator", "web-search"],
-          status: "active",
+          tools: ['image-generator', 'web-search'],
+          status: 'active',
           createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 21),
           updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
           usageCount: 267,
@@ -156,23 +158,23 @@ export function PresetManager() {
           knowledgeStats: {
             indexed: 18,
             vectorized: 14,
-            totalSize: 67800
-          }
+            totalSize: 67800,
+          },
         },
         {
-          id: "project-analytics-004",
-          name: "Data Analyzer",
-          description: "Specialized in data analysis, visualization, and insights",
-          category: "analytics",
-          model: "gpt-4",
-          systemPrompt: "You are a data analysis expert...",
+          id: 'project-analytics-004',
+          name: 'Data Analyzer',
+          description: 'Specialized in data analysis, visualization, and insights',
+          category: 'analytics',
+          model: 'gpt-4',
+          systemPrompt: 'You are a data analysis expert...',
           parameters: {
             temperature: 0.2,
             maxTokens: 3072,
-            topP: 0.7
+            topP: 0.7,
           },
-          tools: ["database-query", "analytics-api"],
-          status: "draft",
+          tools: ['database-query', 'analytics-api'],
+          status: 'draft',
           createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
           updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 12),
           usageCount: 0,
@@ -180,53 +182,75 @@ export function PresetManager() {
           knowledgeStats: {
             indexed: 3,
             vectorized: 2,
-            totalSize: 12300
-          }
-        }
+            totalSize: 12300,
+          },
+        },
       ];
-      
+
       setPresets(mockPresets);
       setIsLoading(false);
     }, 800);
   }, []);
 
   const categories = [
-    { id: "all", label: "All Projects", count: presets.length },
-    { id: "research", label: "Research", count: presets.filter(p => p.category === "research").length },
-    { id: "development", label: "Development", count: presets.filter(p => p.category === "development").length },
-    { id: "creative", label: "Creative", count: presets.filter(p => p.category === "creative").length },
-    { id: "analytics", label: "Analytics", count: presets.filter(p => p.category === "analytics").length },
+    { id: 'all', label: 'All Projects', count: presets.length },
+    {
+      id: 'research',
+      label: 'Research',
+      count: presets.filter((p) => p.category === 'research').length,
+    },
+    {
+      id: 'development',
+      label: 'Development',
+      count: presets.filter((p) => p.category === 'development').length,
+    },
+    {
+      id: 'creative',
+      label: 'Creative',
+      count: presets.filter((p) => p.category === 'creative').length,
+    },
+    {
+      id: 'analytics',
+      label: 'Analytics',
+      count: presets.filter((p) => p.category === 'analytics').length,
+    },
   ];
 
-  const filteredPresets = presets.filter(preset => {
-    const matchesSearch = preset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         preset.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || preset.category === selectedCategory;
+  const filteredPresets = presets.filter((preset) => {
+    const matchesSearch =
+      preset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      preset.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || preset.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case "research": return <Search className="w-4 h-4" />;
-      case "development": return <Bot className="w-4 h-4" />;
-      case "creative": return <Zap className="w-4 h-4" />;
-      case "analytics": return <Database className="w-4 h-4" />;
-      default: return <Settings className="w-4 h-4" />;
+      case 'research':
+        return <Search className="w-4 h-4" />;
+      case 'development':
+        return <Bot className="w-4 h-4" />;
+      case 'creative':
+        return <Zap className="w-4 h-4" />;
+      case 'analytics':
+        return <Database className="w-4 h-4" />;
+      default:
+        return <Settings className="w-4 h-4" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      active: "default",
-      draft: "secondary",
-      archived: "outline"
+      active: 'default',
+      draft: 'secondary',
+      archived: 'outline',
     } as const;
-    
+
     return (
-      <Badge variant={variants[status as keyof typeof variants] || "secondary"}>
-        {status === "active" && <CheckCircle className="w-3 h-3 mr-1" />}
-        {status === "draft" && <Clock className="w-3 h-3 mr-1" />}
-        {status === "archived" && <Archive className="w-3 h-3 mr-1" />}
+      <Badge variant={variants[status as keyof typeof variants] || 'secondary'}>
+        {status === 'active' && <CheckCircle className="w-3 h-3 mr-1" />}
+        {status === 'draft' && <Clock className="w-3 h-3 mr-1" />}
+        {status === 'archived' && <Archive className="w-3 h-3 mr-1" />}
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
     );
@@ -242,7 +266,7 @@ export function PresetManager() {
       ...preset,
       id: `project-${preset.category}-${Date.now()}`,
       name: `${preset.name} (Copy)`,
-      status: "draft",
+      status: 'draft',
       createdAt: new Date(),
       updatedAt: new Date(),
       usageCount: 0,
@@ -250,23 +274,27 @@ export function PresetManager() {
       knowledgeStats: {
         indexed: 0,
         vectorized: 0,
-        totalSize: 0
-      }
+        totalSize: 0,
+      },
     };
-    setPresets(prev => [...prev, duplicated]);
+    setPresets((prev) => [...prev, duplicated]);
   };
 
   const deletePreset = (presetId: string) => {
-    setPresets(prev => prev.filter(p => p.id !== presetId));
+    setPresets((prev) => prev.filter((p) => p.id !== presetId));
   };
 
   // Calculate aggregated stats
   const totalKnowledgeDocs = presets.reduce((sum, p) => sum + p.knowledgeDocuments, 0);
   const totalIndexedDocs = presets.reduce((sum, p) => sum + (p.knowledgeStats?.indexed || 0), 0);
-  const totalVectorizedDocs = presets.reduce((sum, p) => sum + (p.knowledgeStats?.vectorized || 0), 0);
+  const totalVectorizedDocs = presets.reduce(
+    (sum, p) => sum + (p.knowledgeStats?.vectorized || 0),
+    0
+  );
   const totalProjects = presets.length;
-  const activeProjects = presets.filter(p => p.status === 'active').length;
-  const avgDocsPerProject = presets.length > 0 ? (totalKnowledgeDocs / presets.length).toFixed(1) : 0;
+  const activeProjects = presets.filter((p) => p.status === 'active').length;
+  const avgDocsPerProject =
+    presets.length > 0 ? (totalKnowledgeDocs / presets.length).toFixed(1) : 0;
 
   return (
     <div className="h-full flex flex-col">
@@ -298,7 +326,7 @@ export function PresetManager() {
               </div>
             </div>
           </Card>
-          
+
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -361,7 +389,11 @@ export function PresetManager() {
               <div className="flex items-center gap-2">
                 <Database className="w-4 h-4 text-purple-600" />
                 <span className="text-sm text-muted-foreground">
-                  Independent Processing: {totalKnowledgeDocs > 0 ? ((totalIndexedDocs / totalKnowledgeDocs) * 100).toFixed(0) : 0}% indexed
+                  Independent Processing:{' '}
+                  {totalKnowledgeDocs > 0
+                    ? ((totalIndexedDocs / totalKnowledgeDocs) * 100).toFixed(0)
+                    : 0}
+                  % indexed
                 </span>
               </div>
             </div>
@@ -398,12 +430,12 @@ export function PresetManager() {
                       className="pl-9"
                     />
                   </div>
-                  
+
                   <div className="flex gap-1">
                     {categories.map((category) => (
                       <Button
                         key={category.id}
-                        variant={selectedCategory === category.id ? "default" : "outline"}
+                        variant={selectedCategory === category.id ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setSelectedCategory(category.id)}
                         className="gap-1"
@@ -421,114 +453,124 @@ export function PresetManager() {
                 <div className="flex-1 min-h-0">
                   <ScrollArea className="h-full">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
-                      {isLoading ? (
-                        Array.from({ length: 6 }).map((_, i) => (
-                          <Card key={i} className="p-6">
-                            <div className="animate-pulse space-y-4">
-                              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                              <div className="h-3 bg-gray-200 rounded w-full"></div>
-                              <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                            </div>
-                          </Card>
-                        ))
-                      ) : (
-                        filteredPresets.map((preset) => (
-                          <Card key={preset.id} className="p-6 hover:shadow-md transition-shadow">
-                            <div className="flex items-start justify-between mb-4">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                                  {getCategoryIcon(preset.category)}
+                      {isLoading
+                        ? Array.from({ length: 6 }).map((_, i) => (
+                            <Card key={i} className="p-6">
+                              <div className="animate-pulse space-y-4">
+                                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                                <div className="h-3 bg-gray-200 rounded w-full"></div>
+                                <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                              </div>
+                            </Card>
+                          ))
+                        : filteredPresets.map((preset) => (
+                            <Card key={preset.id} className="p-6 hover:shadow-md transition-shadow">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                                    {getCategoryIcon(preset.category)}
+                                  </div>
+                                  <div>
+                                    <h3 className="font-medium text-foreground">{preset.name}</h3>
+                                    <p className="text-sm text-muted-foreground capitalize">
+                                      {preset.category} project
+                                    </p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <h3 className="font-medium text-foreground">{preset.name}</h3>
-                                  <p className="text-sm text-muted-foreground capitalize">
-                                    {preset.category} project
-                                  </p>
+                                <div className="flex items-center gap-2">
+                                  {getStatusBadge(preset.status)}
+                                  <Button variant="ghost" size="sm">
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </Button>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                {getStatusBadge(preset.status)}
-                                <Button variant="ghost" size="sm">
-                                  <MoreHorizontal className="w-4 h-4" />
+
+                              <p className="text-sm text-muted-foreground mb-4">
+                                {preset.description}
+                              </p>
+
+                              <div className="space-y-2 mb-4">
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Project ID:</span>
+                                  <span className="font-medium text-foreground text-xs">
+                                    {preset.id}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Model:</span>
+                                  <span className="font-medium text-foreground">
+                                    {preset.model}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Usage:</span>
+                                  <span className="font-medium text-foreground">
+                                    {preset.usageCount}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Knowledge Docs:</span>
+                                  <span className="font-medium text-foreground flex items-center gap-1">
+                                    <BookOpen className="w-3 h-3" />
+                                    {preset.knowledgeDocuments}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Tools:</span>
+                                  <span className="font-medium text-foreground">
+                                    {preset.tools.length}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Knowledge Status Indicators */}
+                              {preset.knowledgeStats && preset.knowledgeDocuments > 0 && (
+                                <div className="flex flex-wrap gap-1 mb-4">
+                                  <Badge variant="secondary" className="text-xs gap-1">
+                                    <Search className="w-3 h-3" />
+                                    {preset.knowledgeStats.indexed}/{preset.knowledgeDocuments}{' '}
+                                    Indexed
+                                  </Badge>
+                                  <Badge variant="secondary" className="text-xs gap-1">
+                                    <Database className="w-3 h-3" />
+                                    {preset.knowledgeStats.vectorized}/{preset.knowledgeDocuments}{' '}
+                                    Vector
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs gap-1">
+                                    <Folder className="w-3 h-3" />
+                                    Isolated
+                                  </Badge>
+                                </div>
+                              )}
+
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1"
+                                  onClick={() => handleEditPreset(preset)}
+                                >
+                                  <Edit className="w-3 h-3 mr-1" />
+                                  Edit
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => duplicatePreset(preset)}
+                                >
+                                  <Copy className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => deletePreset(preset.id)}
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <Trash2 className="w-3 h-3" />
                                 </Button>
                               </div>
-                            </div>
-
-                            <p className="text-sm text-muted-foreground mb-4">{preset.description}</p>
-
-                            <div className="space-y-2 mb-4">
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Project ID:</span>
-                                <span className="font-medium text-foreground text-xs">{preset.id}</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Model:</span>
-                                <span className="font-medium text-foreground">{preset.model}</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Usage:</span>
-                                <span className="font-medium text-foreground">{preset.usageCount}</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Knowledge Docs:</span>
-                                <span className="font-medium text-foreground flex items-center gap-1">
-                                  <BookOpen className="w-3 h-3" />
-                                  {preset.knowledgeDocuments}
-                                </span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Tools:</span>
-                                <span className="font-medium text-foreground">{preset.tools.length}</span>
-                              </div>
-                            </div>
-
-                            {/* Knowledge Status Indicators */}
-                            {preset.knowledgeStats && preset.knowledgeDocuments > 0 && (
-                              <div className="flex flex-wrap gap-1 mb-4">
-                                <Badge variant="secondary" className="text-xs gap-1">
-                                  <Search className="w-3 h-3" />
-                                  {preset.knowledgeStats.indexed}/{preset.knowledgeDocuments} Indexed
-                                </Badge>
-                                <Badge variant="secondary" className="text-xs gap-1">
-                                  <Database className="w-3 h-3" />
-                                  {preset.knowledgeStats.vectorized}/{preset.knowledgeDocuments} Vector
-                                </Badge>
-                                <Badge variant="outline" className="text-xs gap-1">
-                                  <Folder className="w-3 h-3" />
-                                  Isolated
-                                </Badge>
-                              </div>
-                            )}
-
-                            <div className="flex gap-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="flex-1"
-                                onClick={() => handleEditPreset(preset)}
-                              >
-                                <Edit className="w-3 h-3 mr-1" />
-                                Edit
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => duplicatePreset(preset)}
-                              >
-                                <Copy className="w-3 h-3" />
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => deletePreset(preset.id)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </Card>
-                        ))
-                      )}
+                            </Card>
+                          ))}
                     </div>
                   </ScrollArea>
                 </div>
@@ -551,7 +593,7 @@ export function PresetManager() {
 
             <TabsContent value="knowledge" className="h-full">
               {selectedPreset ? (
-                <KnowledgeBaseManager 
+                <KnowledgeBaseManager
                   agentId={selectedPreset.id}
                   agentName={selectedPreset.name}
                   agentCategory={selectedPreset.category}
@@ -576,7 +618,7 @@ export function PresetManager() {
           <DialogHeader>
             <DialogTitle>Create New Agent Project</DialogTitle>
           </DialogHeader>
-          <DynamicFormRenderer 
+          <DynamicFormRenderer
             isCreateMode={true}
             currentStep={currentStep}
             onStepChange={setCurrentStep}
@@ -592,7 +634,7 @@ export function PresetManager() {
             <DialogTitle>Edit Project: {selectedPreset?.name}</DialogTitle>
           </DialogHeader>
           {selectedPreset && (
-            <DynamicFormRenderer 
+            <DynamicFormRenderer
               preset={selectedPreset}
               onComplete={() => setEditDialogOpen(false)}
             />

@@ -1,18 +1,18 @@
-import { useState } from "react";
-import { Button } from "./ui/button";
-import { 
-  Home, 
-  MessageSquare, 
-  Users, 
-  Settings, 
-  Zap, 
+import { useState } from 'react';
+import { Button } from './ui/button';
+import {
+  Home,
+  MessageSquare,
+  Users,
+  Settings,
+  Zap,
   Bot,
   Cpu,
   Wrench,
   Shield,
   Plus,
-  Hammer
-} from "lucide-react";
+  Hammer,
+} from 'lucide-react';
 
 interface SidebarProps {
   activeSection: string;
@@ -23,21 +23,23 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: Home },
-    { id: "chat", label: "Chat", icon: MessageSquare },
-    { id: "subagents", label: "Sub Agents", icon: Users },
-    { id: "presets", label: "Presets", icon: Bot },
-    { id: "models", label: "Models", icon: Cpu },
-    { id: "tools", label: "Tools", icon: Wrench },
-    { id: "toolbuilder", label: "Tool Builder", icon: Hammer },
-    { id: "racp", label: "RACP", icon: Shield },
-    { id: "settings", label: "Settings", icon: Settings },
+    { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'chat', label: 'Chat', icon: MessageSquare },
+    { id: 'subagents', label: 'Sub Agents', icon: Users },
+    { id: 'presets', label: 'Presets', icon: Bot },
+    { id: 'models', label: 'Models', icon: Cpu },
+    { id: 'tools', label: 'Tools', icon: Wrench },
+    { id: 'toolbuilder', label: 'Tool Builder', icon: Hammer },
+    { id: 'racp', label: 'RACP', icon: Shield },
+    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   return (
-    <div className={`bg-sidebar border-r border-sidebar-border transition-all duration-200 ${
-      isCollapsed ? 'w-16' : 'w-64'
-    }`}>
+    <div
+      className={`bg-sidebar border-r border-sidebar-border transition-all duration-200 ${
+        isCollapsed ? 'w-16' : 'w-64'
+      }`}
+    >
       <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center">
@@ -56,15 +58,15 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeSection === item.id;
-          
+
           return (
             <Button
               key={item.id}
-              variant={isActive ? "default" : "ghost"}
+              variant={isActive ? 'default' : 'ghost'}
               className={`w-full justify-start gap-3 ${
-                isActive 
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground" 
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                isActive
+                  ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                  : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
               } ${isCollapsed ? 'px-3' : 'px-3'}`}
               onClick={() => onSectionChange(item.id)}
             >
@@ -82,7 +84,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="w-full text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
         >
-          {isCollapsed ? <Plus className="w-4 h-4" /> : "Collapse"}
+          {isCollapsed ? <Plus className="w-4 h-4" /> : 'Collapse'}
         </Button>
       </div>
     </div>

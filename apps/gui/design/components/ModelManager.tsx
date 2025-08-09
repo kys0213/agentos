@@ -1,13 +1,13 @@
-import { useState } from "react";
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { Input } from "./ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { DynamicFormRenderer, LlmManifest } from "./DynamicFormRenderer";
-import { 
-  Plus, 
-  Settings, 
+import { useState } from 'react';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Input } from './ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { DynamicFormRenderer, LlmManifest } from './DynamicFormRenderer';
+import {
+  Plus,
+  Settings,
   Wifi,
   WifiOff,
   Cpu,
@@ -25,11 +25,11 @@ import {
   Code,
   MessageSquare,
   Camera,
-  RefreshCw
-} from "lucide-react";
+  RefreshCw,
+} from 'lucide-react';
 
 export function ModelManager() {
-  const [activeTab, setActiveTab] = useState("instances");
+  const [activeTab, setActiveTab] = useState('instances');
   const [selectedBridge, setSelectedBridge] = useState<LlmManifest | null>(null);
   const [bridgeConfig, setBridgeConfig] = useState<Record<string, any>>({});
   const [isConfigValid, setIsConfigValid] = useState(false);
@@ -37,10 +37,10 @@ export function ModelManager() {
   // Mock installed bridges with LlmManifest structure
   const installedBridges: LlmManifest[] = [
     {
-      schemaVersion: "1.0.0",
-      name: "OpenAI GPT Bridge",
-      language: "TypeScript",
-      entry: "./bridges/openai/index.ts",
+      schemaVersion: '1.0.0',
+      name: 'OpenAI GPT Bridge',
+      language: 'TypeScript',
+      entry: './bridges/openai/index.ts',
       configSchema: {}, // Zod schema would be here
       capabilities: {
         modalities: ['text', 'image'],
@@ -48,20 +48,20 @@ export function ModelManager() {
         supportsFunctionCall: true,
         supportsMultiTurn: true,
         supportsStreaming: true,
-        supportsVision: true
+        supportsVision: true,
       },
-      description: "Official OpenAI API bridge supporting GPT-4, GPT-3.5, and vision models",
-      version: "2.1.0",
-      author: "OpenAI Team",
-      homepage: "https://openai.com/api",
-      icon: "🤖",
-      tags: ["openai", "gpt", "official", "vision"]
+      description: 'Official OpenAI API bridge supporting GPT-4, GPT-3.5, and vision models',
+      version: '2.1.0',
+      author: 'OpenAI Team',
+      homepage: 'https://openai.com/api',
+      icon: '🤖',
+      tags: ['openai', 'gpt', 'official', 'vision'],
     },
     {
-      schemaVersion: "1.0.0", 
-      name: "Anthropic Claude Bridge",
-      language: "TypeScript",
-      entry: "./bridges/anthropic/index.ts",
+      schemaVersion: '1.0.0',
+      name: 'Anthropic Claude Bridge',
+      language: 'TypeScript',
+      entry: './bridges/anthropic/index.ts',
       configSchema: {},
       capabilities: {
         modalities: ['text'],
@@ -69,20 +69,20 @@ export function ModelManager() {
         supportsFunctionCall: false,
         supportsMultiTurn: true,
         supportsStreaming: true,
-        supportsVision: false
+        supportsVision: false,
       },
-      description: "Anthropic Claude API bridge for advanced reasoning and analysis",
-      version: "1.3.0",
-      author: "Anthropic Team",
-      homepage: "https://anthropic.com",
-      icon: "🎭",
-      tags: ["anthropic", "claude", "reasoning"]
+      description: 'Anthropic Claude API bridge for advanced reasoning and analysis',
+      version: '1.3.0',
+      author: 'Anthropic Team',
+      homepage: 'https://anthropic.com',
+      icon: '🎭',
+      tags: ['anthropic', 'claude', 'reasoning'],
     },
     {
-      schemaVersion: "1.0.0",
-      name: "Ollama Local Bridge",
-      language: "Python",
-      entry: "./bridges/ollama/main.py",
+      schemaVersion: '1.0.0',
+      name: 'Ollama Local Bridge',
+      language: 'Python',
+      entry: './bridges/ollama/main.py',
       configSchema: {},
       capabilities: {
         modalities: ['text'],
@@ -90,20 +90,20 @@ export function ModelManager() {
         supportsFunctionCall: false,
         supportsMultiTurn: true,
         supportsStreaming: true,
-        supportsVision: false
+        supportsVision: false,
       },
-      description: "Local LLM bridge for Ollama-hosted models",
-      version: "2.0.0",
-      author: "Community",
-      homepage: "https://ollama.ai",
-      icon: "🦙",
-      tags: ["local", "ollama", "self-hosted", "privacy"]
+      description: 'Local LLM bridge for Ollama-hosted models',
+      version: '2.0.0',
+      author: 'Community',
+      homepage: 'https://ollama.ai',
+      icon: '🦙',
+      tags: ['local', 'ollama', 'self-hosted', 'privacy'],
     },
     {
-      schemaVersion: "1.0.0",
-      name: "Google Gemini Bridge",
-      language: "JavaScript",
-      entry: "./bridges/gemini/index.js",
+      schemaVersion: '1.0.0',
+      name: 'Google Gemini Bridge',
+      language: 'JavaScript',
+      entry: './bridges/gemini/index.js',
       configSchema: {},
       capabilities: {
         modalities: ['text', 'image', 'video'],
@@ -111,138 +111,151 @@ export function ModelManager() {
         supportsFunctionCall: true,
         supportsMultiTurn: true,
         supportsStreaming: true,
-        supportsVision: true
+        supportsVision: true,
       },
-      description: "Google Gemini API bridge with multimodal capabilities",
-      version: "1.1.0",
-      author: "Google AI",
-      homepage: "https://ai.google.dev",
-      icon: "💎",
-      tags: ["google", "gemini", "multimodal"]
-    }
+      description: 'Google Gemini API bridge with multimodal capabilities',
+      version: '1.1.0',
+      author: 'Google AI',
+      homepage: 'https://ai.google.dev',
+      icon: '💎',
+      tags: ['google', 'gemini', 'multimodal'],
+    },
   ];
 
   // Mock available bridges for installation
   const availableBridges = [
     {
-      name: "Azure OpenAI Bridge",
-      version: "1.2.0",
-      description: "Enterprise-grade OpenAI models via Azure",
-      author: "Microsoft",
+      name: 'Azure OpenAI Bridge',
+      version: '1.2.0',
+      description: 'Enterprise-grade OpenAI models via Azure',
+      author: 'Microsoft',
       downloads: 15420,
-      tags: ["azure", "microsoft", "enterprise"],
-      language: "C#",
-      capabilities: ["text", "vision", "streaming"]
+      tags: ['azure', 'microsoft', 'enterprise'],
+      language: 'C#',
+      capabilities: ['text', 'vision', 'streaming'],
     },
     {
-      name: "Hugging Face Inference Bridge", 
-      version: "0.9.0",
-      description: "Access thousands of models via HF Inference API",
-      author: "Hugging Face",
+      name: 'Hugging Face Inference Bridge',
+      version: '0.9.0',
+      description: 'Access thousands of models via HF Inference API',
+      author: 'Hugging Face',
       downloads: 8930,
-      tags: ["huggingface", "inference", "community"],
-      language: "Python",
-      capabilities: ["text", "image", "audio"]
+      tags: ['huggingface', 'inference', 'community'],
+      language: 'Python',
+      capabilities: ['text', 'image', 'audio'],
     },
     {
-      name: "AWS Bedrock Bridge",
-      version: "1.0.0", 
-      description: "Amazon Bedrock foundation models",
-      author: "AWS",
+      name: 'AWS Bedrock Bridge',
+      version: '1.0.0',
+      description: 'Amazon Bedrock foundation models',
+      author: 'AWS',
       downloads: 5670,
-      tags: ["aws", "bedrock", "enterprise"],
-      language: "TypeScript",
-      capabilities: ["text", "embedding"]
+      tags: ['aws', 'bedrock', 'enterprise'],
+      language: 'TypeScript',
+      capabilities: ['text', 'embedding'],
     },
     {
-      name: "Cohere Bridge",
-      version: "0.8.0",
+      name: 'Cohere Bridge',
+      version: '0.8.0',
       description: "Cohere's command and embed models",
-      author: "Cohere",
+      author: 'Cohere',
       downloads: 3240,
-      tags: ["cohere", "embedding", "classification"],
-      language: "Python",
-      capabilities: ["text", "embedding"]
-    }
+      tags: ['cohere', 'embedding', 'classification'],
+      language: 'Python',
+      capabilities: ['text', 'embedding'],
+    },
   ];
 
   // Mock model instances
   const modelInstances = [
     {
       id: 1,
-      name: "GPT-4 Production",
-      bridge: "OpenAI GPT Bridge",
-      model: "gpt-4-turbo-preview",
-      status: "connected",
+      name: 'GPT-4 Production',
+      bridge: 'OpenAI GPT Bridge',
+      model: 'gpt-4-turbo-preview',
+      status: 'connected',
       requests: 1247,
-      cost: "$12.40",
-      avgLatency: "850ms",
-      lastUsed: "2 minutes ago",
-      language: "TypeScript"
+      cost: '$12.40',
+      avgLatency: '850ms',
+      lastUsed: '2 minutes ago',
+      language: 'TypeScript',
     },
     {
       id: 2,
-      name: "Claude-3.5 Analysis",
-      bridge: "Anthropic Claude Bridge", 
-      model: "claude-3-5-sonnet-20241022",
-      status: "connected",
+      name: 'Claude-3.5 Analysis',
+      bridge: 'Anthropic Claude Bridge',
+      model: 'claude-3-5-sonnet-20241022',
+      status: 'connected',
       requests: 892,
-      cost: "$8.92",
-      avgLatency: "720ms", 
-      lastUsed: "5 minutes ago",
-      language: "TypeScript"
+      cost: '$8.92',
+      avgLatency: '720ms',
+      lastUsed: '5 minutes ago',
+      language: 'TypeScript',
     },
     {
       id: 3,
-      name: "Local LLaMA 70B",
-      bridge: "Ollama Local Bridge",
-      model: "llama3.1:70b",
-      status: "error",
+      name: 'Local LLaMA 70B',
+      bridge: 'Ollama Local Bridge',
+      model: 'llama3.1:70b',
+      status: 'error',
       requests: 0,
-      cost: "$0.00",
-      avgLatency: "N/A",
-      lastUsed: "Never",
-      language: "Python"
+      cost: '$0.00',
+      avgLatency: 'N/A',
+      lastUsed: 'Never',
+      language: 'Python',
     },
     {
       id: 4,
-      name: "Gemini Pro Vision",
-      bridge: "Google Gemini Bridge",
-      model: "gemini-1.5-pro",
-      status: "connected",
+      name: 'Gemini Pro Vision',
+      bridge: 'Google Gemini Bridge',
+      model: 'gemini-1.5-pro',
+      status: 'connected',
       requests: 324,
-      cost: "$2.15",
-      avgLatency: "680ms",
-      lastUsed: "1 hour ago",
-      language: "JavaScript"
-    }
+      cost: '$2.15',
+      avgLatency: '680ms',
+      lastUsed: '1 hour ago',
+      language: 'JavaScript',
+    },
   ];
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'connected': return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'error': return <AlertCircle className="w-4 h-4 text-red-600" />;
-      case 'paused': return <WifiOff className="w-4 h-4 text-yellow-600" />;
-      default: return <Wifi className="w-4 h-4 text-gray-400" />;
+      case 'connected':
+        return <CheckCircle className="w-4 h-4 text-green-600" />;
+      case 'error':
+        return <AlertCircle className="w-4 h-4 text-red-600" />;
+      case 'paused':
+        return <WifiOff className="w-4 h-4 text-yellow-600" />;
+      default:
+        return <Wifi className="w-4 h-4 text-gray-400" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'connected': return 'default';
-      case 'error': return 'destructive';
-      case 'paused': return 'secondary';
-      default: return 'outline';
+      case 'connected':
+        return 'default';
+      case 'error':
+        return 'destructive';
+      case 'paused':
+        return 'secondary';
+      default:
+        return 'outline';
     }
   };
 
   const getLanguageColor = (language: string) => {
     switch (language.toLowerCase()) {
-      case 'typescript': return 'bg-blue-100 text-blue-700';
-      case 'javascript': return 'bg-yellow-100 text-yellow-700';
-      case 'python': return 'bg-green-100 text-green-700';
-      case 'c#': return 'bg-purple-100 text-purple-700';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'typescript':
+        return 'bg-blue-100 text-blue-700';
+      case 'javascript':
+        return 'bg-yellow-100 text-yellow-700';
+      case 'python':
+        return 'bg-green-100 text-green-700';
+      case 'c#':
+        return 'bg-purple-100 text-purple-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
     }
   };
 
@@ -342,7 +355,10 @@ export function ModelManager() {
                       <Badge variant={getStatusBadge(instance.status)} className="capitalize">
                         {instance.status}
                       </Badge>
-                      <Badge variant="outline" className={`text-xs ${getLanguageColor(instance.language)}`}>
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${getLanguageColor(instance.language)}`}
+                      >
                         {instance.language}
                       </Badge>
                     </div>
@@ -391,7 +407,7 @@ export function ModelManager() {
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   {installedBridges.map((bridge) => (
-                    <Card 
+                    <Card
                       key={bridge.name}
                       className="p-4 cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-primary/20"
                       onClick={() => setSelectedBridge(bridge)}
@@ -409,17 +425,25 @@ export function ModelManager() {
                           </div>
                           <p className="text-xs text-muted-foreground mb-2">{bridge.description}</p>
                           <div className="flex items-center gap-2">
-                            <Badge 
-                              variant="secondary" 
+                            <Badge
+                              variant="secondary"
                               className={`text-xs ${getLanguageColor(bridge.language)}`}
                             >
                               {bridge.language}
                             </Badge>
                             <div className="flex gap-1">
-                              {bridge.capabilities.supportsToolCall && <Code className="w-3 h-3 text-blue-600" />}
-                              {bridge.capabilities.supportsMultiTurn && <MessageSquare className="w-3 h-3 text-green-600" />}
-                              {bridge.capabilities.supportsVision && <Camera className="w-3 h-3 text-purple-600" />}
-                              {bridge.capabilities.supportsStreaming && <RefreshCw className="w-3 h-3 text-orange-600" />}
+                              {bridge.capabilities.supportsToolCall && (
+                                <Code className="w-3 h-3 text-blue-600" />
+                              )}
+                              {bridge.capabilities.supportsMultiTurn && (
+                                <MessageSquare className="w-3 h-3 text-green-600" />
+                              )}
+                              {bridge.capabilities.supportsVision && (
+                                <Camera className="w-3 h-3 text-purple-600" />
+                              )}
+                              {bridge.capabilities.supportsStreaming && (
+                                <RefreshCw className="w-3 h-3 text-orange-600" />
+                              )}
                             </div>
                           </div>
                         </div>
@@ -436,22 +460,19 @@ export function ModelManager() {
                     Back to Bridge Selection
                   </Button>
                 </div>
-                
+
                 <DynamicFormRenderer
                   manifest={selectedBridge}
                   values={bridgeConfig}
                   onChange={setBridgeConfig}
                   onValidationChange={setIsConfigValid}
                 />
-                
+
                 <div className="flex justify-end gap-2 pt-4 border-t">
                   <Button variant="outline" onClick={() => setSelectedBridge(null)}>
                     Cancel
                   </Button>
-                  <Button 
-                    onClick={handleCreateInstance}
-                    disabled={!isConfigValid}
-                  >
+                  <Button onClick={handleCreateInstance} disabled={!isConfigValid}>
                     <Plus className="w-4 h-4 mr-2" />
                     Create Instance
                   </Button>
@@ -477,21 +498,23 @@ export function ModelManager() {
                         <Badge variant="outline" className="text-xs">
                           v{bridge.version}
                         </Badge>
-                        <Badge 
-                          variant="secondary" 
+                        <Badge
+                          variant="secondary"
                           className={`text-xs ${getLanguageColor(bridge.language)}`}
                         >
                           {bridge.language}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground mb-3">{bridge.description}</p>
-                      
+
                       {/* Capabilities Grid */}
                       <div className="grid grid-cols-2 gap-4 mb-3">
                         <div>
-                          <h5 className="text-xs font-medium text-muted-foreground mb-1">Modalities</h5>
+                          <h5 className="text-xs font-medium text-muted-foreground mb-1">
+                            Modalities
+                          </h5>
                           <div className="flex flex-wrap gap-1">
-                            {bridge.capabilities.modalities.map(modality => (
+                            {bridge.capabilities.modalities.map((modality) => (
                               <Badge key={modality} variant="secondary" className="text-xs">
                                 {modality}
                               </Badge>
@@ -499,7 +522,9 @@ export function ModelManager() {
                           </div>
                         </div>
                         <div>
-                          <h5 className="text-xs font-medium text-muted-foreground mb-1">Features</h5>
+                          <h5 className="text-xs font-medium text-muted-foreground mb-1">
+                            Features
+                          </h5>
                           <div className="flex gap-1">
                             {bridge.capabilities.supportsToolCall && (
                               <div className="flex items-center gap-1">
@@ -524,7 +549,7 @@ export function ModelManager() {
                       </div>
 
                       <div className="flex flex-wrap gap-1">
-                        {bridge.tags?.map(tag => (
+                        {bridge.tags?.map((tag) => (
                           <Badge key={tag} variant="outline" className="text-xs">
                             {tag}
                           </Badge>
@@ -573,8 +598,8 @@ export function ModelManager() {
                       <Badge variant="outline" className="text-xs">
                         v{bridge.version}
                       </Badge>
-                      <Badge 
-                        variant="secondary" 
+                      <Badge
+                        variant="secondary"
                         className={`text-xs ${getLanguageColor(bridge.language)}`}
                       >
                         {bridge.language}
@@ -586,14 +611,14 @@ export function ModelManager() {
                     </p>
                     <div className="flex items-center gap-4">
                       <div className="flex flex-wrap gap-1">
-                        {bridge.tags.map(tag => (
+                        {bridge.tags.map((tag) => (
                           <Badge key={tag} variant="outline" className="text-xs">
                             {tag}
                           </Badge>
                         ))}
                       </div>
                       <div className="flex gap-1">
-                        {bridge.capabilities.map(cap => (
+                        {bridge.capabilities.map((cap) => (
                           <Badge key={cap} variant="secondary" className="text-xs">
                             {cap}
                           </Badge>

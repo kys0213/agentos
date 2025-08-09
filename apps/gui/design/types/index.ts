@@ -1,4 +1,4 @@
-import { McpConfig } from "../components/MCPToolAdd";
+import { McpConfig } from '../components/MCPToolAdd';
 
 export interface Preset {
   id: string;
@@ -14,7 +14,7 @@ export interface Preset {
   };
   tools: string[];
   mcpTools?: McpConfig[];
-  status: "active" | "idle" | "inactive";
+  status: 'active' | 'idle' | 'inactive';
   createdAt: Date;
   updatedAt: Date;
   usageCount: number;
@@ -31,7 +31,7 @@ export interface Agent {
   name: string;
   description: string;
   category: string;
-  status: "active" | "idle" | "inactive";
+  status: 'active' | 'idle' | 'inactive';
   preset: string;
   avatar?: string;
   lastUsed?: Date;
@@ -45,13 +45,13 @@ export interface ChatAgent {
   preset: string;
 }
 
-export type AppSection = 
-  | "dashboard" 
-  | "chat" 
-  | "subagents" 
-  | "presets" 
-  | "models" 
-  | "tools" 
-  | "toolbuilder" 
-  | "racp" 
-  | "settings";
+export type AppSection =
+  | 'dashboard'
+  | 'chat'
+  | 'subagents'
+  | 'presets'
+  | 'models'
+  | 'tools'
+  | 'toolbuilder'
+  | 'racp'
+  | 'settings';

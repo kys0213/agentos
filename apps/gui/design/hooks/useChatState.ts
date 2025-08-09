@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ChatAgent } from "../types";
+import { useState } from 'react';
+import { ChatAgent } from '../types';
 
 export function useChatState() {
   const [activeChatAgent, setActiveChatAgent] = useState<ChatAgent | null>(null);
@@ -35,6 +35,6 @@ export function useChatState() {
     handleOpenChat,
     handleCloseChat,
     handleMinimizeChat,
-    handleRestoreChat
+    handleRestoreChat,
   };
 }

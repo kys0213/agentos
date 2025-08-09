@@ -1,21 +1,31 @@
-import { useState } from "react";
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Textarea } from "./ui/textarea";
-import { Slider } from "./ui/slider";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
-import { 
-  ArrowLeft, 
-  Save, 
+import { useState } from 'react';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Textarea } from './ui/textarea';
+import { Slider } from './ui/slider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './ui/alert-dialog';
+import {
+  ArrowLeft,
+  Save,
   Trash2,
-  Brain, 
-  Database, 
-  Code, 
+  Brain,
+  Database,
+  Code,
   BarChart3,
   Users,
   Calendar,
@@ -23,8 +33,8 @@ import {
   FileText,
   AlertCircle,
   CheckCircle,
-  Clock
-} from "lucide-react";
+  Clock,
+} from 'lucide-react';
 
 interface Preset {
   id: string;
@@ -39,7 +49,7 @@ interface Preset {
     topP: number;
   };
   tools: string[];
-  status: "active" | "idle" | "inactive";
+  status: 'active' | 'idle' | 'inactive';
   createdAt: Date;
   updatedAt: Date;
   usageCount: number;
@@ -60,11 +70,11 @@ interface PresetDetailProps {
 
 export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetailProps) {
   const [editedPreset, setEditedPreset] = useState<Preset>(preset);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState('overview');
   const [hasChanges, setHasChanges] = useState(false);
 
   const updatePreset = (updates: Partial<Preset>) => {
-    setEditedPreset(prev => ({ ...prev, ...updates }));
+    setEditedPreset((prev) => ({ ...prev, ...updates }));
     setHasChanges(true);
   };
 
@@ -80,31 +90,36 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case "research": return <Database className="w-5 h-5" />;
-      case "development": return <Code className="w-5 h-5" />;
-      case "creative": return <FileText className="w-5 h-5" />;
-      case "analytics": return <BarChart3 className="w-5 h-5" />;
-      default: return <Brain className="w-5 h-5" />;
+      case 'research':
+        return <Database className="w-5 h-5" />;
+      case 'development':
+        return <Code className="w-5 h-5" />;
+      case 'creative':
+        return <FileText className="w-5 h-5" />;
+      case 'analytics':
+        return <BarChart3 className="w-5 h-5" />;
+      default:
+        return <Brain className="w-5 h-5" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "active":
+      case 'active':
         return (
           <Badge className="gap-1 status-active">
             <CheckCircle className="w-3 h-3" />
             Active
           </Badge>
         );
-      case "idle":
+      case 'idle':
         return (
           <Badge className="gap-1 status-idle">
             <Clock className="w-3 h-3" />
             Idle
           </Badge>
         );
-      case "inactive":
+      case 'inactive':
         return (
           <Badge variant="outline" className="gap-1 status-inactive-subtle">
             <AlertCircle className="w-3 h-3" />
@@ -122,44 +137,33 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
       <div className="flex-shrink-0 p-6 border-b">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onBack}
-              className="gap-2"
-            >
+            <Button variant="outline" size="sm" onClick={onBack} className="gap-2">
               <ArrowLeft className="w-4 h-4" />
               Back to Presets
             </Button>
-            
+
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg flex items-center justify-center">
-                <div className="text-blue-600">
-                  {getCategoryIcon(editedPreset.category)}
-                </div>
+                <div className="text-blue-600">{getCategoryIcon(editedPreset.category)}</div>
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-foreground">
-                  {editedPreset.name}
-                </h1>
-                <p className="text-muted-foreground capitalize">
-                  {editedPreset.category} preset
-                </p>
+                <h1 className="text-2xl font-semibold text-foreground">{editedPreset.name}</h1>
+                <p className="text-muted-foreground capitalize">{editedPreset.category} preset</p>
               </div>
               {getStatusBadge(editedPreset.status)}
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
-            {hasChanges && (
-              <span className="text-sm text-orange-600 mr-2">
-                Unsaved changes
-              </span>
-            )}
-            
+            {hasChanges && <span className="text-sm text-orange-600 mr-2">Unsaved changes</span>}
+
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                >
                   <Trash2 className="w-4 h-4" />
                   Delete
                 </Button>
@@ -174,18 +178,17 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
                     Delete Preset
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
 
-            <Button 
-              onClick={handleSave}
-              disabled={!hasChanges}
-              className="gap-2"
-            >
+            <Button onClick={handleSave} disabled={!hasChanges} className="gap-2">
               <Save className="w-4 h-4" />
               Save Changes
             </Button>
@@ -205,14 +208,16 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
               </div>
             </div>
           </Card>
-          
+
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
                 <FileText className="w-4 h-4 text-green-600" />
               </div>
               <div>
-                <p className="text-lg font-semibold text-foreground">{editedPreset.knowledgeDocuments}</p>
+                <p className="text-lg font-semibold text-foreground">
+                  {editedPreset.knowledgeDocuments}
+                </p>
                 <p className="text-xs text-muted-foreground">Knowledge Docs</p>
               </div>
             </div>
@@ -273,7 +278,9 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
               <div className="grid grid-cols-2 gap-6 h-full">
                 <div className="space-y-6">
                   <Card className="p-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Basic Information</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-4">
+                      Basic Information
+                    </h3>
                     <div className="space-y-4">
                       <div>
                         <Label htmlFor="name">Preset Name</Label>
@@ -284,7 +291,7 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                           className="mt-1"
                         />
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="description">Description</Label>
                         <Textarea
@@ -319,7 +326,7 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                           <Label htmlFor="status">Status</Label>
                           <Select
                             value={editedPreset.status}
-                            onValueChange={(value: "active" | "idle" | "inactive") => 
+                            onValueChange={(value: 'active' | 'idle' | 'inactive') =>
                               updatePreset({ status: value })
                             }
                           >
@@ -362,9 +369,9 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                         <Label>Temperature: {editedPreset.parameters.temperature}</Label>
                         <Slider
                           value={[editedPreset.parameters.temperature]}
-                          onValueChange={([value]) => 
-                            updatePreset({ 
-                              parameters: { ...editedPreset.parameters, temperature: value }
+                          onValueChange={([value]) =>
+                            updatePreset({
+                              parameters: { ...editedPreset.parameters, temperature: value },
                             })
                           }
                           max={1}
@@ -378,9 +385,9 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                         <Label>Max Tokens: {editedPreset.parameters.maxTokens}</Label>
                         <Slider
                           value={[editedPreset.parameters.maxTokens]}
-                          onValueChange={([value]) => 
-                            updatePreset({ 
-                              parameters: { ...editedPreset.parameters, maxTokens: value }
+                          onValueChange={([value]) =>
+                            updatePreset({
+                              parameters: { ...editedPreset.parameters, maxTokens: value },
                             })
                           }
                           max={8000}
@@ -394,9 +401,9 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                         <Label>Top P: {editedPreset.parameters.topP}</Label>
                         <Slider
                           value={[editedPreset.parameters.topP]}
-                          onValueChange={([value]) => 
-                            updatePreset({ 
-                              parameters: { ...editedPreset.parameters, topP: value }
+                          onValueChange={([value]) =>
+                            updatePreset({
+                              parameters: { ...editedPreset.parameters, topP: value },
                             })
                           }
                           max={1}
@@ -439,7 +446,9 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
 
             <TabsContent value="configuration" className="h-full">
               <Card className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Advanced Configuration</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-4">
+                  Advanced Configuration
+                </h3>
                 <p className="text-muted-foreground">
                   Advanced preset configuration options coming soon...
                 </p>

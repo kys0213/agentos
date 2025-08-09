@@ -1,17 +1,17 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Textarea } from "./ui/textarea";
-import { ScrollArea } from "./ui/scroll-area";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
-import { Progress } from "./ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Separator } from "./ui/separator";
-import { 
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Textarea } from './ui/textarea';
+import { ScrollArea } from './ui/scroll-area';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Progress } from './ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Separator } from './ui/separator';
+import {
   Upload,
   FileText,
   Search,
@@ -37,8 +37,8 @@ import {
   TrendingUp,
   FileStack,
   Sparkles,
-  Layout
-} from "lucide-react";
+  Layout,
+} from 'lucide-react';
 
 interface KnowledgeDocument {
   id: string;
@@ -93,28 +93,32 @@ interface KnowledgeTemplate {
   }>;
 }
 
-export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: KnowledgeBaseManagerProps) {
+export function KnowledgeBaseManager({
+  agentId,
+  agentName,
+  agentCategory,
+}: KnowledgeBaseManagerProps) {
   const [documents, setDocuments] = useState<KnowledgeDocument[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedDocument, setSelectedDocument] = useState<KnowledgeDocument | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isIndexing, setIsIndexing] = useState(false);
   const [indexingProgress, setIndexingProgress] = useState(0);
-  const [activeTab, setActiveTab] = useState("documents");
+  const [activeTab, setActiveTab] = useState('documents');
   const [newDocumentDialog, setNewDocumentDialog] = useState(false);
   const [templateDialog, setTemplateDialog] = useState(false);
-  const [newDocumentTitle, setNewDocumentTitle] = useState("");
-  const [newDocumentContent, setNewDocumentContent] = useState("");
-  const [newDocumentTags, setNewDocumentTags] = useState("");
+  const [newDocumentTitle, setNewDocumentTitle] = useState('');
+  const [newDocumentContent, setNewDocumentContent] = useState('');
+  const [newDocumentTags, setNewDocumentTags] = useState('');
   const [availableTemplates, setAvailableTemplates] = useState<KnowledgeTemplate[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState('');
   const [knowledgeStats, setKnowledgeStats] = useState<PresetKnowledgeStats | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Storage keys for preset-specific data (completely isolated)
-  const getStorageKey = (type: 'documents' | 'index' | 'stats') => 
+  const getStorageKey = (type: 'documents' | 'index' | 'stats') =>
     `agentos_project_${agentId}_${type}`;
 
   // Load preset-specific data (project isolation)
@@ -129,7 +133,7 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
         const documentsWithDates = parsed.map((doc: any) => ({
           ...doc,
           createdAt: new Date(doc.createdAt),
-          updatedAt: new Date(doc.updatedAt)
+          updatedAt: new Date(doc.updatedAt),
         }));
         setDocuments(documentsWithDates);
       } catch (error) {
@@ -142,7 +146,7 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
 
     // Load available templates
     loadAvailableTemplates();
-    
+
     // Calculate knowledge stats
     calculateKnowledgeStats();
   }, [agentId]);
@@ -159,102 +163,112 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
     // Predefined knowledge templates for different categories
     const templates: KnowledgeTemplate[] = [
       {
-        id: "global-guidelines",
-        name: "Company Guidelines",
-        description: "Standard company policies and guidelines",
-        category: "global",
+        id: 'global-guidelines',
+        name: 'Company Guidelines',
+        description: 'Standard company policies and guidelines',
+        category: 'global',
         documents: [
           {
-            title: "Company Code of Conduct",
-            content: "# Company Code of Conduct\n\n## Professional Standards\n- Maintain professional behavior at all times\n- Respect diversity and inclusion\n- Follow data privacy regulations\n\n## Communication Guidelines\n- Use clear and concise language\n- Be respectful in all interactions\n- Follow proper escalation procedures",
-            tags: ["company", "guidelines", "conduct"]
+            title: 'Company Code of Conduct',
+            content:
+              '# Company Code of Conduct\n\n## Professional Standards\n- Maintain professional behavior at all times\n- Respect diversity and inclusion\n- Follow data privacy regulations\n\n## Communication Guidelines\n- Use clear and concise language\n- Be respectful in all interactions\n- Follow proper escalation procedures',
+            tags: ['company', 'guidelines', 'conduct'],
           },
           {
-            title: "Brand Voice Guidelines",
-            content: "# Brand Voice Guidelines\n\n## Tone\n- Professional yet approachable\n- Clear and helpful\n- Empathetic and understanding\n\n## Language Style\n- Use active voice\n- Avoid jargon\n- Be concise but comprehensive",
-            tags: ["brand", "voice", "communication"]
-          }
-        ]
+            title: 'Brand Voice Guidelines',
+            content:
+              '# Brand Voice Guidelines\n\n## Tone\n- Professional yet approachable\n- Clear and helpful\n- Empathetic and understanding\n\n## Language Style\n- Use active voice\n- Avoid jargon\n- Be concise but comprehensive',
+            tags: ['brand', 'voice', 'communication'],
+          },
+        ],
       },
       {
-        id: "research-starter",
-        name: "Research Assistant Starter",
-        description: "Research methodologies and best practices",
-        category: "research",
+        id: 'research-starter',
+        name: 'Research Assistant Starter',
+        description: 'Research methodologies and best practices',
+        category: 'research',
         documents: [
           {
-            title: "Research Methodology Guidelines",
-            content: "# Research Methodology Guidelines\n\n## Primary Research\n- Define clear research objectives\n- Choose appropriate methodologies\n- Ensure data quality and reliability\n\n## Secondary Research\n- Use credible sources\n- Cross-reference information\n- Cite sources properly\n\n## Data Analysis\n- Apply statistical methods appropriately\n- Identify patterns and trends\n- Draw evidence-based conclusions",
-            tags: ["research", "methodology", "analysis"]
+            title: 'Research Methodology Guidelines',
+            content:
+              '# Research Methodology Guidelines\n\n## Primary Research\n- Define clear research objectives\n- Choose appropriate methodologies\n- Ensure data quality and reliability\n\n## Secondary Research\n- Use credible sources\n- Cross-reference information\n- Cite sources properly\n\n## Data Analysis\n- Apply statistical methods appropriately\n- Identify patterns and trends\n- Draw evidence-based conclusions',
+            tags: ['research', 'methodology', 'analysis'],
           },
           {
-            title: "Source Evaluation Criteria",
-            content: "# Source Evaluation Criteria\n\n## Credibility Factors\n- Author expertise and credentials\n- Publication reputation\n- Peer review status\n- Currency and relevance\n\n## Red Flags\n- Biased or promotional content\n- Lack of citations\n- Outdated information\n- Unverifiable claims",
-            tags: ["sources", "evaluation", "credibility"]
-          }
-        ]
+            title: 'Source Evaluation Criteria',
+            content:
+              '# Source Evaluation Criteria\n\n## Credibility Factors\n- Author expertise and credentials\n- Publication reputation\n- Peer review status\n- Currency and relevance\n\n## Red Flags\n- Biased or promotional content\n- Lack of citations\n- Outdated information\n- Unverifiable claims',
+            tags: ['sources', 'evaluation', 'credibility'],
+          },
+        ],
       },
       {
-        id: "development-starter",
-        name: "Development Assistant Starter",
-        description: "Coding standards and development practices",
-        category: "development",
+        id: 'development-starter',
+        name: 'Development Assistant Starter',
+        description: 'Coding standards and development practices',
+        category: 'development',
         documents: [
           {
-            title: "Coding Standards",
-            content: "# Coding Standards\n\n## General Principles\n- Write clean, readable code\n- Use meaningful variable names\n- Comment complex logic\n- Follow DRY principles\n\n## Code Review Guidelines\n- Review for functionality\n- Check for security vulnerabilities\n- Ensure performance optimization\n- Verify test coverage",
-            tags: ["coding", "standards", "best-practices"]
+            title: 'Coding Standards',
+            content:
+              '# Coding Standards\n\n## General Principles\n- Write clean, readable code\n- Use meaningful variable names\n- Comment complex logic\n- Follow DRY principles\n\n## Code Review Guidelines\n- Review for functionality\n- Check for security vulnerabilities\n- Ensure performance optimization\n- Verify test coverage',
+            tags: ['coding', 'standards', 'best-practices'],
           },
           {
-            title: "Development Workflow",
-            content: "# Development Workflow\n\n## Git Best Practices\n- Use descriptive commit messages\n- Create feature branches\n- Perform regular code reviews\n- Maintain clean history\n\n## Testing Strategy\n- Write unit tests\n- Implement integration tests\n- Perform user acceptance testing\n- Automate testing processes",
-            tags: ["workflow", "git", "testing"]
-          }
-        ]
+            title: 'Development Workflow',
+            content:
+              '# Development Workflow\n\n## Git Best Practices\n- Use descriptive commit messages\n- Create feature branches\n- Perform regular code reviews\n- Maintain clean history\n\n## Testing Strategy\n- Write unit tests\n- Implement integration tests\n- Perform user acceptance testing\n- Automate testing processes',
+            tags: ['workflow', 'git', 'testing'],
+          },
+        ],
       },
       {
-        id: "creative-starter",
-        name: "Creative Assistant Starter",
-        description: "Content creation and writing guidelines",
-        category: "creative",
+        id: 'creative-starter',
+        name: 'Creative Assistant Starter',
+        description: 'Content creation and writing guidelines',
+        category: 'creative',
         documents: [
           {
-            title: "Content Creation Guidelines",
-            content: "# Content Creation Guidelines\n\n## Writing Style\n- Engage your audience\n- Use compelling headlines\n- Tell stories that resonate\n- Include clear calls to action\n\n## Content Types\n- Blog posts and articles\n- Social media content\n- Marketing materials\n- Documentation",
-            tags: ["content", "writing", "creativity"]
+            title: 'Content Creation Guidelines',
+            content:
+              '# Content Creation Guidelines\n\n## Writing Style\n- Engage your audience\n- Use compelling headlines\n- Tell stories that resonate\n- Include clear calls to action\n\n## Content Types\n- Blog posts and articles\n- Social media content\n- Marketing materials\n- Documentation',
+            tags: ['content', 'writing', 'creativity'],
           },
           {
-            title: "SEO Best Practices",
-            content: "# SEO Best Practices\n\n## Keyword Strategy\n- Research relevant keywords\n- Use keywords naturally\n- Focus on long-tail keywords\n- Monitor keyword performance\n\n## Content Optimization\n- Write compelling meta descriptions\n- Use proper heading structure\n- Optimize images with alt text\n- Create internal linking strategy",
-            tags: ["seo", "optimization", "content"]
-          }
-        ]
+            title: 'SEO Best Practices',
+            content:
+              '# SEO Best Practices\n\n## Keyword Strategy\n- Research relevant keywords\n- Use keywords naturally\n- Focus on long-tail keywords\n- Monitor keyword performance\n\n## Content Optimization\n- Write compelling meta descriptions\n- Use proper heading structure\n- Optimize images with alt text\n- Create internal linking strategy',
+            tags: ['seo', 'optimization', 'content'],
+          },
+        ],
       },
       {
-        id: "analytics-starter",
-        name: "Analytics Assistant Starter",
-        description: "Data analysis methodologies and tools",
-        category: "analytics",
+        id: 'analytics-starter',
+        name: 'Analytics Assistant Starter',
+        description: 'Data analysis methodologies and tools',
+        category: 'analytics',
         documents: [
           {
-            title: "Data Analysis Framework",
-            content: "# Data Analysis Framework\n\n## Data Collection\n- Define metrics and KPIs\n- Ensure data quality\n- Implement proper tracking\n- Regular data validation\n\n## Analysis Methods\n- Descriptive analytics\n- Predictive modeling\n- Statistical significance testing\n- Trend analysis",
-            tags: ["analytics", "data", "framework"]
+            title: 'Data Analysis Framework',
+            content:
+              '# Data Analysis Framework\n\n## Data Collection\n- Define metrics and KPIs\n- Ensure data quality\n- Implement proper tracking\n- Regular data validation\n\n## Analysis Methods\n- Descriptive analytics\n- Predictive modeling\n- Statistical significance testing\n- Trend analysis',
+            tags: ['analytics', 'data', 'framework'],
           },
           {
-            title: "Visualization Guidelines",
-            content: "# Data Visualization Guidelines\n\n## Chart Selection\n- Choose appropriate chart types\n- Consider your audience\n- Highlight key insights\n- Keep it simple and clear\n\n## Design Principles\n- Use consistent color schemes\n- Provide clear labels\n- Include context and legends\n- Avoid chart junk",
-            tags: ["visualization", "charts", "design"]
-          }
-        ]
-      }
+            title: 'Visualization Guidelines',
+            content:
+              '# Data Visualization Guidelines\n\n## Chart Selection\n- Choose appropriate chart types\n- Consider your audience\n- Highlight key insights\n- Keep it simple and clear\n\n## Design Principles\n- Use consistent color schemes\n- Provide clear labels\n- Include context and legends\n- Avoid chart junk',
+            tags: ['visualization', 'charts', 'design'],
+          },
+        ],
+      },
     ];
 
     // Filter templates based on category or show all
-    const relevantTemplates = templates.filter(t => 
-      t.category === "global" || t.category === agentCategory
+    const relevantTemplates = templates.filter(
+      (t) => t.category === 'global' || t.category === agentCategory
     );
-    
+
     setAvailableTemplates(relevantTemplates);
   };
 
@@ -268,14 +282,14 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
       type: 'markdown',
       createdAt: new Date(),
       updatedAt: new Date(),
-      tags: ["welcome", "getting-started"],
+      tags: ['welcome', 'getting-started'],
       indexed: false,
       vectorized: false,
       agentId: agentId!,
       agentName: agentName!,
-      isTemplate: true
+      isTemplate: true,
     };
-    
+
     setDocuments([welcomeDoc]);
   };
 
@@ -284,58 +298,68 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
 
     const stats: PresetKnowledgeStats = {
       totalDocuments: documents.length,
-      indexedDocuments: documents.filter(d => d.indexed).length,
-      vectorizedDocuments: documents.filter(d => d.vectorized).length,
+      indexedDocuments: documents.filter((d) => d.indexed).length,
+      vectorizedDocuments: documents.filter((d) => d.vectorized).length,
       totalChunks: documents.reduce((sum, doc) => sum + (doc.chunks?.length || 0), 0),
-      lastUpdated: new Date(Math.max(...documents.map(d => d.updatedAt.getTime()))),
-      storageSize: documents.reduce((sum, doc) => sum + doc.size, 0)
+      lastUpdated: new Date(Math.max(...documents.map((d) => d.updatedAt.getTime()))),
+      storageSize: documents.reduce((sum, doc) => sum + doc.size, 0),
     };
 
     setKnowledgeStats(stats);
     localStorage.setItem(getStorageKey('stats'), JSON.stringify(stats));
   };
 
-  const handleFileUpload = useCallback((files: FileList) => {
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    Array.from(files).forEach(async (file, index) => {
-      if (file.type === 'text/markdown' || file.name.endsWith('.md') || file.type === 'text/plain') {
-        const content = await file.text();
-        const newDoc: KnowledgeDocument = {
-          id: `${agentId}-doc-${Date.now()}-${index}`,
-          title: file.name.replace(/\.(md|txt)$/, ''),
-          content,
-          filename: file.name,
-          size: file.size,
-          type: file.name.endsWith('.md') ? 'markdown' : 'text',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          tags: [],
-          indexed: false,
-          vectorized: false,
-          agentId: agentId!,
-          agentName: agentName!
-        };
-
-        setDocuments(prev => [...prev, newDoc]);
-        setUploadProgress((index + 1) / files.length * 100);
-      }
-    });
-
-    setTimeout(() => {
-      setIsUploading(false);
+  const handleFileUpload = useCallback(
+    (files: FileList) => {
+      setIsUploading(true);
       setUploadProgress(0);
-    }, 1000);
-  }, [agentId, agentName]);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      handleFileUpload(files);
-    }
-  }, [handleFileUpload]);
+      Array.from(files).forEach(async (file, index) => {
+        if (
+          file.type === 'text/markdown' ||
+          file.name.endsWith('.md') ||
+          file.type === 'text/plain'
+        ) {
+          const content = await file.text();
+          const newDoc: KnowledgeDocument = {
+            id: `${agentId}-doc-${Date.now()}-${index}`,
+            title: file.name.replace(/\.(md|txt)$/, ''),
+            content,
+            filename: file.name,
+            size: file.size,
+            type: file.name.endsWith('.md') ? 'markdown' : 'text',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            tags: [],
+            indexed: false,
+            vectorized: false,
+            agentId: agentId!,
+            agentName: agentName!,
+          };
+
+          setDocuments((prev) => [...prev, newDoc]);
+          setUploadProgress(((index + 1) / files.length) * 100);
+        }
+      });
+
+      setTimeout(() => {
+        setIsUploading(false);
+        setUploadProgress(0);
+      }, 1000);
+    },
+    [agentId, agentName]
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFileUpload(files);
+      }
+    },
+    [handleFileUpload]
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -355,19 +379,19 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
     // Simulate indexing process
     for (let i = 0; i <= 100; i += 10) {
       setIndexingProgress(i);
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
-    setDocuments(prev => prev.map(doc => 
-      doc.id === docId ? { ...doc, indexed: true, updatedAt: new Date() } : doc
-    ));
+    setDocuments((prev) =>
+      prev.map((doc) => (doc.id === docId ? { ...doc, indexed: true, updatedAt: new Date() } : doc))
+    );
 
     setIsIndexing(false);
     setIndexingProgress(0);
   };
 
   const vectorizeDocument = async (docId: string) => {
-    const doc = documents.find(d => d.id === docId);
+    const doc = documents.find((d) => d.id === docId);
     if (!doc) return;
 
     setIsIndexing(true);
@@ -383,24 +407,28 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
         id: `${docId}-chunk-${chunks.length}`,
         content: content.slice(i, i + chunkSize),
         index: chunks.length,
-        tokens: Math.floor((chunkSize / 4)), // Rough token estimate
-        embedding: Array.from({ length: 1536 }, () => Math.random()) // Mock embedding
+        tokens: Math.floor(chunkSize / 4), // Rough token estimate
+        embedding: Array.from({ length: 1536 }, () => Math.random()), // Mock embedding
       };
       chunks.push(chunk);
-      
+
       setIndexingProgress((i / content.length) * 100);
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
     }
 
-    setDocuments(prev => prev.map(d => 
-      d.id === docId ? { 
-        ...d, 
-        chunks, 
-        vectorized: true, 
-        indexed: true, 
-        updatedAt: new Date() 
-      } : d
-    ));
+    setDocuments((prev) =>
+      prev.map((d) =>
+        d.id === docId
+          ? {
+              ...d,
+              chunks,
+              vectorized: true,
+              indexed: true,
+              updatedAt: new Date(),
+            }
+          : d
+      )
+    );
 
     setIsIndexing(false);
     setIndexingProgress(0);
@@ -415,22 +443,25 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
       type: 'markdown',
       createdAt: new Date(),
       updatedAt: new Date(),
-      tags: newDocumentTags.split(',').map(tag => tag.trim()).filter(Boolean),
+      tags: newDocumentTags
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean),
       indexed: false,
       vectorized: false,
       agentId: agentId!,
-      agentName: agentName!
+      agentName: agentName!,
     };
 
-    setDocuments(prev => [...prev, newDoc]);
+    setDocuments((prev) => [...prev, newDoc]);
     setNewDocumentDialog(false);
-    setNewDocumentTitle("");
-    setNewDocumentContent("");
-    setNewDocumentTags("");
+    setNewDocumentTitle('');
+    setNewDocumentContent('');
+    setNewDocumentTags('');
   };
 
   const applyTemplate = () => {
-    const template = availableTemplates.find(t => t.id === selectedTemplate);
+    const template = availableTemplates.find((t) => t.id === selectedTemplate);
     if (!template) return;
 
     const templateDocs = template.documents.map((doc, index) => ({
@@ -446,16 +477,16 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
       vectorized: false,
       agentId: agentId!,
       agentName: agentName!,
-      isTemplate: true
+      isTemplate: true,
     }));
 
-    setDocuments(prev => [...prev, ...templateDocs]);
+    setDocuments((prev) => [...prev, ...templateDocs]);
     setTemplateDialog(false);
-    setSelectedTemplate("");
+    setSelectedTemplate('');
   };
 
   const deleteDocument = (docId: string) => {
-    setDocuments(prev => prev.filter(doc => doc.id !== docId));
+    setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
     if (selectedDocument?.id === docId) {
       setSelectedDocument(null);
     }
@@ -463,19 +494,20 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
 
   const searchDocuments = (query: string) => {
     if (!query.trim()) return documents;
-    
-    return documents.filter(doc => 
-      doc.title.toLowerCase().includes(query.toLowerCase()) ||
-      doc.content.toLowerCase().includes(query.toLowerCase()) ||
-      doc.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
+
+    return documents.filter(
+      (doc) =>
+        doc.title.toLowerCase().includes(query.toLowerCase()) ||
+        doc.content.toLowerCase().includes(query.toLowerCase()) ||
+        doc.tags.some((tag) => tag.toLowerCase().includes(query.toLowerCase()))
     );
   };
 
   const filteredDocuments = searchDocuments(searchQuery);
   const totalDocuments = documents.length;
-  const indexedDocuments = documents.filter(d => d.indexed).length;
-  const vectorizedDocuments = documents.filter(d => d.vectorized).length;
-  const templateDocuments = documents.filter(d => d.isTemplate).length;
+  const indexedDocuments = documents.filter((d) => d.indexed).length;
+  const vectorizedDocuments = documents.filter((d) => d.vectorized).length;
+  const templateDocuments = documents.filter((d) => d.isTemplate).length;
 
   if (!agentId) {
     return (
@@ -496,9 +528,7 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-xl font-semibold text-foreground">Knowledge Base Project</h2>
-            <p className="text-muted-foreground">
-              Independent knowledge space for {agentName}
-            </p>
+            <p className="text-muted-foreground">Independent knowledge space for {agentName}</p>
           </div>
           <div className="flex items-center gap-2">
             <Dialog open={templateDialog} onOpenChange={setTemplateDialog}>
@@ -546,13 +576,13 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
                       <Label>Template Contents</Label>
                       <div className="border rounded-lg p-4 max-h-[200px] overflow-y-auto">
                         {availableTemplates
-                          .find(t => t.id === selectedTemplate)
+                          .find((t) => t.id === selectedTemplate)
                           ?.documents.map((doc, index) => (
                             <div key={index} className="flex items-center gap-2 py-1">
                               <FileText className="w-4 h-4 text-muted-foreground" />
                               <span className="text-sm">{doc.title}</span>
                               <div className="flex gap-1 ml-auto">
-                                {doc.tags.map(tag => (
+                                {doc.tags.map((tag) => (
                                   <Badge key={tag} variant="outline" className="text-xs">
                                     {tag}
                                   </Badge>
@@ -568,10 +598,7 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
                     <Button variant="outline" onClick={() => setTemplateDialog(false)}>
                       Cancel
                     </Button>
-                    <Button 
-                      onClick={applyTemplate}
-                      disabled={!selectedTemplate}
-                    >
+                    <Button onClick={applyTemplate} disabled={!selectedTemplate}>
                       Apply Template
                     </Button>
                   </div>
@@ -620,19 +647,18 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
                     <Button variant="outline" onClick={() => setNewDocumentDialog(false)}>
                       Cancel
                     </Button>
-                    <Button onClick={createNewDocument} disabled={!newDocumentTitle || !newDocumentContent}>
+                    <Button
+                      onClick={createNewDocument}
+                      disabled={!newDocumentTitle || !newDocumentContent}
+                    >
                       Create Document
                     </Button>
                   </div>
                 </div>
               </DialogContent>
             </Dialog>
-            
-            <Button 
-              size="sm" 
-              className="gap-2"
-              onClick={() => fileInputRef.current?.click()}
-            >
+
+            <Button size="sm" className="gap-2" onClick={() => fileInputRef.current?.click()}>
               <Upload className="w-4 h-4" />
               Upload Files
             </Button>
@@ -660,7 +686,7 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
               </div>
             </div>
           </Card>
-          
+
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -761,7 +787,9 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
 
                   {isIndexing && (
                     <Card className="p-4">
-                      <div className="text-sm text-muted-foreground mb-2">Processing document...</div>
+                      <div className="text-sm text-muted-foreground mb-2">
+                        Processing document...
+                      </div>
                       <Progress value={indexingProgress} />
                     </Card>
                   )}
@@ -780,8 +808,8 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
                   <ScrollArea className="h-[400px]">
                     <div className="space-y-2">
                       {filteredDocuments.map((doc) => (
-                        <Card 
-                          key={doc.id} 
+                        <Card
+                          key={doc.id}
                           className={`p-4 cursor-pointer transition-colors ${
                             selectedDocument?.id === doc.id ? 'bg-accent' : 'hover:bg-accent/50'
                           }`}
@@ -880,7 +908,9 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
                   {selectedDocument ? (
                     <Card className="p-6 h-full">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-foreground">{selectedDocument.title}</h3>
+                        <h3 className="text-lg font-semibold text-foreground">
+                          {selectedDocument.title}
+                        </h3>
                         <div className="flex items-center gap-2">
                           <Button size="sm" variant="outline" className="gap-2">
                             <Edit className="w-3 h-3" />
@@ -892,7 +922,7 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
                           </Button>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-2 mb-4 text-sm text-muted-foreground">
                         <div>Created: {selectedDocument.createdAt.toLocaleDateString()}</div>
                         <div>Updated: {selectedDocument.updatedAt.toLocaleDateString()}</div>
@@ -929,7 +959,9 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
             <TabsContent value="search" className="h-full">
               <div className="space-y-6">
                 <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Test Knowledge Search</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-4">
+                    Test Knowledge Search
+                  </h3>
                   <div className="space-y-4">
                     <div className="flex gap-2">
                       <Input
@@ -951,7 +983,7 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
                         Search
                       </Button>
                     </div>
-                    
+
                     <div className="text-sm text-muted-foreground">
                       Test how your isolated project knowledge responds to different queries
                     </div>
@@ -975,33 +1007,35 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
                   <p className="text-muted-foreground mb-4">
                     View how documents are split into chunks for vector search in this project
                   </p>
-                  
+
                   <ScrollArea className="h-[500px]">
                     <div className="space-y-4">
-                      {documents.filter(doc => doc.chunks?.length).map((doc) => (
-                        <div key={doc.id} className="border rounded-lg p-4">
-                          <h4 className="font-medium text-foreground mb-2">{doc.title}</h4>
-                          <div className="space-y-2">
-                            {doc.chunks?.map((chunk) => (
-                              <div key={chunk.id} className="bg-gray-50 rounded p-3">
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className="text-sm text-muted-foreground">
-                                    Chunk {chunk.index + 1} • {chunk.tokens} tokens
-                                  </span>
-                                  <Button size="sm" variant="ghost" className="gap-1 text-xs">
-                                    <Copy className="w-3 h-3" />
-                                    Copy
-                                  </Button>
+                      {documents
+                        .filter((doc) => doc.chunks?.length)
+                        .map((doc) => (
+                          <div key={doc.id} className="border rounded-lg p-4">
+                            <h4 className="font-medium text-foreground mb-2">{doc.title}</h4>
+                            <div className="space-y-2">
+                              {doc.chunks?.map((chunk) => (
+                                <div key={chunk.id} className="bg-gray-50 rounded p-3">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm text-muted-foreground">
+                                      Chunk {chunk.index + 1} • {chunk.tokens} tokens
+                                    </span>
+                                    <Button size="sm" variant="ghost" className="gap-1 text-xs">
+                                      <Copy className="w-3 h-3" />
+                                      Copy
+                                    </Button>
+                                  </div>
+                                  <div className="text-sm text-foreground">
+                                    {chunk.content.substring(0, 200)}
+                                    {chunk.content.length > 200 && '...'}
+                                  </div>
                                 </div>
-                                <div className="text-sm text-foreground">
-                                  {chunk.content.substring(0, 200)}
-                                  {chunk.content.length > 200 && '...'}
-                                </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   </ScrollArea>
                 </Card>
@@ -1011,7 +1045,9 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
             <TabsContent value="project-info" className="h-full">
               <div className="space-y-6">
                 <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Project Information</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-4">
+                    Project Information
+                  </h3>
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <h4 className="font-medium text-foreground mb-2">Project Details</h4>
@@ -1060,7 +1096,9 @@ export function KnowledgeBaseManager({ agentId, agentName, agentCategory }: Know
                 </Card>
 
                 <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Available Templates</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-4">
+                    Available Templates
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {availableTemplates.map((template) => (
                       <div key={template.id} className="border rounded-lg p-4">

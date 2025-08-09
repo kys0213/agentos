@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Card } from "./ui/card";
-import { KnowledgeBaseManager } from "./KnowledgeBaseManager";
-import { DynamicFormRenderer } from "./DynamicFormRenderer";
-import { 
+import { useState } from 'react';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Card } from './ui/card';
+import { KnowledgeBaseManager } from './KnowledgeBaseManager';
+import { DynamicFormRenderer } from './DynamicFormRenderer';
+import {
   ArrowLeft,
   Settings,
   BookOpen,
@@ -18,8 +18,8 @@ import {
   Search,
   Clock,
   Zap,
-  Bot
-} from "lucide-react";
+  Bot,
+} from 'lucide-react';
 
 interface Preset {
   id: string;
@@ -34,7 +34,7 @@ interface Preset {
     topP: number;
   };
   tools: string[];
-  status: "active" | "draft";
+  status: 'active' | 'draft';
   createdAt: Date;
   updatedAt: Date;
   usageCount: number;
@@ -52,29 +52,34 @@ interface ProjectDetailProps {
 }
 
 export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
-  const [activeTab, setActiveTab] = useState("knowledge");
+  const [activeTab, setActiveTab] = useState('knowledge');
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case "research": return <Search className="w-5 h-5" />;
-      case "development": return <Bot className="w-5 h-5" />;
-      case "creative": return <Zap className="w-5 h-5" />;
-      case "analytics": return <Database className="w-5 h-5" />;
-      default: return <Settings className="w-5 h-5" />;
+      case 'research':
+        return <Search className="w-5 h-5" />;
+      case 'development':
+        return <Bot className="w-5 h-5" />;
+      case 'creative':
+        return <Zap className="w-5 h-5" />;
+      case 'analytics':
+        return <Database className="w-5 h-5" />;
+      default:
+        return <Settings className="w-5 h-5" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      active: "default",
-      draft: "secondary",
-      archived: "outline"
+      active: 'default',
+      draft: 'secondary',
+      archived: 'outline',
     } as const;
-    
+
     return (
-      <Badge variant={variants[status as keyof typeof variants] || "secondary"}>
-        {status === "active" && <CheckCircle className="w-3 h-3 mr-1" />}
-        {status === "draft" && <Clock className="w-3 h-3 mr-1" />}
+      <Badge variant={variants[status as keyof typeof variants] || 'secondary'}>
+        {status === 'active' && <CheckCircle className="w-3 h-3 mr-1" />}
+        {status === 'draft' && <Clock className="w-3 h-3 mr-1" />}
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
     );
@@ -87,12 +92,7 @@ export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onBack}
-                className="gap-2"
-              >
+              <Button variant="outline" size="sm" onClick={onBack} className="gap-2">
                 <ArrowLeft className="w-4 h-4" />
                 Back to Projects
               </Button>
@@ -119,9 +119,7 @@ export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
           </div>
 
           <div className="flex items-center justify-between">
-            <p className="text-muted-foreground max-w-2xl">
-              {project.description}
-            </p>
+            <p className="text-muted-foreground max-w-2xl">{project.description}</p>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <FileText className="w-4 h-4" />
@@ -152,19 +150,23 @@ export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
                   <BookOpen className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-xl font-semibold text-foreground">{project.knowledgeDocuments}</p>
+                  <p className="text-xl font-semibold text-foreground">
+                    {project.knowledgeDocuments}
+                  </p>
                   <p className="text-sm text-muted-foreground">Knowledge Docs</p>
                 </div>
               </div>
             </Card>
-            
+
             <Card className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                   <Search className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-xl font-semibold text-foreground">{project.knowledgeStats?.indexed || 0}</p>
+                  <p className="text-xl font-semibold text-foreground">
+                    {project.knowledgeStats?.indexed || 0}
+                  </p>
                   <p className="text-sm text-muted-foreground">Indexed</p>
                 </div>
               </div>
@@ -176,7 +178,9 @@ export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
                   <Database className="w-5 h-5 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-xl font-semibold text-foreground">{project.knowledgeStats?.vectorized || 0}</p>
+                  <p className="text-xl font-semibold text-foreground">
+                    {project.knowledgeStats?.vectorized || 0}
+                  </p>
                   <p className="text-sm text-muted-foreground">Vectorized</p>
                 </div>
               </div>
@@ -189,7 +193,10 @@ export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
                 </div>
                 <div>
                   <p className="text-xl font-semibold text-foreground">
-                    {project.knowledgeStats?.totalSize ? (project.knowledgeStats.totalSize / 1024).toFixed(1) : 0}KB
+                    {project.knowledgeStats?.totalSize
+                      ? (project.knowledgeStats.totalSize / 1024).toFixed(1)
+                      : 0}
+                    KB
                   </p>
                   <p className="text-sm text-muted-foreground">Storage Used</p>
                 </div>
@@ -247,7 +254,7 @@ export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
 
           <div className="flex-1 min-h-0">
             <TabsContent value="knowledge" className="h-full m-0">
-              <KnowledgeBaseManager 
+              <KnowledgeBaseManager
                 agentId={project.id}
                 agentName={project.name}
                 agentCategory={project.category}
@@ -267,7 +274,9 @@ export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
                       <h4 className="font-medium text-foreground mb-3">Usage Statistics</h4>
                       <div className="space-y-3">
                         <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Total Conversations:</span>
+                          <span className="text-sm text-muted-foreground">
+                            Total Conversations:
+                          </span>
                           <span className="font-medium">{project.usageCount}</span>
                         </div>
                         <div className="flex justify-between">
@@ -293,17 +302,27 @@ export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
                         <div className="flex justify-between">
                           <span className="text-sm text-muted-foreground">Index Coverage:</span>
                           <span className="font-medium">
-                            {project.knowledgeDocuments > 0 ? 
-                              ((project.knowledgeStats?.indexed || 0) / project.knowledgeDocuments * 100).toFixed(0) : 0
-                            }%
+                            {project.knowledgeDocuments > 0
+                              ? (
+                                  ((project.knowledgeStats?.indexed || 0) /
+                                    project.knowledgeDocuments) *
+                                  100
+                                ).toFixed(0)
+                              : 0}
+                            %
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm text-muted-foreground">Vector Coverage:</span>
                           <span className="font-medium">
-                            {project.knowledgeDocuments > 0 ? 
-                              ((project.knowledgeStats?.vectorized || 0) / project.knowledgeDocuments * 100).toFixed(0) : 0
-                            }%
+                            {project.knowledgeDocuments > 0
+                              ? (
+                                  ((project.knowledgeStats?.vectorized || 0) /
+                                    project.knowledgeDocuments) *
+                                  100
+                                ).toFixed(0)
+                              : 0}
+                            %
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -326,21 +345,27 @@ export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <div className="flex-1">
                         <p className="text-sm font-medium">Project Created</p>
-                        <p className="text-xs text-muted-foreground">{project.createdAt.toLocaleDateString()}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {project.createdAt.toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                       <div className="flex-1">
                         <p className="text-sm font-medium">Knowledge Base Initialized</p>
-                        <p className="text-xs text-muted-foreground">{project.createdAt.toLocaleDateString()}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {project.createdAt.toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
                       <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                       <div className="flex-1">
                         <p className="text-sm font-medium">Last Activity</p>
-                        <p className="text-xs text-muted-foreground">{project.updatedAt.toLocaleDateString()}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {project.updatedAt.toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                   </div>

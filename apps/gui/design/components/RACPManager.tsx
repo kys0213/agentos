@@ -1,96 +1,96 @@
-import { Card } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { Progress } from "./ui/progress";
-import { Separator } from "./ui/separator";
-import { 
-  Network, 
-  Globe, 
-  Shield, 
-  Zap, 
-  Calendar, 
-  CheckCircle2, 
-  Clock, 
+import { Card } from './ui/card';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Progress } from './ui/progress';
+import { Separator } from './ui/separator';
+import {
+  Network,
+  Globe,
+  Shield,
+  Zap,
+  Calendar,
+  CheckCircle2,
+  Clock,
   ArrowRight,
   ExternalLink,
   AlertCircle,
-  Users
-} from "lucide-react";
+  Users,
+} from 'lucide-react';
 
 export function RACPManager() {
   const roadmapItems = [
     {
-      phase: "Phase 1",
-      title: "Core Protocol Implementation",
-      status: "in-progress" as const,
+      phase: 'Phase 1',
+      title: 'Core Protocol Implementation',
+      status: 'in-progress' as const,
       completion: 75,
       items: [
-        { name: "Basic RPC Framework", done: true },
-        { name: "Authentication Layer", done: true },
-        { name: "Message Serialization", done: true },
-        { name: "Error Handling", done: false },
-        { name: "Connection Pool", done: false }
+        { name: 'Basic RPC Framework', done: true },
+        { name: 'Authentication Layer', done: true },
+        { name: 'Message Serialization', done: true },
+        { name: 'Error Handling', done: false },
+        { name: 'Connection Pool', done: false },
       ],
-      timeline: "Q1 2024"
+      timeline: 'Q1 2024',
     },
     {
-      phase: "Phase 2", 
-      title: "Security & Discovery",
-      status: "planned" as const,
+      phase: 'Phase 2',
+      title: 'Security & Discovery',
+      status: 'planned' as const,
       completion: 0,
       items: [
-        { name: "Agent Discovery Service", done: false },
-        { name: "Capability Negotiation", done: false },
-        { name: "End-to-End Encryption", done: false },
-        { name: "Rate Limiting", done: false },
-        { name: "Audit Logging", done: false }
+        { name: 'Agent Discovery Service', done: false },
+        { name: 'Capability Negotiation', done: false },
+        { name: 'End-to-End Encryption', done: false },
+        { name: 'Rate Limiting', done: false },
+        { name: 'Audit Logging', done: false },
       ],
-      timeline: "Q2 2024"
+      timeline: 'Q2 2024',
     },
     {
-      phase: "Phase 3",
-      title: "Advanced Features", 
-      status: "planned" as const,
+      phase: 'Phase 3',
+      title: 'Advanced Features',
+      status: 'planned' as const,
       completion: 0,
       items: [
-        { name: "Multi-hop Routing", done: false },
-        { name: "Load Balancing", done: false },
-        { name: "Circuit Breakers", done: false },
-        { name: "Metrics & Monitoring", done: false },
-        { name: "WebRTC P2P Support", done: false }
+        { name: 'Multi-hop Routing', done: false },
+        { name: 'Load Balancing', done: false },
+        { name: 'Circuit Breakers', done: false },
+        { name: 'Metrics & Monitoring', done: false },
+        { name: 'WebRTC P2P Support', done: false },
       ],
-      timeline: "Q3 2024"
-    }
+      timeline: 'Q3 2024',
+    },
   ];
 
   const features = [
     {
       icon: <Network className="w-6 h-6" />,
-      title: "Distributed Agent Network",
-      description: "Connect agents across multiple instances and organizations seamlessly"
+      title: 'Distributed Agent Network',
+      description: 'Connect agents across multiple instances and organizations seamlessly',
     },
     {
       icon: <Shield className="w-6 h-6" />,
-      title: "Security First",
-      description: "Built-in authentication, authorization, and encryption for all communications"
+      title: 'Security First',
+      description: 'Built-in authentication, authorization, and encryption for all communications',
     },
     {
       icon: <Zap className="w-6 h-6" />,
-      title: "High Performance",
-      description: "Optimized for low latency with connection pooling and efficient serialization"
+      title: 'High Performance',
+      description: 'Optimized for low latency with connection pooling and efficient serialization',
     },
     {
       icon: <Globe className="w-6 h-6" />,
-      title: "Protocol Agnostic",
-      description: "Works over HTTP/2, WebSocket, gRPC, and custom transport protocols"
-    }
+      title: 'Protocol Agnostic',
+      description: 'Works over HTTP/2, WebSocket, gRPC, and custom transport protocols',
+    },
   ];
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "in-progress":
+      case 'in-progress':
         return <Clock className="w-4 h-4 text-blue-600" />;
-      case "completed":
+      case 'completed':
         return <CheckCircle2 className="w-4 h-4 text-green-600" />;
       default:
         return <AlertCircle className="w-4 h-4 text-gray-400" />;
@@ -99,12 +99,12 @@ export function RACPManager() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "in-progress":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "completed": 
-        return "bg-green-100 text-green-800 border-green-200";
+      case 'in-progress':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'completed':
+        return 'bg-green-100 text-green-800 border-green-200';
       default:
-        return "bg-gray-100 text-gray-600 border-gray-200";
+        return 'bg-gray-100 text-gray-600 border-gray-200';
     }
   };
 
@@ -127,7 +127,7 @@ export function RACPManager() {
               </Badge>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="gap-2">
               <ExternalLink className="w-4 h-4" />
@@ -141,9 +141,9 @@ export function RACPManager() {
         </div>
 
         <p className="text-muted-foreground max-w-3xl leading-relaxed">
-          RACP enables seamless communication between AgentOS instances across networks, 
-          allowing agents to discover, authenticate, and collaborate with remote agents 
-          while maintaining security and performance standards.
+          RACP enables seamless communication between AgentOS instances across networks, allowing
+          agents to discover, authenticate, and collaborate with remote agents while maintaining
+          security and performance standards.
         </p>
       </div>
 
@@ -157,14 +157,10 @@ export function RACPManager() {
               <Card key={index} className="p-6">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-purple-50 to-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <div className="text-purple-600">
-                      {feature.icon}
-                    </div>
+                    <div className="text-purple-600">{feature.icon}</div>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground mb-2">
-                      {feature.title}
-                    </h3>
+                    <h3 className="font-semibold text-foreground mb-2">{feature.title}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {feature.description}
                     </p>
@@ -188,14 +184,15 @@ export function RACPManager() {
                       {phase.phase}: {phase.title}
                     </h3>
                     <Badge className={`text-xs border ${getStatusColor(phase.status)}`}>
-                      {phase.status === "in-progress" ? "In Progress" : 
-                       phase.status === "completed" ? "Completed" : "Planned"}
+                      {phase.status === 'in-progress'
+                        ? 'In Progress'
+                        : phase.status === 'completed'
+                          ? 'Completed'
+                          : 'Planned'}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground">
-                      {phase.timeline}
-                    </span>
+                    <span className="text-sm text-muted-foreground">{phase.timeline}</span>
                   </div>
                 </div>
 
@@ -217,7 +214,7 @@ export function RACPManager() {
                       ) : (
                         <div className="w-4 h-4 border border-gray-300 rounded-sm flex-shrink-0" />
                       )}
-                      <span className={item.done ? "text-foreground" : "text-muted-foreground"}>
+                      <span className={item.done ? 'text-foreground' : 'text-muted-foreground'}>
                         {item.name}
                       </span>
                     </div>
@@ -241,7 +238,7 @@ export function RACPManager() {
                     </div>
                     <p className="text-sm font-medium">AgentOS Instance A</p>
                   </div>
-                  
+
                   <div className="flex-1 flex items-center">
                     <Separator className="flex-1" />
                     <div className="mx-4 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
@@ -249,7 +246,7 @@ export function RACPManager() {
                     </div>
                     <Separator className="flex-1" />
                   </div>
-                  
+
                   <div className="text-center">
                     <div className="w-16 h-16 bg-green-500 rounded-lg flex items-center justify-center mb-2">
                       <Network className="w-8 h-8 text-white" />
@@ -258,7 +255,7 @@ export function RACPManager() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-4">
                   Secure, authenticated communication between distributed agent networks
@@ -281,7 +278,8 @@ export function RACPManager() {
                   Join the Beta Program
                 </h3>
                 <p className="text-muted-foreground">
-                  Get early access to RACP features and help shape the future of distributed agent communication.
+                  Get early access to RACP features and help shape the future of distributed agent
+                  communication.
                 </p>
               </div>
               <Button className="gap-2">

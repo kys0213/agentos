@@ -1,17 +1,17 @@
-import { useState, useEffect } from "react";
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { Input } from "./ui/input";
-import { ScrollArea } from "./ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
-import { 
-  Bot, 
-  Search, 
-  Settings, 
+import { useState, useEffect } from 'react';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Input } from './ui/input';
+import { ScrollArea } from './ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import {
+  Bot,
+  Search,
+  Settings,
   MessageSquare,
   CheckCircle,
   Clock,
@@ -32,15 +32,15 @@ import {
   ChevronUp,
   HelpCircle,
   Sparkles,
-  Wand2
-} from "lucide-react";
+  Wand2,
+} from 'lucide-react';
 
 interface Agent {
   id: string;
   name: string;
   description: string;
   category: string;
-  status: "active" | "idle" | "inactive";
+  status: 'active' | 'idle' | 'inactive';
   preset: string;
   avatar?: string;
   lastUsed?: Date;
@@ -50,82 +50,113 @@ interface Agent {
 
 interface SubAgentManagerProps {
   agents: Agent[];
-  onUpdateAgentStatus: (agentId: string, newStatus: "active" | "idle" | "inactive") => void;
+  onUpdateAgentStatus: (agentId: string, newStatus: 'active' | 'idle' | 'inactive') => void;
   onOpenChat: (agentId: number, agentName: string, agentPreset: string) => void;
   onCreateAgent?: () => void;
 }
 
-export function SubAgentManager({ agents, onUpdateAgentStatus, onOpenChat, onCreateAgent }: SubAgentManagerProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState("all");
-  const [activeTab, setActiveTab] = useState("agents");
+export function SubAgentManager({
+  agents,
+  onUpdateAgentStatus,
+  onOpenChat,
+  onCreateAgent,
+}: SubAgentManagerProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [activeTab, setActiveTab] = useState('agents');
   const [showStatusGuide, setShowStatusGuide] = useState(false);
 
   const categories = [
-    { id: "all", label: "All Categories", count: agents.length },
-    { id: "research", label: "Research", count: agents.filter(a => a.category === "research").length },
-    { id: "development", label: "Development", count: agents.filter(a => a.category === "development").length },
-    { id: "creative", label: "Creative", count: agents.filter(a => a.category === "creative").length },
-    { id: "analytics", label: "Analytics", count: agents.filter(a => a.category === "analytics").length },
+    { id: 'all', label: 'All Categories', count: agents.length },
+    {
+      id: 'research',
+      label: 'Research',
+      count: agents.filter((a) => a.category === 'research').length,
+    },
+    {
+      id: 'development',
+      label: 'Development',
+      count: agents.filter((a) => a.category === 'development').length,
+    },
+    {
+      id: 'creative',
+      label: 'Creative',
+      count: agents.filter((a) => a.category === 'creative').length,
+    },
+    {
+      id: 'analytics',
+      label: 'Analytics',
+      count: agents.filter((a) => a.category === 'analytics').length,
+    },
   ];
 
   const statuses = [
-    { id: "all", label: "All Status", count: agents.length },
-    { id: "active", label: "Active", count: agents.filter(a => a.status === "active").length },
-    { id: "idle", label: "Idle", count: agents.filter(a => a.status === "idle").length },
-    { id: "inactive", label: "Inactive", count: agents.filter(a => a.status === "inactive").length },
+    { id: 'all', label: 'All Status', count: agents.length },
+    { id: 'active', label: 'Active', count: agents.filter((a) => a.status === 'active').length },
+    { id: 'idle', label: 'Idle', count: agents.filter((a) => a.status === 'idle').length },
+    {
+      id: 'inactive',
+      label: 'Inactive',
+      count: agents.filter((a) => a.status === 'inactive').length,
+    },
   ];
 
-  const filteredAgents = agents.filter(agent => {
-    const matchesSearch = agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         agent.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || agent.category === selectedCategory;
-    const matchesStatus = selectedStatus === "all" || agent.status === selectedStatus;
+  const filteredAgents = agents.filter((agent) => {
+    const matchesSearch =
+      agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      agent.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || agent.category === selectedCategory;
+    const matchesStatus = selectedStatus === 'all' || agent.status === selectedStatus;
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case "research": return <Search className="w-4 h-4" />;
-      case "development": return <Bot className="w-4 h-4" />;
-      case "creative": return <Zap className="w-4 h-4" />;
-      case "analytics": return <Database className="w-4 h-4" />;
-      default: return <Bot className="w-4 h-4" />;
+      case 'research':
+        return <Search className="w-4 h-4" />;
+      case 'development':
+        return <Bot className="w-4 h-4" />;
+      case 'creative':
+        return <Zap className="w-4 h-4" />;
+      case 'analytics':
+        return <Database className="w-4 h-4" />;
+      default:
+        return <Bot className="w-4 h-4" />;
     }
   };
 
   const getStatusBadge = (status: string, withTooltip: boolean = false) => {
     const getTooltipContent = (status: string) => {
       switch (status) {
-        case "active":
-          return "Automatically participate in conversations via orchestrator";
-        case "idle":
-          return "Available for explicit @mention calls only";
-        case "inactive":
-          return "Completely disabled, cannot be called";
+        case 'active':
+          return 'Automatically participate in conversations via orchestrator';
+        case 'idle':
+          return 'Available for explicit @mention calls only';
+        case 'inactive':
+          return 'Completely disabled, cannot be called';
         default:
-          return "";
+          return '';
       }
     };
 
     const badgeContent = (() => {
       switch (status) {
-        case "active":
+        case 'active':
           return (
             <Badge className="gap-1 status-active">
               <CheckCircle className="w-3 h-3" />
               Active
             </Badge>
           );
-        case "idle":
+        case 'idle':
           return (
             <Badge className="gap-1 status-idle">
               <Clock className="w-3 h-3" />
               Idle
             </Badge>
           );
-        case "inactive":
+        case 'inactive':
           return (
             <Badge variant="outline" className="gap-1 status-inactive-subtle">
               <MinusCircle className="w-3 h-3" />
@@ -140,9 +171,7 @@ export function SubAgentManager({ agents, onUpdateAgentStatus, onOpenChat, onCre
     if (withTooltip) {
       return (
         <Tooltip>
-          <TooltipTrigger asChild>
-            {badgeContent}
-          </TooltipTrigger>
+          <TooltipTrigger asChild>{badgeContent}</TooltipTrigger>
           <TooltipContent>
             <p>{getTooltipContent(status)}</p>
           </TooltipContent>
@@ -155,14 +184,18 @@ export function SubAgentManager({ agents, onUpdateAgentStatus, onOpenChat, onCre
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active": return "text-green-600";
-      case "idle": return "text-orange-600";
-      case "inactive": return "text-gray-600";
-      default: return "text-gray-600";
+      case 'active':
+        return 'text-green-600';
+      case 'idle':
+        return 'text-orange-600';
+      case 'inactive':
+        return 'text-gray-600';
+      default:
+        return 'text-gray-600';
     }
   };
 
-  const handleStatusChange = (agentId: string, newStatus: "active" | "idle" | "inactive") => {
+  const handleStatusChange = (agentId: string, newStatus: 'active' | 'idle' | 'inactive') => {
     onUpdateAgentStatus(agentId, newStatus);
   };
 
@@ -173,9 +206,9 @@ export function SubAgentManager({ agents, onUpdateAgentStatus, onOpenChat, onCre
   };
 
   const totalAgents = agents.length;
-  const activeAgents = agents.filter(a => a.status === "active").length;
-  const idleAgents = agents.filter(a => a.status === "idle").length;
-  const inactiveAgents = agents.filter(a => a.status === "inactive").length;
+  const activeAgents = agents.filter((a) => a.status === 'active').length;
+  const idleAgents = agents.filter((a) => a.status === 'idle').length;
+  const inactiveAgents = agents.filter((a) => a.status === 'inactive').length;
   const totalUsage = agents.reduce((sum, agent) => sum + agent.usageCount, 0);
 
   return (
@@ -197,14 +230,14 @@ export function SubAgentManager({ agents, onUpdateAgentStatus, onOpenChat, onCre
                 </p>
               </div>
             </div>
-            
+
             {/* Enhanced Create Agent Button */}
             <div className="flex items-center gap-3">
               <div className="text-right">
                 <p className="text-sm font-medium text-foreground">Ready to expand?</p>
                 <p className="text-xs text-muted-foreground">Create specialized AI agents</p>
               </div>
-              <Button 
+              <Button
                 onClick={handleCreateAgent}
                 className="gap-2 relative overflow-hidden group bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg"
                 size="lg"
@@ -235,7 +268,7 @@ export function SubAgentManager({ agents, onUpdateAgentStatus, onOpenChat, onCre
                 </div>
               </div>
             </Card>
-            
+
             <Card className="p-3 hover:shadow-sm transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
@@ -288,19 +321,20 @@ export function SubAgentManager({ agents, onUpdateAgentStatus, onOpenChat, onCre
           {/* Collapsible Status Guide */}
           <Collapsible open={showStatusGuide} onOpenChange={setShowStatusGuide}>
             <CollapsibleTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="w-full justify-between mb-3 hover:bg-gray-50"
               >
                 <div className="flex items-center gap-2">
                   <HelpCircle className="w-4 h-4" />
                   <span>Agent Status Guide</span>
                 </div>
-                {showStatusGuide ? 
-                  <ChevronUp className="w-4 h-4" /> : 
+                {showStatusGuide ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
                   <ChevronDown className="w-4 h-4" />
-                }
+                )}
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent>
@@ -370,7 +404,7 @@ export function SubAgentManager({ agents, onUpdateAgentStatus, onOpenChat, onCre
                         className="pl-9"
                       />
                     </div>
-                    
+
                     <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                       <SelectTrigger className="w-40">
                         <SelectValue />
@@ -418,14 +452,19 @@ export function SubAgentManager({ agents, onUpdateAgentStatus, onOpenChat, onCre
                     <ScrollArea className="h-full">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
                         {filteredAgents.map((agent) => (
-                          <Card key={agent.id} className="p-4 hover:shadow-md transition-all duration-200 hover:scale-[1.02] border border-gray-200">
+                          <Card
+                            key={agent.id}
+                            className="p-4 hover:shadow-md transition-all duration-200 hover:scale-[1.02] border border-gray-200"
+                          >
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-2 min-w-0 flex-1">
                                 <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
                                   {getCategoryIcon(agent.category)}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <h3 className="font-medium text-foreground truncate text-sm">{agent.name}</h3>
+                                  <h3 className="font-medium text-foreground truncate text-sm">
+                                    {agent.name}
+                                  </h3>
                                   <p className="text-xs text-muted-foreground capitalize">
                                     {agent.category}
                                   </p>
@@ -446,16 +485,16 @@ export function SubAgentManager({ agents, onUpdateAgentStatus, onOpenChat, onCre
                               <div className="flex justify-between">
                                 <span className="text-muted-foreground">Last Used:</span>
                                 <span className="font-medium">
-                                  {agent.lastUsed ? agent.lastUsed.toLocaleDateString() : "Never"}
+                                  {agent.lastUsed ? agent.lastUsed.toLocaleDateString() : 'Never'}
                                 </span>
                               </div>
                             </div>
 
                             {/* Status Control */}
                             <div className="space-y-2">
-                              <Select 
-                                value={agent.status} 
-                                onValueChange={(value: "active" | "idle" | "inactive") => 
+                              <Select
+                                value={agent.status}
+                                onValueChange={(value: 'active' | 'idle' | 'inactive') =>
                                   handleStatusChange(agent.id, value)
                                 }
                               >
@@ -485,16 +524,26 @@ export function SubAgentManager({ agents, onUpdateAgentStatus, onOpenChat, onCre
                               </Select>
 
                               <div className="flex gap-1">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
+                                <Button
+                                  variant="outline"
+                                  size="sm"
                                   className="flex-1 h-7 text-xs hover:bg-blue-50 hover:border-blue-200"
-                                  onClick={() => onOpenChat(parseInt(agent.id.split('-')[2]), agent.name, agent.preset)}
+                                  onClick={() =>
+                                    onOpenChat(
+                                      parseInt(agent.id.split('-')[2]),
+                                      agent.name,
+                                      agent.preset
+                                    )
+                                  }
                                 >
                                   <MessageSquare className="w-3 h-3 mr-1" />
                                   Chat
                                 </Button>
-                                <Button variant="outline" size="sm" className="h-7 px-2 hover:bg-gray-50">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 px-2 hover:bg-gray-50"
+                                >
                                   <Settings className="w-3 h-3" />
                                 </Button>
                               </div>
@@ -513,7 +562,9 @@ export function SubAgentManager({ agents, onUpdateAgentStatus, onOpenChat, onCre
                     <h3 className="font-semibold text-foreground mb-3">Orchestration Settings</h3>
                     <div className="space-y-3">
                       <div>
-                        <label className="text-sm font-medium text-foreground">Auto-Orchestration</label>
+                        <label className="text-sm font-medium text-foreground">
+                          Auto-Orchestration
+                        </label>
                         <p className="text-xs text-muted-foreground mb-2">
                           Allow the system to automatically route messages to active agents
                         </p>
@@ -533,20 +584,27 @@ export function SubAgentManager({ agents, onUpdateAgentStatus, onOpenChat, onCre
                   <Card className="p-4">
                     <h3 className="font-semibold text-foreground mb-3">Active Agents</h3>
                     <div className="space-y-2">
-                      {agents.filter(a => a.status === "active").map((agent) => (
-                        <div key={agent.id} className="flex items-center justify-between p-2 status-active-subtle rounded">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center">
-                              {getCategoryIcon(agent.category)}
+                      {agents
+                        .filter((a) => a.status === 'active')
+                        .map((agent) => (
+                          <div
+                            key={agent.id}
+                            className="flex items-center justify-between p-2 status-active-subtle rounded"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center">
+                                {getCategoryIcon(agent.category)}
+                              </div>
+                              <div>
+                                <span className="text-sm font-medium text-foreground">
+                                  {agent.name}
+                                </span>
+                                <p className="text-xs text-muted-foreground">{agent.description}</p>
+                              </div>
                             </div>
-                            <div>
-                              <span className="text-sm font-medium text-foreground">{agent.name}</span>
-                              <p className="text-xs text-muted-foreground">{agent.description}</p>
-                            </div>
+                            <Badge className="status-active">Active</Badge>
                           </div>
-                          <Badge className="status-active">Active</Badge>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   </Card>
                 </div>
@@ -561,9 +619,14 @@ export function SubAgentManager({ agents, onUpdateAgentStatus, onOpenChat, onCre
                         .sort((a, b) => b.usageCount - a.usageCount)
                         .slice(0, 5)
                         .map((agent) => (
-                          <div key={agent.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                          <div
+                            key={agent.id}
+                            className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                          >
                             <span className="text-sm font-medium">{agent.name}</span>
-                            <span className="text-sm text-muted-foreground">{agent.usageCount} uses</span>
+                            <span className="text-sm text-muted-foreground">
+                              {agent.usageCount} uses
+                            </span>
                           </div>
                         ))}
                     </div>

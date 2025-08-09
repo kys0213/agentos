@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { Preset, Agent, ChatAgent, AppSection } from "../types";
-import { McpConfig } from "../components/MCPToolAdd";
+import { useState } from 'react';
+import { Preset, Agent, ChatAgent, AppSection } from '../types';
+import { McpConfig } from '../components/MCPToolAdd';
 
 export function useAppNavigation() {
-  const [activeSection, setActiveSection] = useState<AppSection>("chat");
+  const [activeSection, setActiveSection] = useState<AppSection>('chat');
   const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null);
   const [creatingPreset, setCreatingPreset] = useState(false);
   const [creatingMCPTool, setCreatingMCPTool] = useState(false);
@@ -18,7 +18,7 @@ export function useAppNavigation() {
   };
 
   const handleBackToChat = () => {
-    setActiveSection("chat");
+    setActiveSection('chat');
     setSelectedPreset(null);
     resetCreateStates();
   };
@@ -90,7 +90,9 @@ export function useAppNavigation() {
   };
 
   const isInDetailView = () => {
-    return selectedPreset || creatingPreset || creatingMCPTool || creatingAgent || creatingCustomTool;
+    return (
+      selectedPreset || creatingPreset || creatingMCPTool || creatingAgent || creatingCustomTool
+    );
   };
 
   return {
@@ -101,7 +103,7 @@ export function useAppNavigation() {
     creatingMCPTool,
     creatingAgent,
     creatingCustomTool,
-    
+
     // Actions
     setActiveSection,
     handleBackToChat,
@@ -114,6 +116,6 @@ export function useAppNavigation() {
     handleStartCreateMCPTool,
     handleStartCreateAgent,
     handleStartCreateCustomTool,
-    isInDetailView
+    isInDetailView,
   };
 }

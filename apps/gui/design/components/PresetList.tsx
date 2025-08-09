@@ -1,25 +1,25 @@
-import { useState } from "react";
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { Input } from "./ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { EmptyState } from "./EmptyState";
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Brain, 
-  Code, 
-  FileText, 
-  BarChart, 
+import { useState } from 'react';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { EmptyState } from './EmptyState';
+import {
+  Plus,
+  Search,
+  Filter,
+  Brain,
+  Code,
+  FileText,
+  BarChart,
   Calendar,
   Users,
   Zap,
   CheckCircle,
   Clock,
-  MinusCircle
-} from "lucide-react";
+  MinusCircle,
+} from 'lucide-react';
 
 interface Preset {
   id: string;
@@ -34,7 +34,7 @@ interface Preset {
     topP: number;
   };
   tools: string[];
-  status: "active" | "idle" | "inactive";
+  status: 'active' | 'idle' | 'inactive';
   createdAt: Date;
   updatedAt: Date;
   usageCount: number;
@@ -53,60 +53,90 @@ interface PresetListProps {
 }
 
 export function PresetList({ presets, onSelectPreset, onCreatePreset }: PresetListProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedModel, setSelectedModel] = useState("all");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedModel, setSelectedModel] = useState('all');
 
   const categories = [
-    { id: "all", label: "All Categories", count: presets.length },
-    { id: "research", label: "Research", count: presets.filter(p => p.category === "research").length },
-    { id: "development", label: "Development", count: presets.filter(p => p.category === "development").length },
-    { id: "creative", label: "Creative", count: presets.filter(p => p.category === "creative").length },
-    { id: "analytics", label: "Analytics", count: presets.filter(p => p.category === "analytics").length },
+    { id: 'all', label: 'All Categories', count: presets.length },
+    {
+      id: 'research',
+      label: 'Research',
+      count: presets.filter((p) => p.category === 'research').length,
+    },
+    {
+      id: 'development',
+      label: 'Development',
+      count: presets.filter((p) => p.category === 'development').length,
+    },
+    {
+      id: 'creative',
+      label: 'Creative',
+      count: presets.filter((p) => p.category === 'creative').length,
+    },
+    {
+      id: 'analytics',
+      label: 'Analytics',
+      count: presets.filter((p) => p.category === 'analytics').length,
+    },
   ];
 
   const models = [
-    { id: "all", label: "All Models", count: presets.length },
-    { id: "gpt-4", label: "GPT-4", count: presets.filter(p => p.model === "gpt-4").length },
-    { id: "claude-3-5-sonnet", label: "Claude 3.5 Sonnet", count: presets.filter(p => p.model === "claude-3-5-sonnet").length },
-    { id: "claude-3-haiku", label: "Claude 3 Haiku", count: presets.filter(p => p.model === "claude-3-haiku").length },
+    { id: 'all', label: 'All Models', count: presets.length },
+    { id: 'gpt-4', label: 'GPT-4', count: presets.filter((p) => p.model === 'gpt-4').length },
+    {
+      id: 'claude-3-5-sonnet',
+      label: 'Claude 3.5 Sonnet',
+      count: presets.filter((p) => p.model === 'claude-3-5-sonnet').length,
+    },
+    {
+      id: 'claude-3-haiku',
+      label: 'Claude 3 Haiku',
+      count: presets.filter((p) => p.model === 'claude-3-haiku').length,
+    },
   ];
 
-  const filteredPresets = presets.filter(preset => {
-    const matchesSearch = preset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         preset.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || preset.category === selectedCategory;
-    const matchesModel = selectedModel === "all" || preset.model === selectedModel;
+  const filteredPresets = presets.filter((preset) => {
+    const matchesSearch =
+      preset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      preset.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || preset.category === selectedCategory;
+    const matchesModel = selectedModel === 'all' || preset.model === selectedModel;
     return matchesSearch && matchesCategory && matchesModel;
   });
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case "research": return <Search className="w-4 h-4" />;
-      case "development": return <Code className="w-4 h-4" />;
-      case "creative": return <FileText className="w-4 h-4" />;
-      case "analytics": return <BarChart className="w-4 h-4" />;
-      default: return <Brain className="w-4 h-4" />;
+      case 'research':
+        return <Search className="w-4 h-4" />;
+      case 'development':
+        return <Code className="w-4 h-4" />;
+      case 'creative':
+        return <FileText className="w-4 h-4" />;
+      case 'analytics':
+        return <BarChart className="w-4 h-4" />;
+      default:
+        return <Brain className="w-4 h-4" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "active":
+      case 'active':
         return (
           <Badge className="status-active gap-1">
             <CheckCircle className="w-3 h-3" />
             Active
           </Badge>
         );
-      case "idle":
+      case 'idle':
         return (
           <Badge className="status-idle gap-1">
             <Clock className="w-3 h-3" />
             Idle
           </Badge>
         );
-      case "inactive":
+      case 'inactive':
         return (
           <Badge variant="outline" className="status-inactive-subtle gap-1">
             <MinusCircle className="w-3 h-3" />
@@ -130,8 +160,8 @@ export function PresetList({ presets, onSelectPreset, onCreatePreset }: PresetLi
             actionLabel="Create First Preset"
             onAction={onCreatePreset}
             secondaryAction={{
-              label: "Import Template",
-              onClick: () => console.log("Import preset template")
+              label: 'Import Template',
+              onClick: () => console.log('Import preset template'),
             }}
           />
         </div>
@@ -146,11 +176,9 @@ export function PresetList({ presets, onSelectPreset, onCreatePreset }: PresetLi
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold text-foreground">Presets</h1>
-            <p className="text-muted-foreground">
-              Manage AI agent presets and configurations
-            </p>
+            <p className="text-muted-foreground">Manage AI agent presets and configurations</p>
           </div>
-          
+
           <Button onClick={onCreatePreset} className="gap-2">
             <Plus className="w-4 h-4" />
             Create Preset
@@ -170,7 +198,7 @@ export function PresetList({ presets, onSelectPreset, onCreatePreset }: PresetLi
               </div>
             </div>
           </Card>
-          
+
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -178,7 +206,7 @@ export function PresetList({ presets, onSelectPreset, onCreatePreset }: PresetLi
               </div>
               <div>
                 <p className="text-2xl font-semibold text-foreground">
-                  {presets.filter(p => p.status === "active").length}
+                  {presets.filter((p) => p.status === 'active').length}
                 </p>
                 <p className="text-sm text-muted-foreground">Active</p>
               </div>
@@ -225,7 +253,7 @@ export function PresetList({ presets, onSelectPreset, onCreatePreset }: PresetLi
               className="pl-9"
             />
           </div>
-          
+
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-48">
               <SelectValue />
@@ -263,8 +291,8 @@ export function PresetList({ presets, onSelectPreset, onCreatePreset }: PresetLi
       <div className="flex-1 min-h-0 p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPresets.map((preset) => (
-            <Card 
-              key={preset.id} 
+            <Card
+              key={preset.id}
               className="p-6 hover:shadow-md transition-shadow cursor-pointer"
               onClick={() => onSelectPreset(preset)}
             >
@@ -275,9 +303,7 @@ export function PresetList({ presets, onSelectPreset, onCreatePreset }: PresetLi
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">{preset.name}</h3>
-                    <p className="text-sm text-muted-foreground capitalize">
-                      {preset.category}
-                    </p>
+                    <p className="text-sm text-muted-foreground capitalize">{preset.category}</p>
                   </div>
                 </div>
                 {getStatusBadge(preset.status)}
@@ -331,9 +357,7 @@ export function PresetList({ presets, onSelectPreset, onCreatePreset }: PresetLi
                   <Calendar className="w-3 h-3" />
                   {preset.createdAt.toLocaleDateString()}
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  Click to configure
-                </div>
+                <div className="text-xs text-muted-foreground">Click to configure</div>
               </div>
             </Card>
           ))}

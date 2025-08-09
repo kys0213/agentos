@@ -1,19 +1,19 @@
-import { Button } from "./ui/button";
-import { Card } from "./ui/card";
-import { 
-  Bot, 
-  Plus, 
-  Users, 
-  ArrowRight, 
+import { Button } from './ui/button';
+import { Card } from './ui/card';
+import {
+  Bot,
+  Plus,
+  Users,
+  ArrowRight,
   Sparkles,
   MessageSquare,
   Settings,
   BookOpen,
-  Brain
-} from "lucide-react";
+  Brain,
+} from 'lucide-react';
 
 interface EmptyStateProps {
-  type: "agents" | "presets" | "models" | "tools" | "chat";
+  type: 'agents' | 'presets' | 'models' | 'tools' | 'chat';
   title: string;
   description: string;
   actionLabel: string;
@@ -24,25 +24,25 @@ interface EmptyStateProps {
   };
 }
 
-export function EmptyState({ 
-  type, 
-  title, 
-  description, 
-  actionLabel, 
+export function EmptyState({
+  type,
+  title,
+  description,
+  actionLabel,
   onAction,
-  secondaryAction 
+  secondaryAction,
 }: EmptyStateProps) {
   const getIcon = () => {
     switch (type) {
-      case "agents":
+      case 'agents':
         return <Bot className="w-12 h-12 text-muted-foreground" />;
-      case "presets":
+      case 'presets':
         return <Brain className="w-12 h-12 text-muted-foreground" />;
-      case "models":
+      case 'models':
         return <Sparkles className="w-12 h-12 text-muted-foreground" />;
-      case "tools":
+      case 'tools':
         return <Settings className="w-12 h-12 text-muted-foreground" />;
-      case "chat":
+      case 'chat':
         return <MessageSquare className="w-12 h-12 text-muted-foreground" />;
       default:
         return <Plus className="w-12 h-12 text-muted-foreground" />;
@@ -51,7 +51,7 @@ export function EmptyState({
 
   const getIllustration = () => {
     switch (type) {
-      case "agents":
+      case 'agents':
         return (
           <div className="relative mb-6">
             <div className="w-24 h-24 mx-auto bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl flex items-center justify-center mb-4">
@@ -64,7 +64,7 @@ export function EmptyState({
             </div>
           </div>
         );
-      case "presets":
+      case 'presets':
         return (
           <div className="relative mb-6">
             <div className="w-24 h-24 mx-auto bg-gradient-to-br from-purple-50 to-violet-100 rounded-2xl flex items-center justify-center mb-4">
@@ -77,7 +77,7 @@ export function EmptyState({
             </div>
           </div>
         );
-      case "chat":
+      case 'chat':
         return (
           <div className="relative mb-6">
             <div className="w-24 h-24 mx-auto bg-gradient-to-br from-emerald-50 to-teal-100 rounded-2xl flex items-center justify-center mb-4">
@@ -103,28 +103,22 @@ export function EmptyState({
     <Card className="border-dashed border-2 border-gray-200 bg-gray-50/50 hover:bg-gray-50/80 transition-colors duration-200">
       <div className="p-12 text-center">
         {getIllustration()}
-        
-        <h3 className="text-xl font-semibold text-foreground mb-3">
-          {title}
-        </h3>
-        
+
+        <h3 className="text-xl font-semibold text-foreground mb-3">{title}</h3>
+
         <p className="text-base text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed">
           {description}
         </p>
-        
+
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Button 
-            onClick={onAction}
-            size="lg"
-            className="gap-2 px-6"
-          >
+          <Button onClick={onAction} size="lg" className="gap-2 px-6">
             <Plus className="w-4 h-4" />
             {actionLabel}
           </Button>
-          
+
           {secondaryAction && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="lg"
               onClick={secondaryAction.onClick}
               className="gap-2 px-6"
@@ -136,25 +130,27 @@ export function EmptyState({
         </div>
 
         {/* Additional help text for agents */}
-        {type === "agents" && (
+        {type === 'agents' && (
           <div className="mt-8 pt-6 border-t border-gray-200">
             <p className="text-sm text-muted-foreground">
-              💡 <strong>Quick Start:</strong> Create your first agent to enable AI-powered conversations and automation
+              💡 <strong>Quick Start:</strong> Create your first agent to enable AI-powered
+              conversations and automation
             </p>
           </div>
         )}
 
         {/* Additional help text for presets */}
-        {type === "presets" && (
+        {type === 'presets' && (
           <div className="mt-8 pt-6 border-t border-gray-200">
             <p className="text-sm text-muted-foreground">
-              🧠 <strong>Tip:</strong> Presets define your AI agent's behavior, knowledge, and capabilities
+              🧠 <strong>Tip:</strong> Presets define your AI agent's behavior, knowledge, and
+              capabilities
             </p>
           </div>
         )}
 
         {/* Chat-specific onboarding */}
-        {type === "chat" && (
+        {type === 'chat' && (
           <div className="mt-8 space-y-4">
             <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">

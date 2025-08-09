@@ -1,22 +1,22 @@
-import { useState } from "react";
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Textarea } from "./ui/textarea";
-import { Slider } from "./ui/slider";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Checkbox } from "./ui/checkbox";
-import { Progress } from "./ui/progress";
-import { MCPToolAdd, McpConfig } from "./MCPToolAdd";
-import { 
-  ArrowLeft, 
-  Save, 
-  Brain, 
-  Database, 
-  Code, 
+import { useState } from 'react';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Textarea } from './ui/textarea';
+import { Slider } from './ui/slider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Checkbox } from './ui/checkbox';
+import { Progress } from './ui/progress';
+import { MCPToolAdd, McpConfig } from './MCPToolAdd';
+import {
+  ArrowLeft,
+  Save,
+  Brain,
+  Database,
+  Code,
   BarChart3,
   FileText,
   CheckCircle,
@@ -30,8 +30,8 @@ import {
   Terminal,
   Globe,
   Wifi,
-  Zap
-} from "lucide-react";
+  Zap,
+} from 'lucide-react';
 
 interface Preset {
   id: string;
@@ -47,7 +47,7 @@ interface Preset {
   };
   tools: string[];
   mcpTools?: McpConfig[];
-  status: "active" | "idle" | "inactive";
+  status: 'active' | 'idle' | 'inactive';
   createdAt: Date;
   updatedAt: Date;
   usageCount: number;
@@ -61,81 +61,142 @@ interface Preset {
 
 interface PresetCreateProps {
   onBack: () => void;
-  onCreate: (preset: Omit<Preset, 'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'knowledgeDocuments'>) => Preset;
+  onCreate: (
+    preset: Omit<Preset, 'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'knowledgeDocuments'>
+  ) => Preset;
 }
 
 export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState('overview');
   const [currentStep, setCurrentStep] = useState(1);
   const [showMCPDialog, setShowMCPDialog] = useState(false);
   const totalSteps = 4;
 
   // Form state
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    category: "research",
-    model: "gpt-4",
-    systemPrompt: "",
+    name: '',
+    description: '',
+    category: 'research',
+    model: 'gpt-4',
+    systemPrompt: '',
     parameters: {
       temperature: 0.7,
       maxTokens: 4000,
-      topP: 0.9
+      topP: 0.9,
     },
     tools: [] as string[],
     mcpTools: [] as McpConfig[],
-    status: "active" as "active" | "idle" | "inactive"
+    status: 'active' as 'active' | 'idle' | 'inactive',
   });
 
   // Available tools
   const availableTools = [
-    { id: "web_search", name: "Web Search", description: "Search the internet for information", category: "research" },
-    { id: "arxiv", name: "ArXiv", description: "Search academic papers on ArXiv", category: "research" },
-    { id: "scholar", name: "Google Scholar", description: "Search scholarly articles", category: "research" },
-    { id: "code_execution", name: "Code Execution", description: "Execute code in various languages", category: "development" },
-    { id: "git", name: "Git Operations", description: "Git repository operations", category: "development" },
-    { id: "documentation", name: "Documentation", description: "Access programming documentation", category: "development" },
-    { id: "grammar_check", name: "Grammar Check", description: "Check and correct grammar", category: "creative" },
-    { id: "style_guide", name: "Style Guide", description: "Apply writing style guidelines", category: "creative" },
-    { id: "data_viz", name: "Data Visualization", description: "Create charts and graphs", category: "analytics" },
-    { id: "statistics", name: "Statistical Analysis", description: "Perform statistical calculations", category: "analytics" },
-    { id: "python", name: "Python Environment", description: "Python code execution environment", category: "analytics" }
+    {
+      id: 'web_search',
+      name: 'Web Search',
+      description: 'Search the internet for information',
+      category: 'research',
+    },
+    {
+      id: 'arxiv',
+      name: 'ArXiv',
+      description: 'Search academic papers on ArXiv',
+      category: 'research',
+    },
+    {
+      id: 'scholar',
+      name: 'Google Scholar',
+      description: 'Search scholarly articles',
+      category: 'research',
+    },
+    {
+      id: 'code_execution',
+      name: 'Code Execution',
+      description: 'Execute code in various languages',
+      category: 'development',
+    },
+    {
+      id: 'git',
+      name: 'Git Operations',
+      description: 'Git repository operations',
+      category: 'development',
+    },
+    {
+      id: 'documentation',
+      name: 'Documentation',
+      description: 'Access programming documentation',
+      category: 'development',
+    },
+    {
+      id: 'grammar_check',
+      name: 'Grammar Check',
+      description: 'Check and correct grammar',
+      category: 'creative',
+    },
+    {
+      id: 'style_guide',
+      name: 'Style Guide',
+      description: 'Apply writing style guidelines',
+      category: 'creative',
+    },
+    {
+      id: 'data_viz',
+      name: 'Data Visualization',
+      description: 'Create charts and graphs',
+      category: 'analytics',
+    },
+    {
+      id: 'statistics',
+      name: 'Statistical Analysis',
+      description: 'Perform statistical calculations',
+      category: 'analytics',
+    },
+    {
+      id: 'python',
+      name: 'Python Environment',
+      description: 'Python code execution environment',
+      category: 'analytics',
+    },
   ];
 
   // Preset templates
   const presetTemplates = {
     research: {
-      name: "Research Assistant",
-      description: "Specialized in academic research and fact-checking",
-      systemPrompt: "You are a research assistant specialized in academic research and fact-checking. You help users find reliable sources, analyze data, and provide evidence-based insights. Always cite your sources and maintain academic rigor.",
+      name: 'Research Assistant',
+      description: 'Specialized in academic research and fact-checking',
+      systemPrompt:
+        'You are a research assistant specialized in academic research and fact-checking. You help users find reliable sources, analyze data, and provide evidence-based insights. Always cite your sources and maintain academic rigor.',
       parameters: { temperature: 0.3, maxTokens: 4000, topP: 0.9 },
-      tools: ["web_search", "arxiv", "scholar"]
+      tools: ['web_search', 'arxiv', 'scholar'],
     },
     development: {
-      name: "Code Assistant",
-      description: "Expert in software development and debugging",
-      systemPrompt: "You are a senior software engineer with expertise in multiple programming languages and frameworks. Help users write clean, efficient code, debug issues, and follow best practices. Provide detailed explanations and examples.",
+      name: 'Code Assistant',
+      description: 'Expert in software development and debugging',
+      systemPrompt:
+        'You are a senior software engineer with expertise in multiple programming languages and frameworks. Help users write clean, efficient code, debug issues, and follow best practices. Provide detailed explanations and examples.',
       parameters: { temperature: 0.2, maxTokens: 8000, topP: 0.95 },
-      tools: ["code_execution", "git", "documentation"]
+      tools: ['code_execution', 'git', 'documentation'],
     },
     creative: {
-      name: "Content Writer",
-      description: "Creative writing and content creation specialist",
-      systemPrompt: "You are a creative writing expert with a talent for engaging content creation. Help users craft compelling copy, creative stories, and marketing content. Focus on clarity, engagement, and brand voice consistency.",
+      name: 'Content Writer',
+      description: 'Creative writing and content creation specialist',
+      systemPrompt:
+        'You are a creative writing expert with a talent for engaging content creation. Help users craft compelling copy, creative stories, and marketing content. Focus on clarity, engagement, and brand voice consistency.',
       parameters: { temperature: 0.8, maxTokens: 6000, topP: 0.9 },
-      tools: ["grammar_check", "style_guide", "web_search"]
+      tools: ['grammar_check', 'style_guide', 'web_search'],
     },
     analytics: {
-      name: "Data Analyzer",
-      description: "Data analysis and visualization expert",
-      systemPrompt: "You are a data scientist specialized in data analysis and visualization. Help users interpret data, create meaningful insights, and suggest actionable recommendations. Focus on statistical accuracy and clear communication.",
+      name: 'Data Analyzer',
+      description: 'Data analysis and visualization expert',
+      systemPrompt:
+        'You are a data scientist specialized in data analysis and visualization. Help users interpret data, create meaningful insights, and suggest actionable recommendations. Focus on statistical accuracy and clear communication.',
       parameters: { temperature: 0.1, maxTokens: 5000, topP: 0.8 },
-      tools: ["data_viz", "statistics", "python"]
-    }
+      tools: ['data_viz', 'statistics', 'python'],
+    },
   };
 
   const updateFormData = (updates: Partial<typeof formData>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
+    setFormData((prev) => ({ ...prev, ...updates }));
   };
 
   const handleCategoryChange = (category: string) => {
@@ -147,7 +208,7 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
         description: template.description,
         systemPrompt: template.systemPrompt,
         parameters: template.parameters,
-        tools: template.tools
+        tools: template.tools,
       });
     } else {
       updateFormData({ category });
@@ -156,31 +217,36 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
 
   const handleToolToggle = (toolId: string) => {
     const newTools = formData.tools.includes(toolId)
-      ? formData.tools.filter(id => id !== toolId)
+      ? formData.tools.filter((id) => id !== toolId)
       : [...formData.tools, toolId];
     updateFormData({ tools: newTools });
   };
 
   const handleAddMCPTool = (mcpConfig: McpConfig) => {
     updateFormData({
-      mcpTools: [...formData.mcpTools, mcpConfig]
+      mcpTools: [...formData.mcpTools, mcpConfig],
     });
     setShowMCPDialog(false);
   };
 
   const handleRemoveMCPTool = (index: number) => {
     updateFormData({
-      mcpTools: formData.mcpTools.filter((_, i) => i !== index)
+      mcpTools: formData.mcpTools.filter((_, i) => i !== index),
     });
   };
 
   const getMCPIcon = (type: string) => {
     switch (type) {
-      case 'stdio': return <Terminal className="w-4 h-4" />;
-      case 'streamableHttp': return <Globe className="w-4 h-4" />;
-      case 'websocket': return <Wifi className="w-4 h-4" />;
-      case 'sse': return <Zap className="w-4 h-4" />;
-      default: return <Settings className="w-4 h-4" />;
+      case 'stdio':
+        return <Terminal className="w-4 h-4" />;
+      case 'streamableHttp':
+        return <Globe className="w-4 h-4" />;
+      case 'websocket':
+        return <Wifi className="w-4 h-4" />;
+      case 'sse':
+        return <Zap className="w-4 h-4" />;
+      default:
+        return <Settings className="w-4 h-4" />;
     }
   };
 
@@ -194,31 +260,36 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case "research": return <Database className="w-5 h-5" />;
-      case "development": return <Code className="w-5 h-5" />;
-      case "creative": return <FileText className="w-5 h-5" />;
-      case "analytics": return <BarChart3 className="w-5 h-5" />;
-      default: return <Brain className="w-5 h-5" />;
+      case 'research':
+        return <Database className="w-5 h-5" />;
+      case 'development':
+        return <Code className="w-5 h-5" />;
+      case 'creative':
+        return <FileText className="w-5 h-5" />;
+      case 'analytics':
+        return <BarChart3 className="w-5 h-5" />;
+      default:
+        return <Brain className="w-5 h-5" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "active":
+      case 'active':
         return (
           <Badge className="gap-1 status-active">
             <CheckCircle className="w-3 h-3" />
             Active
           </Badge>
         );
-      case "idle":
+      case 'idle':
         return (
           <Badge className="gap-1 status-idle">
             <Clock className="w-3 h-3" />
             Idle
           </Badge>
         );
-      case "inactive":
+      case 'inactive':
         return (
           <Badge variant="outline" className="gap-1 status-inactive-subtle">
             <AlertCircle className="w-3 h-3" />
@@ -236,21 +307,31 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
 
   const getStepFromTab = (tab: string) => {
     switch (tab) {
-      case "overview": return 1;
-      case "configuration": return 2;
-      case "tools": return 3;
-      case "knowledge": return 4;
-      default: return 1;
+      case 'overview':
+        return 1;
+      case 'configuration':
+        return 2;
+      case 'tools':
+        return 3;
+      case 'knowledge':
+        return 4;
+      default:
+        return 1;
     }
   };
 
   const getTabFromStep = (step: number) => {
     switch (step) {
-      case 1: return "overview";
-      case 2: return "configuration";
-      case 3: return "tools";
-      case 4: return "knowledge";
-      default: return "overview";
+      case 1:
+        return 'overview';
+      case 2:
+        return 'configuration';
+      case 3:
+        return 'tools';
+      case 4:
+        return 'knowledge';
+      default:
+        return 'overview';
     }
   };
 
@@ -281,16 +362,11 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
       <div className="flex-shrink-0 p-6 border-b">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onBack}
-              className="gap-2"
-            >
+            <Button variant="outline" size="sm" onClick={onBack} className="gap-2">
               <ArrowLeft className="w-4 h-4" />
               Back to Presets
             </Button>
-            
+
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg flex items-center justify-center">
                 <div className="text-blue-600">
@@ -298,9 +374,7 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                 </div>
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-foreground">
-                  Create New Preset
-                </h1>
+                <h1 className="text-2xl font-semibold text-foreground">Create New Preset</h1>
                 <p className="text-muted-foreground">
                   Configure AI agent behavior and capabilities
                 </p>
@@ -308,13 +382,9 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
               {getStatusBadge(formData.status)}
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
-            <Button 
-              onClick={handleCreate}
-              disabled={!isFormValid()}
-              className="gap-2"
-            >
+            <Button onClick={handleCreate} disabled={!isFormValid()} className="gap-2">
               <Save className="w-4 h-4" />
               Create Preset
             </Button>
@@ -324,16 +394,26 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
         {/* Progress */}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Step {currentStep} of {totalSteps}</span>
-            <span className="font-medium">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
+            <span className="text-muted-foreground">
+              Step {currentStep} of {totalSteps}
+            </span>
+            <span className="font-medium">
+              {Math.round((currentStep / totalSteps) * 100)}% Complete
+            </span>
           </div>
           <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
-          
+
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className={currentStep >= 1 ? "text-foreground font-medium" : ""}>Basic Info</span>
-            <span className={currentStep >= 2 ? "text-foreground font-medium" : ""}>Configuration</span>
-            <span className={currentStep >= 3 ? "text-foreground font-medium" : ""}>Tools</span>
-            <span className={currentStep >= 4 ? "text-foreground font-medium" : ""}>Knowledge Base</span>
+            <span className={currentStep >= 1 ? 'text-foreground font-medium' : ''}>
+              Basic Info
+            </span>
+            <span className={currentStep >= 2 ? 'text-foreground font-medium' : ''}>
+              Configuration
+            </span>
+            <span className={currentStep >= 3 ? 'text-foreground font-medium' : ''}>Tools</span>
+            <span className={currentStep >= 4 ? 'text-foreground font-medium' : ''}>
+              Knowledge Base
+            </span>
           </div>
         </div>
       </div>
@@ -397,7 +477,7 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                           className="mt-1"
                         />
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="description">Description *</Label>
                         <Textarea
@@ -414,8 +494,8 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                     <div className="space-y-4">
                       <div>
                         <Label htmlFor="model">AI Model</Label>
-                        <Select 
-                          value={formData.model} 
+                        <Select
+                          value={formData.model}
                           onValueChange={(value) => updateFormData({ model: value })}
                         >
                           <SelectTrigger className="mt-1">
@@ -432,9 +512,9 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
 
                       <div>
                         <Label htmlFor="status">Initial Status</Label>
-                        <Select 
-                          value={formData.status} 
-                          onValueChange={(value: "active" | "idle" | "inactive") => 
+                        <Select
+                          value={formData.status}
+                          onValueChange={(value: 'active' | 'idle' | 'inactive') =>
                             updateFormData({ status: value })
                           }
                         >
@@ -462,7 +542,8 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                     placeholder="Enter the system prompt that defines this preset's behavior and personality..."
                   />
                   <p className="text-xs text-muted-foreground mt-2">
-                    This prompt defines how the AI agent will behave and respond. Be specific about its role, expertise, and communication style.
+                    This prompt defines how the AI agent will behave and respond. Be specific about
+                    its role, expertise, and communication style.
                   </p>
                 </Card>
 
@@ -485,13 +566,15 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <Label>Temperature</Label>
-                        <span className="text-sm font-medium">{formData.parameters.temperature}</span>
+                        <span className="text-sm font-medium">
+                          {formData.parameters.temperature}
+                        </span>
                       </div>
                       <Slider
                         value={[formData.parameters.temperature]}
-                        onValueChange={([value]) => 
-                          updateFormData({ 
-                            parameters: { ...formData.parameters, temperature: value }
+                        onValueChange={([value]) =>
+                          updateFormData({
+                            parameters: { ...formData.parameters, temperature: value },
                           })
                         }
                         max={1}
@@ -510,18 +593,16 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                       </div>
                       <Slider
                         value={[formData.parameters.maxTokens]}
-                        onValueChange={([value]) => 
-                          updateFormData({ 
-                            parameters: { ...formData.parameters, maxTokens: value }
+                        onValueChange={([value]) =>
+                          updateFormData({
+                            parameters: { ...formData.parameters, maxTokens: value },
                           })
                         }
                         max={8000}
                         min={100}
                         step={100}
                       />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Maximum response length
-                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">Maximum response length</p>
                     </div>
 
                     <div>
@@ -531,9 +612,9 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                       </div>
                       <Slider
                         value={[formData.parameters.topP]}
-                        onValueChange={([value]) => 
-                          updateFormData({ 
-                            parameters: { ...formData.parameters, topP: value }
+                        onValueChange={([value]) =>
+                          updateFormData({
+                            parameters: { ...formData.parameters, topP: value },
                           })
                         }
                         max={1}
@@ -569,15 +650,20 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                   <p className="text-muted-foreground mb-6">
                     Select the built-in tools and capabilities this preset should have access to.
                   </p>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {availableTools
-                      .filter(tool => tool.category === formData.category || formData.category === "research")
+                      .filter(
+                        (tool) =>
+                          tool.category === formData.category || formData.category === 'research'
+                      )
                       .map((tool) => (
                         <Card
                           key={tool.id}
                           className={`p-4 cursor-pointer transition-all hover:shadow-sm ${
-                            formData.tools.includes(tool.id) ? 'ring-1 ring-primary bg-primary/5' : ''
+                            formData.tools.includes(tool.id)
+                              ? 'ring-1 ring-primary bg-primary/5'
+                              : ''
                           }`}
                           onClick={() => handleToolToggle(tool.id)}
                         >
@@ -597,10 +683,12 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
 
                   {formData.tools.length > 0 && (
                     <div className="mt-6 p-4 bg-green-50 rounded-lg">
-                      <h4 className="font-medium text-green-800 mb-2">Selected Built-in Tools ({formData.tools.length})</h4>
+                      <h4 className="font-medium text-green-800 mb-2">
+                        Selected Built-in Tools ({formData.tools.length})
+                      </h4>
                       <div className="flex flex-wrap gap-2">
                         {formData.tools.map((toolId) => {
-                          const tool = availableTools.find(t => t.id === toolId);
+                          const tool = availableTools.find((t) => t.id === toolId);
                           return (
                             <Badge key={toolId} variant="outline" className="bg-white">
                               {tool?.name}
@@ -621,10 +709,7 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                         Add Model Context Protocol tools for extended functionality.
                       </p>
                     </div>
-                    <Button 
-                      onClick={() => setShowMCPDialog(true)}
-                      className="gap-2"
-                    >
+                    <Button onClick={() => setShowMCPDialog(true)} className="gap-2">
                       <Plus className="w-4 h-4" />
                       Add MCP Tool
                     </Button>
@@ -637,8 +722,8 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                       <p className="text-sm text-muted-foreground mb-4">
                         MCP tools provide external functionality through standardized protocols.
                       </p>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => setShowMCPDialog(true)}
                         className="gap-2"
                       >
@@ -667,7 +752,9 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                                       {(mcpTool as any).command}
                                     </span>
                                   )}
-                                  {(mcpTool.type === 'streamableHttp' || mcpTool.type === 'websocket' || mcpTool.type === 'sse') && (
+                                  {(mcpTool.type === 'streamableHttp' ||
+                                    mcpTool.type === 'websocket' ||
+                                    mcpTool.type === 'sse') && (
                                     <span className="font-mono text-xs">
                                       {(mcpTool as any).url}
                                     </span>
@@ -708,11 +795,13 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
             <TabsContent value="knowledge" className="h-full">
               <div className="max-w-4xl mx-auto space-y-6">
                 <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Knowledge Base (Optional)</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-4">
+                    Knowledge Base (Optional)
+                  </h3>
                   <p className="text-muted-foreground mb-6">
                     You can add knowledge documents after creating the preset.
                   </p>
-                  
+
                   <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
                     <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <h4 className="font-medium text-foreground mb-2">No Knowledge Documents Yet</h4>
@@ -734,11 +823,7 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                     <ArrowLeft className="w-4 h-4" />
                     Previous: Tools
                   </Button>
-                  <Button 
-                    onClick={handleCreate}
-                    disabled={!isFormValid()}
-                    className="gap-2"
-                  >
+                  <Button onClick={handleCreate} disabled={!isFormValid()} className="gap-2">
                     <Save className="w-4 h-4" />
                     Create Preset
                   </Button>

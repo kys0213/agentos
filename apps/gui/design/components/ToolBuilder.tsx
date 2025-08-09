@@ -1,27 +1,27 @@
-import { useState } from "react";
-import { Button } from "./ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { 
-  Plus, 
-  Hammer, 
-  Play, 
-  Settings, 
-  Trash2, 
+import { useState } from 'react';
+import { Button } from './ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Badge } from './ui/badge';
+import {
+  Plus,
+  Hammer,
+  Play,
+  Settings,
+  Trash2,
   Edit3,
   Zap,
   Clock,
   CheckCircle,
-  AlertTriangle
-} from "lucide-react";
-import { EmptyState } from "./EmptyState";
+  AlertTriangle,
+} from 'lucide-react';
+import { EmptyState } from './EmptyState';
 
 interface CustomTool {
   id: string;
   name: string;
   description: string;
   category: string;
-  status: "active" | "testing" | "error";
+  status: 'active' | 'testing' | 'error';
   createdAt: Date;
   lastUsed?: Date;
   usageCount: number;
@@ -37,43 +37,43 @@ interface ToolBuilderProps {
 export function ToolBuilder({ onCreateTool }: ToolBuilderProps) {
   const [customTools, setCustomTools] = useState<CustomTool[]>([
     {
-      id: "tool-slack-001",
-      name: "Slack Messenger",
-      description: "Send messages to Slack channels and users",
-      category: "communication",
-      status: "active",
+      id: 'tool-slack-001',
+      name: 'Slack Messenger',
+      description: 'Send messages to Slack channels and users',
+      category: 'communication',
+      status: 'active',
       createdAt: new Date(2024, 1, 15),
       lastUsed: new Date(Date.now() - 1000 * 60 * 30),
       usageCount: 47,
-      apiEndpoint: "https://slack.com/api/chat.postMessage",
-      method: "POST",
-      parameters: ["channel", "text", "username"]
+      apiEndpoint: 'https://slack.com/api/chat.postMessage',
+      method: 'POST',
+      parameters: ['channel', 'text', 'username'],
     },
     {
-      id: "tool-weather-002",
-      name: "Weather API",
-      description: "Get current weather information for any location",
-      category: "data",
-      status: "active",
+      id: 'tool-weather-002',
+      name: 'Weather API',
+      description: 'Get current weather information for any location',
+      category: 'data',
+      status: 'active',
       createdAt: new Date(2024, 1, 10),
       lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 2),
       usageCount: 23,
-      apiEndpoint: "https://api.openweathermap.org/data/2.5/weather",
-      method: "GET",
-      parameters: ["q", "appid", "units"]
+      apiEndpoint: 'https://api.openweathermap.org/data/2.5/weather',
+      method: 'GET',
+      parameters: ['q', 'appid', 'units'],
     },
     {
-      id: "tool-github-003",
-      name: "GitHub Issue Creator",
-      description: "Create new issues in GitHub repositories",
-      category: "development",
-      status: "testing",
+      id: 'tool-github-003',
+      name: 'GitHub Issue Creator',
+      description: 'Create new issues in GitHub repositories',
+      category: 'development',
+      status: 'testing',
       createdAt: new Date(2024, 1, 20),
       usageCount: 5,
-      apiEndpoint: "https://api.github.com/repos/{owner}/{repo}/issues",
-      method: "POST",
-      parameters: ["title", "body", "labels"]
-    }
+      apiEndpoint: 'https://api.github.com/repos/{owner}/{repo}/issues',
+      method: 'POST',
+      parameters: ['title', 'body', 'labels'],
+    },
   ]);
 
   const [showEmptyState, setShowEmptyState] = useState(false);
@@ -81,35 +81,35 @@ export function ToolBuilder({ onCreateTool }: ToolBuilderProps) {
 
   const getStatusIcon = (status: CustomTool['status']) => {
     switch (status) {
-      case "active":
+      case 'active':
         return <CheckCircle className="w-4 h-4 text-status-active" />;
-      case "testing":
+      case 'testing':
         return <Clock className="w-4 h-4 text-status-idle" />;
-      case "error":
+      case 'error':
         return <AlertTriangle className="w-4 h-4 text-status-error" />;
     }
   };
 
   const getStatusBadge = (status: CustomTool['status']) => {
     switch (status) {
-      case "active":
+      case 'active':
         return <Badge className="status-active-subtle">Active</Badge>;
-      case "testing":
+      case 'testing':
         return <Badge className="status-idle-subtle">Testing</Badge>;
-      case "error":
+      case 'error':
         return <Badge className="status-error-subtle">Error</Badge>;
     }
   };
 
   const formatLastUsed = (date?: Date) => {
-    if (!date) return "Never";
-    
+    if (!date) return 'Never';
+
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const minutes = Math.floor(diff / (1000 * 60));
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
+
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     return `${days}d ago`;
@@ -117,9 +117,9 @@ export function ToolBuilder({ onCreateTool }: ToolBuilderProps) {
 
   const stats = {
     total: currentTools.length,
-    active: currentTools.filter(t => t.status === "active").length,
-    testing: currentTools.filter(t => t.status === "testing").length,
-    totalUsage: currentTools.reduce((sum, t) => sum + t.usageCount, 0)
+    active: currentTools.filter((t) => t.status === 'active').length,
+    testing: currentTools.filter((t) => t.status === 'testing').length,
+    totalUsage: currentTools.reduce((sum, t) => sum + t.usageCount, 0),
   };
 
   if (currentTools.length === 0) {
@@ -133,8 +133,8 @@ export function ToolBuilder({ onCreateTool }: ToolBuilderProps) {
             actionLabel="Create First Tool"
             onAction={onCreateTool}
             secondaryAction={{
-              label: "Show Demo Tools",
-              onClick: () => setShowEmptyState(false)
+              label: 'Show Demo Tools',
+              onClick: () => setShowEmptyState(false),
             }}
           />
         </div>
@@ -152,7 +152,7 @@ export function ToolBuilder({ onCreateTool }: ToolBuilderProps) {
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" onClick={() => setShowEmptyState(!showEmptyState)}>
-            {showEmptyState ? "Show Tools" : "Demo Empty State"}
+            {showEmptyState ? 'Show Tools' : 'Demo Empty State'}
           </Button>
           <Button onClick={onCreateTool} className="gap-2">
             <Plus className="w-4 h-4" />
@@ -242,7 +242,7 @@ export function ToolBuilder({ onCreateTool }: ToolBuilderProps) {
                 </div>
                 <CardDescription className="text-sm">{tool.description}</CardDescription>
               </CardHeader>
-              
+
               <CardContent className="space-y-4">
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -271,7 +271,11 @@ export function ToolBuilder({ onCreateTool }: ToolBuilderProps) {
                   <Button size="sm" variant="outline" className="gap-1">
                     <Settings className="w-3 h-3" />
                   </Button>
-                  <Button size="sm" variant="outline" className="gap-1 text-destructive hover:text-destructive">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1 text-destructive hover:text-destructive"
+                  >
                     <Trash2 className="w-3 h-3" />
                   </Button>
                 </div>

@@ -5,7 +5,7 @@
 ### 성공 조건
 
 - [ ] 기존 Core 패키지와 IPC 통신은 완전히 보존되어야 함
-- [ ] 새로운 UI/UX 디자인이 기존 renderer 구조에 완전히 적용되어야 함  
+- [ ] 새로운 UI/UX 디자인이 기존 renderer 구조에 완전히 적용되어야 함
 - [ ] 애플리케이션의 모든 기능이 정상 동작해야 함
 - [ ] 타입 안전성이 보장되어야 함 (any 타입 사용 금지)
 - [ ] 빌드 및 테스트가 성공적으로 통과해야 함
@@ -38,7 +38,7 @@ interface DesignPreset extends Preset {
   // 새 디자인의 추가 UI 필드들 (옵셔널)
   knowledgeStats?: {
     indexed: number;
-    vectorized: number; 
+    vectorized: number;
     totalSize: number;
   };
 }
@@ -48,7 +48,7 @@ interface DesignAgent {
   name: string;
   description: string;
   preset: string; // Preset ID 참조
-  status: "active" | "idle" | "inactive";
+  status: 'active' | 'idle' | 'inactive';
   // UI 전용 필드들
   avatar?: string;
   tags?: string[];
@@ -57,16 +57,16 @@ interface DesignAgent {
 }
 
 // 앱 섹션 타입 확장
-type AppSection = 
-  | "dashboard" 
-  | "chat" 
-  | "subagents" 
-  | "presets" 
-  | "models" 
-  | "tools" 
-  | "toolbuilder" 
-  | "racp" 
-  | "settings";
+type AppSection =
+  | 'dashboard'
+  | 'chat'
+  | 'subagents'
+  | 'presets'
+  | 'models'
+  | 'tools'
+  | 'toolbuilder'
+  | 'racp'
+  | 'settings';
 
 // 네비게이션 상태 관리
 interface NavigationState {
@@ -122,7 +122,7 @@ interface NavigationState {
 **완료 조건**: 사이드바, 채팅 인터페이스, 대시보드, 프리셋 관리가 새 디자인으로 완전히 동작함
 
 - Sidebar와 네비게이션 시스템 교체
-- ChatView 및 채팅 관련 컴포넌트 교체  
+- ChatView 및 채팅 관련 컴포넌트 교체
 - Dashboard 컴포넌트 새 디자인으로 구현
 - Preset 관리 (목록, 상세, 생성) 컴포넌트 교체
 
@@ -151,7 +151,7 @@ interface NavigationState {
 apps/gui/src/renderer/
 ├── services/              # 모든 서비스 및 ServiceContainer
 ├── services/ipc/          # 모든 IPC 채널 구현
-├── types/core-types.ts    # Core 타입 정의  
+├── types/core-types.ts    # Core 타입 정의
 ├── hooks/queries/         # Core 서비스 연동 쿼리 hooks
 ├── bootstrap.ts           # 서비스 초기화
 └── main-*.ts             # 엔트리 포인트들
@@ -186,18 +186,21 @@ apps/gui/src/renderer/
 ## 검증 체크리스트
 
 ### 기능 검증
+
 - [ ] 채팅 세션 생성/로드/메시지 전송이 정상 동작하는가?
 - [ ] 프리셋 CRUD 작업이 Core를 통해 처리되는가?
 - [ ] MCP 도구 연결/실행이 기존과 동일하게 작동하는가?
 - [ ] 브릿지 설정 및 전환이 정상 작동하는가?
 
 ### 코드 품질 검증
+
 - [ ] `pnpm typecheck` 통과하는가?
 - [ ] `pnpm lint` 통과하는가?
 - [ ] `pnpm build` 성공하는가?
 - [ ] `pnpm test` 통과하는가?
 
-### 아키텍처 검증  
+### 아키텍처 검증
+
 - [ ] Core 패키지 의존성이 올바르게 유지되는가?
 - [ ] ServiceContainer를 통한 의존성 주입이 제대로 작동하는가?
 - [ ] IPC 통신이 기존과 동일하게 작동하는가?

@@ -1,17 +1,17 @@
-import { useState, useEffect } from "react";
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Switch } from "./ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Separator } from "./ui/separator";
-import { Slider } from "./ui/slider";
-import { Textarea } from "./ui/textarea";
-import { ScrollArea } from "./ui/scroll-area";
-import { 
+import { useState, useEffect } from 'react';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Switch } from './ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Separator } from './ui/separator';
+import { Slider } from './ui/slider';
+import { Textarea } from './ui/textarea';
+import { ScrollArea } from './ui/scroll-area';
+import {
   Settings,
   Monitor,
   MessageSquare,
@@ -44,8 +44,8 @@ import {
   RotateCcw,
   BookOpen,
   Search,
-  FileText
-} from "lucide-react";
+  FileText,
+} from 'lucide-react';
 
 interface SettingsData {
   general: {
@@ -114,62 +114,62 @@ interface SettingsData {
 }
 
 export function SettingsManager() {
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState('general');
   const [settings, setSettings] = useState<SettingsData>({
     general: {
-      language: "ko",
-      theme: "light",
-      startupScreen: "chat",
+      language: 'ko',
+      theme: 'light',
+      startupScreen: 'chat',
       notifications: true,
       autoSave: true,
-      confirmExit: false
+      confirmExit: false,
     },
     chat: {
-      defaultMode: "orchestration",
+      defaultMode: 'orchestration',
       autoSelectAgent: true,
       showReasoningSteps: true,
       messageHistory: 30,
       responseTimeout: 30,
       typingIndicator: true,
-      soundEffects: false
+      soundEffects: false,
     },
     agents: {
-      defaultAgent: "orchestrator",
+      defaultAgent: 'orchestrator',
       maxActiveAgents: 5,
       agentTimeout: 60,
       orchestrationEnabled: true,
-      reasoningDepth: "detailed",
-      fallbackBehavior: "main-agent"
+      reasoningDepth: 'detailed',
+      fallbackBehavior: 'main-agent',
     },
     models: {
-      defaultModel: "gpt-4",
+      defaultModel: 'gpt-4',
       temperature: 0.7,
       maxTokens: 2048,
       topP: 1.0,
       frequencyPenalty: 0.0,
       presencePenalty: 0.0,
-      timeout: 30
+      timeout: 30,
     },
     knowledge: {
-      searchEngine: "bm25",
-      embeddingModel: "text-embedding-3-small",
-      vectorDbType: "none",
-      vectorDbEndpoint: "",
-      vectorDbApiKey: "",
+      searchEngine: 'bm25',
+      embeddingModel: 'text-embedding-3-small',
+      vectorDbType: 'none',
+      vectorDbEndpoint: '',
+      vectorDbApiKey: '',
       chunkSize: 1000,
       chunkOverlap: 200,
       maxSearchResults: 5,
       similarityThreshold: 0.7,
       enableAutoIndexing: true,
-      cacheEmbeddings: true
+      cacheEmbeddings: true,
     },
     security: {
       dataRetention: 30,
-      logLevel: "info",
+      logLevel: 'info',
       anonymizeData: true,
       allowExternalConnections: true,
       encryptStorage: true,
-      requireAuth: false
+      requireAuth: false,
     },
     advanced: {
       debugMode: false,
@@ -177,20 +177,20 @@ export function SettingsManager() {
       developerMode: false,
       logToFile: true,
       performanceMonitoring: true,
-      crashReporting: true
-    }
+      crashReporting: true,
+    },
   });
 
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const updateSetting = (category: keyof SettingsData, key: string, value: any) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       [category]: {
         ...prev[category],
-        [key]: value
-      }
+        [key]: value,
+      },
     }));
     setHasChanges(true);
   };
@@ -198,7 +198,7 @@ export function SettingsManager() {
   const handleSave = async () => {
     setIsSaving(true);
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSaving(false);
     setHasChanges(false);
   };
@@ -220,7 +220,7 @@ export function SettingsManager() {
 
   const testVectorDbConnection = async () => {
     // Simulate connection test
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   };
 
   return (
@@ -230,22 +230,15 @@ export function SettingsManager() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
-            <p className="text-muted-foreground">
-              Configure AgentOS preferences and behavior
-            </p>
+            <p className="text-muted-foreground">Configure AgentOS preferences and behavior</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={exportSettings}
-              className="gap-2"
-            >
+            <Button variant="outline" size="sm" onClick={exportSettings} className="gap-2">
               <Download className="w-4 h-4" />
               Export
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={handleReset}
               disabled={!hasChanges}
@@ -254,13 +247,9 @@ export function SettingsManager() {
               <RotateCcw className="w-4 h-4" />
               Reset
             </Button>
-            <Button 
-              onClick={handleSave}
-              disabled={!hasChanges || isSaving}
-              className="gap-2"
-            >
+            <Button onClick={handleSave} disabled={!hasChanges || isSaving} className="gap-2">
               <Save className="w-4 h-4" />
-              {isSaving ? "Saving..." : "Save Changes"}
+              {isSaving ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </div>
@@ -319,7 +308,7 @@ export function SettingsManager() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="theme">Theme</Label>
-                          <Select 
+                          <Select
                             value={settings.general.theme}
                             onValueChange={(value) => updateSetting('general', 'theme', value)}
                           >
@@ -351,7 +340,7 @@ export function SettingsManager() {
 
                         <div className="space-y-2">
                           <Label htmlFor="language">Language</Label>
-                          <Select 
+                          <Select
                             value={settings.general.language}
                             onValueChange={(value) => updateSetting('general', 'language', value)}
                           >
@@ -370,9 +359,11 @@ export function SettingsManager() {
 
                       <div className="space-y-2">
                         <Label htmlFor="startup">Startup Screen</Label>
-                        <Select 
+                        <Select
                           value={settings.general.startupScreen}
-                          onValueChange={(value) => updateSetting('general', 'startupScreen', value)}
+                          onValueChange={(value) =>
+                            updateSetting('general', 'startupScreen', value)
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -397,9 +388,11 @@ export function SettingsManager() {
                             Show system notifications for important events
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.general.notifications}
-                          onCheckedChange={(checked) => updateSetting('general', 'notifications', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('general', 'notifications', checked)
+                          }
                         />
                       </div>
 
@@ -412,9 +405,11 @@ export function SettingsManager() {
                             Automatically save configuration changes
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.general.autoSave}
-                          onCheckedChange={(checked) => updateSetting('general', 'autoSave', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('general', 'autoSave', checked)
+                          }
                         />
                       </div>
 
@@ -427,9 +422,11 @@ export function SettingsManager() {
                             Show confirmation dialog when closing the application
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.general.confirmExit}
-                          onCheckedChange={(checked) => updateSetting('general', 'confirmExit', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('general', 'confirmExit', checked)
+                          }
                         />
                       </div>
                     </div>
@@ -442,7 +439,7 @@ export function SettingsManager() {
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label>Default chat mode</Label>
-                        <Select 
+                        <Select
                           value={settings.chat.defaultMode}
                           onValueChange={(value) => updateSetting('chat', 'defaultMode', value)}
                         >
@@ -463,9 +460,11 @@ export function SettingsManager() {
                             Automatically select appropriate agents based on context
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.chat.autoSelectAgent}
-                          onCheckedChange={(checked) => updateSetting('chat', 'autoSelectAgent', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('chat', 'autoSelectAgent', checked)
+                          }
                         />
                       </div>
 
@@ -478,23 +477,29 @@ export function SettingsManager() {
                             Display the orchestrator's decision-making process
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.chat.showReasoningSteps}
-                          onCheckedChange={(checked) => updateSetting('chat', 'showReasoningSteps', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('chat', 'showReasoningSteps', checked)
+                          }
                         />
                       </div>
                     </div>
                   </Card>
 
                   <Card className="p-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Message Management</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-4">
+                      Message Management
+                    </h3>
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label>Message history retention (days)</Label>
                         <div className="flex items-center gap-4">
                           <Slider
                             value={[settings.chat.messageHistory]}
-                            onValueChange={([value]) => updateSetting('chat', 'messageHistory', value)}
+                            onValueChange={([value]) =>
+                              updateSetting('chat', 'messageHistory', value)
+                            }
                             max={365}
                             min={1}
                             step={1}
@@ -511,7 +516,9 @@ export function SettingsManager() {
                         <div className="flex items-center gap-4">
                           <Slider
                             value={[settings.chat.responseTimeout]}
-                            onValueChange={([value]) => updateSetting('chat', 'responseTimeout', value)}
+                            onValueChange={([value]) =>
+                              updateSetting('chat', 'responseTimeout', value)
+                            }
                             max={120}
                             min={5}
                             step={5}
@@ -532,9 +539,11 @@ export function SettingsManager() {
                             Show when agents are processing responses
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.chat.typingIndicator}
-                          onCheckedChange={(checked) => updateSetting('chat', 'typingIndicator', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('chat', 'typingIndicator', checked)
+                          }
                         />
                       </div>
 
@@ -547,9 +556,11 @@ export function SettingsManager() {
                             Play sounds for message notifications
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.chat.soundEffects}
-                          onCheckedChange={(checked) => updateSetting('chat', 'soundEffects', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('chat', 'soundEffects', checked)
+                          }
                         />
                       </div>
                     </div>
@@ -558,11 +569,13 @@ export function SettingsManager() {
 
                 <TabsContent value="agents" className="space-y-6">
                   <Card className="p-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Agent Configuration</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-4">
+                      Agent Configuration
+                    </h3>
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label>Default agent</Label>
-                        <Select 
+                        <Select
                           value={settings.agents.defaultAgent}
                           onValueChange={(value) => updateSetting('agents', 'defaultAgent', value)}
                         >
@@ -583,7 +596,9 @@ export function SettingsManager() {
                         <div className="flex items-center gap-4">
                           <Slider
                             value={[settings.agents.maxActiveAgents]}
-                            onValueChange={([value]) => updateSetting('agents', 'maxActiveAgents', value)}
+                            onValueChange={([value]) =>
+                              updateSetting('agents', 'maxActiveAgents', value)
+                            }
                             max={10}
                             min={1}
                             step={1}
@@ -600,7 +615,9 @@ export function SettingsManager() {
                         <div className="flex items-center gap-4">
                           <Slider
                             value={[settings.agents.agentTimeout]}
-                            onValueChange={([value]) => updateSetting('agents', 'agentTimeout', value)}
+                            onValueChange={([value]) =>
+                              updateSetting('agents', 'agentTimeout', value)
+                            }
                             max={300}
                             min={30}
                             step={10}
@@ -624,17 +641,21 @@ export function SettingsManager() {
                             Allow the main agent to coordinate multiple specialists
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.agents.orchestrationEnabled}
-                          onCheckedChange={(checked) => updateSetting('agents', 'orchestrationEnabled', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('agents', 'orchestrationEnabled', checked)
+                          }
                         />
                       </div>
 
                       <div className="space-y-2">
                         <Label>Reasoning depth</Label>
-                        <Select 
+                        <Select
                           value={settings.agents.reasoningDepth}
-                          onValueChange={(value) => updateSetting('agents', 'reasoningDepth', value)}
+                          onValueChange={(value) =>
+                            updateSetting('agents', 'reasoningDepth', value)
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -650,9 +671,11 @@ export function SettingsManager() {
 
                       <div className="space-y-2">
                         <Label>Fallback behavior</Label>
-                        <Select 
+                        <Select
                           value={settings.agents.fallbackBehavior}
-                          onValueChange={(value) => updateSetting('agents', 'fallbackBehavior', value)}
+                          onValueChange={(value) =>
+                            updateSetting('agents', 'fallbackBehavior', value)
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -674,7 +697,7 @@ export function SettingsManager() {
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label>Model selection</Label>
-                        <Select 
+                        <Select
                           value={settings.models.defaultModel}
                           onValueChange={(value) => updateSetting('models', 'defaultModel', value)}
                         >
@@ -717,7 +740,9 @@ export function SettingsManager() {
                         <div className="flex items-center gap-4">
                           <Slider
                             value={[settings.models.temperature]}
-                            onValueChange={([value]) => updateSetting('models', 'temperature', value)}
+                            onValueChange={([value]) =>
+                              updateSetting('models', 'temperature', value)
+                            }
                             max={2}
                             min={0}
                             step={0.1}
@@ -772,9 +797,11 @@ export function SettingsManager() {
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label>Default search method</Label>
-                        <Select 
+                        <Select
                           value={settings.knowledge.searchEngine}
-                          onValueChange={(value) => updateSetting('knowledge', 'searchEngine', value)}
+                          onValueChange={(value) =>
+                            updateSetting('knowledge', 'searchEngine', value)
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -801,7 +828,8 @@ export function SettingsManager() {
                           </SelectContent>
                         </Select>
                         <p className="text-sm text-muted-foreground">
-                          BM25 provides fast local search without external dependencies. Vector search offers semantic similarity.
+                          BM25 provides fast local search without external dependencies. Vector
+                          search offers semantic similarity.
                         </p>
                       </div>
 
@@ -810,7 +838,9 @@ export function SettingsManager() {
                         <div className="flex items-center gap-4">
                           <Slider
                             value={[settings.knowledge.maxSearchResults]}
-                            onValueChange={([value]) => updateSetting('knowledge', 'maxSearchResults', value)}
+                            onValueChange={([value]) =>
+                              updateSetting('knowledge', 'maxSearchResults', value)
+                            }
                             max={20}
                             min={1}
                             step={1}
@@ -829,23 +859,30 @@ export function SettingsManager() {
                             Automatically index new documents when added
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.knowledge.enableAutoIndexing}
-                          onCheckedChange={(checked) => updateSetting('knowledge', 'enableAutoIndexing', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('knowledge', 'enableAutoIndexing', checked)
+                          }
                         />
                       </div>
                     </div>
                   </Card>
 
-                  {(settings.knowledge.searchEngine === 'vector' || settings.knowledge.searchEngine === 'hybrid') && (
+                  {(settings.knowledge.searchEngine === 'vector' ||
+                    settings.knowledge.searchEngine === 'hybrid') && (
                     <Card className="p-6">
-                      <h3 className="text-lg font-semibold text-foreground mb-4">Vector Database</h3>
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
+                        Vector Database
+                      </h3>
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <Label>Vector database type</Label>
-                          <Select 
+                          <Select
                             value={settings.knowledge.vectorDbType}
-                            onValueChange={(value) => updateSetting('knowledge', 'vectorDbType', value)}
+                            onValueChange={(value) =>
+                              updateSetting('knowledge', 'vectorDbType', value)
+                            }
                           >
                             <SelectTrigger>
                               <SelectValue />
@@ -868,7 +905,9 @@ export function SettingsManager() {
                                 type="url"
                                 placeholder="https://your-vector-db-endpoint.com"
                                 value={settings.knowledge.vectorDbEndpoint}
-                                onChange={(e) => updateSetting('knowledge', 'vectorDbEndpoint', e.target.value)}
+                                onChange={(e) =>
+                                  updateSetting('knowledge', 'vectorDbEndpoint', e.target.value)
+                                }
                               />
                             </div>
 
@@ -878,13 +917,15 @@ export function SettingsManager() {
                                 type="password"
                                 placeholder="Your API key"
                                 value={settings.knowledge.vectorDbApiKey}
-                                onChange={(e) => updateSetting('knowledge', 'vectorDbApiKey', e.target.value)}
+                                onChange={(e) =>
+                                  updateSetting('knowledge', 'vectorDbApiKey', e.target.value)
+                                }
                               />
                             </div>
 
                             <div className="flex gap-2">
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 size="sm"
                                 onClick={testVectorDbConnection}
                                 className="gap-2"
@@ -899,24 +940,37 @@ export function SettingsManager() {
                     </Card>
                   )}
 
-                  {(settings.knowledge.searchEngine === 'vector' || settings.knowledge.searchEngine === 'hybrid') && (
+                  {(settings.knowledge.searchEngine === 'vector' ||
+                    settings.knowledge.searchEngine === 'hybrid') && (
                     <Card className="p-6">
-                      <h3 className="text-lg font-semibold text-foreground mb-4">Embedding Configuration</h3>
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
+                        Embedding Configuration
+                      </h3>
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <Label>Embedding model</Label>
-                          <Select 
+                          <Select
                             value={settings.knowledge.embeddingModel}
-                            onValueChange={(value) => updateSetting('knowledge', 'embeddingModel', value)}
+                            onValueChange={(value) =>
+                              updateSetting('knowledge', 'embeddingModel', value)
+                            }
                           >
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="text-embedding-3-small">OpenAI text-embedding-3-small</SelectItem>
-                              <SelectItem value="text-embedding-3-large">OpenAI text-embedding-3-large</SelectItem>
-                              <SelectItem value="text-embedding-ada-002">OpenAI text-embedding-ada-002</SelectItem>
-                              <SelectItem value="sentence-transformers">Local Sentence Transformers</SelectItem>
+                              <SelectItem value="text-embedding-3-small">
+                                OpenAI text-embedding-3-small
+                              </SelectItem>
+                              <SelectItem value="text-embedding-3-large">
+                                OpenAI text-embedding-3-large
+                              </SelectItem>
+                              <SelectItem value="text-embedding-ada-002">
+                                OpenAI text-embedding-ada-002
+                              </SelectItem>
+                              <SelectItem value="sentence-transformers">
+                                Local Sentence Transformers
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -926,7 +980,9 @@ export function SettingsManager() {
                           <div className="flex items-center gap-4">
                             <Slider
                               value={[settings.knowledge.chunkSize]}
-                              onValueChange={([value]) => updateSetting('knowledge', 'chunkSize', value)}
+                              onValueChange={([value]) =>
+                                updateSetting('knowledge', 'chunkSize', value)
+                              }
                               max={4000}
                               min={200}
                               step={100}
@@ -943,7 +999,9 @@ export function SettingsManager() {
                           <div className="flex items-center gap-4">
                             <Slider
                               value={[settings.knowledge.chunkOverlap]}
-                              onValueChange={([value]) => updateSetting('knowledge', 'chunkOverlap', value)}
+                              onValueChange={([value]) =>
+                                updateSetting('knowledge', 'chunkOverlap', value)
+                              }
                               max={Math.min(500, settings.knowledge.chunkSize / 2)}
                               min={0}
                               step={50}
@@ -960,7 +1018,9 @@ export function SettingsManager() {
                           <div className="flex items-center gap-4">
                             <Slider
                               value={[settings.knowledge.similarityThreshold]}
-                              onValueChange={([value]) => updateSetting('knowledge', 'similarityThreshold', value)}
+                              onValueChange={([value]) =>
+                                updateSetting('knowledge', 'similarityThreshold', value)
+                              }
                               max={1}
                               min={0}
                               step={0.1}
@@ -979,9 +1039,11 @@ export function SettingsManager() {
                               Store embeddings locally to reduce API calls
                             </p>
                           </div>
-                          <Switch 
+                          <Switch
                             checked={settings.knowledge.cacheEmbeddings}
-                            onCheckedChange={(checked) => updateSetting('knowledge', 'cacheEmbeddings', checked)}
+                            onCheckedChange={(checked) =>
+                              updateSetting('knowledge', 'cacheEmbeddings', checked)
+                            }
                           />
                         </div>
                       </div>
@@ -998,7 +1060,9 @@ export function SettingsManager() {
                         <div className="flex items-center gap-4">
                           <Slider
                             value={[settings.security.dataRetention]}
-                            onValueChange={([value]) => updateSetting('security', 'dataRetention', value)}
+                            onValueChange={([value]) =>
+                              updateSetting('security', 'dataRetention', value)
+                            }
                             max={365}
                             min={1}
                             step={1}
@@ -1017,9 +1081,11 @@ export function SettingsManager() {
                             Remove personally identifiable information from logs
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.security.anonymizeData}
-                          onCheckedChange={(checked) => updateSetting('security', 'anonymizeData', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('security', 'anonymizeData', checked)
+                          }
                         />
                       </div>
 
@@ -1032,9 +1098,11 @@ export function SettingsManager() {
                             Encrypt chat history and settings on disk
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.security.encryptStorage}
-                          onCheckedChange={(checked) => updateSetting('security', 'encryptStorage', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('security', 'encryptStorage', checked)
+                          }
                         />
                       </div>
                     </div>
@@ -1050,9 +1118,11 @@ export function SettingsManager() {
                             Require login to access the application
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.security.requireAuth}
-                          onCheckedChange={(checked) => updateSetting('security', 'requireAuth', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('security', 'requireAuth', checked)
+                          }
                         />
                       </div>
 
@@ -1065,15 +1135,17 @@ export function SettingsManager() {
                             Permit connections to external APIs and services
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.security.allowExternalConnections}
-                          onCheckedChange={(checked) => updateSetting('security', 'allowExternalConnections', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('security', 'allowExternalConnections', checked)
+                          }
                         />
                       </div>
 
                       <div className="space-y-2">
                         <Label>Log level</Label>
-                        <Select 
+                        <Select
                           value={settings.security.logLevel}
                           onValueChange={(value) => updateSetting('security', 'logLevel', value)}
                         >
@@ -1094,7 +1166,9 @@ export function SettingsManager() {
 
                 <TabsContent value="advanced" className="space-y-6">
                   <Card className="p-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Developer Options</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-4">
+                      Developer Options
+                    </h3>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
@@ -1103,9 +1177,11 @@ export function SettingsManager() {
                             Enable detailed debugging information
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.advanced.debugMode}
-                          onCheckedChange={(checked) => updateSetting('advanced', 'debugMode', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('advanced', 'debugMode', checked)
+                          }
                         />
                       </div>
 
@@ -1118,9 +1194,11 @@ export function SettingsManager() {
                             Access to advanced features and tools
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.advanced.developerMode}
-                          onCheckedChange={(checked) => updateSetting('advanced', 'developerMode', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('advanced', 'developerMode', checked)
+                          }
                         />
                       </div>
 
@@ -1133,16 +1211,20 @@ export function SettingsManager() {
                             Enable beta features (may be unstable)
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.advanced.experimentalFeatures}
-                          onCheckedChange={(checked) => updateSetting('advanced', 'experimentalFeatures', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('advanced', 'experimentalFeatures', checked)
+                          }
                         />
                       </div>
                     </div>
                   </Card>
 
                   <Card className="p-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">System Monitoring</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-4">
+                      System Monitoring
+                    </h3>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
@@ -1151,9 +1233,11 @@ export function SettingsManager() {
                             Track system performance metrics
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.advanced.performanceMonitoring}
-                          onCheckedChange={(checked) => updateSetting('advanced', 'performanceMonitoring', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('advanced', 'performanceMonitoring', checked)
+                          }
                         />
                       </div>
 
@@ -1166,9 +1250,11 @@ export function SettingsManager() {
                             Save logs to local files for debugging
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.advanced.logToFile}
-                          onCheckedChange={(checked) => updateSetting('advanced', 'logToFile', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('advanced', 'logToFile', checked)
+                          }
                         />
                       </div>
 
@@ -1181,9 +1267,11 @@ export function SettingsManager() {
                             Send crash reports to help improve the app
                           </p>
                         </div>
-                        <Switch 
+                        <Switch
                           checked={settings.advanced.crashReporting}
-                          onCheckedChange={(checked) => updateSetting('advanced', 'crashReporting', checked)}
+                          onCheckedChange={(checked) =>
+                            updateSetting('advanced', 'crashReporting', checked)
+                          }
                         />
                       </div>
                     </div>

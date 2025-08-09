@@ -68,24 +68,24 @@ export function ModelManager() {
   const [error, setError] = useState<string | null>(null);
   const [modelInstances, setModelInstances] = useState<ModelInstance[]>([]);
   const [bridgeIds, setBridgeIds] = useState<string[]>([]);
-  
+
   // Get BridgeService from ServiceContainer
   const bridgeService = ServiceContainer.get<BridgeService>('bridge');
-  
+
   // Load bridge data on mount
   useEffect(() => {
     const loadBridges = async () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         // Get available bridge IDs
         const ids = await bridgeService.getBridgeIds();
         setBridgeIds(ids);
-        
+
         // Get current bridge info
         const currentBridge = await bridgeService.getCurrentBridge();
-        
+
         // Mock some model instances based on available bridges
         // In real implementation, this would come from bridge configurations
         const mockInstances: ModelInstance[] = [
@@ -128,13 +128,12 @@ export function ModelManager() {
             lastUsed: new Date('2024-01-22T13:45:00'),
           },
         ];
-        
+
         setModelInstances(mockInstances);
-        
       } catch (err) {
         console.error('Failed to load bridge data:', err);
         setError('Failed to load model information');
-        
+
         // Fallback to mock data on error
         setModelInstances([
           {
@@ -148,13 +147,13 @@ export function ModelManager() {
             usage: { requests: 0, tokens: 0, cost: 0 },
             performance: { latency: 0, uptime: 0 },
             lastUsed: new Date(),
-          }
+          },
         ]);
       } finally {
         setLoading(false);
       }
     };
-    
+
     loadBridges();
   }, []);
 
@@ -199,7 +198,7 @@ export function ModelManager() {
       isInstalled: bridgeIds.includes('google-gemini'),
     },
   ];
-  
+
   const handleRefresh = async () => {
     setLoading(true);
     try {
@@ -207,17 +206,19 @@ export function ModelManager() {
       setBridgeIds(ids);
       const currentBridge = await bridgeService.getCurrentBridge();
       // Update model statuses based on current bridge
-      setModelInstances(prev => prev.map(model => ({
-        ...model,
-        status: currentBridge?.id.includes(model.provider.toLowerCase()) ? 'online' : 'offline'
-      })));
+      setModelInstances((prev) =>
+        prev.map((model) => ({
+          ...model,
+          status: currentBridge?.id.includes(model.provider.toLowerCase()) ? 'online' : 'offline',
+        }))
+      );
     } catch (err) {
       setError('Failed to refresh model data');
     } finally {
       setLoading(false);
     }
   };
-  
+
   const handleInstallModel = async (modelId: string) => {
     try {
       // In real implementation, this would register a new bridge
@@ -228,7 +229,7 @@ export function ModelManager() {
       console.error('Failed to install model:', err);
     }
   };
-  
+
   const handleSwitchModel = async (bridgeId: string) => {
     try {
       await bridgeService.switchBridge(bridgeId);
@@ -288,7 +289,7 @@ export function ModelManager() {
             <span className="text-sm">Loading...</span>
           </div>
         </div>
-        
+
         {/* Loading skeleton */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, index) => (
@@ -323,11 +324,11 @@ export function ModelManager() {
         <div>
           <h1 className="text-2xl font-semibold">Model Manager</h1>
           <p className="text-muted-foreground">
-            {error ? 'Model configuration error detected' : 'Manage AI model instances and configurations'}
+            {error
+              ? 'Model configuration error detected'
+              : 'Manage AI model instances and configurations'}
           </p>
-          {error && (
-            <p className="text-sm text-red-600 mt-1">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
         </div>
         <Button className="gap-2">
           <Plus className="w-4 h-4" />
@@ -429,8 +430,8 @@ export function ModelManager() {
                 </div>
 
                 <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     className="flex-1"
                     variant={model.status === 'online' ? 'default' : 'outline'}
                     onClick={() => handleSwitchModel(model.id)}
@@ -499,9 +500,9 @@ export function ModelManager() {
                 </div>
 
                 <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                  <Button 
-                    size="sm" 
-                    className="flex-1" 
+                  <Button
+                    size="sm"
+                    className="flex-1"
                     disabled={model.isInstalled}
                     onClick={() => !model.isInstalled && handleInstallModel(model.id)}
                   >

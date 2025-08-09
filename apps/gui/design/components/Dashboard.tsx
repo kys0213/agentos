@@ -1,18 +1,18 @@
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { 
-  Bot, 
-  MessageSquare, 
-  Cpu, 
-  Layers, 
-  Activity, 
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import {
+  Bot,
+  MessageSquare,
+  Cpu,
+  Layers,
+  Activity,
   Clock,
   TrendingUp,
   Users,
   Zap,
-  BarChart3
-} from "lucide-react";
+  BarChart3,
+} from 'lucide-react';
 
 interface DashboardProps {
   onOpenChat?: (agentId: number, agentName: string, agentPreset: string) => void;
@@ -21,95 +21,95 @@ interface DashboardProps {
 export function Dashboard({ onOpenChat }: DashboardProps) {
   const stats = [
     {
-      title: "Active Chats",
-      value: "12",
-      change: "+2.5%",
+      title: 'Active Chats',
+      value: '12',
+      change: '+2.5%',
       icon: MessageSquare,
-      color: "text-blue-600"
+      color: 'text-blue-600',
     },
     {
-      title: "Sub Agents",
-      value: "8",
-      change: "+12%",
+      title: 'Sub Agents',
+      value: '8',
+      change: '+12%',
       icon: Bot,
-      color: "text-green-600"
+      color: 'text-green-600',
     },
     {
-      title: "Models",
-      value: "5",
-      change: "0%",
+      title: 'Models',
+      value: '5',
+      change: '0%',
       icon: Cpu,
-      color: "text-purple-600"
+      color: 'text-purple-600',
     },
     {
-      title: "Presets",
-      value: "15",
-      change: "+5%",
+      title: 'Presets',
+      value: '15',
+      change: '+5%',
       icon: Layers,
-      color: "text-orange-600"
-    }
+      color: 'text-orange-600',
+    },
   ];
 
   const recentActivity = [
     {
       id: 1,
-      type: "chat",
-      title: "New chat started with Data Analyzer",
-      time: "2 minutes ago",
-      agent: "Data Analyzer"
+      type: 'chat',
+      title: 'New chat started with Data Analyzer',
+      time: '2 minutes ago',
+      agent: 'Data Analyzer',
     },
     {
       id: 2,
-      type: "agent",
-      title: "Code Assistant agent updated",
-      time: "15 minutes ago",
-      agent: "Code Assistant"
+      type: 'agent',
+      title: 'Code Assistant agent updated',
+      time: '15 minutes ago',
+      agent: 'Code Assistant',
     },
     {
       id: 3,
-      type: "preset",
-      title: "Writing Specialist preset created",
-      time: "1 hour ago",
-      agent: "Content Writer"
+      type: 'preset',
+      title: 'Writing Specialist preset created',
+      time: '1 hour ago',
+      agent: 'Content Writer',
     },
     {
       id: 4,
-      type: "model",
-      title: "GPT-4 model connected",
-      time: "2 hours ago",
-      agent: "System"
-    }
+      type: 'model',
+      title: 'GPT-4 model connected',
+      time: '2 hours ago',
+      agent: 'System',
+    },
   ];
 
   const quickActions = [
     {
-      title: "Start New Chat",
-      description: "Begin a conversation with an AI agent",
+      title: 'Start New Chat',
+      description: 'Begin a conversation with an AI agent',
       icon: MessageSquare,
-      action: () => onOpenChat?.(1, "General Assistant", "Default"),
-      color: "bg-blue-500"
+      action: () => onOpenChat?.(1, 'General Assistant', 'Default'),
+      color: 'bg-blue-500',
     },
     {
-      title: "Create Agent",
-      description: "Set up a new sub-agent with specific capabilities",
+      title: 'Create Agent',
+      description: 'Set up a new sub-agent with specific capabilities',
       icon: Bot,
-      action: () => console.log("Create agent"),
-      color: "bg-green-500"
+      action: () => console.log('Create agent'),
+      color: 'bg-green-500',
     },
     {
-      title: "Manage Presets",
-      description: "Configure agent presets and prompts",
+      title: 'Manage Presets',
+      description: 'Configure agent presets and prompts',
       icon: Layers,
-      action: () => console.log("Manage presets"),
-      color: "bg-purple-500"
+      action: () => console.log('Manage presets'),
+      color: 'bg-purple-500',
     },
     {
-      title: "System Health",
-      description: "Monitor system performance and status",
+      title: 'System Health',
+      description: 'Monitor system performance and status',
       icon: Activity,
-      action: () => console.log("System health"),
-      color: "bg-orange-500"
-    }
+      action: () => console.log('System health'),
+      color: 'bg-orange-500',
+    },
   ];
 
   return (
@@ -182,7 +182,9 @@ export function Dashboard({ onOpenChat }: DashboardProps) {
                   className="w-full h-auto p-4 justify-start"
                   onClick={action.action}
                 >
-                  <div className={`w-10 h-10 ${action.color} rounded-lg flex items-center justify-center mr-3`}>
+                  <div
+                    className={`w-10 h-10 ${action.color} rounded-lg flex items-center justify-center mr-3`}
+                  >
                     <Icon className="w-5 h-5 text-white" />
                   </div>
                   <div className="text-left">

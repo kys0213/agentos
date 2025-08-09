@@ -1,20 +1,20 @@
-import { useState } from "react";
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Badge } from "./ui/badge";
-import { 
-  Send, 
-  Bot, 
-  User, 
+import { useState } from 'react';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Badge } from './ui/badge';
+import {
+  Send,
+  Bot,
+  User,
   Settings,
   Copy,
   ThumbsUp,
   ThumbsDown,
   MoreVertical,
   X,
-  Minimize2
-} from "lucide-react";
+  Minimize2,
+} from 'lucide-react';
 
 interface ChatInterfaceProps {
   agentId: number;
@@ -24,28 +24,36 @@ interface ChatInterfaceProps {
   onMinimize: () => void;
 }
 
-export function ChatInterface({ agentId, agentName, agentPreset, onClose, onMinimize }: ChatInterfaceProps) {
+export function ChatInterface({
+  agentId,
+  agentName,
+  agentPreset,
+  onClose,
+  onMinimize,
+}: ChatInterfaceProps) {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      type: "system" as const,
-      content: "Data Analyzer Bot이 활성화되었습니다. 데이터 분석과 시각화 작업을 도와드리겠습니다.",
-      timestamp: "10:30 AM"
+      type: 'system' as const,
+      content:
+        'Data Analyzer Bot이 활성화되었습니다. 데이터 분석과 시각화 작업을 도와드리겠습니다.',
+      timestamp: '10:30 AM',
     },
     {
       id: 2,
-      type: "user" as const,
-      content: "안녕하세요! 최근 매출 데이터를 분석해주실 수 있나요?",
-      timestamp: "10:31 AM"
+      type: 'user' as const,
+      content: '안녕하세요! 최근 매출 데이터를 분석해주실 수 있나요?',
+      timestamp: '10:31 AM',
     },
     {
       id: 3,
-      type: "agent" as const,
-      content: "안녕하세요! 네, 매출 데이터 분석을 도와드리겠습니다. 먼저 분석하고 싶은 데이터 파일을 업로드해주시거나, 구체적인 분석 요구사항을 알려주세요.\n\n다음과 같은 분석이 가능합니다:\n• 시계열 매출 트렌드 분석\n• 제품별/지역별 매출 비교\n• 성장률 및 예측 분석\n• 시각화 차트 생성",
-      timestamp: "10:31 AM"
-    }
+      type: 'agent' as const,
+      content:
+        '안녕하세요! 네, 매출 데이터 분석을 도와드리겠습니다. 먼저 분석하고 싶은 데이터 파일을 업로드해주시거나, 구체적인 분석 요구사항을 알려주세요.\n\n다음과 같은 분석이 가능합니다:\n• 시계열 매출 트렌드 분석\n• 제품별/지역별 매출 비교\n• 성장률 및 예측 분석\n• 시각화 차트 생성',
+      timestamp: '10:31 AM',
+    },
   ]);
-  const [inputMessage, setInputMessage] = useState("");
+  const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
   const handleSendMessage = () => {
@@ -53,13 +61,13 @@ export function ChatInterface({ agentId, agentName, agentPreset, onClose, onMini
 
     const newMessage = {
       id: messages.length + 1,
-      type: "user" as const,
+      type: 'user' as const,
       content: inputMessage,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
     setMessages([...messages, newMessage]);
-    setInputMessage("");
+    setInputMessage('');
     setIsTyping(true);
 
     // Simulate agent response
@@ -67,28 +75,35 @@ export function ChatInterface({ agentId, agentName, agentPreset, onClose, onMini
       setIsTyping(false);
       const agentResponse = {
         id: messages.length + 2,
-        type: "agent" as const,
-        content: "데이터를 분석중입니다. 잠시만 기다려주세요...",
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        type: 'agent' as const,
+        content: '데이터를 분석중입니다. 잠시만 기다려주세요...',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
-      setMessages(prev => [...prev, agentResponse]);
+      setMessages((prev) => [...prev, agentResponse]);
     }, 2000);
   };
 
   const getMessageIcon = (type: string) => {
     switch (type) {
-      case 'user': return <User className="w-4 h-4" />;
-      case 'agent': return <Bot className="w-4 h-4" />;
-      default: return <Settings className="w-4 h-4" />;
+      case 'user':
+        return <User className="w-4 h-4" />;
+      case 'agent':
+        return <Bot className="w-4 h-4" />;
+      default:
+        return <Settings className="w-4 h-4" />;
     }
   };
 
   const getMessageBg = (type: string) => {
     switch (type) {
-      case 'user': return 'bg-blue-50 border-blue-200';
-      case 'agent': return 'bg-green-50 border-green-200';
-      case 'system': return 'bg-gray-50 border-gray-200';
-      default: return 'bg-gray-50';
+      case 'user':
+        return 'bg-blue-50 border-blue-200';
+      case 'agent':
+        return 'bg-green-50 border-green-200';
+      case 'system':
+        return 'bg-gray-50 border-gray-200';
+      default:
+        return 'bg-gray-50';
     }
   };
 
@@ -127,9 +142,7 @@ export function ChatInterface({ agentId, agentName, agentPreset, onClose, onMini
           <div key={message.id} className="space-y-2">
             <div className={`p-3 rounded-lg border ${getMessageBg(message.type)}`}>
               <div className="flex items-start gap-2">
-                <div className="mt-0.5">
-                  {getMessageIcon(message.type)}
-                </div>
+                <div className="mt-0.5">{getMessageIcon(message.type)}</div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-medium capitalize">{message.type}</span>
@@ -139,7 +152,7 @@ export function ChatInterface({ agentId, agentName, agentPreset, onClose, onMini
                 </div>
               </div>
             </div>
-            
+
             {message.type === 'agent' && (
               <div className="flex gap-2 ml-6">
                 <Button variant="ghost" size="sm" className="h-6 px-2">
@@ -164,8 +177,14 @@ export function ChatInterface({ agentId, agentName, agentPreset, onClose, onMini
             <Bot className="w-4 h-4" />
             <div className="flex space-x-1">
               <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+              <div
+                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                style={{ animationDelay: '0.1s' }}
+              ></div>
+              <div
+                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                style={{ animationDelay: '0.2s' }}
+              ></div>
             </div>
             <span className="text-sm">typing...</span>
           </div>
