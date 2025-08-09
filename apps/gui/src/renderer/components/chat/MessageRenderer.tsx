@@ -21,7 +21,7 @@ export interface MessageRendererProps {
   onOrchestrationToggle?: (messageId: string) => void;
   orchestrationSteps?: MessageHistory[];
   isOrchestrationExpanded?: boolean;
-  getAgentColor?: (agent: any) => string;
+  getAgentColor?: (agent: AgentMetadata) => string;
   className?: string;
 }
 

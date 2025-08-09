@@ -1,21 +1,16 @@
 import { UserMessage, LlmBridge } from 'llm-bridge-spec';
-import { ChatManager, SimpleAgent, SimpleAgentManager, McpRegistry } from '@agentos/core';
+import { ChatManager, SimpleAgent, SimpleAgentManager, McpRegistry, Preset } from '@agentos/core';
 import { createUserInputStream } from './utils/user-input-stream';
 
 export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge) {
   // Agent 생성
-  const agent = new SimpleAgent(
-    llmBridge,
-    new McpRegistry(),
-    manager,
-    {
-      id: 'cli-agent',
-      name: 'CLI Agent',
-      description: 'Interactive CLI agent',
-      icon: '💻',
-      keywords: ['cli', 'interactive'],
-    },
-    {
+  const agent = new SimpleAgent(llmBridge, new McpRegistry(), manager, {
+    id: 'cli-agent',
+    name: 'CLI Agent',
+    description: 'Interactive CLI agent',
+    icon: '💻',
+    keywords: ['cli', 'interactive'],
+    preset: {
       id: 'cli-preset',
       name: 'CLI Preset',
       description: 'Default CLI preset',
@@ -26,8 +21,43 @@ export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge
       systemPrompt: 'You are a helpful assistant.',
       llmBridgeName: 'default',
       llmBridgeConfig: {},
-    }
-  );
+      status: 'active',
+      usageCount: 0,
+      knowledgeDocuments: 0,
+      knowledgeStats: {
+        indexed: 0,
+        vectorized: 0,
+        totalSize: 0,
+      },
+      category: ['general'],
+    },
+    status: 'active',
+    sessionCount: 0,
+    usageCount: 0,
+  });
+
+  const preset: Preset = {
+    id: 'cli-preset',
+    name: 'CLI Preset',
+    description: 'Default CLI preset',
+    author: 'System',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    version: '1.0.0',
+    systemPrompt: 'You are a helpful assistant.',
+    enabledMcps: [],
+    llmBridgeName: 'default',
+    llmBridgeConfig: {},
+    status: 'active',
+    usageCount: 0,
+    knowledgeDocuments: 0,
+    knowledgeStats: {
+      indexed: 0,
+      vectorized: 0,
+      totalSize: 0,
+    },
+    category: ['general'],
+  };
 
   // Agent Manager 생성 및 Agent 등록
   const agentManager = new SimpleAgentManager();

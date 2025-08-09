@@ -13,6 +13,15 @@ const sample: Preset = {
   enabledMcps: [],
   llmBridgeName: '',
   llmBridgeConfig: {},
+  status: 'active',
+  usageCount: 0,
+  knowledgeDocuments: 0,
+  knowledgeStats: {
+    indexed: 0,
+    vectorized: 0,
+    totalSize: 0,
+  },
+  category: ['general'],
 };
 
 test.skip('save and load presets', async () => {

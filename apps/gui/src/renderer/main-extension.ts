@@ -6,7 +6,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { bootstrap } from './bootstrap';
 import { ChromeExtensionIpcChannel } from './services/ipc/ChromeExtensionIpcChannel';
-import AppLayout from './components/layout/AppLayout';
+import NewAppLayout from './components/layout/NewAppLayout';
 import './styles/globals.css';
 
 console.log('🧩 Starting Chrome Extension...');
@@ -32,7 +32,7 @@ if (typeof window !== 'undefined') {
 const container = document.getElementById('root');
 if (container) {
   const root = createRoot(container);
-  root.render(React.createElement(AppLayout));
+  root.render(React.createElement(NewAppLayout));
   console.log('✅ React app mounted successfully');
 } else {
   console.error('❌ Failed to find root element');

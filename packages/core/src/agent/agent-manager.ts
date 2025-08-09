@@ -6,7 +6,7 @@
  */
 
 import { UserMessage } from 'llm-bridge-spec';
-import { Agent, AgentStatus, AgentExecuteOptions, AgentRunResult } from './agent';
+import { Agent, AgentStatus, AgentExecuteOptions, AgentChatResult } from './agent';
 import { CursorPagination, CursorPaginationResult } from '../common/pagination/cursor-pagination';
 
 /**
@@ -108,7 +108,7 @@ export interface AgentManager {
     agentId: string,
     messages: UserMessage[],
     options?: AgentExecuteOptions
-  ): Promise<AgentRunResult>;
+  ): Promise<AgentChatResult>;
 
   /**
    * Agent의 현재 상태를 조회합니다.

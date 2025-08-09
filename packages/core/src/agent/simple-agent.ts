@@ -14,14 +14,14 @@ import { ChatSession } from '../chat/chat-session';
 import { ChatManager } from '../chat/chat.manager';
 import { McpRegistry } from '../tool/mcp/mcp.registery';
 import { McpContent } from '../tool/mcp/mcp';
-import { Preset } from '../preset/preset';
-import { Agent, AgentExecuteOptions, AgentRunResult, AgentStatus } from './agent';
+import { Agent, AgentExecuteOptions, AgentChatResult, AgentStatus } from './agent';
 import { AgentMetadata } from './agent-metadata';
+import { Preset } from '../preset/preset';
 
 export class SimpleAgent implements Agent {
   // 상태 관리
   private _status: AgentStatus = 'idle';
-  private _lastActivity?: Date;
+  private _lastUsed?: Date;
 
   private readonly activeSessions = new Map<string, ChatSession>();
 
@@ -29,9 +29,12 @@ export class SimpleAgent implements Agent {
     private readonly llmBridge: LlmBridge,
     private readonly mcpRegistry: McpRegistry,
     private readonly chatManager: ChatManager,
-    private readonly metadata: AgentMetadata,
-    public readonly preset: Preset
+    private readonly metadata: AgentMetadata
   ) {}
+
+  get preset(): Readonly<Preset> {
+    return this.metadata.preset;
+  }
 
   get id(): string {
     return this.metadata.id;
@@ -57,84 +60,42 @@ export class SimpleAgent implements Agent {
     return this._status;
   }
 
-  get lastActivity(): Date | undefined {
-    return this._lastActivity;
+  get lastUsed(): Date | undefined {
+    return this._lastUsed;
   }
 
   get sessionCount(): number {
     return this.activeSessions.size;
   }
 
-  async run(messages: UserMessage[], options?: AgentExecuteOptions): Promise<AgentRunResult> {
+  get usageCount(): number {
+    return this.metadata.usageCount;
+  }
+
+  async chat(messages: UserMessage[], options?: AgentExecuteOptions): Promise<AgentChatResult> {
     const chatSession = options?.sessionId
       ? await this.chatManager.getSession(options?.sessionId)
       : await this.chatManager.create();
-
-    const result = await this.safeRun(messages, chatSession, options);
-
-    if (!result.isSuccess) {
-      throw result.error;
-    }
-
-    return {
-      messages: result.messages,
-      sessionId: result.sessionId,
-    };
-  }
-
-  private async safeRun(
-    messages: UserMessage[],
-    session: ChatSession,
-    options?: AgentExecuteOptions
-  ): Promise<SafeRunResult> {
-    // 상태 업데이트
-    this.start();
 
     try {
       const buffer: Message[] = Array.from(messages);
 
       const tools = await this.getEnabledTools();
 
-      const response = await this.invoke(buffer, tools, session, options);
+      const response = await this.invoke(buffer, tools, chatSession, options);
 
       buffer.push({
         role: 'assistant',
         content: response.content,
       });
 
-      // 성공 시 상태 업데이트
-      this.setEnd();
-
       return {
-        isSuccess: true,
         messages: buffer,
-        sessionId: session.sessionId,
+        sessionId: chatSession.sessionId,
       };
-    } catch (error) {
-      // 에러 시 상태 업데이트
-      this.setError();
-
-      return {
-        isSuccess: false,
-        sessionId: session.sessionId,
-        error,
-      };
+    } finally {
+      this._lastUsed = new Date();
     }
-  }
-
-  private setError() {
-    this._status = 'error';
-    this._lastActivity = new Date();
-  }
-
-  private setEnd() {
-    this._status = this.activeSessions.size > 0 ? 'active' : 'idle';
-    this._lastActivity = new Date();
-  }
-
-  private start() {
-    this._status = 'busy';
-    this._lastActivity = new Date();
   }
 
   /**
@@ -142,7 +103,7 @@ export class SimpleAgent implements Agent {
    *
    * @param sessionId - 종료할 세션 ID
    */
-  endSession(sessionId: string): void {
+  async endSession(sessionId: string): Promise<void> {
     if (this.activeSessions.has(sessionId)) {
       this.activeSessions.delete(sessionId);
 
@@ -153,10 +114,22 @@ export class SimpleAgent implements Agent {
     }
   }
 
+  async idle(): Promise<void> {
+    this._status = 'idle';
+  }
+
+  async activate(): Promise<void> {
+    this._status = 'active';
+  }
+
+  async inactive(): Promise<void> {
+    this._status = 'inactive';
+  }
+
   private async getEnabledTools(): Promise<LlmBridgeTool[]> {
     const mcps = await this.mcpRegistry.getAll();
 
-    const enabledMcps = this.preset.enabledMcps;
+    const enabledMcps = this.metadata.preset.enabledMcps;
 
     if (!enabledMcps || enabledMcps.length === 0) {
       const tools = await Promise.all(mcps.map(async (mcp) => await mcp.getTools()));
@@ -290,15 +263,3 @@ export class SimpleAgent implements Agent {
     });
   }
 }
-
-type SafeRunResult =
-  | {
-      isSuccess: true;
-      messages: Message[];
-      sessionId: string;
-    }
-  | {
-      isSuccess: false;
-      error: unknown;
-      sessionId: string;
-    };

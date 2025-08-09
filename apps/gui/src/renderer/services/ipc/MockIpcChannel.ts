@@ -81,6 +81,15 @@ export class MockIpcChannel implements IpcChannel {
       systemPrompt: 'You are a helpful assistant.',
       llmBridgeName: 'mock-bridge',
       llmBridgeConfig: {},
+      status: 'active',
+      usageCount: 0,
+      knowledgeDocuments: 0,
+      knowledgeStats: {
+        indexed: 0,
+        vectorized: 0,
+        totalSize: 0,
+      },
+      category: ['test'],
     });
   }
 
@@ -363,6 +372,15 @@ export class MockIpcChannel implements IpcChannel {
       id: preset.id || `preset-${Date.now()}`,
       createdAt: new Date(),
       updatedAt: new Date(),
+      status: 'active',
+      usageCount: 0,
+      knowledgeDocuments: 0,
+      knowledgeStats: {
+        indexed: 0,
+        vectorized: 0,
+        totalSize: 0,
+      },
+      category: ['test'],
     });
 
     return { success: true };

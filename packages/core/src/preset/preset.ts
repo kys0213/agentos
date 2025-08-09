@@ -1,7 +1,6 @@
+export type PresetStatus = 'active' | 'idle' | 'inactive';
+
 export interface Preset {
-  /**
-   * Internal unique identifier for the preset
-   */
   id: string;
   name: string;
   description: string;
@@ -13,7 +12,20 @@ export interface Preset {
   enabledMcps?: EnabledMcp[];
   llmBridgeName: string;
   llmBridgeConfig: Record<string, any>;
+  status: PresetStatus;
+  usageCount: number;
+  knowledgeDocuments: number;
+  knowledgeStats: KnowledgeState;
+  category: string[];
 }
+
+export type ReadonlyPreset = Readonly<Preset>;
+
+export type KnowledgeState = {
+  indexed: number;
+  vectorized: number;
+  totalSize: number; // in bytes
+};
 
 export interface EnabledMcp {
   name: string;

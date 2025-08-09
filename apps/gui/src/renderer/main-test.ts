@@ -56,6 +56,15 @@ export const testHelpers = {
         llmBridgeConfig: {},
         createdAt: new Date(),
         updatedAt: new Date(),
+        status: 'active',
+        usageCount: 0,
+        knowledgeDocuments: 0,
+        knowledgeStats: {
+          indexed: 0,
+          vectorized: 0,
+          totalSize: 0,
+        },
+        category: ['general'],
       },
     });
 
