@@ -96,6 +96,8 @@ export function useAppData(): UseAppDataReturn {
     newPresetData: Partial<ReadonlyPreset>
   ): Promise<ReadonlyPreset> => {
     try {
+      console.log('🔄 Creating new preset:', newPresetData);
+      
       if (ServiceContainer.has('preset')) {
         const presetService = ServiceContainer.get<PresetService>('preset');
 
@@ -123,17 +125,22 @@ export function useAppData(): UseAppDataReturn {
           },
         };
 
+        console.log('📤 Sending preset to service:', presetToCreate);
         const result = await presetService.create(presetToCreate);
+        console.log('📥 Service create result:', result);
+        
         if (result.success) {
           setPresets((prev) => [...prev, presetToCreate]);
+          console.log('✅ Preset created and added to state');
           return presetToCreate;
         }
-        throw new Error('Failed to create preset');
+        throw new Error('Failed to create preset - service returned failure');
       }
 
       throw new Error('PresetService not available');
     } catch (error) {
-      console.error('Failed to create preset:', error);
+      console.error('❌ Failed to create preset:', error);
+      setError(error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   };
@@ -212,6 +219,8 @@ export function useAppData(): UseAppDataReturn {
 
   const handleUpdatePreset = async (updatedPreset: Preset): Promise<void> => {
     try {
+      console.log('🔄 Updating preset:', updatedPreset);
+      
       if (ServiceContainer.has('preset')) {
         const presetService = ServiceContainer.get<PresetService>('preset');
 
@@ -221,7 +230,13 @@ export function useAppData(): UseAppDataReturn {
           updatedAt: new Date(),
         };
 
-        await presetService.update(corePreset);
+        console.log('📤 Sending preset update to service:', corePreset);
+        const result = await presetService.update(corePreset);
+        console.log('📥 Service update result:', result);
+
+        if (!result.success) {
+          throw new Error('Failed to update preset - service returned failure');
+        }
       }
 
       // 로컬 상태 업데이트
@@ -230,23 +245,36 @@ export function useAppData(): UseAppDataReturn {
           preset.id === updatedPreset.id ? { ...updatedPreset, updatedAt: new Date() } : preset
         )
       );
+      console.log('✅ Preset updated in state');
     } catch (error) {
-      console.error('Failed to update preset:', error);
+      console.error('❌ Failed to update preset:', error);
+      setError(error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   };
 
   const handleDeletePreset = async (presetId: string): Promise<void> => {
     try {
+      console.log('🔄 Deleting preset:', presetId);
+      
       if (ServiceContainer.has('preset')) {
         const presetService = ServiceContainer.get<PresetService>('preset');
-        await presetService.delete(presetId);
+        
+        console.log('📤 Sending delete request to service for:', presetId);
+        const result = await presetService.delete(presetId);
+        console.log('📥 Service delete result:', result);
+
+        if (!result.success) {
+          throw new Error('Failed to delete preset - service returned failure');
+        }
       }
 
       // 로컬 상태에서 제거
       setPresets((prev) => prev.filter((preset) => preset.id !== presetId));
+      console.log('✅ Preset deleted from state');
     } catch (error) {
-      console.error('Failed to delete preset:', error);
+      console.error('❌ Failed to delete preset:', error);
+      setError(error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   };
