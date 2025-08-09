@@ -1,30 +1,30 @@
-import { Preset, Agent } from '../types';
+import { Preset, AgentMetadata } from '../types';
 
 export const mockPresets: Preset[] = [
   {
     id: 'preset-research-001',
     name: 'Research Assistant',
     description: 'Specialized in academic research, fact-checking, and data analysis',
-    category: 'research',
-    model: 'gpt-4',
+    author: 'System',
+    version: '1.0.0',
     systemPrompt:
       'You are a research assistant specialized in academic research and fact-checking. You help users find reliable sources, analyze data, and provide evidence-based insights. Always cite your sources and maintain academic rigor.',
-    parameters: {
+    enabledMcps: [
+      {
+        name: 'arxiv-search',
+        version: '1.0.0',
+        enabledTools: ['search', 'paper_info'],
+        enabledResources: ['papers'],
+        enabledPrompts: ['research_query'],
+      },
+    ],
+    llmBridgeName: 'openai-gpt4',
+    llmBridgeConfig: {
+      model: 'gpt-4',
       temperature: 0.3,
       maxTokens: 4000,
       topP: 0.9,
     },
-    tools: ['web_search', 'arxiv', 'scholar'],
-    mcpTools: [
-      {
-        type: 'stdio',
-        name: 'arxiv-search',
-        version: '1.0.0',
-        command: 'node',
-        args: ['/opt/mcp-tools/arxiv-server.js'],
-        env: { API_KEY: 'demo' },
-      } as any,
-    ],
     status: 'active',
     createdAt: new Date(2024, 0, 15),
     updatedAt: new Date(2024, 1, 20),
@@ -33,8 +33,9 @@ export const mockPresets: Preset[] = [
     knowledgeStats: {
       indexed: 24,
       vectorized: 18,
-      totalSize: 2.4,
+      totalSize: 2400, // bytes
     },
+    category: ['research', 'academic'],
   },
   {
     id: 'preset-code-002',
@@ -131,7 +132,7 @@ export const mockPresets: Preset[] = [
   },
 ];
 
-export const mockAgents: Agent[] = [
+export const mockAgents: AgentMetadata[] = [
   {
     id: 'agent-research-001',
     name: 'Research Assistant',

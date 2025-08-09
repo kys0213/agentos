@@ -11,6 +11,7 @@ import type {
   PaginationOptions,
   LlmBridgeConfig,
   McpToolArgs,
+  AgentMetadata,
 } from '../../types/core-types';
 import type { McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
 import type {
@@ -276,5 +277,51 @@ export class WebIpcChannel implements IpcChannel {
     _callback: (event: McpUsageUpdateEvent) => void
   ): Promise<() => void> {
     throw new Error('MCP usage tracking not implemented in Web environment');
+  }
+
+  // ==================== Agent 관련 메서드들 (Stub 구현) ====================
+
+  async getAllAgents(): Promise<AgentMetadata[]> {
+    return this.fetchJson('/agents');
+  }
+
+  async createAgent(agent: AgentMetadata): Promise<{ success: boolean }> {
+    return this.fetchJson('/agents', {
+      method: 'POST',
+      body: JSON.stringify(agent),
+    });
+  }
+
+  async updateAgent(agent: AgentMetadata): Promise<{ success: boolean }> {
+    return this.fetchJson(`/agents/${agent.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(agent),
+    });
+  }
+
+  async deleteAgent(id: string): Promise<{ success: boolean }> {
+    return this.fetchJson(`/agents/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getAgent(id: string): Promise<AgentMetadata | null> {
+    try {
+      return await this.fetchJson(`/agents/${id}`);
+    } catch (error) {
+      // 404인 경우 null 반환
+      if (error instanceof Error && error.message.includes('404')) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  async getAvailableAgents(): Promise<AgentMetadata[]> {
+    return this.fetchJson('/agents/available');
+  }
+
+  async getActiveAgents(): Promise<AgentMetadata[]> {
+    return this.fetchJson('/agents/active');
   }
 }

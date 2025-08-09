@@ -1,19 +1,7 @@
-import type { AppSection } from './design-types';
+// 이 파일의 내용은 design-types.ts로 통합되었습니다.
+// 하위 호환성을 위해 re-export만 유지합니다.
+import type { AppSection, QuickAction, AppModeState } from './design-types';
 import type { ChatSessionMetadata, MessageHistory } from '@agentos/core';
 
-// Re-export core types
-export type { ChatSessionMetadata, MessageHistory };
-
-export interface QuickAction {
-  id: string;
-  label: string;
-  icon: React.ComponentType<any>;
-  description: string;
-  category: 'chat' | 'management' | 'settings' | 'navigation';
-}
-
-// 앱 모드 상태 관리 - 새 디자인과 호환되도록 확장
-export interface AppModeState {
-  mode: 'chat' | 'management';
-  activeSection: AppSection; // design-types의 AppSection 사용
-}
+// design-types.ts로 통합된 타입들을 re-export
+export type { AppSection, QuickAction, AppModeState, ChatSessionMetadata, MessageHistory };

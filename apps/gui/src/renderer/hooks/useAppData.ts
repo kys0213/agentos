@@ -60,40 +60,71 @@ export function useAppData(): UseAppDataReturn {
     loadData();
   }, []);
 
-  const handleUpdateAgentStatus = (agentId: string, newStatus: Agent['status']) => {
-    setCurrentAgents((prev) =>
-      prev.map((agent) => (agent.id === agentId ? { ...agent, status: newStatus } : agent))
-    );
+  const handleUpdateAgentStatus = async (
+    agentId: string,
+    newStatus: Agent['status']
+  ): Promise<void> => {
+    try {
+      // TODO: Agent 서비스 구현 후 실제 업데이트
+      // if (ServiceContainer.has('agent')) {
+      //   const agentService = ServiceContainer.get<AgentService>('agent');
+      //   await agentService.updateStatus(agentId, newStatus);
+      // }
+
+      // 로컬 상태 업데이트
+      setCurrentAgents((prev) =>
+        prev.map((agent) => (agent.id === agentId ? { ...agent, status: newStatus } : agent))
+      );
+    } catch (error) {
+      console.error('Failed to update agent status:', error);
+      throw error;
+    }
   };
 
-  const handleCreatePreset = (newPresetData: Partial<ReadonlyPreset>): ReadonlyPreset => {
-    // 임시로 클라이언트 상태로만 생성 (실제로는 async로 Core 서비스와 연동)
-    const preset: Preset = {
-      id: `preset-${Date.now()}`,
-      name: newPresetData.name || '',
-      description: newPresetData.description || '',
-      author: 'User',
-      version: '1.0.0',
-      systemPrompt: newPresetData.systemPrompt || '',
-      enabledMcps: [],
-      llmBridgeName: 'default',
-      llmBridgeConfig: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      // 새 디자인 필드들
-      category: newPresetData.category || ['general'],
-      status: newPresetData.status || 'active',
-      usageCount: 0,
-      knowledgeDocuments: 0,
-      knowledgeStats: {
-        indexed: 0,
-        vectorized: 0,
-        totalSize: 0,
-      },
-    };
+  const handleCreatePreset = async (
+    newPresetData: Partial<ReadonlyPreset>
+  ): Promise<ReadonlyPreset> => {
+    try {
+      if (ServiceContainer.has('preset')) {
+        const presetService = ServiceContainer.get<PresetService>('preset');
 
-    setPresets((prev) => [...prev, preset]);
-    return preset;
+        const presetToCreate: Preset = {
+          id: `preset-${Date.now()}`,
+          name: newPresetData.name || '',
+          description: newPresetData.description || '',
+          author: 'User',
+          version: '1.0.0',
+          systemPrompt: newPresetData.systemPrompt || '',
+          enabledMcps: [],
+          llmBridgeName: 'default',
+          llmBridgeConfig: {},
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          // 새 디자인 필드들
+          category: newPresetData.category || ['general'],
+          status: newPresetData.status || 'active',
+          usageCount: 0,
+          knowledgeDocuments: 0,
+          knowledgeStats: {
+            indexed: 0,
+            vectorized: 0,
+            totalSize: 0,
+          },
+        };
+
+        const result = await presetService.create(presetToCreate);
+        if (result.success) {
+          setPresets((prev) => [...prev, presetToCreate]);
+          return presetToCreate;
+        }
+        throw new Error('Failed to create preset');
+      }
+
+      throw new Error('PresetService not available');
+    } catch (error) {
+      console.error('Failed to create preset:', error);
+      throw error;
+    }
   };
 
   const handleCreateMCPTool = async (mcpConfig: McpConfig): Promise<unknown> => {
@@ -111,35 +142,61 @@ export function useAppData(): UseAppDataReturn {
     }
   };
 
-  const handleCreateAgent = (
+  const handleCreateAgent = async (
     newAgentData: Partial<ReadonlyAgentMetadata>
-  ): ReadonlyAgentMetadata => {
-    if (!newAgentData.preset) {
-      throw new Error('Preset is required');
+  ): Promise<ReadonlyAgentMetadata> => {
+    try {
+      if (!newAgentData.preset) {
+        throw new Error('Preset is required');
+      }
+
+      // TODO: Agent 서비스 구현 후 실제 생성
+      // if (ServiceContainer.has('agent')) {
+      //   const agentService = ServiceContainer.get<AgentService>('agent');
+      //   const result = await agentService.create(agentToCreate);
+      //   if (result.success) {
+      //     setCurrentAgents((prev) => [...prev, agentToCreate]);
+      //     return agentToCreate;
+      //   }
+      //   throw new Error('Failed to create agent');
+      // }
+
+      // 임시로 클라이언트 상태로만 생성
+      const agent: ReadonlyAgentMetadata = {
+        id: `agent-${Date.now()}`,
+        name: newAgentData.name || '',
+        description: newAgentData.description || '',
+        status: newAgentData.status || 'active',
+        preset: newAgentData.preset,
+        keywords: newAgentData.keywords || [],
+        icon: newAgentData.icon || '',
+        lastUsed: undefined,
+        sessionCount: 0,
+        usageCount: 0,
+      };
+
+      setCurrentAgents((prev) => [...prev, agent]);
+      return agent;
+    } catch (error) {
+      console.error('Failed to create agent:', error);
+      throw error;
     }
-
-    // TODO: Agent는 현재 Core에 없으므로 클라이언트 상태로만 관리
-    const agent: ReadonlyAgentMetadata = {
-      id: `agent-${Date.now()}`,
-      name: newAgentData.name || '',
-      description: newAgentData.description || '',
-      status: newAgentData.status || 'active',
-      preset: newAgentData.preset,
-      keywords: newAgentData.keywords || [],
-      icon: newAgentData.icon || '',
-      lastUsed: undefined,
-      sessionCount: 0,
-      usageCount: 0,
-    };
-
-    setCurrentAgents((prev) => [...prev, agent]);
-    return agent;
   };
 
-  const handleCreateCustomTool = (toolData: unknown) => {
-    // TODO: Custom Tool 생성 로직 구현
-    console.log('Created custom tool:', toolData);
-    return toolData;
+  const handleCreateCustomTool = async (toolData: unknown): Promise<unknown> => {
+    try {
+      // TODO: CustomTool 서비스 구현 후 실제 생성
+      // if (ServiceContainer.has('customTool')) {
+      //   const customToolService = ServiceContainer.get<CustomToolService>('customTool');
+      //   return await customToolService.create(toolData);
+      // }
+
+      console.warn('Custom tool service not implemented yet:', toolData);
+      return toolData;
+    } catch (error) {
+      console.error('Failed to create custom tool:', error);
+      throw error;
+    }
   };
 
   const handleUpdatePreset = async (updatedPreset: Preset): Promise<void> => {

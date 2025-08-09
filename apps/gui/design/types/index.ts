@@ -1,50 +1,17 @@
-import { McpConfig } from '../components/MCPToolAdd';
+// Core 타입을 직접 사용
+import type { Preset, AgentMetadata, ReadonlyAgentMetadata, KnowledgeState } from '@agentos/core';
 
-export interface Preset {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  model: string;
-  systemPrompt: string;
-  parameters: {
-    temperature: number;
-    maxTokens: number;
-    topP: number;
-  };
-  tools: string[];
-  mcpTools?: McpConfig[];
-  status: 'active' | 'idle' | 'inactive';
-  createdAt: Date;
-  updatedAt: Date;
-  usageCount: number;
-  knowledgeDocuments: number;
-  knowledgeStats?: {
-    indexed: number;
-    vectorized: number;
-    totalSize: number;
-  };
-}
+// Core 타입 재내보내기
+export type { Preset, AgentMetadata, ReadonlyAgentMetadata, KnowledgeState };
 
-export interface Agent {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  status: 'active' | 'idle' | 'inactive';
-  preset: string;
-  avatar?: string;
-  lastUsed?: Date;
-  usageCount: number;
-  tags?: string[];
-}
-
+// 채팅 UI에서 사용하는 간소화된 Agent 정보
 export interface ChatAgent {
-  id: number;
+  id: string; // Core와 일치하도록 string으로 변경
   name: string;
   preset: string;
 }
 
+// AppSection - 애플리케이션 섹션 타입 (두 위치에서 사용되므로 유지)
 export type AppSection =
   | 'dashboard'
   | 'chat'
