@@ -34,7 +34,9 @@ export class InMemoryBM25Index<TChunkId extends string = string> {
 
   async add(docId: TChunkId, text: string): Promise<void> {
     const tokens = await this.tokenizer.tokenize(text);
+
     const tfMap = new Map<string, number>();
+
     for (const t of tokens) tfMap.set(t, (tfMap.get(t) ?? 0) + 1);
 
     for (const [term, tf] of tfMap) {

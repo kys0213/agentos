@@ -21,5 +21,3 @@ describe('BM25 with LLM keyword tokenizer (mocked)', () => {
     expect(res[0].chunkId).toBe('d1');
   });
 });
-
-

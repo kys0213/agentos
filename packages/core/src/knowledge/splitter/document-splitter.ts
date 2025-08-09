@@ -13,5 +13,3 @@ export interface DocumentSplitter {
     options?: SplitterOptions
   ): Promise<KnowledgeChunk[]>;
 }
-
-

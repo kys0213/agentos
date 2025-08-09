@@ -44,5 +44,3 @@ export interface KnowledgeChunk {
   anchors?: string[];
   source?: SourceRange;
 }
-
-

@@ -35,6 +35,14 @@ export class LlmKeywordTokenizer implements Tokenizer {
       const k = kw.toLowerCase().trim();
       if (k) unique.add(k);
     }
-    return Array.from(unique.values());
+    const tokens = Array.from(unique.values());
+    if (tokens.length > 0) return tokens;
+    // Fallback: basic whitespace/punct split to avoid empty keyword results
+    const normalized = text
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
+      .replace(/[\s\u00A0]+/g, ' ')
+      .trim();
+    return normalized ? normalized.split(' ') : [];
   }
 }

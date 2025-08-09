@@ -6,6 +6,7 @@ interface Heading {
   title: string;
   anchor: string;
   offset: number; // start offset in content
+  breadcrumbs: BreadcrumbNode[]; // stack-based unique path (one node per level)
 }
 
 export class MarkdownSplitter implements DocumentSplitter {
@@ -33,7 +34,7 @@ export class MarkdownSplitter implements DocumentSplitter {
       const start = h.offset;
       const end = i + 1 < headings.length ? headings[i + 1].offset : content.length;
       const section = content.slice(start, end).trim();
-      const breadcrumbs = this.buildBreadcrumbs(headings, i);
+      const breadcrumbs = h.breadcrumbs;
       this.pushSlidingWindows(meta, section, start, maxChars, overlap, breadcrumbs, chunks);
     }
 
@@ -43,18 +44,7 @@ export class MarkdownSplitter implements DocumentSplitter {
     return chunks;
   }
 
-  private buildBreadcrumbs(headings: Heading[], index: number): BreadcrumbNode[] {
-    const result: BreadcrumbNode[] = [];
-    const currentLevel = headings[index].level;
-    for (let i = index; i >= 0; i--) {
-      const h = headings[i];
-      if (h.level <= currentLevel) {
-        result.unshift({ title: h.title, anchor: h.anchor, level: h.level });
-      }
-      if (h.level === 1) break;
-    }
-    return result;
-  }
+  // breadcrumbs are computed in parseHeadings via a stack
 
   private pushSlidingWindows(
     meta: KnowledgeDocumentMeta,
@@ -90,6 +80,7 @@ export class MarkdownSplitter implements DocumentSplitter {
   private parseHeadings(content: string, maxDepth: number): Heading[] {
     const lines = content.split(/\r?\n/);
     const headings: Heading[] = [];
+    const stack: BreadcrumbNode[] = [];
     let offset = 0;
     for (const line of lines) {
       const m = /^(#{1,6})\s+(.+)$/.exec(line);
@@ -98,7 +89,14 @@ export class MarkdownSplitter implements DocumentSplitter {
         if (level <= maxDepth) {
           const rawTitle = m[2].trim();
           const anchor = this.slugify(rawTitle);
-          headings.push({ level, title: rawTitle, anchor, offset });
+          // maintain one breadcrumb per level using a stack
+          while (stack.length > 0 && stack[stack.length - 1].level >= level) {
+            stack.pop();
+          }
+          const currentNode: BreadcrumbNode = { title: rawTitle, anchor, level };
+          stack.push(currentNode);
+          const breadcrumbs = [...stack];
+          headings.push({ level, title: rawTitle, anchor, offset, breadcrumbs });
         }
       }
       offset += line.length + 1; // + newline
@@ -115,5 +113,3 @@ export class MarkdownSplitter implements DocumentSplitter {
       .replace(/^-+|-+$/g, '');
   }
 }
-
-

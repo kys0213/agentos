@@ -1,4 +1,4 @@
-import { LlmBridge, Message } from 'llm-bridge-spec';
+import { LlmBridge, UserMessage, LlmBridgeResponse } from 'llm-bridge-spec';
 import { KeywordExtractor } from '../tokenizer';
 
 export interface LlmKeywordExtractorOptions {
@@ -25,23 +25,20 @@ export class LlmBridgeKeywordExtractor implements KeywordExtractor {
     if (!text) return [];
     const limit = Math.max(1, Math.min(maxKeywords ?? this.defaultMax, 64));
 
-    const messages: Message[] = [
-      { role: 'system', content: [{ type: 'text', text: this.systemPrompt }] },
+    const combinedText =
+      `${this.systemPrompt}\n\n` +
+      `아래 한국어 텍스트에서 의미 있는 핵심 키워드 또는 짧은 구를 최대 ${limit}개까지 추출하세요. ` +
+      '언어는 한국어 중심이나, 고유명사/약어 등은 원문 표기를 유지하세요. 출력은 JSON 배열 문자열만 반환하세요.\n\n' +
+      `TEXT:\n${text}`;
+
+    const messages: UserMessage[] = [
       {
         role: 'user',
-        content: [
-          {
-            type: 'text',
-            text:
-              `아래 한국어 텍스트에서 의미 있는 핵심 키워드 또는 짧은 구를 최대 ${limit}개까지 추출하세요. ` +
-              '언어는 한국어 중심이나, 고유명사/약어 등은 원문 표기를 유지하세요. 출력은 JSON 배열 문자열만 반환하세요.\n\n' +
-              `TEXT:\n${text}`,
-          },
-        ],
+        content: { contentType: 'text', value: combinedText },
       },
     ];
 
-    const resp: any = await this.llm.invoke({ messages });
+    const resp: LlmBridgeResponse = await this.llm.invoke({ messages });
     const textOut = extractText(resp);
     const keywords = parseJsonArray(textOut);
     // sanitize: trim/lower and unique preserve original case for now to respect proper nouns
@@ -59,27 +56,15 @@ export class LlmBridgeKeywordExtractor implements KeywordExtractor {
   }
 }
 
-function extractText(resp: any): string {
-  if (!resp) return '';
-  // common shapes
-  if (typeof resp.text === 'string') return resp.text;
-  if (typeof resp.outputText === 'string') return resp.outputText;
-  const msg = (resp.message ?? resp)?.message;
-  const pick = (obj: any) =>
-    obj?.content?.find?.((c: any) => typeof c?.text === 'string')?.text ?? '';
-  const t1 = pick(resp);
-  if (t1) return t1;
-  const t2 = pick(msg);
-  if (t2) return t2;
-  const contents = resp.contents ?? resp?.message?.contents ?? [];
-  if (Array.isArray(contents)) {
-    const c = contents.find((c: any) => typeof c?.text === 'string');
-    if (c?.text) return c.text;
+function extractText(resp: LlmBridgeResponse): string {
+  if (resp.content.contentType !== 'text') {
+    throw new Error(`Unsupported content type: ${resp.content.contentType}`);
   }
-  return '';
+
+  return resp.content.value as string;
 }
 
-function parseJsonArray(s: string): any[] {
+function parseJsonArray(s: string): string[] {
   if (!s) return [];
   const trimmed = s.trim();
   try {
@@ -97,5 +82,3 @@ function parseJsonArray(s: string): any[] {
     return [];
   }
 }
-
-
