@@ -645,9 +645,7 @@ export class MockIpcChannel implements IpcChannel {
 
   async getAvailableAgents(): Promise<AgentMetadata[]> {
     await this.delay();
-    return this.mockAgents.filter((agent) => 
-      agent.status === 'active' || agent.status === 'idle'
-    );
+    return this.mockAgents.filter((agent) => agent.status === 'active' || agent.status === 'idle');
   }
 
   async getActiveAgents(): Promise<AgentMetadata[]> {

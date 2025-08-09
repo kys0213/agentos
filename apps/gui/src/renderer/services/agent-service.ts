@@ -62,10 +62,11 @@ export class AgentService {
   async searchByKeywords(keywords: string[]): Promise<AgentMetadata[]> {
     const agents = await this.getAll();
     return agents.filter((agent) =>
-      keywords.some((keyword) =>
-        agent.keywords.includes(keyword) ||
-        agent.name.toLowerCase().includes(keyword.toLowerCase()) ||
-        agent.description.toLowerCase().includes(keyword.toLowerCase())
+      keywords.some(
+        (keyword) =>
+          agent.keywords.includes(keyword) ||
+          agent.name.toLowerCase().includes(keyword.toLowerCase()) ||
+          agent.description.toLowerCase().includes(keyword.toLowerCase())
       )
     );
   }
@@ -76,12 +77,12 @@ export class AgentService {
   async getStatsByStatus(): Promise<Record<string, number>> {
     const agents = await this.getAll();
     const stats: Record<string, number> = {};
-    
+
     agents.forEach((agent) => {
       const status = agent.status;
       stats[status] = (stats[status] || 0) + 1;
     });
-    
+
     return stats;
   }
 
@@ -104,8 +105,6 @@ export class AgentService {
    */
   async getMostUsed(limit: number = 10): Promise<AgentMetadata[]> {
     const agents = await this.getAll();
-    return agents
-      .sort((a, b) => b.usageCount - a.usageCount)
-      .slice(0, limit);
+    return agents.sort((a, b) => b.usageCount - a.usageCount).slice(0, limit);
   }
 }

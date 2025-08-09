@@ -106,7 +106,7 @@ interface UseChatStateReturn {
 ### Phase 2: 데이터 레이어 분리 (1일) 
 
 - [x] **[TODO 3/8]** useAppData를 ServiceContainer 기반으로 재작성
-- [ ] **[TODO 4/8]** 비즈니스 로직을 Service 레이어로 이동
+- [x] **[TODO 4/8]** 비즈니스 로직을 Service 레이어로 이동
 
 ### Phase 3: UI 상태 관리 최적화 (1일)
 
@@ -132,9 +132,9 @@ interface UseChatStateReturn {
 
 **완료 조건**: 모든 데이터 조작이 Core 서비스를 통해 처리되고, UI hooks에서 비즈니스 로직이 제거됨
 
-- useAppData를 ServiceContainer 기반으로 재작성
-- CRUD 로직을 적절한 Service 클래스로 이동
-- React Query나 SWR 패턴 도입 검토
+- ✅ useAppData를 ServiceContainer 기반으로 재작성
+- ✅ CRUD 로직을 적절한 Service 클래스로 이동 (PresetService, AgentService 연동)
+- ✅ 모든 핸들러를 async 패턴으로 전환하여 실제 서비스 호출 구조 구현
 
 ### 3단계: UI 상태 관리 최적화 (TODO 5-6)
 

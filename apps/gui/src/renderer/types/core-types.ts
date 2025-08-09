@@ -13,7 +13,15 @@ import type {
 } from '@agentos/core';
 
 // Re-export core types
-export type { ChatSessionMetadata, MessageHistory, Preset, EnabledMcp, McpConfig, AgentMetadata, ReadonlyAgentMetadata };
+export type {
+  ChatSessionMetadata,
+  MessageHistory,
+  Preset,
+  EnabledMcp,
+  McpConfig,
+  AgentMetadata,
+  ReadonlyAgentMetadata,
+};
 
 // Type alias for backward compatibility
 export type ChatSessionDescription = ChatSessionMetadata;

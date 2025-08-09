@@ -60,14 +60,17 @@ export function useAppData(): UseAppDataReturn {
     loadData();
   }, []);
 
-  const handleUpdateAgentStatus = async (agentId: string, newStatus: Agent['status']): Promise<void> => {
+  const handleUpdateAgentStatus = async (
+    agentId: string,
+    newStatus: Agent['status']
+  ): Promise<void> => {
     try {
       // TODO: Agent 서비스 구현 후 실제 업데이트
       // if (ServiceContainer.has('agent')) {
       //   const agentService = ServiceContainer.get<AgentService>('agent');
       //   await agentService.updateStatus(agentId, newStatus);
       // }
-      
+
       // 로컬 상태 업데이트
       setCurrentAgents((prev) =>
         prev.map((agent) => (agent.id === agentId ? { ...agent, status: newStatus } : agent))
@@ -78,11 +81,13 @@ export function useAppData(): UseAppDataReturn {
     }
   };
 
-  const handleCreatePreset = async (newPresetData: Partial<ReadonlyPreset>): Promise<ReadonlyPreset> => {
+  const handleCreatePreset = async (
+    newPresetData: Partial<ReadonlyPreset>
+  ): Promise<ReadonlyPreset> => {
     try {
       if (ServiceContainer.has('preset')) {
         const presetService = ServiceContainer.get<PresetService>('preset');
-        
+
         const presetToCreate: Preset = {
           id: `preset-${Date.now()}`,
           name: newPresetData.name || '',
@@ -106,7 +111,7 @@ export function useAppData(): UseAppDataReturn {
             totalSize: 0,
           },
         };
-        
+
         const result = await presetService.create(presetToCreate);
         if (result.success) {
           setPresets((prev) => [...prev, presetToCreate]);
@@ -114,7 +119,7 @@ export function useAppData(): UseAppDataReturn {
         }
         throw new Error('Failed to create preset');
       }
-      
+
       throw new Error('PresetService not available');
     } catch (error) {
       console.error('Failed to create preset:', error);
@@ -155,7 +160,7 @@ export function useAppData(): UseAppDataReturn {
       //   }
       //   throw new Error('Failed to create agent');
       // }
-      
+
       // 임시로 클라이언트 상태로만 생성
       const agent: ReadonlyAgentMetadata = {
         id: `agent-${Date.now()}`,
@@ -185,7 +190,7 @@ export function useAppData(): UseAppDataReturn {
       //   const customToolService = ServiceContainer.get<CustomToolService>('customTool');
       //   return await customToolService.create(toolData);
       // }
-      
+
       console.warn('Custom tool service not implemented yet:', toolData);
       return toolData;
     } catch (error) {
