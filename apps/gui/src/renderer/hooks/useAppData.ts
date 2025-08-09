@@ -14,15 +14,21 @@ export function useAppData(): UseAppDataReturn {
   const [currentAgents, setCurrentAgents] = useState<ReadonlyAgentMetadata[]>([]);
   const [showEmptyState, setShowEmptyState] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   // Core 서비스들에서 데이터 로드
   useEffect(() => {
     const loadData = async () => {
       try {
         // Preset Service를 통해 프리셋 로드
+        console.log('🔄 Loading presets from PresetService...');
+        
         if (ServiceContainer.has('preset')) {
           const presetService = ServiceContainer.get<PresetService>('preset');
+          console.log('📦 PresetService found, calling getAll()...');
+          
           const corePresets = await presetService.getAll();
+          console.log('✅ Presets loaded from service:', corePresets);
 
           // Core Preset을 DesignPreset으로 변환
           const designPresets: Preset[] = corePresets.map(
@@ -36,19 +42,24 @@ export function useAppData(): UseAppDataReturn {
                 totalSize: 0,
               },
               // 새 디자인 필드들 기본값
-              category: ['general'],
-              status: 'active',
+              category: preset.category || ['general'],
+              status: preset.status || 'active',
             })
           );
 
+          console.log('🎨 Presets converted for UI:', designPresets);
           setPresets(designPresets);
+        } else {
+          console.warn('⚠️ PresetService not found in ServiceContainer');
         }
 
         // TODO: Agent 데이터는 현재 Core에 없으므로 임시로 빈 배열
         // 실제로는 AgentManager나 별도 서비스에서 로드해야 함
         setCurrentAgents([]);
-      } catch (error) {
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
         console.error('Failed to load app data:', error);
+        setError(error);
         // 에러 발생 시 빈 상태로 설정
         setPresets([]);
         setCurrentAgents([]);
@@ -257,6 +268,7 @@ export function useAppData(): UseAppDataReturn {
     showEmptyState,
     setShowEmptyState,
     loading, // 로딩 상태 추가
+    error, // 에러 상태 추가
     handleUpdateAgentStatus,
     handleCreatePreset,
     handleCreateMCPTool,
