@@ -17,7 +17,7 @@
     "build:linux": "pnpm run build && electron-builder --linux",
     "build:all": "pnpm run build && electron-builder --mac --win --linux",
     "dev": "NODE_ENV=development electron .",
-    "dev:web": "vite",
+    "dev:web": "NODE_ENV=development vite",
     "lint": "eslint src --ext .ts,.tsx",
     "start": "electron .",
     "test": "jest",

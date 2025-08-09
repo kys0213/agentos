@@ -50,15 +50,20 @@ export class IpcChannelFactory {
         this._instance = new MockIpcChannel();
         break;
 
-      case 'web':
-        // web 환경에서는 실제 백엔드 서버와 연결할 WebIpcChannel을 사용
-        // 개발 중에는 MockIpcChannel 사용 (환경변수로 제어)
-        if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+      case 'web': {
+        // web 환경에서는 빌드 타겟과 환경에 따라 결정
+        const isDevelopment = this.isDevelopmentMode();
+        const buildTarget = this.getBuildTarget();
+
+        if (isDevelopment && buildTarget !== 'web') {
+          // 개발 환경에서 웹 브라우저로 테스트하는 경우 Mock 사용
           this._instance = new MockIpcChannel();
         } else {
+          // 프로덕션 웹 환경에서는 실제 백엔드 서버와 연결
           this._instance = new WebIpcChannel();
         }
         break;
+      }
       default:
         this._instance = new MockIpcChannel();
         break;
@@ -186,6 +191,56 @@ export class IpcChannelFactory {
   }
 
   /**
+   * 개발 모드인지 확인 (브라우저 호환)
+   */
+  private static isDevelopmentMode(): boolean {
+    try {
+      // Vite가 주입한 환경변수 사용
+      if (typeof (globalThis as any).__APP_ENV__ !== 'undefined') {
+        return (globalThis as any).__APP_ENV__.nodeEnv === 'development';
+      }
+
+      // process.env가 정의되어 있다면 사용
+      if (typeof process !== 'undefined' && process.env) {
+        return process.env.NODE_ENV === 'development';
+      }
+
+      // 브라우저에서는 location.hostname으로 추정
+      if (typeof window !== 'undefined' && window.location) {
+        return (
+          window.location.hostname === 'localhost' ||
+          window.location.hostname === '127.0.0.1' ||
+          window.location.hostname.includes('dev')
+        );
+      }
+
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * 빌드 타겟 확인
+   */
+  private static getBuildTarget(): 'electron' | 'web' | 'extension' {
+    try {
+      // Vite가 주입한 빌드 타겟 사용
+      if (typeof (globalThis as any).__APP_ENV__ !== 'undefined') {
+        return (globalThis as any).__APP_ENV__.buildTarget as 'electron' | 'web' | 'extension';
+      }
+
+      // 환경 감지 결과로 추정
+      const detected = this.detectEnvironment();
+      if (detected === 'chrome-extension') return 'extension';
+      if (detected === 'web') return 'web';
+      return 'electron';
+    } catch {
+      return 'electron';
+    }
+  }
+
+  /**
    * 현재 환경 정보를 반환 (디버깅용)
    */
   static getEnvironmentInfo() {
@@ -197,6 +252,9 @@ export class IpcChannelFactory {
         isWeb: this.isWebEnvironment(),
         isTest: this.isTestEnvironment(),
       },
+      buildInfo: typeof (globalThis as any).__APP_ENV__ !== 'undefined' ? (globalThis as any).__APP_ENV__ : undefined,
+      isDevelopment: this.isDevelopmentMode(),
+      buildTarget: this.getBuildTarget(),
       hasElectronAPI: typeof window !== 'undefined' && window.electronAPI !== undefined,
       hasChromeRuntime: typeof chrome !== 'undefined' && chrome.runtime !== undefined,
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',

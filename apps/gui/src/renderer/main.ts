@@ -25,7 +25,12 @@ async function initializeApp() {
   console.log(`✅ AgentOS ready with services:`, Object.keys(services));
 
   // 디버깅용 전역 설정 - 개발 환경에서만
-  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  const isDevelopment =
+    (typeof (globalThis as any).__APP_ENV__ !== 'undefined' && (globalThis as any).__APP_ENV__.nodeEnv === 'development') ||
+    (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') ||
+    (typeof window !== 'undefined' && window.location?.hostname === 'localhost');
+    
+  if (typeof window !== 'undefined' && isDevelopment) {
     (window as any).__agentosServices = services;
     (window as any).__debug = {
       environment: envInfo,
@@ -56,7 +61,7 @@ initializeApp()
   })
   .catch((error) => {
     console.error('💥 Failed to initialize AgentOS:', error);
-    
+
     // 에러 UI 표시
     const container = document.getElementById('root');
     if (container) {
