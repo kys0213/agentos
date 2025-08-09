@@ -23,3 +23,4 @@ export * from './preset/preset.repository';
 export * from './preset/file-based-preset.repository';
 export * from './knowledge/tokenizer';
 export * from './knowledge/bm25/bm25-index';
+export * from './knowledge/llm/llm-keyword-extractor';
