@@ -22,11 +22,11 @@ export function useAppData(): UseAppDataReturn {
       try {
         // Preset Service를 통해 프리셋 로드
         console.log('🔄 Loading presets from PresetService...');
-        
+
         if (ServiceContainer.has('preset')) {
           const presetService = ServiceContainer.get<PresetService>('preset');
           console.log('📦 PresetService found, calling getAll()...');
-          
+
           const corePresets = await presetService.getAll();
           console.log('✅ Presets loaded from service:', corePresets);
 
@@ -97,7 +97,7 @@ export function useAppData(): UseAppDataReturn {
   ): Promise<ReadonlyPreset> => {
     try {
       console.log('🔄 Creating new preset:', newPresetData);
-      
+
       if (ServiceContainer.has('preset')) {
         const presetService = ServiceContainer.get<PresetService>('preset');
 
@@ -128,7 +128,7 @@ export function useAppData(): UseAppDataReturn {
         console.log('📤 Sending preset to service:', presetToCreate);
         const result = await presetService.create(presetToCreate);
         console.log('📥 Service create result:', result);
-        
+
         if (result.success) {
           setPresets((prev) => [...prev, presetToCreate]);
           console.log('✅ Preset created and added to state');
@@ -220,7 +220,7 @@ export function useAppData(): UseAppDataReturn {
   const handleUpdatePreset = async (updatedPreset: Preset): Promise<void> => {
     try {
       console.log('🔄 Updating preset:', updatedPreset);
-      
+
       if (ServiceContainer.has('preset')) {
         const presetService = ServiceContainer.get<PresetService>('preset');
 
@@ -256,10 +256,10 @@ export function useAppData(): UseAppDataReturn {
   const handleDeletePreset = async (presetId: string): Promise<void> => {
     try {
       console.log('🔄 Deleting preset:', presetId);
-      
+
       if (ServiceContainer.has('preset')) {
         const presetService = ServiceContainer.get<PresetService>('preset');
-        
+
         console.log('📤 Sending delete request to service for:', presetId);
         const result = await presetService.delete(presetId);
         console.log('📥 Service delete result:', result);
