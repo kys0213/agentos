@@ -101,7 +101,7 @@ interface UseChatStateReturn {
 ### Phase 1: Core 타입 통합 (1일)
 
 - [x] **[TODO 1/8]** Design 타입들을 @agentos/core 타입으로 마이그레이션
-- [ ] **[TODO 2/8]** Mock 데이터 의존성 제거 및 Core 서비스 연동 준비
+- [x] **[TODO 2/8]** Mock 데이터 의존성 제거 및 Core 서비스 연동 준비
 
 ### Phase 2: 데이터 레이어 분리 (1일) 
 
