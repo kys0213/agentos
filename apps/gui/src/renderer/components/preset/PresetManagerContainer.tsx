@@ -1,14 +1,25 @@
 import React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { PresetManager } from './PresetManager';
-import { fetchPresets, deletePreset, createPreset, updatePreset, duplicatePresetById } from '../../services/fetchers/presets';
+import {
+  fetchPresets,
+  deletePreset,
+  createPreset,
+  updatePreset,
+  duplicatePresetById,
+} from '../../services/fetchers/presets';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 
 export const PresetManagerContainer: React.FC = () => {
   const queryClient = useQueryClient();
 
-  const { data: presets = [], status, error, refetch } = useQuery({
+  const {
+    data: presets = [],
+    status,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['presets'],
     queryFn: fetchPresets,
     staleTime: 5 * 60 * 1000,
@@ -45,8 +56,12 @@ export const PresetManagerContainer: React.FC = () => {
   if (status === 'error') {
     return (
       <Card className="p-6 flex items-center justify-between">
-        <div className="text-sm text-red-600">Failed to load presets{error ? `: ${(error as Error).message}` : ''}</div>
-        <Button variant="outline" onClick={() => refetch()}>Retry</Button>
+        <div className="text-sm text-red-600">
+          Failed to load presets{error ? `: ${(error as Error).message}` : ''}
+        </div>
+        <Button variant="outline" onClick={() => refetch()}>
+          Retry
+        </Button>
       </Card>
     );
   }

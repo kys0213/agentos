@@ -17,7 +17,12 @@ export function SubAgentManagerContainer({
 }: SubAgentManagerContainerProps) {
   const queryClient = useQueryClient();
 
-  const { data: agents = [], status, error, refetch } = useQuery({
+  const {
+    data: agents = [],
+    status,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['agents'],
     queryFn: fetchAgents,
     staleTime: 5 * 60 * 1000,
@@ -44,7 +49,9 @@ export function SubAgentManagerContainer({
   if (status === 'error') {
     return (
       <Card className="p-6 flex items-center justify-between">
-        <div className="text-sm text-red-600">Failed to load agents{error ? `: ${(error as Error).message}` : ''}</div>
+        <div className="text-sm text-red-600">
+          Failed to load agents{error ? `: ${(error as Error).message}` : ''}
+        </div>
         <Button variant="outline" onClick={() => refetch()}>
           Retry
         </Button>
@@ -63,4 +70,3 @@ export function SubAgentManagerContainer({
     />
   );
 }
-

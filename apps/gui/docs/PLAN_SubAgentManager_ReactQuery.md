@@ -54,7 +54,12 @@ export interface SubAgentManagerContainerProps
 }
 
 // React Query usage
-const { data: agents = [], status, error, refetch } = useQuery({
+const {
+  data: agents = [],
+  status,
+  error,
+  refetch,
+} = useQuery({
   queryKey: ['agents'],
   queryFn: fetchAgents,
   staleTime: 5 * 60 * 1000,
@@ -82,4 +87,3 @@ const mutation = useMutation({
 3. 상태 업데이트 경로 추가(옵션): mutation + invalidate (완료 조건: 호출부에서 연결 가능)
 4. 타입체크/정리: `pnpm --filter @agentos/apps-gui typecheck` 통과 (완료 조건: 오류 0)
 5. 커밋: Git 가이드에 맞춰 TODO 단위로 커밋
-

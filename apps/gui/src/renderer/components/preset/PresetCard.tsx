@@ -15,7 +15,12 @@ export interface PresetCardProps {
   onDelete?: (id: string) => void;
 }
 
-export const PresetCard: React.FC<PresetCardProps> = ({ preset, onEdit, onDuplicate, onDelete }) => {
+export const PresetCard: React.FC<PresetCardProps> = ({
+  preset,
+  onEdit,
+  onDuplicate,
+  onDelete,
+}) => {
   return (
     <Card className="p-6 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-4">
@@ -81,4 +86,3 @@ export const PresetCard: React.FC<PresetCardProps> = ({ preset, onEdit, onDuplic
 };
 
 export default PresetCard;
-

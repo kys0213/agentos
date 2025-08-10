@@ -58,4 +58,3 @@ export const PresetListFilters: React.FC<PresetListFiltersProps> = ({
 };
 
 export default PresetListFilters;
-

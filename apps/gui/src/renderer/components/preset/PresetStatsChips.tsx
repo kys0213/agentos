@@ -37,4 +37,3 @@ export const PresetStatsChips: React.FC<PresetStatsChipsProps> = ({
 };
 
 export default PresetStatsChips;
-

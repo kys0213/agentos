@@ -1,5 +1,16 @@
 import { Preset, PresetStatus } from '@agentos/core';
-import { Archive, BarChart3, BookOpen, CheckCircle, Clock, FileText, Folder, FolderOpen, Plus, Settings } from 'lucide-react';
+import {
+  Archive,
+  BarChart3,
+  BookOpen,
+  CheckCircle,
+  Clock,
+  FileText,
+  Folder,
+  FolderOpen,
+  Plus,
+  Settings,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -20,7 +31,14 @@ export interface PresetManagerProps {
   onUpdatePreset?: (id: string, data: Partial<Preset>) => void;
 }
 
-export function PresetManager({ presets: injectedPresets, isLoading: injectedLoading, onDeletePreset, onDuplicatePreset, onCreatePreset, onUpdatePreset }: PresetManagerProps) {
+export function PresetManager({
+  presets: injectedPresets,
+  isLoading: injectedLoading,
+  onDeletePreset,
+  onDuplicatePreset,
+  onCreatePreset,
+  onUpdatePreset,
+}: PresetManagerProps) {
   const [activeTab, setActiveTab] = useState('list');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -84,7 +102,10 @@ export function PresetManager({ presets: injectedPresets, isLoading: injectedLoa
 
   // Calculate aggregated stats
   const totalKnowledgeDocs = sourcePresets.reduce((sum, p) => sum + p.knowledgeDocuments, 0);
-  const totalIndexedDocs = sourcePresets.reduce((sum, p) => sum + (p.knowledgeStats?.indexed || 0), 0);
+  const totalIndexedDocs = sourcePresets.reduce(
+    (sum, p) => sum + (p.knowledgeStats?.indexed || 0),
+    0
+  );
   const totalVectorizedDocs = sourcePresets.reduce(
     (sum, p) => sum + (p.knowledgeStats?.vectorized || 0),
     0
