@@ -1,15 +1,15 @@
-import fs from 'fs/promises';
 import path from 'path';
 import { MessageHistory } from '../chat-session';
-import { parseJson } from '../../common/utils/parseJson';
-import readline from 'readline';
+import { fs } from '@agentos/lang';
 
 export class FileBasedChatSessionMessageHistoryFile {
   private readonly fileName = 'histories.jsonl';
   private readonly _fullPath: string;
+  private readonly jsonlHandler: fs.JsonLFileHandler<MessageHistory>;
 
   constructor(public readonly directoryPath: string) {
     this._fullPath = path.join(directoryPath, this.fileName);
+    this.jsonlHandler = fs.JsonLFileHandler.create<MessageHistory>(this._fullPath);
   }
 
   get fullPath(): string {
@@ -17,28 +17,20 @@ export class FileBasedChatSessionMessageHistoryFile {
   }
 
   async exists(): Promise<boolean> {
-    return fs
-      .access(this.fullPath)
-      .then(() => true)
-      .catch(() => false);
+    return this.jsonlHandler.exists();
   }
 
   async create(): Promise<void> {
-    await fs.writeFile(this.fullPath, '');
+    const result = await fs.FileUtils.writeSafe(this.fullPath, '');
+    if (!result.success) {
+      throw new Error(`Failed to create history file: ${String(result.reason)}`);
+    }
   }
 
   async appendMany(messageHistories: MessageHistory[]): Promise<void> {
-    if (!(await this.exists())) {
-      await this.create();
-    }
-
-    const file = await fs.open(this.fullPath, 'a');
-
-    try {
-      const lines = messageHistories.map((m) => JSON.stringify(m)).join('\n') + '\n';
-      await file.write(lines);
-    } finally {
-      await file.close();
+    const result = await this.jsonlHandler.appendMany(messageHistories);
+    if (!result.success) {
+      throw new Error(`Failed to append histories: ${String(result.reason)}`);
     }
   }
 
@@ -48,36 +40,33 @@ export class FileBasedChatSessionMessageHistoryFile {
     }
 
     const { chunkSize = 5 } = options ?? {};
+    const buffer: MessageHistory[] = [];
 
-    const file = await fs.open(this.fullPath, 'r');
-
-    try {
-      const rl = readline.createInterface({
-        input: file.createReadStream(),
-        crlfDelay: Infinity,
-      });
-
-      const buffer: MessageHistory[] = [];
-
-      for await (const line of rl) {
-        const messageHistory = parseJson<MessageHistory>(line);
-
-        buffer.push({
-          ...messageHistory,
-          createdAt: new Date(messageHistory.createdAt),
-        });
-
-        if (buffer.length >= chunkSize) {
-          yield* buffer;
-          buffer.length = 0;
-        }
+    for await (const result of this.jsonlHandler.readStream({ 
+      chunkSize, 
+      skipEmptyLines: true, 
+      skipInvalidJson: false 
+    })) {
+      if (!result.success) {
+        throw new Error(`Failed to read message history: ${String(result.reason)}`);
       }
 
-      if (buffer.length > 0) {
+      // 날짜 필드 변환
+      const messageHistory: MessageHistory = {
+        ...result.result,
+        createdAt: new Date(result.result.createdAt),
+      };
+
+      buffer.push(messageHistory);
+
+      if (buffer.length >= chunkSize) {
         yield* buffer;
+        buffer.length = 0;
       }
-    } finally {
-      await file.close();
+    }
+
+    if (buffer.length > 0) {
+      yield* buffer;
     }
   }
 }
