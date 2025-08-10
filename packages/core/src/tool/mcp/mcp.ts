@@ -13,7 +13,14 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import EventEmitter from 'node:events';
 import { Scheduler } from '../../common/scheduler/scheduler';
-import { utils } from '@agentos/lang';
+import { utils, validation } from '@agentos/lang';
+
+const { isNonEmptyArray, isPlainObject } = validation;
+
+// 타입 가드 함수들
+const isString = (value: unknown): value is string => typeof value === 'string';
+const isError = (value: unknown): value is Error => value instanceof Error;
+const isArray = (value: unknown): value is unknown[] => Array.isArray(value);
 
 const { safeZone } = utils;
 import { McpConfig } from './mcp-config';
@@ -165,18 +172,19 @@ export class Mcp extends EventEmitter {
 
       if (result.isError) {
         status = 'error';
-        error = typeof result.content === 'string' ? result.content : String(result.content);
+        const content = result.content;
+        error = isString(content) ? content : String(content);
         throw new Error('Tool call failed reason: ' + error);
       }
 
       return {
         isError: result.isError == true,
-        contents: Array.isArray(result.content) ? result.content : [result.content],
+        contents: isArray(result.content) ? result.content as Array<McpContent> : [result.content as McpContent],
         resumptionToken: freshResumptionToken,
       };
     } catch (e) {
       status = 'error';
-      error = e instanceof Error ? e.message : String(e);
+      error = isError(e) ? e.message : String(e);
       throw e;
     } finally {
       // 사용량 추적
