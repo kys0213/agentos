@@ -30,6 +30,7 @@
     "clean": "rm -rf dist && rm -rf esm"
   },
   "dependencies": {
+    "@agentos/lang": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.17.0"
   },
   "devDependencies": {

@@ -4,11 +4,11 @@ exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] 
 [
   {
     "anchors": [
-      "android-ios",
+      "Android-iOS",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -30,11 +30,11 @@ exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] 
   },
   {
     "anchors": [
-      "android-ios",
+      "Android-iOS",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -61,11 +61,11 @@ exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] 
   },
   {
     "anchors": [
-      "android-ios",
+      "Android-iOS",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -86,12 +86,12 @@ exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] 
   },
   {
     "anchors": [
-      "android-ios",
-      "custom-scheme",
+      "Android-iOS",
+      "(Custom-Scheme)",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -101,7 +101,7 @@ exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] 
         "title": "딥링크의 유형",
       },
       {
-        "anchor": "custom-scheme",
+        "anchor": "(Custom-Scheme)",
         "level": 3,
         "title": "커스텀 스킴(Custom Scheme)",
       },
@@ -125,12 +125,12 @@ exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] 
   },
   {
     "anchors": [
-      "android-ios",
-      "app-link-universal-link",
+      "Android-iOS",
+      "App-Link-Universal-Link",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -140,7 +140,7 @@ exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] 
         "title": "딥링크의 유형",
       },
       {
-        "anchor": "app-link-universal-link",
+        "anchor": "App-Link-Universal-Link",
         "level": 3,
         "title": "App Link와 Universal Link",
       },
@@ -162,12 +162,12 @@ exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] 
   },
   {
     "anchors": [
-      "android-ios",
-      "intent",
+      "Android-iOS",
+      "Intent",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -177,7 +177,7 @@ exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] 
         "title": "딥링크의 유형",
       },
       {
-        "anchor": "intent",
+        "anchor": "Intent",
         "level": 3,
         "title": "Intent 스킴",
       },
@@ -214,12 +214,12 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
   },
   {
     "anchors": [
-      "android-ios",
-      "intent",
+      "Android-iOS",
+      "Intent",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -229,7 +229,7 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
         "title": "딥링크의 유형",
       },
       {
-        "anchor": "intent",
+        "anchor": "Intent",
         "level": 3,
         "title": "Intent 스킴",
       },
@@ -248,12 +248,12 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
   },
   {
     "anchors": [
-      "android-ios",
-      "intent",
+      "Android-iOS",
+      "Intent",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -263,7 +263,7 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
         "title": "딥링크의 유형",
       },
       {
-        "anchor": "intent",
+        "anchor": "Intent",
         "level": 3,
         "title": "Intent 스킴",
       },
@@ -281,11 +281,11 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
   },
   {
     "anchors": [
-      "android-ios",
+      "Android-iOS",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -308,12 +308,12 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
   },
   {
     "anchors": [
-      "android-ios",
-      "android",
+      "Android-iOS",
+      "Android",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -323,7 +323,7 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
         "title": "웹뷰에서 앱으로 이동하기",
       },
       {
-        "anchor": "android",
+        "anchor": "Android",
         "level": 3,
         "title": "Android 웹뷰에서 딥링크 열기",
       },
@@ -355,12 +355,12 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
   },
   {
     "anchors": [
-      "android-ios",
-      "android",
+      "Android-iOS",
+      "Android",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -370,7 +370,7 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
         "title": "웹뷰에서 앱으로 이동하기",
       },
       {
-        "anchor": "android",
+        "anchor": "Android",
         "level": 3,
         "title": "Android 웹뷰에서 딥링크 열기",
       },
@@ -401,12 +401,12 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
   },
   {
     "anchors": [
-      "android-ios",
-      "android",
+      "Android-iOS",
+      "Android",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -416,7 +416,7 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
         "title": "웹뷰에서 앱으로 이동하기",
       },
       {
-        "anchor": "android",
+        "anchor": "Android",
         "level": 3,
         "title": "Android 웹뷰에서 딥링크 열기",
       },
@@ -444,12 +444,12 @@ Android에서 [토스페이먼츠 결제창](/resources/glossary/payment-window)
   },
   {
     "anchors": [
-      "android-ios",
-      "android",
+      "Android-iOS",
+      "Android",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -459,7 +459,7 @@ Android에서 [토스페이먼츠 결제창](/resources/glossary/payment-window)
         "title": "웹뷰에서 앱으로 이동하기",
       },
       {
-        "anchor": "android",
+        "anchor": "Android",
         "level": 3,
         "title": "Android 웹뷰에서 딥링크 열기",
       },
@@ -496,12 +496,12 @@ fun shouldOverrideUrlLoa",
   },
   {
     "anchors": [
-      "android-ios",
-      "android",
+      "Android-iOS",
+      "Android",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -511,7 +511,7 @@ fun shouldOverrideUrlLoa",
         "title": "웹뷰에서 앱으로 이동하기",
       },
       {
-        "anchor": "android",
+        "anchor": "Android",
         "level": 3,
         "title": "Android 웹뷰에서 딥링크 열기",
       },
@@ -562,12 +562,12 @@ fun startSchemeIntent(url: String): Boolean {",
   },
   {
     "anchors": [
-      "android-ios",
-      "android",
+      "Android-iOS",
+      "Android",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -577,7 +577,7 @@ fun startSchemeIntent(url: String): Boolean {",
         "title": "웹뷰에서 앱으로 이동하기",
       },
       {
-        "anchor": "android",
+        "anchor": "Android",
         "level": 3,
         "title": "Android 웹뷰에서 딥링크 열기",
       },
@@ -621,12 +621,12 @@ fun startSchemeIntent(url: String): Boolean {
   },
   {
     "anchors": [
-      "android-ios",
-      "ios",
+      "Android-iOS",
+      "iOS",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -636,7 +636,7 @@ fun startSchemeIntent(url: String): Boolean {
         "title": "웹뷰에서 앱으로 이동하기",
       },
       {
-        "anchor": "ios",
+        "anchor": "iOS",
         "level": 3,
         "title": "iOS 웹뷰에서 딥링크 열기",
       },
@@ -675,12 +675,12 @@ fun startSchemeIntent(url: String): Boolean {
   },
   {
     "anchors": [
-      "android-ios",
-      "ios",
+      "Android-iOS",
+      "iOS",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -690,7 +690,7 @@ fun startSchemeIntent(url: String): Boolean {
         "title": "웹뷰에서 앱으로 이동하기",
       },
       {
-        "anchor": "ios",
+        "anchor": "iOS",
         "level": 3,
         "title": "iOS 웹뷰에서 딥링크 열기",
       },
@@ -734,12 +734,12 @@ fun startSchemeIntent(url: String): Boolean {
   },
   {
     "anchors": [
-      "android-ios",
-      "ios",
+      "Android-iOS",
+      "iOS",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -749,7 +749,7 @@ fun startSchemeIntent(url: String): Boolean {
         "title": "웹뷰에서 앱으로 이동하기",
       },
       {
-        "anchor": "ios",
+        "anchor": "iOS",
         "level": 3,
         "title": "iOS 웹뷰에서 딥링크 열기",
       },
@@ -776,12 +776,12 @@ fun startSchemeIntent(url: String): Boolean {
   },
   {
     "anchors": [
-      "android-ios",
-      "ios",
+      "Android-iOS",
+      "iOS",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -791,7 +791,7 @@ fun startSchemeIntent(url: String): Boolean {
         "title": "웹뷰에서 앱으로 이동하기",
       },
       {
-        "anchor": "ios",
+        "anchor": "iOS",
         "level": 3,
         "title": "iOS 웹뷰에서 딥링크 열기",
       },
@@ -831,12 +831,12 @@ func webView(
   },
   {
     "anchors": [
-      "android-ios",
-      "ios",
+      "Android-iOS",
+      "iOS",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -846,7 +846,7 @@ func webView(
         "title": "웹뷰에서 앱으로 이동하기",
       },
       {
-        "anchor": "ios",
+        "anchor": "iOS",
         "level": 3,
         "title": "iOS 웹뷰에서 딥링크 열기",
       },
@@ -888,12 +888,12 @@ enum Constant {
   },
   {
     "anchors": [
-      "android-ios",
-      "ios",
+      "Android-iOS",
+      "iOS",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -903,7 +903,7 @@ enum Constant {
         "title": "웹뷰에서 앱으로 이동하기",
       },
       {
-        "anchor": "ios",
+        "anchor": "iOS",
         "level": 3,
         "title": "iOS 웹뷰에서 딥링크 열기",
       },
@@ -944,12 +944,12 @@ enum Constant {
   },
   {
     "anchors": [
-      "android-ios",
-      "ios",
+      "Android-iOS",
+      "iOS",
     ],
     "breadcrumbs": [
       {
-        "anchor": "android-ios",
+        "anchor": "Android-iOS",
         "level": 1,
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
@@ -959,7 +959,7 @@ enum Constant {
         "title": "웹뷰에서 앱으로 이동하기",
       },
       {
-        "anchor": "ios",
+        "anchor": "iOS",
         "level": 3,
         "title": "iOS 웹뷰에서 딥링크 열기",
       },
