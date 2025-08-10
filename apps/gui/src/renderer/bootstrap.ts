@@ -1,22 +1,26 @@
-import type { IpcChannel } from './services/ipc/IpcChannel';
+import type { IpcChannel } from '../shared/types/ipc-channel';
 import { createIpcChannel } from './services/ipc/IpcChannelFactory';
-import { ServiceContainer } from './services/ServiceContainer';
-import { ChatService } from './services/chat-service';
-import { BridgeService } from './services/bridge-service';
+import { ServiceContainer } from './services/service-container';
+import { BridgeService } from './services/bridge.service';
 import { McpService } from './services/mcp-service';
 import { PresetService } from './services/preset-service';
-import { AgentService } from './services/agent-service';
+import { AgentService } from './services/agent.service';
+import { AgentOsServiceName, AgentOsServiceNames } from '../shared/types/agentos-api';
+import { McpUsageLogService } from './services/mcp-usage.service';
+import { BuiltinToolService } from './services/builtin-tool.service';
+import { ChatService } from './services/chat-service';
 
 /**
  * Bootstrap 결과 타입
  */
 export interface BootstrapResult {
   ipcChannel: IpcChannel;
-  chatService: ChatService;
   bridgeService: BridgeService;
   mcpService: McpService;
   presetService: PresetService;
   agentService: AgentService;
+  // legacy testing convenience
+  chatService?: ChatService;
 }
 
 /**
@@ -31,21 +35,26 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
   console.log('📡 IpcChannel created/injected');
 
   // 모든 서비스에 동일한 IpcChannel 주입하여 생성
-  const chatService = new ChatService(channel);
   const bridgeService = new BridgeService(channel);
   const mcpService = new McpService(channel);
   const presetService = new PresetService(channel);
   const agentService = new AgentService(channel);
+  const builtinToolService = new BuiltinToolService(channel);
+  const mcpUsageLogService = new McpUsageLogService(channel);
+  const chatService = new ChatService(channel);
 
   console.log('⚙️ All services created with IpcChannel dependency injection');
 
   // 서비스들을 ServiceContainer에 등록
-  ServiceContainer.register('ipcChannel', channel);
-  ServiceContainer.register('chat', chatService);
   ServiceContainer.register('bridge', bridgeService);
   ServiceContainer.register('mcp', mcpService);
   ServiceContainer.register('preset', presetService);
   ServiceContainer.register('agent', agentService);
+  ServiceContainer.register('builtinTool', builtinToolService);
+  ServiceContainer.register('mcpUsageLog', mcpUsageLogService);
+  // Compatibility-only: not part of AgentOsServiceName
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (ServiceContainer as any).register?.('chat', chatService);
 
   console.log('📦 All services registered in ServiceContainer');
   console.log('✅ Bootstrap completed successfully');
@@ -55,11 +64,11 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
 
   return {
     ipcChannel: channel,
-    chatService,
     bridgeService,
     mcpService,
     presetService,
     agentService,
+    chatService,
   };
 }
 
@@ -68,20 +77,22 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
  * 컴포넌트에서 쉽게 서비스에 접근할 수 있도록 제공
  */
 export const Services = {
-  getChat: (): ChatService => ServiceContainer.get<ChatService>('chat'),
   getBridge: (): BridgeService => ServiceContainer.get<BridgeService>('bridge'),
   getMcp: (): McpService => ServiceContainer.get<McpService>('mcp'),
   getPreset: (): PresetService => ServiceContainer.get<PresetService>('preset'),
   getAgent: (): AgentService => ServiceContainer.get<AgentService>('agent'),
-  getIpcChannel: (): IpcChannel => ServiceContainer.get<IpcChannel>('ipcChannel'),
+  getBuiltinTool: (): BuiltinToolService => ServiceContainer.get<BuiltinToolService>('builtinTool'),
+  getMcpUsageLog: (): McpUsageLogService => ServiceContainer.get<McpUsageLogService>('mcpUsageLog'),
+  // Legacy accessor (registered dynamically above)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getChat: (): ChatService => (ServiceContainer as any).get('chat'),
 } as const;
 
 /**
  * Bootstrap이 완료되었는지 확인하는 함수
  */
 export function isBootstrapped(): boolean {
-  const requiredServices = ['chat', 'bridge', 'mcp', 'preset', 'agent', 'ipcChannel'];
-  return requiredServices.every((service) => ServiceContainer.has(service));
+  return AgentOsServiceNames.every((service) => ServiceContainer.has(service));
 }
 
 /**

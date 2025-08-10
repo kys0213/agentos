@@ -1,9 +1,9 @@
 import React from 'react';
 import { Select } from '@chakra-ui/react';
-import type { Preset } from '../types/core-types';
+import type { ReadonlyPreset } from '@agentos/core';
 
 export interface PresetSelectorProps {
-  presets: Preset[];
+  presets: ReadonlyPreset[];
   value?: string;
   onChange(id: string): void;
 }

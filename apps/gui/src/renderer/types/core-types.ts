@@ -1,30 +1,41 @@
-// Renderer 프로세스에서 사용하는 로컬 타입 정의
-// Main 프로세스와 IPC를 통해 데이터를 주고받을 때 사용
-
-// Core types from packages/core
 import type {
+  Agent,
+  AgentStatus,
   ChatSessionMetadata,
-  MessageHistory,
-  Preset,
-  EnabledMcp,
   McpConfig,
-  AgentMetadata,
+  Preset,
   ReadonlyAgentMetadata,
+  ReadonlyPreset,
 } from '@agentos/core';
+export type { Preset } from '@agentos/core';
 
-// Re-export core types
-export type {
-  ChatSessionMetadata,
-  MessageHistory,
-  Preset,
-  EnabledMcp,
-  McpConfig,
-  AgentMetadata,
-  ReadonlyAgentMetadata,
-};
+// Minimal service interfaces used in hooks (for typing only)
+export interface PresetServiceInterface {
+  getAllPresets(): Promise<Preset[]>;
+  getPreset(id: string): Promise<Preset | null>;
+  createPreset(preset: any): Promise<Preset>;
+  updatePreset(id: string, preset: Partial<Omit<Preset, 'id'>>): Promise<Preset>;
+  deletePreset(id: string): Promise<Preset>;
+  // legacy aliases
+  getAll(): Promise<Preset[]>;
+  get(id: string): Promise<Preset | null>;
+  create(preset: any): Promise<Preset>;
+  update(a: any, b?: any): Promise<Preset>;
+  delete(id: string): Promise<Preset>;
+}
 
-// Type alias for backward compatibility
-export type ChatSessionDescription = ChatSessionMetadata;
+export interface McpServiceInterface {
+  getAllMcp(): Promise<McpConfig[]>;
+  connectMcp(config: McpConfig): Promise<{ success: boolean }>;
+  disconnectMcp(name: string): Promise<{ success: boolean }>;
+  getMcpStatus(clientName: string): Promise<{ connected: boolean; error?: string }>;
+  // usage methods (compat)
+  getUsageLogs(clientName: string, options?: any): Promise<any[]>;
+  getAllUsageLogs(options?: any): Promise<any[]>;
+  // legacy aliases
+  connect(config: McpConfig): Promise<{ success: boolean }>;
+  disconnect(name: string): Promise<{ success: boolean }>;
+}
 
 // IPC 통신을 위한 추가 타입들
 export interface SendMessageResponse {
@@ -54,43 +65,10 @@ export interface ResourceResponse {
   content: string | ArrayBuffer;
 }
 
-export interface MessageRecord {
-  id: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string | object;
-  timestamp: Date;
-}
-
-export interface MessageListResponse {
-  messages: MessageRecord[];
-  total?: number;
-  hasMore?: boolean;
-  nextCursor?: string;
-}
-
 export interface PaginationOptions {
   limit?: number;
   cursor?: string;
   offset?: number;
-}
-
-// Bridge 설정 관련 타입들
-export interface LlmBridgeConfig {
-  name: string;
-  type: 'openai' | 'anthropic' | 'local' | 'custom';
-  apiKey?: string;
-  apiUrl?: string;
-  model?: string;
-  temperature?: number;
-  maxTokens?: number;
-  timeout?: number;
-  headers?: Record<string, string>;
-  [key: string]: unknown; // 확장 가능한 설정을 위한 인덱스 시그니처
-}
-
-// MCP 도구 실행 인자 타입
-export interface McpToolArgs {
-  [key: string]: string | number | boolean | object | null | undefined;
 }
 
 // Chrome Extension 메시지 타입들
@@ -105,85 +83,125 @@ export interface ChromeExtensionResponse<T = unknown> {
   error?: string;
 }
 
-// HTTP API 요청/응답 관련 타입들
-export interface HttpApiRequestOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-  headers?: Record<string, string>;
-  body?: string;
-  timeout?: number;
+/**
+ * 앱 섹션 타입
+ */
+
+export type AppSection =
+  | 'dashboard'
+  | 'chat'
+  | 'subagents'
+  | 'presets'
+  | 'models'
+  | 'tools'
+  | 'toolbuilder'
+  | 'racp'
+  | 'settings';
+
+export type MinimizedAgent = Pick<ReadonlyAgentMetadata, 'id' | 'name' | 'icon'>;
+// QuickAction 타입 (chat-types.ts에서 이동)
+
+export interface QuickAction {
+  id: string;
+  label: string;
+  icon: React.ComponentType<Record<string, unknown>>;
+  description: string;
+  category: 'chat' | 'management' | 'settings' | 'navigation';
+}
+// 앱 모드 상태 관리 (chat-types.ts에서 이동)
+
+export interface AppModeState {
+  mode: 'chat' | 'management';
+  activeSection: AppSection;
 }
 
-// 서비스 컨테이너에서 사용하는 알려진 서비스 타입들
-export interface ServiceRegistry {
-  chat: ChatService;
-  bridge: BridgeService;
-  mcp: McpService;
-  preset: PresetService;
-  agent: AgentService;
-  ipcChannel: IpcChannel;
+/**
+ * 네비게이션 상태 관리를 위한 타입들
+ */
+export interface NavigationState {
+  activeSection: AppSection;
+  selectedPreset: Preset | null;
+  creatingPreset: boolean;
+  creatingMCPTool: boolean;
+  creatingAgent: boolean;
+  creatingCustomTool: boolean;
 }
 
-// Forward declarations (순환 참조 방지)
-export interface ChatService {
-  createSession(options?: { preset?: Preset }): Promise<ChatSessionDescription>;
-  listSessions(): Promise<ChatSessionDescription[]>;
-  loadSession(sessionId: string): Promise<ChatSessionDescription>;
-  sendMessage(sessionId: string, message: string): Promise<SendMessageResponse>;
+/**
+ * 채팅 상태 관리를 위한 타입들
+ */
+export interface ChatState {
+  activeChatAgent: ReadonlyAgentMetadata | null;
+  minimizedChats: ChatSessionMetadata[];
 }
+/**
+ * 앱 데이터 상태를 위한 타입들
+ */
 
-export interface BridgeService {
-  register(id: string, config: LlmBridgeConfig): Promise<{ success: boolean }>;
-  switchBridge(id: string): Promise<{ success: boolean }>;
-  getCurrentBridge(): Promise<{ id: string; config: LlmBridgeConfig } | null>;
-  getBridgeIds(): Promise<string[]>;
+export interface AppDataState {
+  presets: Preset[];
+  currentAgents: Agent[];
+  showEmptyState: boolean;
 }
+/**
+ * useAppNavigation hook의 반환 타입
+ */
 
-export interface McpService {
-  getAll(): Promise<McpConfig[]>;
-  connect(config: McpConfig): Promise<{ success: boolean }>;
-  disconnect(name: string): Promise<{ success: boolean }>;
+export interface UseAppNavigationReturn {
+  // 상태
+  activeSection: AppSection;
+  selectedPreset: Preset | null;
+  creatingPreset: boolean;
+  creatingMCPTool: boolean;
+  creatingAgent: boolean;
+  creatingCustomTool: boolean;
+
+  // 액션들
+  setActiveSection: (section: AppSection) => void;
+  handleBackToChat: () => void;
+  handleSelectPreset: (preset: Preset) => void;
+  handleBackToPresets: () => void;
+  handleBackToTools: () => void;
+  handleBackToAgents: () => void;
+  handleBackToToolBuilder: () => void;
+  handleStartCreatePreset: () => void;
+  handleStartCreateMCPTool: () => void;
+  handleStartCreateAgent: () => void;
+  handleStartCreateCustomTool: () => void;
+
+  // 유틸리티
+  isInDetailView: () => boolean;
 }
+/**
+ * useChatState hook의 반환 타입
+ */
 
-export interface PresetService {
-  getAll(): Promise<Preset[]>;
-  create(preset: Preset): Promise<{ success: boolean }>;
-  update(preset: Preset): Promise<{ success: boolean }>;
-  delete(id: string): Promise<{ success: boolean }>;
+export interface UseChatStateReturn {
+  activeChatAgent: ReadonlyAgentMetadata | null;
+  minimizedChats: ReadonlyAgentMetadata[];
+  handleOpenChat: (agent: ReadonlyAgentMetadata) => void;
+  handleCloseChat: () => void;
+  handleMinimizeChat: () => void;
+  handleRestoreChat: (agent: ReadonlyAgentMetadata) => void;
 }
+/**
+ * useAppData hook의 반환 타입
+ */
 
-export interface AgentService {
-  getAll(): Promise<AgentMetadata[]>;
-  create(agent: AgentMetadata): Promise<{ success: boolean }>;
-  update(agent: AgentMetadata): Promise<{ success: boolean }>;
-  delete(id: string): Promise<{ success: boolean }>;
-  get(id: string): Promise<AgentMetadata | null>;
-  getAvailable(): Promise<AgentMetadata[]>;
-  getActive(): Promise<AgentMetadata[]>;
-}
-
-// IpcChannel interface - forward declaration for ServiceRegistry
-export interface IpcChannel {
-  // Chat methods
-  createChatSession(options?: { preset?: Preset }): Promise<ChatSessionDescription>;
-  listChatSessions(): Promise<ChatSessionDescription[]>;
-  loadChatSession(sessionId: string): Promise<ChatSessionDescription>;
-  sendChatMessage(sessionId: string, message: string): Promise<SendMessageResponse>;
-  getChatMessages(sessionId: string, options?: PaginationOptions): Promise<MessageListResponse>;
-
-  // Bridge methods
-  registerBridge(id: string, config: LlmBridgeConfig): Promise<{ success: boolean }>;
-  getCurrentBridge(): Promise<{ id: string; config: LlmBridgeConfig } | null>;
-  getBridgeIds(): Promise<string[]>;
-
-  // MCP methods
-  getAllMcp(): Promise<McpConfig[]>;
-  connectMcp(config: McpConfig): Promise<{ success: boolean }>;
-  executeMcpTool(
-    clientName: string,
-    toolName: string,
-    args: McpToolArgs
-  ): Promise<ToolExecutionResponse>;
-
-  // Preset methods
-  getAllPresets(): Promise<Preset[]>;
+export interface UseAppDataReturn {
+  presets: ReadonlyPreset[];
+  currentAgents: ReadonlyAgentMetadata[];
+  showEmptyState: boolean;
+  setShowEmptyState: (show: boolean) => void;
+  loading: boolean; // 로딩 상태
+  error: Error | null; // 에러 상태 추가
+  handleUpdateAgentStatus: (agentId: string, status: AgentStatus) => Promise<void>;
+  handleCreatePreset: (preset: Partial<ReadonlyPreset>) => Promise<ReadonlyPreset>;
+  handleCreateMCPTool: (mcpConfig: McpConfig) => Promise<unknown>;
+  handleCreateAgent: (agent: Partial<ReadonlyAgentMetadata>) => Promise<ReadonlyAgentMetadata>;
+  handleCreateCustomTool: (toolData: unknown) => Promise<unknown>;
+  handleUpdatePreset: (preset: Preset) => Promise<void>;
+  handleDeletePreset: (presetId: string) => Promise<void>;
+  getMentionableAgents: () => ReadonlyAgentMetadata[];
+  getActiveAgents: () => ReadonlyAgentMetadata[];
 }

@@ -23,8 +23,8 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { ServiceContainer } from '../../services/ServiceContainer';
-import type { BridgeService } from '../../services/bridge-service';
+import { ServiceContainer } from '../../services/service-container';
+import type { BridgeService } from '../../services/bridge.service';
 
 // Model data types based on BridgeService
 interface ModelInstance {

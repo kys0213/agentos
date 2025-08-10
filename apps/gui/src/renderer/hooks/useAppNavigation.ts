@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { AppSection, UseAppNavigationReturn } from '../types/design-types';
+import type { AppSection, UseAppNavigationReturn } from '../types/core-types';
 import { ReadonlyPreset } from '@agentos/core';
 
 /**

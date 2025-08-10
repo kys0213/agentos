@@ -1,11 +1,11 @@
 // Export all service classes (DI 기반)
-export { ChatService } from './chat-service';
-export { BridgeService } from './bridge-service';
+export { BridgeService } from './bridge.service';
 export { McpService } from './mcp-service';
 export { PresetService } from './preset-service';
+export { ChatService } from './chat-service';
 
 // ServiceContainer
-export { ServiceContainer } from './ServiceContainer';
+export { ServiceContainer } from './service-container';
 
 // IPC Channel exports
 export * from './ipc';

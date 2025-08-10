@@ -31,8 +31,9 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { ServiceContainer } from '../../services/ServiceContainer';
+import { ServiceContainer } from '../../services/service-container';
 import type { McpService } from '../../services/mcp-service';
+import type { McpUsageLogService } from '../../services/mcp-usage.service';
 
 /**
  * GUI-specific extension of Core McpToolMetadata
@@ -102,7 +103,8 @@ export function MCPToolsManager() {
 
             // Get usage logs if available
             try {
-              const logs = await mcpService.getAllUsageLogs({ limit: 50 });
+              const usageService = ServiceContainer.get<any>('mcpUsageLog');
+              const logs = await usageService.getAllUsageLogs();
               setUsageLogs(logs);
             } catch (logError) {
               console.warn('Usage logs not available:', logError);

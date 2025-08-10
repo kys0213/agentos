@@ -1,16 +1,15 @@
 import { useState } from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+import { Card } from '../ui/card';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Slider } from '../ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Checkbox } from './ui/checkbox';
-import { Progress } from './ui/progress';
-import { McpConfig } from '@agentos/core';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Checkbox } from '../ui/checkbox';
+import { Progress } from '../ui/progress';
 import {
   ArrowLeft,
   Save,
@@ -32,38 +31,12 @@ import {
   Wifi,
   Zap,
 } from 'lucide-react';
-
-interface Preset {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  model: string;
-  systemPrompt: string;
-  parameters: {
-    temperature: number;
-    maxTokens: number;
-    topP: number;
-  };
-  tools: string[];
-  mcpTools?: McpConfig[];
-  status: 'active' | 'idle' | 'inactive';
-  createdAt: Date;
-  updatedAt: Date;
-  usageCount: number;
-  knowledgeDocuments: number;
-  knowledgeStats?: {
-    indexed: number;
-    vectorized: number;
-    totalSize: number;
-  };
-}
+import { CreatePreset, McpConfig, Preset } from '@agentos/core';
+import { MCPToolCreate } from '../mcp/MCPToolCreate';
 
 interface PresetCreateProps {
   onBack: () => void;
-  onCreate: (
-    preset: Omit<Preset, 'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'knowledgeDocuments'>
-  ) => Preset;
+  onCreate: (preset: CreatePreset) => Preset;
 }
 
 export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
@@ -73,20 +46,16 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
   const totalSteps = 4;
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CreatePreset>({
     name: '',
     description: '',
-    category: 'research',
-    model: 'gpt-4',
+    author: '',
+    category: ['research'],
     systemPrompt: '',
-    parameters: {
-      temperature: 0.7,
-      maxTokens: 4000,
-      topP: 0.9,
-    },
-    tools: [] as string[],
-    mcpTools: [] as McpConfig[],
-    status: 'active' as 'active' | 'idle' | 'inactive',
+    status: 'active',
+    llmBridgeName: 'default',
+    llmBridgeConfig: {},
+    version: '1.0.0',
   });
 
   // Available tools
@@ -203,35 +172,42 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
     const template = presetTemplates[category as keyof typeof presetTemplates];
     if (template) {
       updateFormData({
-        category,
+        category: [category],
         name: template.name,
         description: template.description,
         systemPrompt: template.systemPrompt,
-        parameters: template.parameters,
-        tools: template.tools,
       });
     } else {
-      updateFormData({ category });
+      updateFormData({ category: [category] });
     }
   };
 
-  const handleToolToggle = (toolId: string) => {
-    const newTools = formData.tools.includes(toolId)
-      ? formData.tools.filter((id) => id !== toolId)
-      : [...formData.tools, toolId];
-    updateFormData({ tools: newTools });
+  const handleToolToggle = (toolName: string) => {
+    const newTools = formData.enabledMcps?.filter((mcp) => mcp.enabledTools.includes(toolName));
+
+    updateFormData({
+      enabledMcps: newTools,
+    });
   };
 
   const handleAddMCPTool = (mcpConfig: McpConfig) => {
     updateFormData({
-      mcpTools: [...formData.mcpTools, mcpConfig],
+      enabledMcps: [
+        ...(formData.enabledMcps || []),
+        {
+          enabledTools: [],
+          enabledResources: [],
+          enabledPrompts: [],
+          ...mcpConfig,
+        },
+      ],
     });
     setShowMCPDialog(false);
   };
 
   const handleRemoveMCPTool = (index: number) => {
     updateFormData({
-      mcpTools: formData.mcpTools.filter((_, i) => i !== index),
+      enabledMcps: formData.enabledMcps?.filter((_, i) => i !== index) || [],
     });
   };
 
@@ -442,7 +418,7 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                       <Card
                         key={key}
                         className={`p-4 cursor-pointer transition-all hover:shadow-md ${
-                          formData.category === key ? 'ring-2 ring-primary bg-primary/5' : ''
+                          formData.category.includes(key) ? 'ring-2 ring-primary bg-primary/5' : ''
                         }`}
                         onClick={() => handleCategoryChange(key)}
                       >
@@ -495,17 +471,18 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                       <div>
                         <Label htmlFor="model">AI Model</Label>
                         <Select
-                          value={formData.model}
-                          onValueChange={(value) => updateFormData({ model: value })}
+                          value={formData.llmBridgeName}
+                          onValueChange={(value) => updateFormData({ llmBridgeName: value })}
                         >
                           <SelectTrigger className="mt-1">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="gpt-4">GPT-4</SelectItem>
-                            <SelectItem value="claude-3-5-sonnet">Claude 3.5 Sonnet</SelectItem>
-                            <SelectItem value="claude-3-haiku">Claude 3 Haiku</SelectItem>
-                            <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
+                            <SelectItem value="openai">OpenAI</SelectItem>
+                            <SelectItem value="anthropic">Anthropic</SelectItem>
+                            <SelectItem value="gemini">Google Gemini</SelectItem>
+                            <SelectItem value="local">Local LLM</SelectItem>
+                            <SelectItem value="custom">Custom</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -567,14 +544,14 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                       <div className="flex items-center justify-between mb-2">
                         <Label>Temperature</Label>
                         <span className="text-sm font-medium">
-                          {formData.parameters.temperature}
+                          {formData.llmBridgeConfig.temperature}
                         </span>
                       </div>
                       <Slider
-                        value={[formData.parameters.temperature]}
+                        value={[formData.llmBridgeConfig.temperature]}
                         onValueChange={([value]) =>
                           updateFormData({
-                            parameters: { ...formData.parameters, temperature: value },
+                            llmBridgeConfig: { ...formData.llmBridgeConfig, temperature: value },
                           })
                         }
                         max={1}
@@ -589,13 +566,15 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <Label>Max Tokens</Label>
-                        <span className="text-sm font-medium">{formData.parameters.maxTokens}</span>
+                        <span className="text-sm font-medium">
+                          {formData.llmBridgeConfig.maxTokens}
+                        </span>
                       </div>
                       <Slider
-                        value={[formData.parameters.maxTokens]}
+                        value={[formData.llmBridgeConfig.maxTokens]}
                         onValueChange={([value]) =>
                           updateFormData({
-                            parameters: { ...formData.parameters, maxTokens: value },
+                            llmBridgeConfig: { ...formData.llmBridgeConfig, maxTokens: value },
                           })
                         }
                         max={8000}
@@ -608,13 +587,13 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <Label>Top P</Label>
-                        <span className="text-sm font-medium">{formData.parameters.topP}</span>
+                        <span className="text-sm font-medium">{formData.llmBridgeConfig.topP}</span>
                       </div>
                       <Slider
-                        value={[formData.parameters.topP]}
+                        value={[formData.llmBridgeConfig.topP]}
                         onValueChange={([value]) =>
                           updateFormData({
-                            parameters: { ...formData.parameters, topP: value },
+                            llmBridgeConfig: { ...formData.llmBridgeConfig, topP: value },
                           })
                         }
                         max={1}
@@ -655,22 +634,27 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                     {availableTools
                       .filter(
                         (tool) =>
-                          tool.category === formData.category || formData.category === 'research'
+                          formData.category.includes(tool.category) ||
+                          formData.category.includes('research')
                       )
                       .map((tool) => (
                         <Card
                           key={tool.id}
                           className={`p-4 cursor-pointer transition-all hover:shadow-sm ${
-                            formData.tools.includes(tool.id)
+                            formData.enabledMcps?.some((mcp) =>
+                              mcp.enabledTools.includes(tool.name)
+                            )
                               ? 'ring-1 ring-primary bg-primary/5'
                               : ''
                           }`}
-                          onClick={() => handleToolToggle(tool.id)}
+                          onClick={() => handleToolToggle(tool.name)}
                         >
                           <div className="flex items-start gap-3">
                             <Checkbox
-                              checked={formData.tools.includes(tool.id)}
-                              onChange={() => handleToolToggle(tool.id)}
+                              checked={formData.enabledMcps?.some((mcp) =>
+                                mcp.enabledTools.includes(tool.name)
+                              )}
+                              onChange={() => handleToolToggle(tool.name)}
                             />
                             <div className="flex-1">
                               <h4 className="font-medium text-foreground">{tool.name}</h4>
@@ -681,16 +665,16 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                       ))}
                   </div>
 
-                  {formData.tools.length > 0 && (
+                  {formData.enabledMcps && formData.enabledMcps.length > 0 && (
                     <div className="mt-6 p-4 bg-green-50 rounded-lg">
                       <h4 className="font-medium text-green-800 mb-2">
-                        Selected Built-in Tools ({formData.tools.length})
+                        Selected Built-in Tools ({formData.enabledMcps.length})
                       </h4>
                       <div className="flex flex-wrap gap-2">
-                        {formData.tools.map((toolId) => {
-                          const tool = availableTools.find((t) => t.id === toolId);
+                        {formData.enabledMcps.map((mcp) => {
+                          const tool = availableTools.find((t) => t.id === mcp.name);
                           return (
-                            <Badge key={toolId} variant="outline" className="bg-white">
+                            <Badge key={mcp.name} variant="outline" className="bg-white">
                               {tool?.name}
                             </Badge>
                           );
@@ -715,7 +699,7 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                     </Button>
                   </div>
 
-                  {formData.mcpTools.length === 0 ? (
+                  {formData.enabledMcps && formData.enabledMcps.length === 0 ? (
                     <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
                       <Settings className="w-8 h-8 text-gray-400 mx-auto mb-3" />
                       <h4 className="font-medium text-foreground mb-2">No MCP Tools Added</h4>
@@ -733,47 +717,48 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {formData.mcpTools.map((mcpTool, index) => (
-                        <Card key={index} className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                                {getMCPIcon(mcpTool.type)}
-                              </div>
-                              <div>
-                                <h4 className="font-medium text-foreground">{mcpTool.name}</h4>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                  <Badge variant="outline" className="text-xs">
-                                    {mcpTool.type}
-                                  </Badge>
-                                  <span>v{mcpTool.version}</span>
-                                  {mcpTool.type === 'stdio' && (
-                                    <span className="font-mono text-xs">
-                                      {(mcpTool as any).command}
-                                    </span>
-                                  )}
-                                  {(mcpTool.type === 'streamableHttp' ||
-                                    mcpTool.type === 'websocket' ||
-                                    mcpTool.type === 'sse') && (
-                                    <span className="font-mono text-xs">
-                                      {(mcpTool as any).url}
-                                    </span>
-                                  )}
+                      {formData.enabledMcps &&
+                        formData.enabledMcps.map((mcpTool, index) => (
+                          <Card key={index} className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
+                                  {getMCPIcon(mcpTool.name)}
+                                </div>
+                                <div>
+                                  <h4 className="font-medium text-foreground">{mcpTool.name}</h4>
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Badge variant="outline" className="text-xs">
+                                      {mcpTool.name}
+                                    </Badge>
+                                    <span>v{mcpTool.version}</span>
+                                    {mcpTool.name === 'stdio' && (
+                                      <span className="font-mono text-xs">
+                                        {(mcpTool as any).command}
+                                      </span>
+                                    )}
+                                    {(mcpTool.name === 'streamableHttp' ||
+                                      mcpTool.name === 'websocket' ||
+                                      mcpTool.name === 'sse') && (
+                                      <span className="font-mono text-xs">
+                                        {(mcpTool as any).url}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRemoveMCPTool(index)}
+                                className="gap-1 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                              >
+                                <X className="w-3 h-3" />
+                                Remove
+                              </Button>
                             </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleRemoveMCPTool(index)}
-                              className="gap-1 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
-                            >
-                              <X className="w-3 h-3" />
-                              Remove
-                            </Button>
-                          </div>
-                        </Card>
-                      ))}
+                          </Card>
+                        ))}
                     </div>
                   )}
                 </Card>
@@ -835,11 +820,7 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
       </div>
 
       {/* MCP Tool Add Dialog */}
-      <MCPToolAdd
-        isOpen={showMCPDialog}
-        onClose={() => setShowMCPDialog(false)}
-        onAdd={handleAddMCPTool}
-      />
+      <MCPToolCreate onBack={() => setShowMCPDialog(false)} onCreate={handleAddMCPTool} />
     </div>
   );
 }

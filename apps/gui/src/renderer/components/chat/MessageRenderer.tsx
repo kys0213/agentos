@@ -1,17 +1,12 @@
 import { AgentMetadata, MessageHistory } from '@agentos/core';
 import { Bot, Brain, ChevronRight, Copy, Sparkles, ThumbsDown, ThumbsUp, User } from 'lucide-react';
 import React from 'react';
-import { MessageRecord } from '../../types/core-types';
-import {
-  parseMessageContent,
-  parseMessagePreview,
-  ParseableMessage,
-} from '../../utils/message-parser';
+import { parseMessageContent, parseMessagePreview } from '../../utils/message-parser';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 
 export interface MessageRendererProps {
-  message: ParseableMessage;
+  message: MessageHistory;
   mode?: 'full' | 'preview' | 'compact';
   showTimestamp?: boolean;
   showActions?: boolean;
@@ -108,9 +103,9 @@ const MessageRenderer: React.FC<MessageRendererProps> = ({
     return parseMessageContent(message);
   };
 
-  const messageTimestamp = 'createdAt' in message ? message.createdAt : message.timestamp;
-  const messageId = (message as MessageHistory).messageId || (message as MessageRecord).id;
-  const agentMetadata = (message as MessageHistory).agentMetadata;
+  const messageTimestamp = message.createdAt;
+  const messageId = message.messageId;
+  const agentMetadata = message.agentMetadata;
 
   // Preview mode - simplified rendering for ChatHistory
   if (mode === 'preview') {

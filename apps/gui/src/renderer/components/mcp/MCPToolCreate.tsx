@@ -45,7 +45,7 @@ import {
 
 interface MCPToolCreateProps {
   onBack: () => void;
-  onCreate: (mcpConfig: McpConfig) => McpConfig;
+  onCreate: (mcpConfig: McpConfig) => void;
 }
 
 interface ConnectionTest {

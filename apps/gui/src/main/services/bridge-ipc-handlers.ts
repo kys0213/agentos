@@ -1,5 +1,5 @@
 import { ipcMain, IpcMainInvokeEvent } from 'electron';
-import { LlmBridge } from 'llm-bridge-spec';
+import { LlmBridge, LlmManifest } from 'llm-bridge-spec';
 
 /**
  * Main 프로세스에서 관리되는 Bridge 매니저
@@ -80,10 +80,10 @@ export function setupBridgeIpcHandlers() {
   const manager = initializeBridgeManager();
 
   // Bridge 등록
-  ipcMain.handle('bridge:register', async (_event: IpcMainInvokeEvent, id: string, config: any) => {
+  ipcMain.handle('bridge:register-bridge', async (_event: IpcMainInvokeEvent, config: LlmManifest) => {
     try {
       // TODO: config를 바탕으로 실제 LlmBridge 인스턴스 생성
-      // 지금은 임시로 Mock Bridge 생성
+      const id = (config as any).name ?? 'default';
       const mockBridge: LlmBridge = {
         // LlmBridge 인터페이스 구현 필요
         name: id,
@@ -99,7 +99,7 @@ export function setupBridgeIpcHandlers() {
   });
 
   // Bridge 등록 해제
-  ipcMain.handle('bridge:unregister', async (_event: IpcMainInvokeEvent, id: string) => {
+  ipcMain.handle('bridge:unregister-bridge', async (_event: IpcMainInvokeEvent, id: string) => {
     try {
       const success = manager.unregister(id);
       return { success };

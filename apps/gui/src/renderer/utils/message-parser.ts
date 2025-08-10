@@ -1,17 +1,11 @@
 import { MessageHistory } from '@agentos/core';
-import { MessageRecord } from '../types/core-types';
-
-/**
- * MessageHistory 또는 MessageRecord의 content를 파싱하여 텍스트로 변환하는 유틸리티
- */
-export type ParseableMessage = MessageHistory | MessageRecord;
 
 /**
  * Message content를 텍스트 문자열로 파싱
  * @param message MessageHistory 또는 MessageRecord
  * @returns 파싱된 텍스트 문자열
  */
-export function parseMessageContent(message: ParseableMessage): string {
+export function parseMessageContent(message: MessageHistory): string {
   if (!message.content) {
     return '';
   }
@@ -42,7 +36,7 @@ export function parseMessageContent(message: ParseableMessage): string {
  * @param message MessageHistory 또는 MessageRecord
  * @returns content가 비어있으면 true
  */
-export function isMessageContentEmpty(message: ParseableMessage): boolean {
+export function isMessageContentEmpty(message: MessageHistory): boolean {
   const content = parseMessageContent(message);
   return !content || content.trim().length === 0;
 }
@@ -53,7 +47,7 @@ export function isMessageContentEmpty(message: ParseableMessage): boolean {
  * @param maxLength 최대 길이 (기본값: 100)
  * @returns 첫 번째 줄 또는 요약된 텍스트
  */
-export function parseMessagePreview(message: ParseableMessage, maxLength: number = 100): string {
+export function parseMessagePreview(message: MessageHistory, maxLength: number = 100): string {
   const fullContent = parseMessageContent(message);
   const firstLine = fullContent.split('\n')[0] || '';
 
@@ -69,7 +63,7 @@ export function parseMessagePreview(message: ParseableMessage, maxLength: number
  * @param message MessageHistory 또는 MessageRecord
  * @returns content에 텍스트가 포함되어 있으면 true
  */
-export function hasTextContent(message: ParseableMessage): boolean {
+export function hasTextContent(message: MessageHistory): boolean {
   if (!message.content) return false;
 
   if (typeof message.content === 'string') return true;

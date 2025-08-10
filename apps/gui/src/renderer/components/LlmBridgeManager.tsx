@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, HStack, Input, Select, Text, VStack } from '@chakra-ui/react';
 import { Services } from '../bootstrap';
-import type { LlmBridgeConfig } from '../types/core-types';
+import type { LlmManifest } from 'llm-bridge-spec';
 
 export interface LlmBridgeManagerProps {
   onChange?(): void;
@@ -11,7 +11,7 @@ const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ onChange }) => {
   const [bridgeIds, setBridgeIds] = useState<string[]>([]);
   const [currentBridge, setCurrentBridge] = useState<{
     id: string;
-    config: LlmBridgeConfig;
+    config: LlmManifest;
   } | null>(null);
   const [id, setId] = useState('');
   const [type, setType] = useState<'openai' | 'anthropic' | 'local' | 'custom'>('custom');
@@ -39,11 +39,24 @@ const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ onChange }) => {
     if (!id) return;
 
     try {
-      const config: LlmBridgeConfig = {
+      const config: LlmManifest = {
+        schemaVersion: '1.0.0',
         name: id,
-        type,
-        apiUrl: type === 'local' ? 'http://localhost:8080' : undefined,
-        apiKey: type !== 'local' ? 'your-api-key' : undefined,
+        language: 'typescript',
+        entry: 'index.ts',
+        configSchema: {
+          type: 'object',
+          properties: {},
+        },
+        capabilities: {
+          modalities: [],
+          supportsToolCall: true,
+          supportsFunctionCall: true,
+          supportsMultiTurn: true,
+          supportsStreaming: true,
+          supportsVision: true,
+        },
+        description: '',
       };
 
       await bridgeService.register(id, config);

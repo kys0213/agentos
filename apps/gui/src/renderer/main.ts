@@ -26,10 +26,11 @@ async function initializeApp() {
 
   // 디버깅용 전역 설정 - 개발 환경에서만
   const isDevelopment =
-    (typeof (globalThis as any).__APP_ENV__ !== 'undefined' && (globalThis as any).__APP_ENV__.nodeEnv === 'development') ||
+    (typeof (globalThis as any).__APP_ENV__ !== 'undefined' &&
+      (globalThis as any).__APP_ENV__.nodeEnv === 'development') ||
     (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') ||
     (typeof window !== 'undefined' && window.location?.hostname === 'localhost');
-    
+
   if (typeof window !== 'undefined' && isDevelopment) {
     (window as any).__agentosServices = services;
     (window as any).__debug = {

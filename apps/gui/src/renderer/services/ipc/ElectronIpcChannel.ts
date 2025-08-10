@@ -1,258 +1,162 @@
-import type { IpcChannel } from './IpcChannel';
 import type {
-  ChatSessionDescription,
-  Preset,
-  McpConfig,
-  SendMessageResponse,
-  ToolExecutionResponse,
-  ResourceListResponse,
-  ResourceResponse,
-  MessageListResponse,
-  PaginationOptions,
-  LlmBridgeConfig,
-  McpToolArgs,
+  AgentChatResult,
+  AgentExecuteOptions,
   AgentMetadata,
-} from '../../types/core-types';
-import type { McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
+  BuiltinTool,
+  CreateAgentMetadata,
+  CreatePreset,
+  McpConfig,
+  McpToolMetadata,
+  McpUsageLog,
+  McpUsageStats,
+  Preset,
+} from '@agentos/core';
+import type { IpcChannel } from '../../../shared/types/ipc-channel';
+import type { ResourceListResponse, ResourceResponse, ToolExecutionResponse } from '../../types/core-types';
+import { LlmManifest, UserMessage } from 'llm-bridge-spec';
 import type {
-  UsageLogQueryOptions,
-  McpUsageUpdateEvent,
-  HourlyStatsResponse,
   ClearUsageLogsResponse,
+  HourlyStatsResponse,
+  McpUsageUpdateEvent,
   SetUsageTrackingResponse,
+  UsageLogQueryOptions,
 } from '../../../shared/types/mcp-usage-types';
 
-/**
- * Electron 환경에서 사용되는 IpcChannel 구현체
- * window.electronAPI를 통해 Main 프로세스와 IPC 통신
- */
 export class ElectronIpcChannel implements IpcChannel {
   private get electronAPI() {
     if (typeof window === 'undefined' || !window.electronAPI) {
-      throw new Error(
-        'ElectronAPI is not available. Make sure you are running in Electron environment.'
-      );
+      throw new Error('ElectronAPI is not available. Ensure Electron preload exposed it.');
     }
     return window.electronAPI;
   }
 
-  // ==================== Chat 관련 메서드들 ====================
-
-  async createChatSession(options?: { preset?: Preset }): Promise<ChatSessionDescription> {
-    return this.electronAPI.chat.createSession(options);
+  // Agent
+  async chat(agentId: string, messages: UserMessage[], options?: AgentExecuteOptions): Promise<AgentChatResult> {
+    return this.electronAPI.agent.chat(agentId, messages, options);
+  }
+  async endSession(agentId: string, sessionId: string): Promise<void> {
+    return this.electronAPI.agent.endSession(agentId, sessionId);
+  }
+  async getAgentMetadata(id: string): Promise<AgentMetadata | null> {
+    return this.electronAPI.agent.getAgentMetadata(id);
+  }
+  async getAllAgentMetadatas(): Promise<AgentMetadata[]> {
+    return this.electronAPI.agent.getAllAgentMetadatas();
+  }
+  async updateAgent(agentId: string, agent: Partial<Omit<AgentMetadata, 'id'>>): Promise<AgentMetadata> {
+    return this.electronAPI.agent.updateAgent(agentId, agent);
+  }
+  async createAgent(agent: CreateAgentMetadata): Promise<AgentMetadata> {
+    return this.electronAPI.agent.createAgent(agent);
+  }
+  async deleteAgent(id: string): Promise<AgentMetadata> {
+    return this.electronAPI.agent.deleteAgent(id);
   }
 
-  async listChatSessions(): Promise<ChatSessionDescription[]> {
-    return this.electronAPI.chat.listSessions();
+  // BuiltinTool
+  async getAllBuiltinTools(): Promise<BuiltinTool[]> {
+    return this.electronAPI.builtinTool.getAllBuiltinTools();
+  }
+  async getBuiltinTool(id: string): Promise<BuiltinTool | null> {
+    return this.electronAPI.builtinTool.getBuiltinTool(id);
+  }
+  async invokeBuiltinTool<R>(toolName: string, args: Record<string, any>): Promise<R> {
+    return this.electronAPI.builtinTool.invokeBuiltinTool(toolName, args);
   }
 
-  async loadChatSession(sessionId: string): Promise<ChatSessionDescription> {
-    return this.electronAPI.chat.loadSession(sessionId);
+  // Bridge
+  async registerBridge(config: LlmManifest): Promise<{ success: boolean }> {
+    return this.electronAPI.bridge.registerBridge(config);
   }
-
-  async sendChatMessage(sessionId: string, message: string): Promise<SendMessageResponse> {
-    return this.electronAPI.chat.sendMessage(sessionId, message);
-  }
-
-  async streamChatMessage(sessionId: string, message: string): Promise<ReadableStream> {
-    return this.electronAPI.chat.streamMessage(sessionId, message);
-  }
-
-  async getChatMessages(
-    sessionId: string,
-    options?: PaginationOptions
-  ): Promise<MessageListResponse> {
-    return this.electronAPI.chat.getMessages(sessionId, options);
-  }
-
-  async deleteChatSession(sessionId: string): Promise<{ success: boolean }> {
-    return this.electronAPI.chat.deleteSession(sessionId);
-  }
-
-  async renameChatSession(sessionId: string, newName: string): Promise<{ success: boolean }> {
-    return this.electronAPI.chat.renameSession(sessionId, newName);
-  }
-
-  // ==================== Bridge 관련 메서드들 ====================
-
-  async registerBridge(id: string, config: LlmBridgeConfig): Promise<{ success: boolean }> {
-    return this.electronAPI.bridge.register(id, config);
-  }
-
   async unregisterBridge(id: string): Promise<{ success: boolean }> {
-    return this.electronAPI.bridge.unregister(id);
+    return this.electronAPI.bridge.unregisterBridge(id);
   }
-
   async switchBridge(id: string): Promise<{ success: boolean }> {
-    return this.electronAPI.bridge.switch(id);
+    return this.electronAPI.bridge.switchBridge(id);
   }
-
-  async getCurrentBridge(): Promise<{ id: string; config: LlmBridgeConfig } | null> {
-    return this.electronAPI.bridge.getCurrent();
+  async getCurrentBridge(): Promise<{ id: string; config: LlmManifest } | null> {
+    return this.electronAPI.bridge.getCurrentBridge();
   }
-
   async getBridgeIds(): Promise<string[]> {
-    return this.electronAPI.bridge.getIds();
+    return this.electronAPI.bridge.getBridgeIds();
+  }
+  async getBridgeConfig(id: string): Promise<LlmManifest | null> {
+    return this.electronAPI.bridge.getBridgeConfig(id);
   }
 
-  async getBridgeConfig(id: string): Promise<LlmBridgeConfig | null> {
-    return this.electronAPI.bridge.getConfig(id);
-  }
-
-  // ==================== MCP 관련 메서드들 ====================
-
+  // MCP
   async getAllMcp(): Promise<McpConfig[]> {
-    return this.electronAPI.mcp.getAll();
+    return this.electronAPI.mcp.getAllMcp();
   }
-
   async connectMcp(config: McpConfig): Promise<{ success: boolean }> {
-    return this.electronAPI.mcp.connect(config);
+    return this.electronAPI.mcp.connectMcp(config);
   }
-
   async disconnectMcp(name: string): Promise<{ success: boolean }> {
-    return this.electronAPI.mcp.disconnect(name);
+    return this.electronAPI.mcp.disconnectMcp(name);
   }
-
-  async executeMcpTool(
-    clientName: string,
-    toolName: string,
-    args: McpToolArgs
-  ): Promise<ToolExecutionResponse> {
-    return this.electronAPI.mcp.executeTool(clientName, toolName, args);
+  async executeMcpTool(clientName: string, toolName: string, args: McpToolMetadata): Promise<ToolExecutionResponse> {
+    return this.electronAPI.mcp.executeMcpTool(clientName, toolName, args);
   }
-
   async getMcpResources(clientName: string): Promise<ResourceListResponse> {
-    return this.electronAPI.mcp.getResources(clientName);
+    return this.electronAPI.mcp.getMcpResources(clientName);
   }
-
   async readMcpResource(clientName: string, uri: string): Promise<ResourceResponse> {
-    return this.electronAPI.mcp.readResource(clientName, uri);
+    return this.electronAPI.mcp.readMcpResource(clientName, uri);
   }
-
   async getMcpStatus(clientName: string): Promise<{ connected: boolean; error?: string }> {
-    return this.electronAPI.mcp.getStatus(clientName);
+    return this.electronAPI.mcp.getMcpStatus(clientName);
   }
-
-  // ==================== MCP 사용량 추적 메서드들 ====================
-
   async getToolMetadata(clientName: string): Promise<McpToolMetadata> {
     return this.electronAPI.mcp.getToolMetadata(clientName);
   }
-
   async getAllToolMetadata(): Promise<McpToolMetadata[]> {
     return this.electronAPI.mcp.getAllToolMetadata();
   }
 
+  // MCP Usage Log
   async getUsageLogs(clientName: string, options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
-    return this.electronAPI.mcp.getUsageLogs(clientName, options);
+    return this.electronAPI.mcpUsageLog.getUsageLogs(clientName, options);
   }
-
   async getAllUsageLogs(options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
-    return this.electronAPI.mcp.getAllUsageLogs(options);
+    return this.electronAPI.mcpUsageLog.getAllUsageLogs(options);
   }
-
   async getUsageStats(clientName?: string): Promise<McpUsageStats> {
-    return this.electronAPI.mcp.getUsageStats(clientName);
+    return this.electronAPI.mcpUsageLog.getUsageStats(clientName);
   }
-
   async getHourlyStats(date: Date, clientName?: string): Promise<HourlyStatsResponse> {
-    return this.electronAPI.mcp.getHourlyStats(date, clientName);
+    return this.electronAPI.mcpUsageLog.getHourlyStats(date, clientName);
   }
-
-  async getUsageLogsInRange(
-    startDate: Date,
-    endDate: Date,
-    clientName?: string
-  ): Promise<McpUsageLog[]> {
-    return this.electronAPI.mcp.getUsageLogsInRange(startDate, endDate, clientName);
+  async getUsageLogsInRange(startDate: Date, endDate: Date, clientName?: string): Promise<McpUsageLog[]> {
+    return this.electronAPI.mcpUsageLog.getUsageLogsInRange(startDate, endDate, clientName);
   }
-
   async clearUsageLogs(olderThan?: Date): Promise<ClearUsageLogsResponse> {
-    return this.electronAPI.mcp.clearUsageLogs(olderThan);
+    return this.electronAPI.mcpUsageLog.clearUsageLogs(olderThan);
   }
-
   async setUsageTracking(clientName: string, enabled: boolean): Promise<SetUsageTrackingResponse> {
-    return this.electronAPI.mcp.setUsageTracking(clientName, enabled);
+    return this.electronAPI.mcpUsageLog.setUsageTracking(clientName, enabled);
+  }
+  async subscribeToUsageUpdates(callback: (event: McpUsageUpdateEvent) => void): Promise<() => void> {
+    await this.electronAPI.mcpUsageLog.subscribeToUsageUpdates(callback);
+    const { ipcRenderer } = (window as any).require('electron');
+    const handler = (_e: any, ev: McpUsageUpdateEvent) => callback(ev);
+    ipcRenderer.on('mcp:usage-update', handler);
+    return () => ipcRenderer.removeListener('mcp:usage-update', handler);
   }
 
-  async subscribeToUsageUpdates(
-    callback: (event: McpUsageUpdateEvent) => void
-  ): Promise<() => void> {
-    // 구독 설정을 위한 IPC 호출
-    await this.electronAPI.mcp.subscribeToUsageUpdates(callback);
-
-    // 실제 이벤트 구독은 Main Process에서 webContents.send로 전송되므로
-    // Renderer에서 ipcRenderer.on으로 수신
-    const { ipcRenderer } = window.require('electron');
-
-    const eventHandler = (_event: any, updateEvent: McpUsageUpdateEvent) => {
-      callback(updateEvent);
-    };
-
-    ipcRenderer.on('mcp:usage-update', eventHandler);
-
-    // 구독 해제 함수 반환
-    return () => {
-      ipcRenderer.removeListener('mcp:usage-update', eventHandler);
-    };
-  }
-
-  // ==================== Preset 관련 메서드들 ====================
-
+  // Preset
   async getAllPresets(): Promise<Preset[]> {
-    return this.electronAPI.preset.getAll();
+    return this.electronAPI.preset.getAllPresets();
   }
-
-  async createPreset(preset: Preset): Promise<{ success: boolean }> {
-    return this.electronAPI.preset.create(preset);
+  async createPreset(preset: CreatePreset): Promise<Preset> {
+    return this.electronAPI.preset.createPreset(preset);
   }
-
-  async updatePreset(preset: Preset): Promise<{ success: boolean }> {
-    return this.electronAPI.preset.update(preset);
+  async updatePreset(id: string, preset: Partial<Omit<Preset, 'id'>>): Promise<Preset> {
+    return this.electronAPI.preset.updatePreset(id, preset);
   }
-
-  async deletePreset(id: string): Promise<{ success: boolean }> {
-    return this.electronAPI.preset.delete(id);
+  async deletePreset(id: string): Promise<Preset> {
+    return this.electronAPI.preset.deletePreset(id);
   }
-
   async getPreset(id: string): Promise<Preset | null> {
-    return this.electronAPI.preset.get(id);
-  }
-
-  // ==================== Agent 관련 메서드들 (TODO: Main Process 구현 필요) ====================
-
-  async getAllAgents(): Promise<AgentMetadata[]> {
-    // TODO: Main Process에 Agent API 구현 필요
-    return [];
-  }
-
-  async createAgent(_agent: AgentMetadata): Promise<{ success: boolean }> {
-    // TODO: Main Process에 Agent API 구현 필요
-    return { success: false };
-  }
-
-  async updateAgent(_agent: AgentMetadata): Promise<{ success: boolean }> {
-    // TODO: Main Process에 Agent API 구현 필요
-    return { success: false };
-  }
-
-  async deleteAgent(_id: string): Promise<{ success: boolean }> {
-    // TODO: Main Process에 Agent API 구현 필요
-    return { success: false };
-  }
-
-  async getAgent(_id: string): Promise<AgentMetadata | null> {
-    // TODO: Main Process에 Agent API 구현 필요
-    return null;
-  }
-
-  async getAvailableAgents(): Promise<AgentMetadata[]> {
-    // TODO: Main Process에 Agent API 구현 필요
-    return [];
-  }
-
-  async getActiveAgents(): Promise<AgentMetadata[]> {
-    // TODO: Main Process에 Agent API 구현 필요
-    return [];
+    return this.electronAPI.preset.getPreset(id);
   }
 }

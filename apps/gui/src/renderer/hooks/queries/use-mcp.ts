@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Services } from '../../bootstrap';
-import type { McpConfig } from '../../types/core-types';
+import type { McpConfig } from '@agentos/core';
 
 // Query Keys
 const QUERY_KEYS = {

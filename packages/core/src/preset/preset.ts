@@ -21,6 +21,11 @@ export interface Preset {
 
 export type ReadonlyPreset = Readonly<Preset>;
 
+export type CreatePreset = Omit<
+  Preset,
+  'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'knowledgeDocuments' | 'knowledgeStats'
+>;
+
 export type KnowledgeState = {
   indexed: number;
   vectorized: number;

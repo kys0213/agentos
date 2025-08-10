@@ -1,4 +1,4 @@
-import { Agent, ReadonlyAgentMetadata } from '@agentos/core';
+import { ReadonlyAgentMetadata } from '@agentos/core';
 import {
   Bot,
   Filter,
@@ -200,7 +200,7 @@ export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
     },
   ];
 
-  const getStatusColor = (status: Agent['status']) => {
+  const getStatusColor = (status: ReadonlyAgentMetadata['status']) => {
     switch (status) {
       case 'active':
         return 'bg-green-500';

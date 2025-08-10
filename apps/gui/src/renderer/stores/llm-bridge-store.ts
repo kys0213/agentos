@@ -1,21 +1,14 @@
-// 브라우저 호환을 위한 메모리 기반 LLM Bridge 스토어
-export interface LlmBridgeConfig {
-  id: string;
-  type: 'echo' | 'reverse';
-}
+import { LlmManifest } from 'llm-bridge-spec';
 
 export class LlmBridgeStore {
-  private bridges: LlmBridgeConfig[] = [
-    { id: 'echo', type: 'echo' },
-    { id: 'reverse', type: 'reverse' },
-  ];
+  private bridges: LlmManifest[] = [];
 
-  list(): LlmBridgeConfig[] {
+  list(): LlmManifest[] {
     return [...this.bridges];
   }
 
-  save(config: LlmBridgeConfig): void {
-    const index = this.bridges.findIndex((b) => b.id === config.id);
+  save(config: LlmManifest): void {
+    const index = this.bridges.findIndex((b) => b.name === config.name);
     if (index >= 0) {
       this.bridges[index] = config;
     } else {
@@ -24,6 +17,6 @@ export class LlmBridgeStore {
   }
 
   delete(id: string): void {
-    this.bridges = this.bridges.filter((b) => b.id !== id);
+    this.bridges = this.bridges.filter((b) => b.name !== id);
   }
 }

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import type { ChatService } from '../services/chat-service';
-import type { Preset } from '../types/core-types';
+import type { Preset } from '@agentos/core';
 
 // Message 타입 정의 (ChatMessageList에서 가져왔던 것)
 export interface Message {

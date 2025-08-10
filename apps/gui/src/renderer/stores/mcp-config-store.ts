@@ -1,6 +1,6 @@
-import type { McpConfig } from '../types/core-types';
 import { McpService } from '../services/mcp-service';
 import { Services } from '../bootstrap';
+import { McpConfig } from '@agentos/core';
 
 // IPC 기반 MCP 설정 스토어 (브라우저 호환)
 export class McpConfigStore {

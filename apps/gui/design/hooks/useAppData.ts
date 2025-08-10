@@ -2,11 +2,15 @@ import { useState, useEffect } from 'react';
 import { Preset, AgentMetadata } from '../types';
 // Mock 데이터 의존성 제거
 // import { mockPresets, mockAgents } from '../data/mockData';
-import { McpConfig } from '../components/MCPToolAdd';
+import { McpConfig } from '@agentos/core';
 
 // ServiceContainer와 서비스들 import (renderer와 동일한 패턴)
-import { ServiceContainer } from '../../src/renderer/services/ServiceContainer';
-import type { PresetService, McpService, AgentService } from '../../src/renderer/types/core-types';
+import { ServiceContainer } from '../../src/renderer/services/service-container';
+import type {
+  PresetServiceInterface,
+  McpServiceInterface,
+  AgentServiceInterface,
+} from '../../src/renderer/types/core-types';
 import type { UseAppDataReturn } from '../../src/renderer/types/design-types';
 
 /**
@@ -25,17 +29,17 @@ export function useAppData(): UseAppDataReturn {
     const loadData = async () => {
       try {
         setLoading(true);
-        
+
         // Preset Service를 통해 프리셋 로드
         if (ServiceContainer.has('preset')) {
-          const presetService = ServiceContainer.get<PresetService>('preset');
+          const presetService = ServiceContainer.get<PresetServiceInterface>('preset');
           const corePresets = await presetService.getAll();
           setPresets(corePresets);
         }
 
         // AgentService를 통해 Agent 데이터 로드
         if (ServiceContainer.has('agent')) {
-          const agentService = ServiceContainer.get<AgentService>('agent');
+          const agentService = ServiceContainer.get<AgentServiceInterface>('agent');
           const coreAgents = await agentService.getAll();
           setAgents(coreAgents);
         } else {
@@ -58,21 +62,26 @@ export function useAppData(): UseAppDataReturn {
 
   const currentAgents = showEmptyState ? [] : agents;
 
-  const handleUpdateAgentStatus = async (agentId: string, newStatus: AgentMetadata['status']): Promise<void> => {
+  const handleUpdateAgentStatus = async (
+    agentId: string,
+    newStatus: AgentMetadata['status']
+  ): Promise<void> => {
     try {
       if (ServiceContainer.has('agent')) {
-        const agentService = ServiceContainer.get<AgentService>('agent');
-        const existingAgent = agents.find(agent => agent.id === agentId);
-        
+        const agentService = ServiceContainer.get<AgentServiceInterface>('agent');
+        const existingAgent = agents.find((agent) => agent.id === agentId);
+
         if (existingAgent) {
           const updatedAgent = { ...existingAgent, status: newStatus };
           await agentService.update(updatedAgent);
         }
       }
-      
+
       // 로컬 상태 업데이트
       setAgents((prev: AgentMetadata[]) =>
-        prev.map((agent: AgentMetadata) => (agent.id === agentId ? { ...agent, status: newStatus } : agent))
+        prev.map((agent: AgentMetadata) =>
+          agent.id === agentId ? { ...agent, status: newStatus } : agent
+        )
       );
     } catch (error) {
       console.error('Failed to update agent status:', error);
@@ -84,7 +93,7 @@ export function useAppData(): UseAppDataReturn {
     try {
       // PresetService를 통한 생성
       if (ServiceContainer.has('preset')) {
-        const presetService = ServiceContainer.get<PresetService>('preset');
+        const presetService = ServiceContainer.get<PresetServiceInterface>('preset');
         const presetToCreate: Preset = {
           id: `preset-${Date.now()}`,
           name: newPresetData.name || '',
@@ -107,12 +116,12 @@ export function useAppData(): UseAppDataReturn {
             totalSize: 0,
           },
         };
-        
+
         const createdPreset = await presetService.create(presetToCreate);
         setPresets((prev) => [...prev, createdPreset]);
         return createdPreset;
       }
-      
+
       throw new Error('PresetService not available');
     } catch (error) {
       console.error('Failed to create preset:', error);
@@ -123,11 +132,11 @@ export function useAppData(): UseAppDataReturn {
   const handleCreateMCPTool = async (mcpConfig: McpConfig): Promise<McpConfig> => {
     try {
       if (ServiceContainer.has('mcp')) {
-        const mcpService = ServiceContainer.get<McpService>('mcp');
+        const mcpService = ServiceContainer.get<McpServiceInterface>('mcp');
         await mcpService.connect(mcpConfig);
         return mcpConfig;
       }
-      
+
       throw new Error('MCP service not available');
     } catch (error) {
       console.error('Failed to create MCP tool:', error);
@@ -135,7 +144,9 @@ export function useAppData(): UseAppDataReturn {
     }
   };
 
-  const handleCreateAgent = async (newAgentData: Partial<AgentMetadata>): Promise<AgentMetadata> => {
+  const handleCreateAgent = async (
+    newAgentData: Partial<AgentMetadata>
+  ): Promise<AgentMetadata> => {
     try {
       if (!newAgentData.preset) {
         throw new Error('Preset is required');
@@ -143,7 +154,7 @@ export function useAppData(): UseAppDataReturn {
 
       // AgentService를 통해 Agent 생성
       if (ServiceContainer.has('agent')) {
-        const agentService = ServiceContainer.get<AgentService>('agent');
+        const agentService = ServiceContainer.get<AgentServiceInterface>('agent');
         const agentToCreate: AgentMetadata = {
           id: `agent-${Date.now()}`,
           name: newAgentData.name || '',
@@ -156,12 +167,12 @@ export function useAppData(): UseAppDataReturn {
           sessionCount: 0,
           usageCount: 0,
         };
-        
+
         const createdAgent = await agentService.create(agentToCreate);
         setAgents((prev: AgentMetadata[]) => [...prev, createdAgent]);
         return createdAgent;
       }
-      
+
       throw new Error('AgentService not available');
     } catch (error) {
       console.error('Failed to create agent:', error);
@@ -176,7 +187,7 @@ export function useAppData(): UseAppDataReturn {
       //   const customToolService = ServiceContainer.get<CustomToolService>('customTool');
       //   return await customToolService.create(toolData);
       // }
-      
+
       console.warn('Custom tool service not implemented yet:', toolData);
       return toolData;
     } catch (error) {
@@ -188,7 +199,7 @@ export function useAppData(): UseAppDataReturn {
   const handleUpdatePreset = async (updatedPreset: Preset): Promise<void> => {
     try {
       if (ServiceContainer.has('preset')) {
-        const presetService = ServiceContainer.get<PresetService>('preset');
+        const presetService = ServiceContainer.get<PresetServiceInterface>('preset');
         const presetToUpdate = { ...updatedPreset, updatedAt: new Date() };
         await presetService.update(presetToUpdate);
       }
@@ -208,7 +219,7 @@ export function useAppData(): UseAppDataReturn {
   const handleDeletePreset = async (presetId: string): Promise<void> => {
     try {
       if (ServiceContainer.has('preset')) {
-        const presetService = ServiceContainer.get<PresetService>('preset');
+        const presetService = ServiceContainer.get<PresetServiceInterface>('preset');
         await presetService.delete(presetId);
       }
 
