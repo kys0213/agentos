@@ -1,21 +1,7 @@
-import type { IpcChannel } from './IpcChannel';
+import type { IpcChannel } from '../../../shared/types/ipc-channel';
 
 import { ElectronIpcChannel } from './ElectronIpcChannel';
-import { WebIpcChannel } from './WebIpcChannel';
-import { ChromeExtensionIpcChannel } from './ChromeExtensionIpcChannel';
 import { MockIpcChannel } from './MockIpcChannel';
-
-// 테스트 및 Chrome Extension API 타입 선언
-declare const global: {
-  chrome: {
-    runtime: {
-      id?: string;
-    };
-  };
-};
-
-declare const vi: any;
-declare const jest: any;
 
 /**
  * 환경별 IpcChannel 구현체를 생성하는 팩토리 클래스
@@ -34,25 +20,15 @@ export class IpcChannelFactory {
     }
 
     const environment = this.detectEnvironment();
-    console.log(`Detected environment: ${environment}`);
+    const envInfo = this.getEnvironmentInfo();
+    console.log(`Detected environment: ${environment}`, envInfo);
 
     switch (environment) {
       case 'electron':
         this._instance = new ElectronIpcChannel();
         break;
 
-      case 'chrome-extension':
-        this._instance = new ChromeExtensionIpcChannel();
-        break;
-
-      case 'test':
-        this._instance = new MockIpcChannel();
-        break;
-
-      case 'web':
       default:
-        // web 환경에서는 개발 중이므로 MockIpcChannel 사용
-        // 프로덕션에서는 실제 백엔드 서버와 연결할 WebIpcChannel을 사용
         this._instance = new MockIpcChannel();
         break;
     }
@@ -77,7 +53,7 @@ export class IpcChannelFactory {
   /**
    * 현재 실행 환경을 감지하여 문자열로 반환
    */
-  private static detectEnvironment(): 'electron' | 'chrome-extension' | 'web' | 'test' {
+  private static detectEnvironment(): 'electron' | 'web' | 'test' {
     // 테스트 환경 감지 (가장 먼저 체크)
     if (this.isTestEnvironment()) {
       return 'test';
@@ -86,11 +62,6 @@ export class IpcChannelFactory {
     // Electron 환경 감지
     if (this.isElectronEnvironment()) {
       return 'electron';
-    }
-
-    // Chrome Extension 환경 감지
-    if (this.isChromeExtensionEnvironment()) {
-      return 'chrome-extension';
     }
 
     // 기본값: 웹 브라우저 환경
@@ -103,44 +74,25 @@ export class IpcChannelFactory {
   private static isElectronEnvironment(): boolean {
     try {
       // window.electronAPI가 존재하는지 확인
-      return (
+      const hasElectronAPI =
         typeof window !== 'undefined' &&
         window.electronAPI !== undefined &&
-        typeof window.electronAPI === 'object'
-      );
-    } catch {
-      return false;
-    }
-  }
+        typeof window.electronAPI === 'object';
 
-  /**
-   * Chrome Extension 환경인지 확인
-   */
-  private static isChromeExtensionEnvironment(): boolean {
-    try {
-      // chrome.runtime API가 존재하는지 확인
-      return (
-        typeof chrome !== 'undefined' &&
-        chrome.runtime !== undefined &&
-        chrome.runtime.id !== undefined
-      );
-    } catch {
-      return false;
-    }
-  }
+      // 추가 검증: process.type이 'renderer'인지 확인
+      const isRenderer = typeof process !== 'undefined' && process.type === 'renderer';
 
-  /**
-   * 웹 브라우저 환경인지 확인
-   */
-  private static isWebEnvironment(): boolean {
-    try {
-      // window 객체가 존재하고, electron이나 chrome extension이 아닌 경우
-      return (
-        typeof window !== 'undefined' &&
-        !this.isElectronEnvironment() &&
-        !this.isChromeExtensionEnvironment()
-      );
-    } catch {
+      const result = hasElectronAPI || isRenderer;
+      console.log('Electron environment check:', {
+        hasElectronAPI,
+        isRenderer,
+        result,
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+      });
+
+      return result;
+    } catch (error) {
+      console.log('Electron environment check failed:', error);
       return false;
     }
   }
@@ -155,13 +107,60 @@ export class IpcChannelFactory {
         (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') ||
         (typeof global !== 'undefined' && (global as any).test !== undefined) ||
         (typeof window !== 'undefined' && (window as any).__testing__ === true) ||
-        // Jest 환경 감지
-        typeof jest !== 'undefined' ||
-        // Vitest 환경 감지
-        typeof vi !== 'undefined'
+        typeof (globalThis as any).jest !== 'undefined'
       );
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * 개발 모드인지 확인 (브라우저 호환)
+   */
+  private static isDevelopmentMode(): boolean {
+    try {
+      // Vite가 주입한 환경변수 사용
+      if (typeof (globalThis as any).__APP_ENV__ !== 'undefined') {
+        return (globalThis as any).__APP_ENV__.nodeEnv === 'development';
+      }
+
+      // process.env가 정의되어 있다면 사용
+      if (typeof process !== 'undefined' && process.env) {
+        return process.env.NODE_ENV === 'development';
+      }
+
+      // 브라우저에서는 location.hostname으로 추정
+      if (typeof window !== 'undefined' && window.location) {
+        return (
+          window.location.hostname === 'localhost' ||
+          window.location.hostname === '127.0.0.1' ||
+          window.location.hostname.includes('dev')
+        );
+      }
+
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * 빌드 타겟 확인
+   */
+  private static getBuildTarget(): 'electron' | 'web' {
+    try {
+      // Vite가 주입한 빌드 타겟 사용
+      if (typeof (globalThis as any).__APP_ENV__ !== 'undefined') {
+        const t = (globalThis as any).__APP_ENV__.buildTarget as 'electron' | 'web' | 'extension';
+        return t === 'extension' ? 'web' : t;
+      }
+
+      // 환경 감지 결과로 추정
+      const detected = this.detectEnvironment();
+      if (detected === 'web') return 'web';
+      return 'electron';
+    } catch {
+      return 'electron';
     }
   }
 
@@ -173,12 +172,14 @@ export class IpcChannelFactory {
       detected: this.detectEnvironment(),
       checks: {
         isElectron: this.isElectronEnvironment(),
-        isChromeExtension: this.isChromeExtensionEnvironment(),
-        isWeb: this.isWebEnvironment(),
-        isTest: this.isTestEnvironment(),
       },
+      buildInfo:
+        typeof (globalThis as any).__APP_ENV__ !== 'undefined'
+          ? (globalThis as any).__APP_ENV__
+          : undefined,
+      isDevelopment: this.isDevelopmentMode(),
+      buildTarget: this.getBuildTarget(),
       hasElectronAPI: typeof window !== 'undefined' && window.electronAPI !== undefined,
-      hasChromeRuntime: typeof chrome !== 'undefined' && chrome.runtime !== undefined,
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
       nodeEnv: typeof process !== 'undefined' ? process.env?.NODE_ENV : 'unknown',
     };

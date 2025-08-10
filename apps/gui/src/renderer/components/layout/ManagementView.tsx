@@ -12,7 +12,7 @@ import Sidebar from './Sidebar';
 // Import new design hooks like design/App.tsx
 import { useAppData } from '../../hooks/useAppData';
 import { useChatState } from '../../hooks/useChatState';
-import { UseAppNavigationReturn } from '../../types/design-types';
+import { UseAppNavigationReturn } from '../../types/core-types';
 import { getPageTitle } from '../../utils/appUtils';
 import { RACPManager } from '../racp/RACPManager';
 import { SettingsManager } from '../settings/SettingManager';
@@ -316,15 +316,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
             </div>
           );
         }
-        return (
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-semibold">Sub-Agent Manager</h1>
-              <Button onClick={handleStartCreateAgent}>Create Agent</Button>
-            </div>
-            <SubAgentManager onOpenChat={handleOpenChat} />
-          </div>
-        );
+        return <SubAgentManager onOpenChat={handleOpenChat} />;
       case 'models':
         return <ModelManager />;
       case 'tools':

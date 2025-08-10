@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import type { UseAppDataReturn } from '../types/design-types';
-import { PresetService, McpService } from '../types/core-types';
-import { Preset, McpConfig, Agent, ReadonlyAgentMetadata, ReadonlyPreset } from '@agentos/core';
-import { ServiceContainer } from '../services/ServiceContainer';
+import type { UseAppDataReturn } from '../types/core-types';
+import { PresetServiceInterface, McpServiceInterface } from '../types/core-types';
+import { Preset, McpConfig, ReadonlyAgentMetadata, ReadonlyPreset } from '@agentos/core';
+import { ServiceContainer } from '../services/service-container';
 
 /**
  * App data management hook
@@ -14,15 +14,21 @@ export function useAppData(): UseAppDataReturn {
   const [currentAgents, setCurrentAgents] = useState<ReadonlyAgentMetadata[]>([]);
   const [showEmptyState, setShowEmptyState] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   // Core 서비스들에서 데이터 로드
   useEffect(() => {
     const loadData = async () => {
       try {
         // Preset Service를 통해 프리셋 로드
+        console.log('🔄 Loading presets from PresetService...');
+
         if (ServiceContainer.has('preset')) {
-          const presetService = ServiceContainer.get<PresetService>('preset');
-          const corePresets = await presetService.getAll();
+          const presetService = ServiceContainer.get<PresetServiceInterface>('preset');
+          console.log('📦 PresetService found, calling getAllPresets()...');
+
+          const corePresets = await presetService.getAllPresets();
+          console.log('✅ Presets loaded from service:', corePresets);
 
           // Core Preset을 DesignPreset으로 변환
           const designPresets: Preset[] = corePresets.map(
@@ -36,19 +42,24 @@ export function useAppData(): UseAppDataReturn {
                 totalSize: 0,
               },
               // 새 디자인 필드들 기본값
-              category: ['general'],
-              status: 'active',
+              category: preset.category || ['general'],
+              status: preset.status || 'active',
             })
           );
 
+          console.log('🎨 Presets converted for UI:', designPresets);
           setPresets(designPresets);
+        } else {
+          console.warn('⚠️ PresetService not found in ServiceContainer');
         }
 
         // TODO: Agent 데이터는 현재 Core에 없으므로 임시로 빈 배열
         // 실제로는 AgentManager나 별도 서비스에서 로드해야 함
         setCurrentAgents([]);
-      } catch (error) {
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
         console.error('Failed to load app data:', error);
+        setError(error);
         // 에러 발생 시 빈 상태로 설정
         setPresets([]);
         setCurrentAgents([]);
@@ -62,7 +73,7 @@ export function useAppData(): UseAppDataReturn {
 
   const handleUpdateAgentStatus = async (
     agentId: string,
-    newStatus: Agent['status']
+    newStatus: ReadonlyAgentMetadata['status']
   ): Promise<void> => {
     try {
       // TODO: Agent 서비스 구현 후 실제 업데이트
@@ -85,8 +96,10 @@ export function useAppData(): UseAppDataReturn {
     newPresetData: Partial<ReadonlyPreset>
   ): Promise<ReadonlyPreset> => {
     try {
+      console.log('🔄 Creating new preset:', newPresetData);
+
       if (ServiceContainer.has('preset')) {
-        const presetService = ServiceContainer.get<PresetService>('preset');
+        const presetService = ServiceContainer.get<PresetServiceInterface>('preset');
 
         const presetToCreate: Preset = {
           id: `preset-${Date.now()}`,
@@ -112,17 +125,19 @@ export function useAppData(): UseAppDataReturn {
           },
         };
 
-        const result = await presetService.create(presetToCreate);
-        if (result.success) {
-          setPresets((prev) => [...prev, presetToCreate]);
-          return presetToCreate;
-        }
-        throw new Error('Failed to create preset');
+        console.log('📤 Sending preset to service:', presetToCreate);
+        const result = await presetService.createPreset(presetToCreate as any);
+        console.log('📥 Service create result:', result);
+
+        setPresets((prev) => [...prev, result]);
+        console.log('✅ Preset created and added to state');
+        return result;
       }
 
       throw new Error('PresetService not available');
     } catch (error) {
-      console.error('Failed to create preset:', error);
+      console.error('❌ Failed to create preset:', error);
+      setError(error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   };
@@ -130,8 +145,8 @@ export function useAppData(): UseAppDataReturn {
   const handleCreateMCPTool = async (mcpConfig: McpConfig): Promise<unknown> => {
     try {
       if (ServiceContainer.has('mcp')) {
-        const mcpService = ServiceContainer.get<McpService>('mcp');
-        await mcpService.connect(mcpConfig);
+        const mcpService = ServiceContainer.get<McpServiceInterface>('mcp');
+        await mcpService.connectMcp(mcpConfig);
         return mcpConfig;
       }
 
@@ -201,8 +216,10 @@ export function useAppData(): UseAppDataReturn {
 
   const handleUpdatePreset = async (updatedPreset: Preset): Promise<void> => {
     try {
+      console.log('🔄 Updating preset:', updatedPreset);
+
       if (ServiceContainer.has('preset')) {
-        const presetService = ServiceContainer.get<PresetService>('preset');
+        const presetService = ServiceContainer.get<PresetServiceInterface>('preset');
 
         // DesignPreset을 Core Preset으로 변환하여 업데이트
         const corePreset: Preset = {
@@ -210,7 +227,9 @@ export function useAppData(): UseAppDataReturn {
           updatedAt: new Date(),
         };
 
-        await presetService.update(corePreset);
+        console.log('📤 Sending preset update to service:', corePreset);
+        const result = await presetService.updatePreset(corePreset.id, corePreset);
+        console.log('📥 Service update result:', result);
       }
 
       // 로컬 상태 업데이트
@@ -219,23 +238,32 @@ export function useAppData(): UseAppDataReturn {
           preset.id === updatedPreset.id ? { ...updatedPreset, updatedAt: new Date() } : preset
         )
       );
+      console.log('✅ Preset updated in state');
     } catch (error) {
-      console.error('Failed to update preset:', error);
+      console.error('❌ Failed to update preset:', error);
+      setError(error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   };
 
   const handleDeletePreset = async (presetId: string): Promise<void> => {
     try {
+      console.log('🔄 Deleting preset:', presetId);
+
       if (ServiceContainer.has('preset')) {
-        const presetService = ServiceContainer.get<PresetService>('preset');
-        await presetService.delete(presetId);
+        const presetService = ServiceContainer.get<PresetServiceInterface>('preset');
+
+        console.log('📤 Sending delete request to service for:', presetId);
+        const result = await presetService.deletePreset(presetId);
+        console.log('📥 Service delete result:', result);
       }
 
       // 로컬 상태에서 제거
       setPresets((prev) => prev.filter((preset) => preset.id !== presetId));
+      console.log('✅ Preset deleted from state');
     } catch (error) {
-      console.error('Failed to delete preset:', error);
+      console.error('❌ Failed to delete preset:', error);
+      setError(error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   };
@@ -257,6 +285,7 @@ export function useAppData(): UseAppDataReturn {
     showEmptyState,
     setShowEmptyState,
     loading, // 로딩 상태 추가
+    error, // 에러 상태 추가
     handleUpdateAgentStatus,
     handleCreatePreset,
     handleCreateMCPTool,

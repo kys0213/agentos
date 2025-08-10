@@ -5,12 +5,12 @@ import { Badge } from './ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Textarea } from './ui/textarea';
-import { Slider } from './ui/slider';
+import { Textarea } from '../ui/textarea';
+import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Checkbox } from './ui/checkbox';
 import { Progress } from './ui/progress';
-import { MCPToolAdd, McpConfig } from './MCPToolAdd';
+import { McpConfig } from '@agentos/core';
 import {
   ArrowLeft,
   Save,

@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Preset } from '@agentos/core';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Services } from '../../bootstrap';
-import type { ChatSessionDescription, Preset } from '../../types/core-types';
 
 // Query Keys
 const QUERY_KEYS = {

@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Services } from '../../bootstrap';
-import type { LlmBridgeConfig } from '../../types/core-types';
 
 // Query Keys
 const QUERY_KEYS = {

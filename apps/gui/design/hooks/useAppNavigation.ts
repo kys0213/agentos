@@ -31,10 +31,13 @@ export function useAppNavigation(): UseAppNavigationReturn {
   }, [resetCreateStates]);
 
   // Preset 선택 핸들러 (메모이제이션)
-  const handleSelectPreset = useCallback((preset: Preset) => {
-    setSelectedPreset(preset);
-    resetCreateStates();
-  }, [resetCreateStates]);
+  const handleSelectPreset = useCallback(
+    (preset: Preset) => {
+      setSelectedPreset(preset);
+      resetCreateStates();
+    },
+    [resetCreateStates]
+  );
 
   // 각 섹션별 뒤로 가기 핸들러들 (메모이제이션 및 통합)
   const handleBackToPresets = useCallback(() => {
@@ -93,7 +96,11 @@ export function useAppNavigation(): UseAppNavigationReturn {
   // 디테일 뷰 상태 체크 유틸리티 (메모이제이션)
   const isInDetailView = useCallback(() => {
     return (
-      selectedPreset !== null || creatingPreset || creatingMCPTool || creatingAgent || creatingCustomTool
+      selectedPreset !== null ||
+      creatingPreset ||
+      creatingMCPTool ||
+      creatingAgent ||
+      creatingCustomTool
     );
   }, [selectedPreset, creatingPreset, creatingMCPTool, creatingAgent, creatingCustomTool]);
 

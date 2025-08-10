@@ -84,18 +84,6 @@ export interface AgentManager {
   getActiveAgents(pagination?: CursorPagination): Promise<CursorPaginationResult<Agent>>;
 
   /**
-   * Agent를 검색합니다.
-   *
-   * @param query - 검색 조건
-   * @param pagination - 페이지네이션 옵션
-   * @returns 검색 결과
-   */
-  searchAgents(
-    query: AgentSearchQuery,
-    pagination?: CursorPagination
-  ): Promise<CursorPaginationResult<Agent>>;
-
-  /**
    * Agent를 실행합니다.
    *
    * @param agentId - 실행할 Agent ID

@@ -1,20 +1,17 @@
-import { LlmBridgeConfig } from '../types/core-types';
-import type { IpcChannel } from './ipc/IpcChannel';
+import type { LlmManifest } from 'llm-bridge-spec';
+import type { IpcChannel, LlmBridgeProtocol } from '../../shared/types/ipc-channel';
 
 /**
  * Bridge 관련 기능을 제공하는 서비스 클래스
  * IpcChannel을 통해 환경에 독립적으로 동작
  */
-export class BridgeService {
+export class BridgeService implements LlmBridgeProtocol {
   constructor(private ipcChannel: IpcChannel) {}
 
-  // ==================== Bridge 관리 메서드들 ====================
-
-  async register(id: string, config: LlmBridgeConfig): Promise<{ success: boolean }> {
-    return this.ipcChannel.registerBridge(id, config);
+  registerBridge(config: LlmManifest): Promise<{ success: boolean }> {
+    return this.ipcChannel.registerBridge(config);
   }
-
-  async unregister(id: string): Promise<{ success: boolean }> {
+  unregisterBridge(id: string): Promise<{ success: boolean }> {
     return this.ipcChannel.unregisterBridge(id);
   }
 
@@ -22,7 +19,7 @@ export class BridgeService {
     return this.ipcChannel.switchBridge(id);
   }
 
-  async getCurrentBridge(): Promise<{ id: string; config: LlmBridgeConfig } | null> {
+  async getCurrentBridge(): Promise<{ id: string; config: LlmManifest } | null> {
     return this.ipcChannel.getCurrentBridge();
   }
 
@@ -30,7 +27,7 @@ export class BridgeService {
     return this.ipcChannel.getBridgeIds();
   }
 
-  async getBridgeConfig(id: string): Promise<LlmBridgeConfig | null> {
+  async getBridgeConfig(id: string): Promise<LlmManifest | null> {
     return this.ipcChannel.getBridgeConfig(id);
   }
 

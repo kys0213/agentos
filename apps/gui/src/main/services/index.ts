@@ -1,12 +1,16 @@
-import { setupChatIpcHandlers } from './chat-ipc-handlers';
+import { setupAgentIpcHandlers } from './agent-ipc-handlers';
+import { setupBuiltinToolIpcHandlers } from './builtin-tool-ipc-handlers';
 import { setupMcpIpcHandlers } from './mcp-ipc-handlers';
+import { setupMcpUsageLogIpcHandlers } from './mcp-usage-log-ipc-handlers';
 import { setupPresetIpcHandlers } from './preset-ipc-handlers';
 import { setupBridgeIpcHandlers } from './bridge-ipc-handlers';
 
 export function setupAllIpcHandlers() {
-  // 각 도메인별 IPC 핸들러 등록 (의존성은 각 핸들러 내부에서 생성)
-  setupChatIpcHandlers();
+  // AgentOS API 스펙에 맞춘 도메인별 IPC 핸들러 등록
+  setupAgentIpcHandlers();
+  setupBuiltinToolIpcHandlers();
   setupMcpIpcHandlers();
+  setupMcpUsageLogIpcHandlers();
   setupPresetIpcHandlers();
   setupBridgeIpcHandlers();
 

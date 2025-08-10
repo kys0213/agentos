@@ -44,7 +44,7 @@ export const testHelpers = {
    */
   setupTestData: async () => {
     // 테스트용 기본 데이터 생성
-    await services.chatService.createSession({
+    await (services as any).chatService.createSession({
       preset: {
         id: 'test-preset',
         name: 'Test Preset',
@@ -68,10 +68,7 @@ export const testHelpers = {
       },
     });
 
-    await services.bridgeService.register('test-bridge', {
-      name: 'Test Bridge',
-      type: 'custom',
-    });
+    await services.bridgeService.registerBridge({ name: 'Test Bridge' } as any);
 
     console.log('🧪 Test data setup completed');
   },

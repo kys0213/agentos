@@ -27,9 +27,18 @@ export default defineConfig({
     minify: process.env.NODE_ENV === 'production',
   },
 
-  // 브라우저 환경을 위한 Node.js polyfill 설정
+  // 브라우저 환경을 위한 Node.js polyfill 및 환경변수 주입
   define: {
     global: 'globalThis',
+    // process.env 객체를 브라우저에서도 사용할 수 있도록 주입
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+    'process.env.VITE_APP_ENV': JSON.stringify(process.env.VITE_APP_ENV || 'auto'),
+    // 빌드 타임에 환경 정보 주입
+    __APP_ENV__: JSON.stringify({
+      buildTarget: process.env.BUILD_TARGET || 'electron',
+      nodeEnv: process.env.NODE_ENV || 'development',
+      timestamp: new Date().toISOString(),
+    }),
   },
 
   // 개발 서버 설정

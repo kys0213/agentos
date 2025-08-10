@@ -1,77 +1,62 @@
-import type { IpcChannel } from './ipc/IpcChannel';
-import type {
-  ChatSessionDescription,
-  Preset,
-  SendMessageResponse,
-  MessageListResponse,
-  PaginationOptions,
-} from '../types/core-types';
+import type { IpcChannel } from '../../shared/types/ipc-channel';
+import type { ChatSessionMetadata } from '@agentos/core';
 
-/**
- * 채팅 관련 기능을 제공하는 서비스 클래스
- * IpcChannel을 통해 환경에 독립적으로 동작
- */
+export interface ListMessagesResult {
+  messages: any[];
+  total?: number;
+  hasMore?: boolean;
+  nextCursor?: string;
+}
+
+// Temporary compatibility adapter until chat flows are migrated to Agent API
 export class ChatService {
-  constructor(private ipcChannel: IpcChannel) {}
+  // Currently unused, reserved for future wiring to Agent-based chat sessions
+  constructor(_ipcChannel: IpcChannel) {}
 
-  // ==================== 기본 Chat 메서드들 ====================
-
-  async createSession(options?: { preset?: Preset }): Promise<ChatSessionDescription> {
-    return this.ipcChannel.createChatSession(options);
+  async listSessions(): Promise<ChatSessionMetadata[]> {
+    return [];
   }
 
-  async listSessions(): Promise<ChatSessionDescription[]> {
-    return this.ipcChannel.listChatSessions();
+  async loadSession(_sessionId: string): Promise<ChatSessionMetadata> {
+    const now = new Date();
+    return {
+      sessionId: _sessionId,
+      createdAt: now,
+      updatedAt: now,
+      title: 'Loaded Session',
+      totalMessages: 0,
+      totalUsage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+      recentMessages: [],
+      joinedAgents: [],
+    };
   }
 
-  async loadSession(sessionId: string): Promise<ChatSessionDescription> {
-    return this.ipcChannel.loadChatSession(sessionId);
+  async createSession(_options?: { preset?: any }): Promise<ChatSessionMetadata> {
+    const now = new Date();
+    return {
+      sessionId: `session_${now.getTime()}`,
+      createdAt: now,
+      updatedAt: now,
+      title: 'New Session',
+      totalMessages: 0,
+      totalUsage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+      recentMessages: [],
+      joinedAgents: [],
+    };
   }
 
-  async sendMessage(sessionId: string, message: string): Promise<SendMessageResponse> {
-    return this.ipcChannel.sendChatMessage(sessionId, message);
+  async getMessages(_sessionId: string, _options?: any): Promise<ListMessagesResult> {
+    return { messages: [], total: 0, hasMore: false, nextCursor: undefined };
   }
 
-  async streamMessage(sessionId: string, message: string): Promise<ReadableStream> {
-    return this.ipcChannel.streamChatMessage(sessionId, message);
+  async sendMessage(
+    _sessionId: string,
+    _text: string
+  ): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    return { success: true, messageId: `msg_${Date.now()}` };
   }
 
-  async getMessages(sessionId: string, options?: PaginationOptions): Promise<MessageListResponse> {
-    return this.ipcChannel.getChatMessages(sessionId, options);
-  }
-
-  async deleteSession(sessionId: string): Promise<{ success: boolean }> {
-    return this.ipcChannel.deleteChatSession(sessionId);
-  }
-
-  async renameSession(sessionId: string, newName: string): Promise<{ success: boolean }> {
-    return this.ipcChannel.renameChatSession(sessionId, newName);
-  }
-
-  // ==================== 호환성을 위한 메서드들 ====================
-
-  /**
-   * 기존 ChatManager와의 호환성을 위한 메서드
-   * @deprecated createSession을 직접 사용하세요
-   */
-  async create(options?: { preset?: Preset }): Promise<ChatSessionDescription> {
-    return this.createSession(options);
-  }
-
-  /**
-   * 기존 ChatManager와의 호환성을 위한 메서드
-   * @deprecated listSessions를 직접 사용하세요
-   */
-  async list(options?: any): Promise<{ items: ChatSessionDescription[]; nextCursor: string }> {
-    const sessions = await this.listSessions();
-    return { items: sessions || [], nextCursor: '' };
-  }
-
-  /**
-   * 기존 ChatManager와의 호환성을 위한 메서드
-   * @deprecated loadSession을 직접 사용하세요
-   */
-  async load(options: { sessionId: string }): Promise<ChatSessionDescription> {
-    return this.loadSession(options.sessionId);
+  async deleteSession(_sessionId: string): Promise<{ success: boolean; error?: string }> {
+    return { success: true };
   }
 }

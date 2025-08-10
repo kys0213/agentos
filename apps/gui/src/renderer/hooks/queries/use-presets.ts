@@ -14,7 +14,7 @@ export const usePresets = () => {
 
   return useQuery({
     queryKey: QUERY_KEYS.presets,
-    queryFn: () => presetService.getAll(),
+    queryFn: () => presetService.getAllPresets(),
     staleTime: 60000, // 1분
   });
 };
@@ -25,7 +25,7 @@ export const usePreset = (presetId: string) => {
 
   return useQuery({
     queryKey: QUERY_KEYS.preset(presetId),
-    queryFn: () => presetService.get(presetId),
+    queryFn: () => presetService.getPreset(presetId),
     enabled: !!presetId,
     staleTime: 300000, // 5분
   });
@@ -37,7 +37,7 @@ export const useCreatePreset = () => {
   const presetService = Services.getPreset();
 
   return useMutation({
-    mutationFn: (preset: Preset) => presetService.create(preset),
+    mutationFn: (preset: Preset) => presetService.createPreset(preset as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.presets });
     },
@@ -50,7 +50,7 @@ export const useUpdatePreset = () => {
   const presetService = Services.getPreset();
 
   return useMutation({
-    mutationFn: (preset: Preset) => presetService.update(preset),
+    mutationFn: (preset: Preset) => presetService.updatePreset(preset.id, preset),
     onSuccess: (_, preset) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.presets });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.preset(preset.id) });
@@ -64,7 +64,7 @@ export const useDeletePreset = () => {
   const presetService = Services.getPreset();
 
   return useMutation({
-    mutationFn: (presetId: string) => presetService.delete(presetId),
+    mutationFn: (presetId: string) => presetService.deletePreset(presetId),
     onSuccess: (_, presetId) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.presets });
       queryClient.removeQueries({ queryKey: QUERY_KEYS.preset(presetId) });

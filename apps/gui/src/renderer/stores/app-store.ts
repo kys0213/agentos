@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools, subscribeWithSelector } from 'zustand/middleware';
-import type { LlmBridgeConfig } from '../types/core-types';
+import { LlmManifest } from 'llm-bridge-spec';
 
 // UI 상태 인터페이스
 interface UIState {
@@ -20,7 +20,7 @@ interface ChatState {
 
 // 설정 상태 인터페이스
 interface SettingsState {
-  currentBridge: { id: string; config: LlmBridgeConfig } | null;
+  currentBridge: { id: string; config: LlmManifest } | null;
   bridgeIds: string[];
   selectedPresetId: string;
   showMcpSettings: boolean;
@@ -50,7 +50,7 @@ interface AppActions {
   setBusy: (busy: boolean) => void;
 
   // 설정 액션
-  setCurrentBridge: (bridge: { id: string; config: LlmBridgeConfig } | null) => void;
+  setCurrentBridge: (bridge: { id: string; config: LlmManifest } | null) => void;
   setBridgeIds: (ids: string[]) => void;
   setSelectedPreset: (presetId: string) => void;
   toggleMcpSettings: () => void;

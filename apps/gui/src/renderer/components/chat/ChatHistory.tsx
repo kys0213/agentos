@@ -1,9 +1,9 @@
-import { Archive, Bot, MessageSquare, MoreVertical, Pin, Plus, Search } from 'lucide-react';
+import { ChatSessionMetadata } from '@agentos/core';
+import { Bot, MessageSquare, MoreVertical, Plus, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { ChatSessionMetadata } from '@agentos/core';
 import MessageRenderer from './MessageRenderer';
 
 interface ChatHistoryProps {
@@ -17,7 +17,6 @@ export function ChatHistory({ onSelectChat, selectedChatId }: ChatHistoryProps) 
 
   // TODO: get chat sessions from backend
   useEffect(() => {
-    // TODO: get chat sessions from backend
     setChatSessions([]);
   }, []);
 

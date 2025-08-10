@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Services } from '../../bootstrap';
-import type { McpConfig } from '../../types/core-types';
+import type { McpConfig } from '@agentos/core';
 
 // Query Keys
 const QUERY_KEYS = {
@@ -15,7 +15,7 @@ export const useMcpConfigs = () => {
 
   return useQuery({
     queryKey: QUERY_KEYS.mcpConfigs,
-    queryFn: () => mcpService.getAll(),
+    queryFn: () => mcpService.getAllMcp(),
     staleTime: 30000, // 30초
   });
 };
@@ -26,7 +26,7 @@ export const useMcpStatus = (clientName: string) => {
 
   return useQuery({
     queryKey: [...QUERY_KEYS.mcpStatus, clientName],
-    queryFn: () => mcpService.getStatus(clientName),
+    queryFn: () => mcpService.getMcpStatus(clientName),
     enabled: !!clientName,
     staleTime: 10000, // 10초 - 상태는 자주 확인
     refetchInterval: 30000, // 30초마다 자동 refetch
@@ -39,7 +39,7 @@ export const useConnectMcp = () => {
   const mcpService = Services.getMcp();
 
   return useMutation({
-    mutationFn: (config: McpConfig) => mcpService.connect(config),
+    mutationFn: (config: McpConfig) => mcpService.connectMcp(config),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.mcpConfigs });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.mcpStatus });
@@ -53,7 +53,7 @@ export const useDisconnectMcp = () => {
   const mcpService = Services.getMcp();
 
   return useMutation({
-    mutationFn: (configId: string) => mcpService.disconnect(configId),
+    mutationFn: (configId: string) => mcpService.disconnectMcp(configId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.mcpConfigs });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.mcpStatus });
@@ -67,7 +67,7 @@ export const useSaveMcpConfig = () => {
   const mcpService = Services.getMcp();
 
   return useMutation({
-    mutationFn: (config: McpConfig) => mcpService.connect(config),
+    mutationFn: (config: McpConfig) => mcpService.connectMcp(config),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.mcpConfigs });
     },
@@ -80,7 +80,7 @@ export const useDeleteMcpConfig = () => {
   const mcpService = Services.getMcp();
 
   return useMutation({
-    mutationFn: (configId: string) => mcpService.disconnect(configId),
+    mutationFn: (configId: string) => mcpService.disconnectMcp(configId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.mcpConfigs });
     },

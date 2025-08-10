@@ -4,10 +4,7 @@ import { useSettingsState, useSettingsActions, useUIActions } from '../../stores
 import { useMcpConfigs, useConnectMcp } from '../../hooks/queries/use-mcp';
 import LLMSettings from './LLMSettings';
 import PresetSettings from './PresetSettings';
-// TODO: Replace with components from management folder
-// import McpSettings from '../../pages/McpSettings';
-// import McpList from '../../pages/McpList';
-import type { McpConfig } from '../../types/core-types';
+import type { McpConfig } from '@agentos/core';
 
 /**
  * 설정 컨테이너 컴포넌트

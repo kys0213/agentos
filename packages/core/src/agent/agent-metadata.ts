@@ -37,3 +37,8 @@ export interface AgentMetadata {
 }
 
 export type ReadonlyAgentMetadata = Readonly<AgentMetadata>;
+
+export type CreateAgentMetadata = Omit<
+  AgentMetadata,
+  'id' | 'lastUsed' | 'sessionCount' | 'usageCount'
+>;

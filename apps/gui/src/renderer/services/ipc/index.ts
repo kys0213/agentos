@@ -1,8 +1,6 @@
 // IpcChannel 관련 모든 exports
-export type { IpcChannel } from './IpcChannel';
+export type { IpcChannel } from '../../../shared/types/ipc-channel';
 export { ElectronIpcChannel } from './ElectronIpcChannel';
-export { WebIpcChannel } from './WebIpcChannel';
-export { ChromeExtensionIpcChannel } from './ChromeExtensionIpcChannel';
 export { MockIpcChannel } from './MockIpcChannel';
 export { IpcChannelFactory, createIpcChannel, getEnvironmentInfo } from './IpcChannelFactory';
 

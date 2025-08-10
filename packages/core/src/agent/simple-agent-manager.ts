@@ -47,7 +47,7 @@ export class SimpleAgentManager implements AgentManager {
     const agent = this.agents.get(agentId)!;
 
     // 실행 중인 Agent는 등록 해제할 수 없음
-    if (agent.status === 'active') {
+    if (await agent.isActive()) {
       throw new AgentManagerError(
         `Cannot unregister agent '${agentId}' while it's active`,
         AGENT_MANAGER_ERROR_CODES.OPERATION_FAILED
@@ -68,52 +68,14 @@ export class SimpleAgentManager implements AgentManager {
 
   async getAvailableAgents(pagination?: CursorPagination): Promise<CursorPaginationResult<Agent>> {
     const availableAgents = Array.from(this.agents.values()).filter(
-      (agent) => agent.status === 'active' || agent.status === 'idle'
+      (agent) => agent.isActive() || agent.isIdle()
     );
     return this.paginateResults(availableAgents, pagination);
   }
 
   async getActiveAgents(pagination?: CursorPagination): Promise<CursorPaginationResult<Agent>> {
-    const activeAgents = Array.from(this.agents.values()).filter(
-      (agent) => agent.status === 'active'
-    );
+    const activeAgents = Array.from(this.agents.values()).filter((agent) => agent.isActive());
     return this.paginateResults(activeAgents, pagination);
-  }
-
-  async searchAgents(
-    query: AgentSearchQuery,
-    pagination?: CursorPagination
-  ): Promise<CursorPaginationResult<Agent>> {
-    let results = Array.from(this.agents.values());
-
-    // 상태 필터
-    if (query.status) {
-      results = results.filter((agent) => agent.status === query.status);
-    }
-
-    // 이름 검색
-    if (query.name) {
-      const searchName = query.name.toLowerCase();
-      results = results.filter((agent) => agent.name.toLowerCase().includes(searchName));
-    }
-
-    // 설명 검색
-    if (query.description) {
-      const searchDesc = query.description.toLowerCase();
-      results = results.filter((agent) => agent.description.toLowerCase().includes(searchDesc));
-    }
-
-    // 키워드 검색
-    if (query.keywords && query.keywords.length > 0) {
-      const searchKeywords = query.keywords.map((k) => k.toLowerCase());
-      results = results.filter((agent) =>
-        searchKeywords.every((searchKeyword) =>
-          agent.keywords.some((agentKeyword) => agentKeyword.toLowerCase().includes(searchKeyword))
-        )
-      );
-    }
-
-    return this.paginateResults(results, pagination);
   }
 
   async execute(
@@ -150,7 +112,7 @@ export class SimpleAgentManager implements AgentManager {
       );
     }
 
-    return agent.status;
+    return (await agent.getMetadata()).status;
   }
 
   async endAgentSession(agentId: string, sessionId: string): Promise<void> {
@@ -182,12 +144,13 @@ export class SimpleAgentManager implements AgentManager {
     let lastActivity: Date | undefined;
 
     for (const agent of agents) {
-      agentsByStatus[agent.status]++;
-      totalActiveSessions += agent.sessionCount;
+      const metadata = await agent.getMetadata();
+      agentsByStatus[metadata.status]++;
+      totalActiveSessions += metadata.sessionCount;
 
-      if (agent.lastUsed) {
-        if (!lastActivity || agent.lastUsed > lastActivity) {
-          lastActivity = agent.lastUsed;
+      if (metadata.lastUsed) {
+        if (!lastActivity || metadata.lastUsed > lastActivity) {
+          lastActivity = metadata.lastUsed;
         }
       }
     }
