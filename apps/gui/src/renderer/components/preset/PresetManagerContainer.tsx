@@ -46,27 +46,6 @@ export const PresetManagerContainer: React.FC = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['presets'] }),
   });
 
-  if (status === 'pending') {
-    return (
-      <Card className="p-6">
-        <div className="animate-pulse text-sm text-muted-foreground">Loading presets…</div>
-      </Card>
-    );
-  }
-
-  if (status === 'error') {
-    return (
-      <Card className="p-6 flex items-center justify-between">
-        <div className="text-sm text-red-600">
-          Failed to load presets{error ? `: ${(error as Error).message}` : ''}
-        </div>
-        <Button variant="outline" onClick={() => refetch()}>
-          Retry
-        </Button>
-      </Card>
-    );
-  }
-
   const alert = useMemo(() => {
     if (createMutation.isSuccess)
       return (
@@ -125,6 +104,27 @@ export const PresetManagerContainer: React.FC = () => {
     deleteMutation.isError,
     duplicateMutation.isError,
   ]);
+
+  if (status === 'pending') {
+    return (
+      <Card className="p-6">
+        <div className="animate-pulse text-sm text-muted-foreground">Loading presets…</div>
+      </Card>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <Card className="p-6 flex items-center justify-between">
+        <div className="text-sm text-red-600">
+          Failed to load presets{error ? `: ${(error as Error).message}` : ''}
+        </div>
+        <Button variant="outline" onClick={() => refetch()}>
+          Retry
+        </Button>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-2">

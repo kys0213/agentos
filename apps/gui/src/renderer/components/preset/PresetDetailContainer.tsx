@@ -18,12 +18,7 @@ export const PresetDetailContainer: React.FC<PresetDetailContainerProps> = ({
 }) => {
   const queryClient = useQueryClient();
 
-  const {
-    data: preset,
-    status,
-    error,
-    refetch,
-  } = useQuery({
+  const { data: preset, status, error, refetch } = useQuery({
     queryKey: ['preset', presetId],
     queryFn: () => fetchPresetById(presetId),
     staleTime: 60_000,
@@ -45,27 +40,7 @@ export const PresetDetailContainer: React.FC<PresetDetailContainerProps> = ({
     },
   });
 
-  if (status === 'pending') {
-    return (
-      <Card className="p-6">
-        <div className="animate-pulse text-sm text-muted-foreground">Loading preset…</div>
-      </Card>
-    );
-  }
-
-  if (status === 'error' || !preset) {
-    return (
-      <Card className="p-6 flex items-center justify-between">
-        <div className="text-sm text-red-600">
-          Failed to load preset{error ? `: ${(error as Error).message}` : ''}
-        </div>
-        <Button variant="outline" onClick={() => refetch()}>
-          Retry
-        </Button>
-      </Card>
-    );
-  }
-
+  // Hook must be called on every render; compute alerts before conditional returns
   const alert = useMemo(() => {
     if (updateMutation.isSuccess) {
       return (
@@ -98,6 +73,25 @@ export const PresetDetailContainer: React.FC<PresetDetailContainerProps> = ({
     return null;
   }, [updateMutation.isSuccess, updateMutation.isError, deleteMutation.isError]);
 
+  if (status === 'pending') {
+    return (
+      <Card className="p-6">
+        <div className="animate-pulse text-sm text-muted-foreground">Loading preset…</div>
+      </Card>
+    );
+  }
+
+  if (status === 'error' || !preset) {
+    return (
+      <Card className="p-6 flex items-center justify-between">
+        <div className="text-sm text-red-600">
+          Failed to load preset{error ? `: ${(error as Error).message}` : ''}
+        </div>
+        <Button variant="outline" onClick={() => refetch()}>Retry</Button>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-2">
       {alert}
@@ -112,3 +106,4 @@ export const PresetDetailContainer: React.FC<PresetDetailContainerProps> = ({
 };
 
 export default PresetDetailContainer;
+

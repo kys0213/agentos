@@ -54,11 +54,6 @@ export class IpcChannelFactory {
    * 현재 실행 환경을 감지하여 문자열로 반환
    */
   private static detectEnvironment(): 'electron' | 'web' | 'test' {
-    // 테스트 환경 감지 (가장 먼저 체크)
-    if (this.isTestEnvironment()) {
-      return 'test';
-    }
-
     // Electron 환경 감지
     if (this.isElectronEnvironment()) {
       return 'electron';
@@ -93,23 +88,6 @@ export class IpcChannelFactory {
       return result;
     } catch (error) {
       console.log('Electron environment check failed:', error);
-      return false;
-    }
-  }
-
-  /**
-   * 테스트 환경인지 확인
-   */
-  private static isTestEnvironment(): boolean {
-    try {
-      // Jest, Vitest 등의 테스트 환경 감지
-      return (
-        (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') ||
-        (typeof global !== 'undefined' && (global as any).test !== undefined) ||
-        (typeof window !== 'undefined' && (window as any).__testing__ === true) ||
-        typeof (globalThis as any).jest !== 'undefined'
-      );
-    } catch {
       return false;
     }
   }
