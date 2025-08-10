@@ -17,7 +17,7 @@ export const PresetModelSettings: React.FC<PresetModelSettingsProps> = ({
   showModel = true,
   showParameters = true,
 }) => {
-  const cfg = (config ?? {}) as any;
+  const cfg = config ?? {};
   return (
     <div className="space-y-6">
       {showModel && (

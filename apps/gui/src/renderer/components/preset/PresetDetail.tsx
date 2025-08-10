@@ -1,12 +1,19 @@
+import { Preset } from '@agentos/core';
+import {
+  ArrowLeft,
+  BarChart3,
+  Brain,
+  Calendar,
+  Code,
+  Database,
+  FileText,
+  Save,
+  Trash2,
+  Users,
+  Zap,
+} from 'lucide-react';
 import { useState } from 'react';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
-import { Slider } from '../ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { CategoryIcon } from '../common/CategoryIcon';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,25 +25,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../ui/alert-dialog';
-import {
-  ArrowLeft,
-  Save,
-  Trash2,
-  Brain,
-  Database,
-  Code,
-  BarChart3,
-  Users,
-  Calendar,
-  Zap,
-  FileText,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-} from 'lucide-react';
-import { Preset } from '@agentos/core';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Textarea } from '../ui/textarea';
+import PresetBasicFields from './PresetBasicFields';
+import PresetModelSettings from './PresetModelSettings';
 import { PresetStatusBadge } from './PresetStatusBadge';
-import { CategoryIcon } from '../common/CategoryIcon';
 
 interface PresetDetailProps {
   preset: Preset;
@@ -65,23 +61,6 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
     onBack();
   };
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'research':
-        return <Database className="w-5 h-5" />;
-      case 'development':
-        return <Code className="w-5 h-5" />;
-      case 'creative':
-        return <FileText className="w-5 h-5" />;
-      case 'analytics':
-        return <BarChart3 className="w-5 h-5" />;
-      default:
-        return <Brain className="w-5 h-5" />;
-    }
-  };
-
-  const getStatusBadge = (status: string) => <PresetStatusBadge status={status as any} />;
-
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -103,7 +82,7 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                 <h1 className="text-2xl font-semibold text-foreground">{editedPreset.name}</h1>
                 <p className="text-muted-foreground capitalize">{editedPreset.category} preset</p>
               </div>
-              {getStatusBadge(editedPreset.status)}
+              <PresetStatusBadge status={editedPreset.status} />
             </div>
           </div>
 
@@ -242,7 +221,7 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                       name={editedPreset.name}
                       description={editedPreset.description}
                       category={editedPreset.category}
-                      status={editedPreset.status as any}
+                      status={editedPreset.status}
                       onChange={updatePreset}
                       showStatus
                     />

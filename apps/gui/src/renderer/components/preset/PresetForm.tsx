@@ -6,10 +6,10 @@ import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Separator } from '../ui/separator';
-import { Slider } from '../ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Textarea } from '../ui/textarea';
+import PresetModelSettings from './PresetModelSettings';
+import PresetBasicFields from './PresetBasicFields';
 
 interface DynamicFormRendererProps {
   preset: Preset | null;
@@ -38,16 +38,6 @@ export function PrestForm({
     setFormData((prev) => ({
       ...prev,
       [field]: value,
-    }));
-  };
-
-  const updateParameters = (field: string, value: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      llmBridgeConfig: {
-        ...(prev.llmBridgeConfig ?? {}),
-        [field]: value,
-      },
     }));
   };
 
@@ -284,7 +274,7 @@ export function PrestForm({
               name={formData.name ?? ''}
               description={formData.description ?? ''}
               category={formData.category ?? ['general']}
-              status={formData.status as any}
+              status={formData.status}
               onChange={(u) => setFormData((prev) => ({ ...prev, ...u }))}
               showStatus
             />
