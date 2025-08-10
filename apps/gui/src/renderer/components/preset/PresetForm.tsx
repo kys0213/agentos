@@ -154,26 +154,12 @@ export function PrestForm({
           {currentStep === 2 && (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Model Configuration</h2>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Model</Label>
-                  <Select
-                    value={formData.llmBridgeConfig?.model ?? ''}
-                    onValueChange={(value) => updateFormData('llmBridgeConfig.model', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {['gpt-4o', 'gpt-4o-mini', 'claude-3-5-sonnet'].map((model) => (
-                        <SelectItem key={model} value={model}>
-                          {model}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              <PresetModelSettings
+                config={formData.llmBridgeConfig}
+                onChange={(u) => setFormData((prev) => ({ ...prev, ...u }))}
+                showModel
+                showParameters={false}
+              />
             </div>
           )}
 
@@ -235,59 +221,12 @@ export function PrestForm({
           {currentStep === 5 && (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Model Parameters</h2>
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label>Temperature</Label>
-                    <span className="text-sm text-muted-foreground">
-                      {formData.llmBridgeConfig?.temperature}
-                    </span>
-                  </div>
-                  <Slider
-                    value={[formData.llmBridgeConfig?.temperature || 0.7]}
-                    onValueChange={([value]) => updateParameters('temperature', value)}
-                    max={2}
-                    min={0}
-                    step={0.1}
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Controls randomness in responses. Lower values are more focused and
-                    deterministic.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label>Max Tokens</Label>
-                    <span className="text-sm text-muted-foreground">
-                      {formData.llmBridgeConfig?.maxTokens}
-                    </span>
-                  </div>
-                  <Slider
-                    value={[formData.llmBridgeConfig?.maxTokens || 2048]}
-                    onValueChange={([value]) => updateParameters('maxTokens', value)}
-                    max={4096}
-                    min={256}
-                    step={256}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label>Top P</Label>
-                    <span className="text-sm text-muted-foreground">
-                      {formData.llmBridgeConfig?.topP}
-                    </span>
-                  </div>
-                  <Slider
-                    value={[formData.llmBridgeConfig?.topP || 1.0]}
-                    onValueChange={([value]) => updateParameters('topP', value)}
-                    max={1}
-                    min={0}
-                    step={0.1}
-                  />
-                </div>
-              </div>
+              <PresetModelSettings
+                config={formData.llmBridgeConfig}
+                onChange={(u) => setFormData((prev) => ({ ...prev, ...u }))}
+                showModel={false}
+                showParameters
+              />
             </div>
           )}
         </Card>
@@ -341,138 +280,23 @@ export function PrestForm({
 
         <TabsContent value="basic">
           <Card className="p-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Preset Name</Label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => updateFormData('name', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea
-                  value={formData.description}
-                  onChange={(e) => updateFormData('description', e.target.value)}
-                  className="min-h-[100px]"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Category</Label>
-                <Select
-                  value={formData.category?.[0] ?? ''}
-                  onValueChange={(value) => updateFormData('category', [value])}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {['research', 'development', 'creative', 'analytics'].map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value: 'active' | 'idle' | 'inactive') =>
-                    updateFormData('status', value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="idle">Idle</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            <PresetBasicFields
+              name={formData.name ?? ''}
+              description={formData.description ?? ''}
+              category={formData.category ?? ['general']}
+              status={formData.status as any}
+              onChange={(u) => setFormData((prev) => ({ ...prev, ...u }))}
+              showStatus
+            />
           </Card>
         </TabsContent>
 
         <TabsContent value="model">
           <Card className="p-6">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Label>Model</Label>
-                <Select
-                  value={formData.llmBridgeConfig?.model ?? ''}
-                  onValueChange={(value) => updateFormData('llmBridgeConfig.model', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {['gpt-4o', 'gpt-4o-mini', 'claude-3-5-sonnet'].map((model) => (
-                      <SelectItem key={model} value={model}>
-                        {model}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <h3 className="font-semibold">Parameters</h3>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label>Temperature</Label>
-                    <span className="text-sm text-muted-foreground">
-                      {formData.llmBridgeConfig?.temperature}
-                    </span>
-                  </div>
-                  <Slider
-                    value={[formData.llmBridgeConfig?.temperature || 0.7]}
-                    onValueChange={([value]) => updateParameters('temperature', value)}
-                    max={2}
-                    min={0}
-                    step={0.1}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label>Max Tokens</Label>
-                    <span className="text-sm text-muted-foreground">
-                      {formData.llmBridgeConfig?.maxTokens}
-                    </span>
-                  </div>
-                  <Slider
-                    value={[formData.llmBridgeConfig?.maxTokens || 2048]}
-                    onValueChange={([value]) => updateParameters('maxTokens', value)}
-                    max={4096}
-                    min={256}
-                    step={256}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label>Top P</Label>
-                    <span className="text-sm text-muted-foreground">
-                      {formData.llmBridgeConfig?.topP}
-                    </span>
-                  </div>
-                  <Slider
-                    value={[formData.llmBridgeConfig?.topP || 1.0]}
-                    onValueChange={([value]) => updateParameters('topP', value)}
-                    max={1}
-                    min={0}
-                    step={0.1}
-                  />
-                </div>
-              </div>
-            </div>
+            <PresetModelSettings
+              config={formData.llmBridgeConfig}
+              onChange={(u) => setFormData((prev) => ({ ...prev, ...u }))}
+            />
           </Card>
         </TabsContent>
 
