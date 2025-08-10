@@ -1,6 +1,6 @@
 import { FileUtils, FileOptions } from './FileUtils';
 import { Result } from '../utils/safeZone';
-import { json } from '../json';
+import * as jsonUtils from '../json';
 
 export type TypeGuard<T> = (value: unknown) => value is T;
 
@@ -60,7 +60,7 @@ export class JsonFileHandler<T> {
       return { success: false, reason: new Error('Empty JSON file') };
     }
 
-    const parseResult = json.safeJsonParse<T>(content);
+    const parseResult = jsonUtils.safeJsonParse<T>(content);
     if (!parseResult.success) {
       if (useDefaultOnError && this.defaultValue !== undefined) {
         return { success: true, result: this.defaultValue };

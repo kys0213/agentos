@@ -157,7 +157,7 @@ export class FileUtils {
   /**
    * 파일 통계 정보 가져오기
    */
-  static async stat(filePath: string): Promise<Result<fs.Stats>> {
+  static async stat(filePath: string): Promise<Result<Awaited<ReturnType<typeof fs.stat>>>> {
     try {
       const stats = await fs.stat(filePath);
       return { success: true, result: stats };
