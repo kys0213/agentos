@@ -4,6 +4,15 @@ import { MarkdownSplitter } from '../../splitter/markdown-splitter';
 import { KnowledgeDocumentMeta } from '../../types';
 
 describe('MarkdownSplitter', () => {
+  beforeAll(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2025-01-01'));
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
   const meta: KnowledgeDocumentMeta = {
     id: 'doc-1' as any,
     presetId: 'preset-1' as any,

@@ -13,12 +13,12 @@ exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] 
         "title": "Android, iOS 웹뷰에서 딥링크 열기",
       },
     ],
-    "chunkId": "doc-1:287:0",
+    "chunkId": "doc-1:285:0",
     "docId": "doc-1",
     "position": 0,
     "source": {
-      "offsetEnd": 599,
-      "offsetStart": 287,
+      "offsetEnd": 597,
+      "offsetStart": 285,
     },
     "text": "# Android, iOS 웹뷰에서 딥링크 열기
 
@@ -44,12 +44,12 @@ exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] 
         "title": "딥링크란?",
       },
     ],
-    "chunkId": "doc-1:601:0",
+    "chunkId": "doc-1:599:0",
     "docId": "doc-1",
     "position": 1,
     "source": {
-      "offsetEnd": 1073,
-      "offsetStart": 601,
+      "offsetEnd": 1071,
+      "offsetStart": 599,
     },
     "text": "## 딥링크란?
 
@@ -75,12 +75,12 @@ exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] 
         "title": "딥링크의 유형",
       },
     ],
-    "chunkId": "doc-1:1075:0",
+    "chunkId": "doc-1:1073:0",
     "docId": "doc-1",
     "position": 2,
     "source": {
-      "offsetEnd": 1085,
-      "offsetStart": 1075,
+      "offsetEnd": 1083,
+      "offsetStart": 1073,
     },
     "text": "## 딥링크의 유형",
   },
@@ -106,12 +106,12 @@ exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] 
         "title": "커스텀 스킴(Custom Scheme)",
       },
     ],
-    "chunkId": "doc-1:1087:0",
+    "chunkId": "doc-1:1085:0",
     "docId": "doc-1",
     "position": 3,
     "source": {
-      "offsetEnd": 1694,
-      "offsetStart": 1087,
+      "offsetEnd": 1692,
+      "offsetStart": 1085,
     },
     "text": "### 커스텀 스킴(Custom Scheme)
 
@@ -145,12 +145,12 @@ exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] 
         "title": "App Link와 Universal Link",
       },
     ],
-    "chunkId": "doc-1:1696:0",
+    "chunkId": "doc-1:1694:0",
     "docId": "doc-1",
     "position": 4,
     "source": {
-      "offsetEnd": 2137,
-      "offsetStart": 1696,
+      "offsetEnd": 2135,
+      "offsetStart": 1694,
     },
     "text": "### App Link와 Universal Link
 
@@ -182,12 +182,12 @@ exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] 
         "title": "Intent 스킴",
       },
     ],
-    "chunkId": "doc-1:2139:0",
+    "chunkId": "doc-1:2137:0",
     "docId": "doc-1",
     "position": 5,
     "source": {
-      "offsetEnd": 3139,
-      "offsetStart": 2139,
+      "offsetEnd": 3137,
+      "offsetStart": 2137,
     },
     "text": "### Intent 스킴
 
@@ -234,12 +234,12 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
         "title": "Intent 스킴",
       },
     ],
-    "chunkId": "doc-1:3039:1",
+    "chunkId": "doc-1:3037:1",
     "docId": "doc-1",
     "position": 6,
     "source": {
-      "offsetEnd": 4039,
-      "offsetStart": 3039,
+      "offsetEnd": 4037,
+      "offsetStart": 3037,
     },
     "text": "| 예시                                |
 | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------- |
@@ -268,12 +268,12 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
         "title": "Intent 스킴",
       },
     ],
-    "chunkId": "doc-1:3939:2",
+    "chunkId": "doc-1:3937:2",
     "docId": "doc-1",
     "position": 7,
     "source": {
-      "offsetEnd": 4860,
-      "offsetStart": 3939,
+      "offsetEnd": 4858,
+      "offsetStart": 3937,
     },
     "text": "| X                                                                                              | Google에서 출시한 Android 전용 딥링크                            | https://host/path                   |
 | [Universal Link](https://developer.apple.com/ios/universal-links/)             | X                                                                        | O                                                                                              | Apple에서 출시한 iOS 전용 딥링크이며 macOS, watchOS에서도 사용함 | https://host/path                   |
@@ -295,12 +295,12 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
         "title": "웹뷰에서 앱으로 이동하기",
       },
     ],
-    "chunkId": "doc-1:4862:0",
+    "chunkId": "doc-1:4860:0",
     "docId": "doc-1",
     "position": 8,
     "source": {
-      "offsetEnd": 4949,
-      "offsetStart": 4862,
+      "offsetEnd": 4947,
+      "offsetStart": 4860,
     },
     "text": "## 웹뷰에서 앱으로 이동하기
 
@@ -328,12 +328,12 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
         "title": "Android 웹뷰에서 딥링크 열기",
       },
     ],
-    "chunkId": "doc-1:4951:0",
+    "chunkId": "doc-1:4949:0",
     "docId": "doc-1",
     "position": 9,
     "source": {
-      "offsetEnd": 5951,
-      "offsetStart": 4951,
+      "offsetEnd": 5949,
+      "offsetStart": 4949,
     },
     "text": "### Android 웹뷰에서 딥링크 열기
 
@@ -375,12 +375,12 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
         "title": "Android 웹뷰에서 딥링크 열기",
       },
     ],
-    "chunkId": "doc-1:5851:1",
+    "chunkId": "doc-1:5849:1",
     "docId": "doc-1",
     "position": 10,
     "source": {
-      "offsetEnd": 6851,
-      "offsetStart": 5851,
+      "offsetEnd": 6849,
+      "offsetStart": 5849,
     },
     "text": ".kbstar.reboot" /> <!-- Liiv Reboot(KB국민은행) -->
   <package android:name="kvp.jjy.MispAndroid320" /> <!-- ISP/페이북 -->
@@ -421,12 +421,12 @@ Intent 스킴은 위와 같이 상당히 복잡한 형태를 가지고 있어요
         "title": "Android 웹뷰에서 딥링크 열기",
       },
     ],
-    "chunkId": "doc-1:6751:2",
+    "chunkId": "doc-1:6749:2",
     "docId": "doc-1",
     "position": 11,
     "source": {
-      "offsetEnd": 7751,
-      "offsetStart": 6751,
+      "offsetEnd": 7749,
+      "offsetStart": 6749,
     },
     "text": "" /> <!-- 네이버페이 -->
   <package android:name="com.lotte.lpay" /> <!-- L.pay -->
@@ -464,12 +464,12 @@ Android에서 [토스페이먼츠 결제창](/resources/glossary/payment-window)
         "title": "Android 웹뷰에서 딥링크 열기",
       },
     ],
-    "chunkId": "doc-1:7651:3",
+    "chunkId": "doc-1:7649:3",
     "docId": "doc-1",
     "position": 12,
     "source": {
-      "offsetEnd": 8651,
-      "offsetStart": 7651,
+      "offsetEnd": 8649,
+      "offsetStart": 7649,
     },
     "text": "에서 URL을 어떻게 열지 제어해요. 메서드에서 \`true\`를 반환하면 URL은 개발자가 정의한 대로 열리고 웹뷰에서는 아무것도 하지 않아요. \`false\`를 반환하면 현재 웹뷰에서 URL을 열어요.
 
@@ -516,12 +516,12 @@ fun shouldOverrideUrlLoa",
         "title": "Android 웹뷰에서 딥링크 열기",
       },
     ],
-    "chunkId": "doc-1:8551:4",
+    "chunkId": "doc-1:8549:4",
     "docId": "doc-1",
     "position": 13,
     "source": {
-      "offsetEnd": 9551,
-      "offsetStart": 8551,
+      "offsetEnd": 9549,
+      "offsetStart": 8549,
     },
     "text": "n {
           return shouldOverrideUrlLoading(view, request)
@@ -582,12 +582,12 @@ fun startSchemeIntent(url: String): Boolean {",
         "title": "Android 웹뷰에서 딥링크 열기",
       },
     ],
-    "chunkId": "doc-1:9451:5",
+    "chunkId": "doc-1:9449:5",
     "docId": "doc-1",
     "position": 14,
     "source": {
-      "offsetEnd": 10225,
-      "offsetStart": 9451,
+      "offsetEnd": 10223,
+      "offsetStart": 9449,
     },
     "text": "}
     } ?: return false
@@ -641,12 +641,12 @@ fun startSchemeIntent(url: String): Boolean {
         "title": "iOS 웹뷰에서 딥링크 열기",
       },
     ],
-    "chunkId": "doc-1:10227:0",
+    "chunkId": "doc-1:10225:0",
     "docId": "doc-1",
     "position": 15,
     "source": {
-      "offsetEnd": 11227,
-      "offsetStart": 10227,
+      "offsetEnd": 11225,
+      "offsetStart": 10225,
     },
     "text": "### iOS 웹뷰에서 딥링크 열기
 
@@ -695,12 +695,12 @@ fun startSchemeIntent(url: String): Boolean {
         "title": "iOS 웹뷰에서 딥링크 열기",
       },
     ],
-    "chunkId": "doc-1:11127:1",
+    "chunkId": "doc-1:11125:1",
     "docId": "doc-1",
     "position": 16,
     "source": {
-      "offsetEnd": 12127,
-      "offsetStart": 11127,
+      "offsetEnd": 12125,
+      "offsetStart": 11125,
     },
     "text": "pcollect</string>
     <string>vguardstart</string>
@@ -754,12 +754,12 @@ fun startSchemeIntent(url: String): Boolean {
         "title": "iOS 웹뷰에서 딥링크 열기",
       },
     ],
-    "chunkId": "doc-1:12027:2",
+    "chunkId": "doc-1:12025:2",
     "docId": "doc-1",
     "position": 17,
     "source": {
-      "offsetEnd": 13027,
-      "offsetStart": 12027,
+      "offsetEnd": 13025,
+      "offsetStart": 12025,
     },
     "text": "ring>naversearchthirdlogin</string>
     <string>hanaskcardmobileportal</string>
@@ -796,12 +796,12 @@ fun startSchemeIntent(url: String): Boolean {
         "title": "iOS 웹뷰에서 딥링크 열기",
       },
     ],
-    "chunkId": "doc-1:12927:3",
+    "chunkId": "doc-1:12925:3",
     "docId": "doc-1",
     "position": 18,
     "source": {
-      "offsetEnd": 13927,
-      "offsetStart": 12927,
+      "offsetEnd": 13925,
+      "offsetStart": 12925,
     },
     "text": "ttp\` 혹은 \`https\`이라면 Universal Link이겠죠. 웹뷰에서 바로 열면 됩니다. 사용자 폰에 앱이 설치되어 있지 있으면 바로 이동하고, 설치되어 있지 않으면 보통 각 카드·은행 앱에서 사용자를 스토어로 이동시켜요.
 
@@ -851,12 +851,12 @@ func webView(
         "title": "iOS 웹뷰에서 딥링크 열기",
       },
     ],
-    "chunkId": "doc-1:13827:4",
+    "chunkId": "doc-1:13825:4",
     "docId": "doc-1",
     "position": 19,
     "source": {
-      "offsetEnd": 14827,
-      "offsetStart": 13827,
+      "offsetEnd": 14825,
+      "offsetStart": 13825,
     },
     "text": "패했거나, 앱을 안내할 수 없습니다.
                     }
@@ -908,12 +908,12 @@ enum Constant {
         "title": "iOS 웹뷰에서 딥링크 열기",
       },
     ],
-    "chunkId": "doc-1:14727:5",
+    "chunkId": "doc-1:14725:5",
     "docId": "doc-1",
     "position": 20,
     "source": {
-      "offsetEnd": 15727,
-      "offsetStart": 14727,
+      "offsetEnd": 15725,
+      "offsetStart": 14725,
     },
     "text": ""hanawalletmembers': "https://apps.apple.com/app/id1038288833",
     "hdcardappcardansimclick': "https://apps.apple.com/app/id702653088",
@@ -964,12 +964,12 @@ enum Constant {
         "title": "iOS 웹뷰에서 딥링크 열기",
       },
     ],
-    "chunkId": "doc-1:15627:6",
+    "chunkId": "doc-1:15625:6",
     "docId": "doc-1",
     "position": 21,
     "source": {
-      "offsetEnd": 15742,
-      "offsetStart": 15627,
+      "offsetEnd": 15740,
+      "offsetStart": 15625,
     },
     "text": "---
 
