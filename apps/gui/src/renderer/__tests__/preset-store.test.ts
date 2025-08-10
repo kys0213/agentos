@@ -1,5 +1,6 @@
-import { Preset } from '../stores/store-types';
-import { PresetStore, loadPresets, savePreset, deletePreset } from '../stores/preset-store';
+import { Preset } from '@agentos/core';
+import { deletePreset } from '../services/fetchers/presets';
+import { PresetStore } from '../stores/preset-store';
 
 const sample: Preset = {
   id: '1',
@@ -26,16 +27,16 @@ const sample: Preset = {
 
 test.skip('save and load presets', async () => {
   const store = new PresetStore();
-  await savePreset(store, sample);
-  const presets = await loadPresets(store);
+  await store.save(sample);
+  const presets = await store.list();
   expect(presets).toHaveLength(1);
   expect(presets[0].name).toBe('sample');
 });
 
 test.skip('delete preset', async () => {
   const store = new PresetStore();
-  await savePreset(store, sample);
-  await deletePreset(store, sample.id);
-  const presets = await loadPresets(store);
+  await store.save(sample);
+  await store.delete(sample.id);
+  const presets = await store.list();
   expect(presets).toHaveLength(0);
 });
