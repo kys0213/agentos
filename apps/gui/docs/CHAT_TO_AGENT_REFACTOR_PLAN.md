@@ -30,7 +30,7 @@
 
 현재 Renderer는 임시 `ChatService`에 의존하고 있으나, Agent 중심 구조로 전환 필요.
 
-1) IPC 확장(메인 프로세스 노출 필요): `AgentProtocol` 또는 별도 `ConversationProtocol`
+1. IPC 확장(메인 프로세스 노출 필요): `AgentProtocol` 또는 별도 `ConversationProtocol`
 
 ```ts
 // apps/gui/src/shared/types/ipc-channel.ts (확장 초안)
@@ -50,12 +50,15 @@ export interface ConversationProtocol {
 export interface IpcChannel extends AgentProtocol, /* ... */, ConversationProtocol {}
 ```
 
-2) Renderer 서비스: `AgentService`만 사용. 필요한 경우 얇은 어댑터 추가
+2. Renderer 서비스: `AgentService`만 사용. 필요한 경우 얇은 어댑터 추가
 
 ```ts
 // 새 어댑터(필요시): AgentConversationService
 export class AgentConversationService {
-  constructor(private readonly ipc: IpcChannel, private readonly agentService: AgentService) {}
+  constructor(
+    private readonly ipc: IpcChannel,
+    private readonly agentService: AgentService
+  ) {}
 
   async createOrLoadSession(agentId: string, sessionId?: string) {
     // sessionId 없으면 첫 chat 호출로 세션 생성
@@ -82,7 +85,7 @@ export class AgentConversationService {
 }
 ```
 
-3) 훅 교체/수정
+3. 훅 교체/수정
 
 ```ts
 // use-chat-sessions.ts 대체 초안
@@ -141,4 +144,3 @@ export interface UseAgentChat {
 
 - 초기 단계에서는 `AgentConversationService`를 도입해 UI 수정 최소화하고, 추후 `AgentService` API에 세션 관련 고수준 메서드 통합을 고려합니다.
 - 멘션 처리/다중 에이전트 라우팅은 후속 과제로 분리 가능(본 PR 범위는 ChatService 제거 및 Agent 기반 치환까지).
-

@@ -11,10 +11,7 @@ import type {
   McpUsageStats,
   Preset,
 } from '@agentos/core';
-import type {
-  CursorPagination,
-  CursorPaginationResult,
-} from '@agentos/core';
+import type { CursorPagination, CursorPaginationResult } from '@agentos/core';
 import type { ChatSessionDescription } from '@agentos/core';
 import type { MessageHistory } from '@agentos/core';
 import { LlmManifest, UserMessage } from 'llm-bridge-spec';

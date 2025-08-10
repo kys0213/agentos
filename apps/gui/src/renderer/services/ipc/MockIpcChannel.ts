@@ -244,11 +244,8 @@ export class MockIpcChannel implements IpcChannel {
       .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
     const idx = pagination?.cursor ? items.findIndex((i) => i.id === pagination.cursor) : -1;
     const limit = pagination?.limit ?? items.length;
-    const startIndex = idx >= 0
-      ? pagination?.direction === 'backward'
-        ? Math.max(0, idx - limit)
-        : idx + 1
-      : 0;
+    const startIndex =
+      idx >= 0 ? (pagination?.direction === 'backward' ? Math.max(0, idx - limit) : idx + 1) : 0;
     const paged = items.slice(startIndex, startIndex + limit);
     return { items: paged, nextCursor: paged.at(-1)?.id ?? '' };
   }

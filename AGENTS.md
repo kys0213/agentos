@@ -3,6 +3,7 @@
 Welcome to the AgentOS repository. This file summarizes key resources and commands.
 
 ## 🔒 Git Workflow — Mandatory
+
 - Always follow the [Git Workflow Guide](docs/GIT_WORKFLOW_GUIDE.md).
 - Create a feature branch before changes: `git checkout main && git pull && git checkout -b feature/<task>`.
 - Make TODO-scoped commits with clear messages; no squashing unrelated changes.

@@ -12,10 +12,7 @@ import type {
   Preset,
 } from '@agentos/core';
 import type { IpcChannel } from '../../../shared/types/ipc-channel';
-import type {
-  CursorPagination,
-  CursorPaginationResult,
-} from '@agentos/core';
+import type { CursorPagination, CursorPaginationResult } from '@agentos/core';
 import type { ChatSessionDescription } from '@agentos/core';
 import type { MessageHistory } from '@agentos/core';
 import type {
