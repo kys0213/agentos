@@ -8,6 +8,7 @@ import {
   FileText,
   Folder,
   FolderOpen,
+  Database,
   Plus,
   Settings,
 } from 'lucide-react';
@@ -21,6 +22,7 @@ import { KnowledgeBaseManager } from './KnowledgeBaseManager';
 import { PrestForm } from './PresetForm';
 import PresetCard from './PresetCard';
 import PresetListFilters, { PresetCategoryOption } from './PresetListFilters';
+import { Badge } from '../ui/badge';
 
 export interface PresetManagerProps {
   presets?: Preset[];

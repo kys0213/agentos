@@ -22,6 +22,7 @@ import { RACPManager } from '../racp/RACPManager';
 import { SettingsManager } from '../settings/SettingManager';
 import { SubAgentCreate } from '../sub-agent/SubAgentCreate';
 import { ToolBuilderCreate } from '../tool/ToolBuilderCreate';
+import PresetManagerContainer from '../preset/PresetManagerContainer';
 
 interface ManagementViewProps {
   navigation: UseAppNavigationReturn;
