@@ -166,13 +166,11 @@ export const AGENT_MANAGER_ERROR_CODES = {
   OPERATION_FAILED: 'OPERATION_FAILED',
 } as const;
 
+// Re-export from Lang package for backward compatibility
+import { validation } from '@agentos/lang';
+
 /**
  * Agent ID 유효성 검사
+ * @deprecated Use validation.validateAgentId from @agentos/lang instead
  */
-export function validateAgentId(agentId: string): boolean {
-  return (
-    /^[a-zA-Z0-9][a-zA-Z0-9._-]*[a-zA-Z0-9]$/.test(agentId) &&
-    agentId.length >= 2 &&
-    agentId.length <= 64
-  );
-}
+export const validateAgentId = validation.validateAgentId;

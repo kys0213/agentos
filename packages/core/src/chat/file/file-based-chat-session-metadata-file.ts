@@ -1,13 +1,15 @@
-import fs from 'fs/promises';
 import path from 'path';
+import { fs } from '@agentos/lang';
 import { FileBasedSessionMetadata } from './file-based-session.metadata';
 
 export class FileBasedChatSessionMetadataFile {
   private readonly fileName = 'metadata.json';
   private readonly _fullPath: string;
+  private readonly jsonHandler: fs.JsonFileHandler<FileBasedSessionMetadata>;
 
   constructor(directoryPath: string) {
     this._fullPath = path.join(directoryPath, this.fileName);
+    this.jsonHandler = fs.JsonFileHandler.create<FileBasedSessionMetadata>(this._fullPath);
   }
 
   get fullPath(): string {
@@ -15,30 +17,24 @@ export class FileBasedChatSessionMetadataFile {
   }
 
   async exists(): Promise<boolean> {
-    return fs
-      .access(this._fullPath)
-      .then(() => true)
-      .catch(() => false);
+    return this.jsonHandler.exists();
   }
 
   async create(): Promise<void> {
-    await fs.writeFile(this._fullPath, '');
+    const result = await this.jsonHandler.write({} as FileBasedSessionMetadata);
+    if (!result.success) {
+      throw new Error(`Failed to create metadata file: ${String(result.reason)}`);
+    }
   }
 
   async read(): Promise<FileBasedSessionMetadata> {
-    if (!(await this.exists())) {
-      throw new Error(`Session metadata not found: ${this._fullPath}`);
-    }
-
-    const content = await fs.readFile(this._fullPath, 'utf-8');
-    return JSON.parse(content);
+    return this.jsonHandler.readOrThrow();
   }
 
   async update(metadata: FileBasedSessionMetadata): Promise<void> {
-    if (!(await this.exists())) {
-      await this.create();
+    const result = await this.jsonHandler.writeWithEnsure(metadata);
+    if (!result.success) {
+      throw new Error(`Failed to update metadata: ${String(result.reason)}`);
     }
-
-    await fs.writeFile(this._fullPath, JSON.stringify(metadata));
   }
 }
