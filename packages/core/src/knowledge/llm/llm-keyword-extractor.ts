@@ -71,13 +71,14 @@ function parseJsonArray(s: string): string[] {
     const parsed = JSON.parse(trimmed);
     return Array.isArray(parsed) ? parsed : [];
   } catch {
-    // try to find first [...] block
     const m = trimmed.match(/\[[\s\S]*\]/);
     if (m) {
       try {
         const parsed = JSON.parse(m[0]);
         return Array.isArray(parsed) ? parsed : [];
-      } catch {}
+      } catch {
+        // ignore
+      }
     }
     return [];
   }
