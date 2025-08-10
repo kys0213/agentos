@@ -181,7 +181,11 @@ export class FileUtils {
   /**
    * 파일 복사
    */
-  static async copy(srcPath: string, destPath: string, options: FileOptions = {}): Promise<Result<void>> {
+  static async copy(
+    srcPath: string,
+    destPath: string,
+    options: FileOptions = {}
+  ): Promise<Result<void>> {
     const { ensureDir = true } = options;
 
     try {

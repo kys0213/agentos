@@ -27,7 +27,11 @@ export class JsonFileHandler<T> {
   /**
    * 팩토리 메서드: 타입 가드와 함께 핸들러 생성
    */
-  static create<T>(filePath: string, typeGuard?: TypeGuard<T>, defaultValue?: T): JsonFileHandler<T> {
+  static create<T>(
+    filePath: string,
+    typeGuard?: TypeGuard<T>,
+    defaultValue?: T
+  ): JsonFileHandler<T> {
     return new JsonFileHandler(filePath, typeGuard, defaultValue);
   }
 
@@ -45,6 +49,7 @@ export class JsonFileHandler<T> {
     const { useDefaultOnError = false } = options;
 
     const readResult = await FileUtils.readSafe(this.filePath, options);
+
     if (!readResult.success) {
       if (useDefaultOnError && this.defaultValue !== undefined) {
         return { success: true, result: this.defaultValue };
@@ -116,9 +121,7 @@ export class JsonFileHandler<T> {
     }
 
     try {
-      const jsonString = prettyPrint 
-        ? JSON.stringify(data, null, indent) 
-        : JSON.stringify(data);
+      const jsonString = prettyPrint ? JSON.stringify(data, null, indent) : JSON.stringify(data);
 
       return await FileUtils.writeSafe(this.filePath, jsonString, options);
     } catch (error) {
@@ -147,7 +150,7 @@ export class JsonFileHandler<T> {
    * 부분 업데이트 (객체 병합)
    */
   async update(
-    updater: (current: T) => T | Promise<T>, 
+    updater: (current: T) => T | Promise<T>,
     options: JsonFileOptions = {}
   ): Promise<Result<T>> {
     const readResult = await this.read({ ...options, useDefaultOnError: true });
@@ -161,7 +164,7 @@ export class JsonFileHandler<T> {
       if (!writeResult.success) {
         return { success: false, reason: writeResult.reason };
       }
-      
+
       return { success: true, result: updatedData };
     } catch (error) {
       return { success: false, reason: error };
@@ -181,11 +184,11 @@ export class JsonFileHandler<T> {
   async backup(backupSuffix = '.backup'): Promise<Result<string>> {
     const backupPath = this.filePath + backupSuffix;
     const copyResult = await FileUtils.copy(this.filePath, backupPath);
-    
+
     if (!copyResult.success) {
       return { success: false, reason: copyResult.reason };
     }
-    
+
     return { success: true, result: backupPath };
   }
 }

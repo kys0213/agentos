@@ -1,5 +1,4 @@
 import readline from 'readline';
-import fs from 'fs/promises';
 import { createReadStream } from 'fs';
 import { FileUtils, FileOptions } from './FileUtils';
 import { Result } from '../utils/safeZone';
@@ -84,9 +83,9 @@ export class JsonLFileHandler<T> {
         const parseResult = jsonUtils.safeJsonParse<T>(trimmedLine);
         if (!parseResult.success) {
           if (skipInvalidJson) continue;
-          yield { 
-            success: false, 
-            reason: new Error(`Invalid JSON at line ${lineNumber}: ${String(parseResult.reason)}`) 
+          yield {
+            success: false,
+            reason: new Error(`Invalid JSON at line ${lineNumber}: ${String(parseResult.reason)}`),
           };
           continue;
         }
@@ -177,7 +176,7 @@ export class JsonLFileHandler<T> {
 
     try {
       const lines = items.map((item) => JSON.stringify(item)).join('\n') + '\n';
-      
+
       const appendResult = await FileUtils.appendSafe(this.filePath, lines, {
         ...options,
         createIfNotExists: true,
@@ -189,7 +188,7 @@ export class JsonLFileHandler<T> {
 
       // 배치 지연이 설정된 경우
       if (batchDelay > 0) {
-        await new Promise(resolve => setTimeout(resolve, batchDelay));
+        await new Promise((resolve) => setTimeout(resolve, batchDelay));
       }
 
       return { success: true, result: undefined };
@@ -213,7 +212,7 @@ export class JsonLFileHandler<T> {
     options: JsonLFileOptions = {}
   ): Promise<Result<JsonLStats>> {
     const { chunkSize = 100, batchDelay = 0 } = options;
-    
+
     const stats: JsonLStats = {
       totalLines: 0,
       validJsonLines: 0,
@@ -246,7 +245,7 @@ export class JsonLFileHandler<T> {
           if (!appendResult.success) {
             return { success: false, reason: appendResult.reason };
           }
-          
+
           stats.validJsonLines += batch.length;
           batch.length = 0; // 배열 초기화
         }
@@ -279,9 +278,13 @@ export class JsonLFileHandler<T> {
     };
 
     try {
-      for await (const result of this.readStream({ ...options, skipInvalidJson: false, skipEmptyLines: false })) {
+      for await (const result of this.readStream({
+        ...options,
+        skipInvalidJson: false,
+        skipEmptyLines: false,
+      })) {
         stats.totalLines++;
-        
+
         if (!result.success) {
           const errorMessage = String(result.reason);
           if (errorMessage.includes('Empty line')) {
@@ -338,7 +341,7 @@ export class JsonLFileHandler<T> {
         const shouldInclude = await predicate(result.result);
         if (shouldInclude) {
           batch.push(result.result);
-          
+
           if (batch.length >= chunkSize) {
             const appendResult = await outputHandler.appendMany(batch, options);
             if (!appendResult.success) {
