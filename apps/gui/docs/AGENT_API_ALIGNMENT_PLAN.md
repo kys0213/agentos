@@ -69,9 +69,17 @@ export interface McpUsageLogProtocol {
 - [x] 컴포넌트/훅 호출 정리(MCP 사용량, 프리셋, 타입 보완)
 - [x] agent:chat/endSession 임시 동작 구현(main)
 - [x] 타입체크 통과 확인(`pnpm -r typecheck`)
-- [ ] 호환 alias 제거 및 호출부 일괄 전환(후속)
-- [ ] 실제 Agent/Bridge/ChatManager 연동(후속)
-- [ ] Mock 채널 보강(테스트 데이터 주입/조회 유틸)(후속)
+- [x] 호환 alias 제거 및 호출부 일괄 전환(services/컴포넌트/훅/스토어)
+- [ ] 실제 Agent/Bridge/ChatManager 연동 (main):
+  - [ ] 현재 활성 LLM Bridge 주입(getBridgeManager)
+  - [ ] `McpRegistry` 싱글톤 초기화
+  - [ ] `FileBasedChatManager`(userData/sessions) + `NoopCompressor` 초기화
+  - [ ] `SimpleAgent` 생성 및 `agent:chat/end-session` 연동
+  - [ ] 브릿지 없음 시 우아한 폴백(에코)
+- [ ] Mock 채널 보강(테스트 데이터 주입/조회 유틸):
+  - [ ] 브릿지/프리셋/에이전트 시드 유틸 추가 및 사용 예시
+  - [ ] 간단한 시나리오용 메시지 모의 응답
+- [ ] 문서 업데이트(개발 가이드/테스트 가이드 보강)
 
 ## 작업 순서
 
@@ -87,4 +95,3 @@ export interface McpUsageLogProtocol {
 # 검증 명령어
 pnpm -r typecheck
 ```
-
