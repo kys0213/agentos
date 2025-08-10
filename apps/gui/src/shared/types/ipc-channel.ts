@@ -11,6 +11,9 @@ import type {
   McpUsageStats,
   Preset,
 } from '@agentos/core';
+import type { CursorPagination, CursorPaginationResult } from '@agentos/core';
+import type { ChatSessionDescription } from '@agentos/core';
+import type { MessageHistory } from '@agentos/core';
 import { LlmManifest, UserMessage } from 'llm-bridge-spec';
 import type {
   ClearUsageLogsResponse,
@@ -35,7 +38,8 @@ export interface IpcChannel
     BuiltinToolProtocol,
     McpProtocol,
     PresetProtocol,
-    McpUsageLogProtocol {}
+    McpUsageLogProtocol,
+    ConversationProtocol {}
 
 /**
  * IpcChannel 구현체들이 공통으로 사용할 수 있는 유틸리티 타입들
@@ -52,6 +56,20 @@ export namespace IpcChannelTypes {
     hasMore?: boolean;
     nextCursor?: string;
   }
+}
+
+// Conversation (chat session + messages) protocol
+export interface ConversationProtocol {
+  listSessions(
+    pagination?: CursorPagination
+  ): Promise<CursorPaginationResult<ChatSessionDescription>>;
+
+  getMessages(
+    sessionId: string,
+    pagination?: CursorPagination
+  ): Promise<CursorPaginationResult<Readonly<MessageHistory>>>;
+
+  deleteSession(sessionId: string): Promise<{ success: boolean; error?: string }>;
 }
 
 export interface AgentProtocol {

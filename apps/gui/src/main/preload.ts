@@ -14,6 +14,13 @@ const electronAPI: AgentOsAPI = {
     deleteAgent: (id) => ipcRenderer.invoke('agent:delete', id),
   },
 
+  conversation: {
+    listSessions: (pagination) => ipcRenderer.invoke('chat:list-sessions', pagination),
+    getMessages: (sessionId, pagination) =>
+      ipcRenderer.invoke('chat:get-messages', sessionId, pagination),
+    deleteSession: (sessionId) => ipcRenderer.invoke('chat:delete-session', sessionId),
+  },
+
   bridge: {
     registerBridge: (config) => ipcRenderer.invoke('bridge:register-bridge', config),
     unregisterBridge: (id) => ipcRenderer.invoke('bridge:unregister-bridge', id),

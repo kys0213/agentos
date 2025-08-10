@@ -1,15 +1,26 @@
 import { ipcMain, IpcMainInvokeEvent, app } from 'electron';
-import { ChatManager, FileBasedChatManager, FileBasedSessionStorage } from '@agentos/core';
+import {
+  ChatManager,
+  FileBasedChatManager,
+  FileBasedSessionStorage,
+  CursorPagination,
+  CursorPaginationResult,
+  ChatSessionDescription,
+  MessageHistory,
+} from '@agentos/core';
 import * as path from 'path';
 import { NoopCompressor } from '../NoopCompressor';
+import fs from 'fs/promises';
 
 let chatManager: ChatManager | null = null;
+let sessionsBasePath: string | null = null;
 
 function initializeChatManager(): ChatManager {
   if (chatManager) return chatManager;
 
   const userDataPath = app.getPath('userData');
   const sessionsPath = path.join(userDataPath, 'sessions');
+  sessionsBasePath = sessionsPath;
 
   const sessionStorage = new FileBasedSessionStorage(sessionsPath);
   const historyCompressor = new NoopCompressor();
@@ -41,16 +52,18 @@ export function setupChatIpcHandlers() {
   );
 
   // listChatSessions
-  ipcMain.handle('chat:list-sessions', async (_event: IpcMainInvokeEvent) => {
-    try {
-      const result = await manager.list();
-      // IpcChannel 인터페이스에 맞게 배열 형태로 반환
-      return result.items || [];
-    } catch (error) {
-      console.error('Failed to list chat sessions:', error);
-      throw error;
+  ipcMain.handle(
+    'chat:list-sessions',
+    async (_event: IpcMainInvokeEvent, pagination?: CursorPagination) => {
+      try {
+        const result = await manager.list(pagination);
+        return result as CursorPaginationResult<ChatSessionDescription>;
+      } catch (error) {
+        console.error('Failed to list chat sessions:', error);
+        throw error;
+      }
     }
-  });
+  );
 
   // loadChatSession
   ipcMain.handle('chat:load-session', async (_event: IpcMainInvokeEvent, sessionId: string) => {
@@ -111,15 +124,15 @@ export function setupChatIpcHandlers() {
   // getChatMessages
   ipcMain.handle(
     'chat:get-messages',
-    async (_event: IpcMainInvokeEvent, sessionId: string, options?: any) => {
+    async (
+      _event: IpcMainInvokeEvent,
+      sessionId: string,
+      pagination?: CursorPagination
+    ): Promise<CursorPaginationResult<Readonly<MessageHistory>>> => {
       try {
-        // TODO: 실제 메시지 조회 구현 필요
-        return {
-          messages: [],
-          total: 0,
-          hasMore: false,
-          nextCursor: undefined,
-        };
+        const session = await manager.getSession(sessionId);
+        const histories = await session.getHistories(pagination);
+        return histories as CursorPaginationResult<Readonly<MessageHistory>>;
       } catch (error) {
         console.error('Failed to get chat messages:', error);
         throw error;
@@ -130,8 +143,14 @@ export function setupChatIpcHandlers() {
   // deleteChatSession
   ipcMain.handle('chat:delete-session', async (_event: IpcMainInvokeEvent, sessionId: string) => {
     try {
-      // TODO: 실제 세션 삭제 구현 필요
-      console.log(`Deleting chat session: ${sessionId}`);
+      // Ensure cache is cleared/committed
+      await manager.removeSession(sessionId);
+      // Remove session directory
+      if (!sessionsBasePath) {
+        throw new Error('Sessions base path not initialized');
+      }
+      const dir = path.join(sessionsBasePath, sessionId);
+      await fs.rm(dir, { recursive: true, force: true });
       return { success: true };
     } catch (error) {
       console.error('Failed to delete chat session:', error);

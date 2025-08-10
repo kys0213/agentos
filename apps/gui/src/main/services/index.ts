@@ -4,6 +4,7 @@ import { setupMcpIpcHandlers } from './mcp-ipc-handlers';
 import { setupMcpUsageLogIpcHandlers } from './mcp-usage-log-ipc-handlers';
 import { setupPresetIpcHandlers } from './preset-ipc-handlers';
 import { setupBridgeIpcHandlers } from './bridge-ipc-handlers';
+import { setupChatIpcHandlers } from './chat-ipc-handlers';
 
 export function setupAllIpcHandlers() {
   // AgentOS API 스펙에 맞춘 도메인별 IPC 핸들러 등록
@@ -13,6 +14,7 @@ export function setupAllIpcHandlers() {
   setupMcpUsageLogIpcHandlers();
   setupPresetIpcHandlers();
   setupBridgeIpcHandlers();
+  setupChatIpcHandlers();
 
   console.log('All IPC handlers registered successfully');
 }

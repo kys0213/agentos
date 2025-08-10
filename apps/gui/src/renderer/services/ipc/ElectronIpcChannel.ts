@@ -12,6 +12,9 @@ import type {
   Preset,
 } from '@agentos/core';
 import type { IpcChannel } from '../../../shared/types/ipc-channel';
+import type { CursorPagination, CursorPaginationResult } from '@agentos/core';
+import type { ChatSessionDescription } from '@agentos/core';
+import type { MessageHistory } from '@agentos/core';
 import type {
   ResourceListResponse,
   ResourceResponse,
@@ -179,5 +182,21 @@ export class ElectronIpcChannel implements IpcChannel {
   }
   async getPreset(id: string): Promise<Preset | null> {
     return this.electronAPI.preset.getPreset(id);
+  }
+
+  // Conversation
+  async listSessions(
+    pagination?: CursorPagination
+  ): Promise<CursorPaginationResult<ChatSessionDescription>> {
+    return this.electronAPI.conversation.listSessions(pagination);
+  }
+  async getMessages(
+    sessionId: string,
+    pagination?: CursorPagination
+  ): Promise<CursorPaginationResult<Readonly<MessageHistory>>> {
+    return this.electronAPI.conversation.getMessages(sessionId, pagination);
+  }
+  async deleteSession(sessionId: string): Promise<{ success: boolean; error?: string }> {
+    return this.electronAPI.conversation.deleteSession(sessionId);
   }
 }
