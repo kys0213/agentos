@@ -12,10 +12,18 @@ interface PresetDetailContainerProps {
   onBack: () => void;
 }
 
-export const PresetDetailContainer: React.FC<PresetDetailContainerProps> = ({ presetId, onBack }) => {
+export const PresetDetailContainer: React.FC<PresetDetailContainerProps> = ({
+  presetId,
+  onBack,
+}) => {
   const queryClient = useQueryClient();
 
-  const { data: preset, status, error, refetch } = useQuery({
+  const {
+    data: preset,
+    status,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['preset', presetId],
     queryFn: () => fetchPresetById(presetId),
     staleTime: 60_000,
@@ -48,8 +56,12 @@ export const PresetDetailContainer: React.FC<PresetDetailContainerProps> = ({ pr
   if (status === 'error' || !preset) {
     return (
       <Card className="p-6 flex items-center justify-between">
-        <div className="text-sm text-red-600">Failed to load preset{error ? `: ${(error as Error).message}` : ''}</div>
-        <Button variant="outline" onClick={() => refetch()}>Retry</Button>
+        <div className="text-sm text-red-600">
+          Failed to load preset{error ? `: ${(error as Error).message}` : ''}
+        </div>
+        <Button variant="outline" onClick={() => refetch()}>
+          Retry
+        </Button>
       </Card>
     );
   }

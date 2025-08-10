@@ -26,7 +26,12 @@ export const PresetBasicFields: React.FC<PresetBasicFieldsProps> = ({
     <div className="space-y-4">
       <div>
         <Label htmlFor="name">Preset Name</Label>
-        <Input id="name" value={name} onChange={(e) => onChange({ name: e.target.value })} className="mt-1" />
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => onChange({ name: e.target.value })}
+          className="mt-1"
+        />
       </div>
 
       <div>
@@ -80,4 +85,3 @@ export const PresetBasicFields: React.FC<PresetBasicFieldsProps> = ({
 };
 
 export default PresetBasicFields;
-

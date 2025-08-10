@@ -235,7 +235,9 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
               <div className="grid grid-cols-2 gap-6 h-full">
                 <div className="space-y-6">
                   <Card className="p-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Basic Information</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-4">
+                      Basic Information
+                    </h3>
                     <PresetBasicFields
                       name={editedPreset.name}
                       description={editedPreset.description}
@@ -248,7 +250,10 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
 
                   <Card className="p-6">
                     <h3 className="text-lg font-semibold text-foreground mb-4">Model Settings</h3>
-                    <PresetModelSettings config={editedPreset.llmBridgeConfig} onChange={updatePreset} />
+                    <PresetModelSettings
+                      config={editedPreset.llmBridgeConfig}
+                      onChange={updatePreset}
+                    />
                   </Card>
                 </div>
 

@@ -50,7 +50,9 @@ export const PresetModelSettings: React.FC<PresetModelSettingsProps> = ({
             </div>
             <Slider
               value={[cfg.temperature ?? 0.7]}
-              onValueChange={([value]) => onChange({ llmBridgeConfig: { ...cfg, temperature: value } })}
+              onValueChange={([value]) =>
+                onChange({ llmBridgeConfig: { ...cfg, temperature: value } })
+              }
               max={2}
               min={0}
               step={0.1}
@@ -64,7 +66,9 @@ export const PresetModelSettings: React.FC<PresetModelSettingsProps> = ({
             </div>
             <Slider
               value={[cfg.maxTokens ?? 2048]}
-              onValueChange={([value]) => onChange({ llmBridgeConfig: { ...cfg, maxTokens: value } })}
+              onValueChange={([value]) =>
+                onChange({ llmBridgeConfig: { ...cfg, maxTokens: value } })
+              }
               max={4096}
               min={256}
               step={256}
@@ -91,4 +95,3 @@ export const PresetModelSettings: React.FC<PresetModelSettingsProps> = ({
 };
 
 export default PresetModelSettings;
-
