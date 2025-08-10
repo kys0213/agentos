@@ -42,10 +42,10 @@ export class FileBasedChatSessionMessageHistoryFile {
     const { chunkSize = 5 } = options ?? {};
     const buffer: MessageHistory[] = [];
 
-    for await (const result of this.jsonlHandler.readStream({ 
-      chunkSize, 
-      skipEmptyLines: true, 
-      skipInvalidJson: false 
+    for await (const result of this.jsonlHandler.readStream({
+      chunkSize,
+      skipEmptyLines: true,
+      skipInvalidJson: false,
     })) {
       if (!result.success) {
         throw new Error(`Failed to read message history: ${String(result.reason)}`);

@@ -34,7 +34,7 @@ export class FileBasedPresetRepository implements PresetRepository {
   async get(id: string): Promise<Preset | null> {
     const filePath = this.resolvePath(id);
     const jsonHandler = fs.JsonFileHandler.create<Preset>(filePath);
-    
+
     const result = await jsonHandler.read();
     if (!result.success) {
       return null;
@@ -67,11 +67,11 @@ export class FileBasedPresetRepository implements PresetRepository {
   private async saveFile(id: string, preset: Preset): Promise<void> {
     const filePath = this.resolvePath(id);
     const jsonHandler = fs.JsonFileHandler.create<Preset>(filePath);
-    
-    const result = await jsonHandler.write(preset, { 
-      prettyPrint: true, 
+
+    const result = await jsonHandler.write(preset, {
+      prettyPrint: true,
       indent: 2,
-      ensureDir: true 
+      ensureDir: true,
     });
     if (!result.success) {
       throw new Error(`Failed to save preset: ${String(result.reason)}`);
