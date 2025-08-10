@@ -41,10 +41,14 @@ git pull origin main
 # 2. 새 기능 브랜치 생성
 git checkout -b feature/ux-command-palette
 
-# 3. 작업 완료 후 Pull Request 생성 - 절대 직접 병합 금지!
+# 3. push 전 검증
+pnpm format
+pnpm test
+
+# 4. 작업 완료 후 Pull Request 생성 - 절대 직접 병합 금지!
 git push origin feature/ux-command-palette
 
-# 4. GitHub에서 Pull Request 생성
+# 5. GitHub에서 Pull Request 생성
 gh pr create --title "Add Command Palette system" --body "$(cat <<'EOF'
 ## Summary
 - Command Palette implementation with Cmd+K shortcut
@@ -197,16 +201,82 @@ pnpm build     # 빌드 오류 확인
 - [ ] main 브랜치로 전환하지 않았는가?
 - [ ] 추가 수정사항이 있다면 같은 브랜치에 커밋했는가?
 
-## 🚀 **자동화 가능한 개선사항**
+## 🚀 **필수 Git Hooks 설정 (CI 실패 방지)**
 
-### **Git Hooks 활용**
+### **⚡ 자동 설정 스크립트**
 
 ```bash
-# pre-commit hook
+# 프로젝트 루트에서 실행 - 모든 필수 hooks 한번에 설정
+./.scripts/setup-git-hooks.sh
+```
+
+### **🔧 수동 Git Hooks 설정**
+
+#### **1. pre-push hook (🚨 필수 - CI 실패 방지)**
+
+```bash
+#!/bin/sh
+# .git/hooks/pre-push
+echo "🔍 Running pre-push checks..."
+
+# 1. 포맷팅 검사 및 자동 수정
+echo "📝 Running formatter..."
+pnpm format
+if [ $? -ne 0 ]; then
+    echo "❌ Format failed. Please fix formatting issues."
+    exit 1
+fi
+
+# 2. 린트 검사
+echo "🔍 Running linter..."
+pnpm lint
+if [ $? -ne 0 ]; then
+    echo "❌ Lint failed. Please fix linting issues before pushing."
+    exit 1
+fi
+
+# 3. 타입 체크
+echo "🔧 Running type check..."
+pnpm typecheck
+if [ $? -ne 0 ]; then
+    echo "❌ Type check failed. Please fix type errors before pushing."
+    exit 1
+fi
+
+# 4. 테스트 실행 (선택적)
+echo "🧪 Running tests..."
+pnpm test
+if [ $? -ne 0 ]; then
+    echo "⚠️  Some tests failed. Consider fixing before pushing."
+    # 테스트 실패는 경고만 (exit 하지 않음)
+fi
+
+# 5. 빌드 검증
+echo "🏗️  Running build..."
+pnpm build
+if [ $? -ne 0 ]; then
+    echo "❌ Build failed. Please fix build errors before pushing."
+    exit 1
+fi
+
+echo "✅ All pre-push checks passed!"
+```
+
+#### **2. pre-commit hook (권장)**
+
+```bash
 #!/bin/sh
 # .git/hooks/pre-commit
-pnpm lint
-pnpm test
+echo "🔍 Running pre-commit checks..."
+
+# 스테이징된 파일만 검사
+pnpm lint-staged
+if [ $? -ne 0 ]; then
+    echo "❌ Lint-staged failed. Please fix issues and re-add files."
+    exit 1
+fi
+
+echo "✅ Pre-commit checks passed!"
 ```
 
 ### **커밋 템플릿**
@@ -234,21 +304,110 @@ pnpm test
 5. **🚨 Pull Request Only**: 모든 병합은 반드시 Pull Request를 통해서만
 6. **🚨 브랜치 보호**: PR 승인 전까지 브랜치 절대 삭제 금지
 
-## ⚠️ **Claude Code 사용 시 주의사항**
+### **📋 Git Hooks 설치 방법**
 
-**Claude는 다음 작업을 절대 해서는 안 됩니다:**
+#### **자동 설치 (권장)**
 
-❌ `git merge` 명령어 실행
-❌ `git checkout main` 후 병합 작업
-❌ `git branch -d` 로 브랜치 삭제 (PR 승인 전)
-❌ `git push origin main` 직접 푸시
+```bash
+# 프로젝트 루트에서 한 번만 실행
+./.scripts/setup-git-hooks.sh
+```
 
-**Claude가 해야 할 올바른 작업:**
+#### **수동 설치**
 
-✅ 브랜치에서 작업 및 TODO별 커밋
-✅ `git push origin branch-name` 브랜치 푸시
-✅ `gh pr create` Pull Request 생성
-✅ PR 생성 후 사용자 승인 대기
-✅ 사용자가 승인할 때까지 브랜치 유지
+1. 위의 pre-push hook 스크립트를 `.git/hooks/pre-push`에 저장
+2. 실행 권한 부여: `chmod +x .git/hooks/pre-push`
+3. pre-commit hook도 동일하게 설정
 
-**이 원칙을 통해 안전하고 체계적인 개발 프로세스를 보장합니다.**
+### **🎯 Hook 동작 방식**
+
+**Pre-push Hook가 실행하는 검사:**
+
+1. **포맷팅**: `pnpm format` (자동 수정 + 커밋 요구)
+2. **린트**: `pnpm lint` (실패 시 push 차단)
+3. **타입체크**: `pnpm typecheck` (실패 시 push 차단)
+4. **빌드**: `pnpm build` (실패 시 push 차단)
+5. **테스트**: `pnpm test` (실패 시 경고만)
+6. **브랜치 보호**: main 브랜치 직접 push 차단
+
+**실패 시 대응 방법:**
+
+```bash
+# 1. 린트 에러 자동 수정 시도
+pnpm lint --fix
+
+# 2. 포맷팅 자동 수정 후 커밋
+pnpm format
+git add .
+git commit --amend --no-edit
+
+# 3. 타입 에러는 수동으로 수정 필요
+pnpm typecheck
+
+# 4. 급한 경우 hook 우회 (비권장)
+git push --no-verify
+```
+
+## ⚠️ ** Coding Agent 사용 시 필수 지침**
+
+### **🔧 Coding Agent 작업 전 확인사항**
+
+**✅ Coding Agent 가 반드시 해야 할 작업:**
+
+1. **브랜치 생성**: `git checkout -b feature/descriptive-name`
+2. **품질 검사**: 모든 변경 후 `pnpm lint && pnpm typecheck && pnpm build`
+3. **TODO별 커밋**: 각 TODO 완료 시마다 의미있는 커밋
+4. **Hook 통과 확인**: push 전 pre-push hook 성공 확인
+5. **PR 생성**: `gh pr create`로 Pull Request 생성
+
+**❌ Coding Agent 가 절대 해서는 안 되는 작업:**
+
+1. `git merge` 명령어 실행
+2. `git checkout main` 후 병합 작업
+3. `git branch -d` 로 브랜치 삭제 (PR 승인 전)
+4. `git push origin main` 직접 푸시
+5. `git push --no-verify` Hook 우회 푸시
+6. Lint/타입 에러 무시하고 진행
+
+### **🚨 실패 시 대응 절차**
+
+```bash
+# 1. 문제 파악
+echo "Hook failed - checking issues..."
+
+# 2. 자동 수정 시도
+pnpm lint --fix
+pnpm format
+
+# 3. 변경사항 커밋
+git add .
+git commit --amend --no-edit
+
+# 4. 타입 에러 수정 (수동)
+pnpm typecheck
+# 에러 수정 후
+git add .
+git commit --amend --no-edit
+
+# 5. 재시도
+git push origin feature-branch
+```
+
+### **💡 품질 보장 체크리스트**
+
+모든 커밋 전:
+
+- [ ] `pnpm lint` 통과
+- [ ] `pnpm typecheck` 통과
+- [ ] `pnpm build` 통과
+- [ ] 의미있는 커밋 메시지 작성
+- [ ] TODO별 단위 커밋 확인
+
+Push 전:
+
+- [ ] Pre-push hook 성공
+- [ ] 브랜치명이 적절한가
+- [ ] main 브랜치가 아닌가
+- [ ] PR 준비 완료
+
+**이 지침을 통해 CI 실패 없는 안전하고 품질 높은 개발을 보장합니다.**
