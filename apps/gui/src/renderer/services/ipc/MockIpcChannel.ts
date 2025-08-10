@@ -131,3 +131,12 @@ export class MockIpcChannel implements IpcChannel {
   async subscribeToUsageUpdates(_callback: (event: McpUsageUpdateEvent) => void): Promise<() => void> { return () => {}; }
 }
 
+// Test utilities to seed mock data in dev/test
+export const MockIpcUtils = {
+  addBridge(channel: MockIpcChannel, cfg: LlmManifest) {
+    return channel.registerBridge(cfg);
+  },
+  addPreset(_channel: MockIpcChannel, _preset: Preset) {
+    // no-op placeholder for future enrichment
+  },
+};
