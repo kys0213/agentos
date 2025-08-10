@@ -16,6 +16,9 @@ import { McpContent } from '../tool/mcp/mcp';
 import { McpRegistry } from '../tool/mcp/mcp.registery';
 import { Agent, AgentChatResult, AgentExecuteOptions } from './agent';
 import { AgentMetadata, ReadonlyAgentMetadata } from './agent-metadata';
+import { validation } from '@agentos/lang';
+
+const { isNonEmptyArray } = validation;
 
 export class SimpleAgent implements Agent {
   private readonly activeSessions = new Map<string, ChatSession>();
@@ -102,7 +105,7 @@ export class SimpleAgent implements Agent {
 
     const enabledMcps = this._metadata.preset.enabledMcps;
 
-    if (!enabledMcps || enabledMcps.length === 0) {
+    if (!isNonEmptyArray(enabledMcps)) {
       const tools = await Promise.all(mcps.map(async (mcp) => await mcp.getTools()));
 
       return tools.flat().map(this.toLlmBridgeTool);
@@ -113,7 +116,7 @@ export class SimpleAgent implements Agent {
         const mcp = await this.mcpRegistry.getOrThrow(enabledMcp.name);
         const tools = await mcp.getTools();
 
-        if (enabledMcp.enabledTools.length === 0) {
+        if (!isNonEmptyArray(enabledMcp.enabledTools)) {
           return tools;
         }
 
@@ -149,7 +152,7 @@ export class SimpleAgent implements Agent {
       await chatSession.sumUsage(response.usage);
     }
 
-    if (!response.toolCalls || response.toolCalls?.length === 0) {
+    if (!isNonEmptyArray(response.toolCalls)) {
       return response;
     }
 
@@ -204,7 +207,7 @@ export class SimpleAgent implements Agent {
 
       const llmResponse = await this.llmBridge.invoke({ messages: messages }, { tools });
 
-      if (!llmResponse.toolCalls || llmResponse.toolCalls.length === 0) {
+      if (!isNonEmptyArray(llmResponse.toolCalls)) {
         return llmResponse;
       }
     }

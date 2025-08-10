@@ -9,6 +9,10 @@ import {
   AgentManager,
 } from './agent-manager';
 import { CursorPagination, CursorPaginationResult } from '../common/pagination/cursor-pagination';
+import { validation } from '@agentos/lang';
+
+const { isNonEmptyArray } = validation;
+const isError = (value: unknown): value is Error => value instanceof Error;
 
 /**
  * 간단한 Agent 매니저 구현체
@@ -96,7 +100,7 @@ export class SimpleAgentManager implements AgentManager {
       return result;
     } catch (error) {
       throw new AgentManagerError(
-        `Failed to execute agent '${agentId}': ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to execute agent '${agentId}': ${isError(error) ? error.message : 'Unknown error'}`,
         AGENT_MANAGER_ERROR_CODES.AGENT_EXECUTION_FAILED,
         { originalError: error }
       );
