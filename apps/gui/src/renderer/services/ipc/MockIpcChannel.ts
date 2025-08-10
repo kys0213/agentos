@@ -13,7 +13,7 @@ import type {
 } from '@agentos/core';
 import type { IpcChannel } from '../../../shared/types/ipc-channel';
 import type { ResourceListResponse, ResourceResponse, ToolExecutionResponse } from '../../types/core-types';
-import { LlmManifest, UserMessage } from 'llm-bridge-spec';
+import { LlmManifest, UserMessage, Message } from 'llm-bridge-spec';
 import type {
   ClearUsageLogsResponse,
   HourlyStatsResponse,
@@ -25,49 +25,58 @@ import type {
 export class MockIpcChannel implements IpcChannel {
   private bridges = new Map<string, LlmManifest>();
   private currentBridgeId: string | null = null;
+  private mcpConfigs: McpConfig[] = [];
+  private mcpConnected = new Set<string>();
+  private toolMetadataByClient = new Map<string, McpToolMetadata[]>();
+  private usageLogs: McpUsageLog[] = [];
+  private presets: Preset[] = [];
+  private agents: AgentMetadata[] = [];
 
   // Agent
-  async chat(_agentId: string, _messages: UserMessage[], _options?: AgentExecuteOptions): Promise<AgentChatResult> {
-    return { messages: [], sessionId: `session_${Date.now()}` };
+  async chat(agentId: string, messages: UserMessage[], options?: AgentExecuteOptions): Promise<AgentChatResult> {
+    // Simple echo behavior for mock
+    const sessionId = options?.sessionId ?? `session_${Date.now()}`;
+    const text = messages
+      .map((m) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content)))
+      .join('\n');
+    const reply = { role: 'assistant', content: { type: 'text', text: `Echo: ${text}` } } as unknown as Message;
+    return { messages: [reply], sessionId };
   }
   async endSession(_agentId: string, _sessionId: string): Promise<void> { return; }
-  async getAgentMetadata(_id: string): Promise<AgentMetadata | null> { return null; }
-  async getAllAgentMetadatas(): Promise<AgentMetadata[]> { return []; }
-  async updateAgent(_agentId: string, agent: Partial<Omit<AgentMetadata, 'id'>>): Promise<AgentMetadata> {
-    return {
-      id: 'mock-agent',
-      name: agent.name ?? 'Mock Agent',
-      description: agent.description ?? '',
-      icon: agent.icon ?? '🤖',
-      keywords: [],
-      preset: {
-        id: 'mock-preset',
-        name: 'Mock Preset',
-        description: '',
-        author: 'mock',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        version: '1.0.0',
-        systemPrompt: '',
-        enabledMcps: [],
-        llmBridgeName: 'mock',
-        llmBridgeConfig: {},
-        status: 'active',
-        usageCount: 0,
-        knowledgeDocuments: 0,
-        knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 },
-        category: [],
-      },
-      status: 'active',
-      lastUsed: new Date(),
-      sessionCount: 0,
-      usageCount: 0,
-    };
+  async getAgentMetadata(id: string): Promise<AgentMetadata | null> {
+    return this.agents.find((a) => a.id === id) ?? null;
+  }
+  async getAllAgentMetadatas(): Promise<AgentMetadata[]> { return [...this.agents]; }
+  async updateAgent(agentId: string, patch: Partial<Omit<AgentMetadata, 'id'>>): Promise<AgentMetadata> {
+    const idx = this.agents.findIndex((a) => a.id === agentId);
+    if (idx === -1) throw new Error(`Agent not found: ${agentId}`);
+    const updated = { ...this.agents[idx], ...patch, id: agentId } as AgentMetadata;
+    this.agents[idx] = updated;
+    return updated;
   }
   async createAgent(agent: CreateAgentMetadata): Promise<AgentMetadata> {
-    return await this.updateAgent('mock', agent);
+    const id = `agent_${Date.now()}`;
+    const created = {
+      id,
+      name: agent.name,
+      description: agent.description ?? '',
+      icon: agent.icon ?? '🤖',
+      keywords: agent.keywords ?? [],
+      preset: agent.preset,
+      status: 'active',
+      lastUsed: undefined,
+      sessionCount: 0,
+      usageCount: 0,
+    } as AgentMetadata;
+    this.agents.push(created);
+    return created;
   }
-  async deleteAgent(_id: string): Promise<AgentMetadata> { return await this.updateAgent('mock', {}); }
+  async deleteAgent(id: string): Promise<AgentMetadata> {
+    const found = await this.getAgentMetadata(id);
+    if (!found) throw new Error(`Agent not found: ${id}`);
+    this.agents = this.agents.filter((a) => a.id !== id);
+    return found;
+  }
 
   // BuiltinTool
   async getAllBuiltinTools(): Promise<BuiltinTool[]> { return []; }
@@ -97,30 +106,101 @@ export class MockIpcChannel implements IpcChannel {
   async getBridgeConfig(id: string): Promise<LlmManifest | null> { return this.bridges.get(id) ?? null; }
 
   // MCP
-  async getAllMcp(): Promise<McpConfig[]> { return []; }
-  async connectMcp(_config: McpConfig): Promise<{ success: boolean }> { return { success: true }; }
-  async disconnectMcp(_name: string): Promise<{ success: boolean }> { return { success: true }; }
-  async executeMcpTool(_client: string, _tool: string, _args: McpToolMetadata): Promise<ToolExecutionResponse> {
-    return { success: true, result: {} };
+  async getAllMcp(): Promise<McpConfig[]> { return [...this.mcpConfigs]; }
+  async connectMcp(config: McpConfig): Promise<{ success: boolean }> {
+    const existing = this.mcpConfigs.find((c) => (c as any).name === (config as any).name);
+    if (!existing) this.mcpConfigs.push(config);
+    this.mcpConnected.add((config as any).name);
+    return { success: true };
+  }
+  async disconnectMcp(name: string): Promise<{ success: boolean }> {
+    this.mcpConnected.delete(name);
+    return { success: true };
+  }
+  async executeMcpTool(client: string, tool: string, args: McpToolMetadata): Promise<ToolExecutionResponse> {
+    // Record usage log
+    const log: McpUsageLog = {
+      id: `log_${Date.now()}`,
+      toolId: tool,
+      toolName: tool,
+      agentId: 'mock-agent',
+      agentName: 'Mock Agent',
+      action: 'invoke',
+      status: 'success',
+      duration: Math.floor(Math.random() * 200) + 10,
+      timestamp: new Date(),
+      parameters: args as any,
+      result: 'ok',
+    } as any;
+    this.usageLogs.push(log);
+    return { success: true, result: { echoedArgs: args } };
   }
   async getMcpResources(_client: string): Promise<ResourceListResponse> { return { resources: [] }; }
   async readMcpResource(_client: string, uri: string): Promise<ResourceResponse> {
     return { uri, content: '', mimeType: 'text/plain' };
   }
-  async getMcpStatus(_client: string): Promise<{ connected: boolean; error?: string }> { return { connected: false }; }
-  async getToolMetadata(_client: string): Promise<McpToolMetadata> { return { id: 'mock', name: 'Mock', description: '', version: '1.0.0', provider: 'mock', usageCount: 0, permissions: [] } as any; }
-  async getAllToolMetadata(): Promise<McpToolMetadata[]> { return []; }
+  async getMcpStatus(client: string): Promise<{ connected: boolean; error?: string }> {
+    return { connected: this.mcpConnected.has(client) };
+  }
+  async getToolMetadata(client: string): Promise<McpToolMetadata> {
+    const list = this.toolMetadataByClient.get(client) ?? [];
+    return list[0] ?? ({ id: 'mock', name: 'Mock Tool', description: '', version: '1.0.0', provider: 'mock', usageCount: 0, permissions: [] } as any);
+  }
+  async getAllToolMetadata(): Promise<McpToolMetadata[]> {
+    return Array.from(this.toolMetadataByClient.values()).flat();
+  }
 
   // Preset
-  async getAllPresets(): Promise<Preset[]> { return []; }
-  async createPreset(preset: CreatePreset): Promise<Preset> { return { id: 'mock', ...preset } as Preset; }
-  async updatePreset(id: string, preset: Partial<Omit<Preset, 'id'>>): Promise<Preset> { return { id, ...(preset as any) } as Preset; }
-  async deletePreset(id: string): Promise<Preset> { return { id, name: 'deleted', description: '', author: '', createdAt: new Date(), updatedAt: new Date(), version: '1.0.0', systemPrompt: '', enabledMcps: [], llmBridgeName: 'mock', llmBridgeConfig: {}, status: 'active', usageCount: 0, knowledgeDocuments: 0, knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 }, category: [] } as any; }
-  async getPreset(_id: string): Promise<Preset | null> { return null; }
+  async getAllPresets(): Promise<Preset[]> { return [...this.presets]; }
+  async createPreset(preset: CreatePreset): Promise<Preset> {
+    const created: Preset = { id: `preset_${Date.now()}`, ...preset } as Preset;
+    this.presets.push(created);
+    return created;
+  }
+  async updatePreset(id: string, preset: Partial<Omit<Preset, 'id'>>): Promise<Preset> {
+    const idx = this.presets.findIndex((p) => p.id === id);
+    if (idx === -1) throw new Error(`Preset not found: ${id}`);
+    const updated = { ...this.presets[idx], ...preset, id } as Preset;
+    this.presets[idx] = updated;
+    return updated;
+  }
+  async deletePreset(id: string): Promise<Preset> {
+    const found = this.presets.find((p) => p.id === id);
+    if (!found) throw new Error(`Preset not found: ${id}`);
+    this.presets = this.presets.filter((p) => p.id !== id);
+    return found;
+  }
+  async getPreset(id: string): Promise<Preset | null> { return this.presets.find((p) => p.id === id) ?? null; }
 
   // Usage Log
-  async getUsageLogs(_clientName: string, _options?: UsageLogQueryOptions): Promise<McpUsageLog[]> { return []; }
-  async getAllUsageLogs(_options?: UsageLogQueryOptions): Promise<McpUsageLog[]> { return []; }
+  async getUsageLogs(clientName: string, options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
+    let logs = [...this.usageLogs];
+    if (options?.status) logs = logs.filter((l) => l.status === options.status);
+    if (options?.agentId) logs = logs.filter((l) => l.agentId === options.agentId);
+    if (options?.sortOrder === 'asc') logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    else logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    if (options?.offset !== undefined || options?.limit !== undefined) {
+      const offset = options.offset || 0;
+      const limit = options.limit || 50;
+      logs = logs.slice(offset, offset + limit);
+    }
+    return logs;
+  }
+  async getAllUsageLogs(options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
+    return this.getUsageLogs('*', options).then((_) => {
+      let all = [...this.usageLogs];
+      if (options?.status) all = all.filter((l) => l.status === options.status);
+      if (options?.agentId) all = all.filter((l) => l.agentId === options.agentId);
+      if (options?.sortOrder === 'asc') all.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+      else all.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      if (options?.offset !== undefined || options?.limit !== undefined) {
+        const offset = options.offset || 0;
+        const limit = options.limit || 50;
+        all = all.slice(offset, offset + limit);
+      }
+      return all;
+    });
+  }
   async getUsageStats(_clientName?: string): Promise<McpUsageStats> {
     return { totalUsage: 0, successRate: 0, averageDuration: 0, lastUsedAt: undefined, errorCount: 0 } as any;
   }
@@ -136,7 +216,25 @@ export const MockIpcUtils = {
   addBridge(channel: MockIpcChannel, cfg: LlmManifest) {
     return channel.registerBridge(cfg);
   },
-  addPreset(_channel: MockIpcChannel, _preset: Preset) {
-    // no-op placeholder for future enrichment
+  async addPreset(channel: MockIpcChannel, preset: Preset) {
+    // expose through public API
+    return channel.createPreset(preset as any);
+  },
+  async seedMcpClient(channel: MockIpcChannel, config: McpConfig, tools?: McpToolMetadata[]) {
+    await channel.connectMcp(config);
+    if (tools && tools.length) {
+      (channel as any).toolMetadataByClient?.set((config as any).name, tools);
+    }
+  },
+  async addUsageLog(channel: MockIpcChannel, log: McpUsageLog) {
+    (channel as any).usageLogs?.push(log);
+  },
+  clear(channel: MockIpcChannel) {
+    (channel as any).mcpConfigs = [];
+    (channel as any).mcpConnected = new Set();
+    (channel as any).toolMetadataByClient = new Map();
+    (channel as any).usageLogs = [];
+    (channel as any).presets = [];
+    (channel as any).agents = [];
   },
 };
