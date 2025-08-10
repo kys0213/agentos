@@ -164,30 +164,16 @@ export function useAppData(): UseAppDataReturn {
         throw new Error('Preset is required');
       }
 
-      // TODO: Agent 서비스 구현 후 실제 생성
-      // if (ServiceContainer.has('agent')) {
-      //   const agentService = ServiceContainer.get<AgentService>('agent');
-      //   const result = await agentService.create(agentToCreate);
-      //   if (result.success) {
-      //     setCurrentAgents((prev) => [...prev, agentToCreate]);
-      //     return agentToCreate;
-      //   }
-      //   throw new Error('Failed to create agent');
-      // }
+      const agentService = ServiceContainer.getOrThrow('agent');
 
-      // 임시로 클라이언트 상태로만 생성
-      const agent: ReadonlyAgentMetadata = {
-        id: `agent-${Date.now()}`,
+      const agent = await agentService.createAgent({
         name: newAgentData.name || '',
         description: newAgentData.description || '',
-        status: newAgentData.status || 'active',
         preset: newAgentData.preset,
-        keywords: newAgentData.keywords || [],
+        status: newAgentData.status || 'active',
         icon: newAgentData.icon || '',
-        lastUsed: undefined,
-        sessionCount: 0,
-        usageCount: 0,
-      };
+        keywords: newAgentData.keywords || [],
+      });
 
       setCurrentAgents((prev) => [...prev, agent]);
       return agent;

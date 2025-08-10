@@ -1,9 +1,9 @@
 import { Button, HStack } from '@chakra-ui/react';
 import React, { useState } from 'react';
-import { PresetManager } from './preset/PresetManager';
-import ColorModeToggle from './ColorModeToggle';
-import LlmBridgeManager from './LlmBridgeManager';
-import { MCPToolsManager } from './mcp/McpToolManager';
+import { PresetManager } from '../preset/PresetManager';
+import ColorModeToggle from '../common/ColorModeToggle';
+import LlmBridgeManager from '../llm/LlmBridgeManager';
+import { MCPToolsManager } from '../mcp/McpToolManager';
 
 /**
  * TODO: 상태 변경시 저장하는 기능 추가

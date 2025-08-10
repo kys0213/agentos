@@ -1,16 +1,24 @@
+import { AgentMetadata, Preset } from '@agentos/core';
 import { Activity, Bot, Cpu, Layers, MessageSquare } from 'lucide-react';
-import { useAppData } from '../../hooks/useAppData';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 
 interface DashboardProps {
+  presets: Preset[];
+  currentAgents: AgentMetadata[];
   onOpenChat?: (agentId: string) => void;
+  loading: boolean;
+  onCreateAgent: () => void;
 }
 
-export function Dashboard({ onOpenChat }: DashboardProps) {
-  const { presets, currentAgents, loading, handleCreateAgent } = useAppData();
-
+export function Dashboard({
+  onOpenChat,
+  presets,
+  currentAgents,
+  loading,
+  onCreateAgent,
+}: DashboardProps) {
   // Real-time stats from actual data
   const stats = [
     {
@@ -99,12 +107,7 @@ export function Dashboard({ onOpenChat }: DashboardProps) {
       description: currentAgents.length > 0 ? 'Add another agent' : 'Create your first agent',
       icon: Bot,
       action: () => {
-        const newAgent = handleCreateAgent({
-          name: `Agent ${currentAgents.length + 1}`,
-          description: 'A new AI assistant',
-          keywords: ['general'],
-        });
-        console.log('Created agent:', newAgent);
+        onCreateAgent();
       },
       color: 'bg-green-500',
     },

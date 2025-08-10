@@ -1,14 +1,14 @@
 import React from 'react';
-import { Button } from '../ui/button';
+import { Button } from './ui/button';
 
 // Import new design hooks for Chat mode only
-import { useAppNavigation } from '../../hooks/useAppNavigation';
-import { useAppData } from '../../hooks/useAppData';
+import { useAppNavigation } from '../hooks/useAppNavigation';
+import { useAppData } from '../hooks/useAppData';
 
 // Temporary imports for components that will be migrated in Phase 2
 // TODO: These will be replaced with actual migrated components
-import { ChatView } from '../chat/ChatView';
-import ManagementView from './ManagementView';
+import { ChatView } from './chat/ChatView';
+import ManagementView from './layout/ManagementView';
 
 /**
  * New App Layout - 새 디자인 기반으로 완전히 재작성된 버전

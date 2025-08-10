@@ -119,7 +119,9 @@ export class SimpleAgent implements Agent {
 
         const enabledTools = enabledMcp.enabledTools;
 
-        const filteredTools = tools.filter((tool) => enabledTools.includes(tool.name));
+        const filteredTools = tools.filter((tool) =>
+          enabledTools.some((enabledTool) => enabledTool.name === tool.name)
+        );
 
         return filteredTools;
       })

@@ -1,3 +1,5 @@
+import { McpToolDescription } from '../tool/mcp/mcp-types';
+
 export type PresetStatus = 'active' | 'idle' | 'inactive';
 
 export interface Preset {
@@ -35,7 +37,7 @@ export type KnowledgeState = {
 export interface EnabledMcp {
   name: string;
   version?: string;
-  enabledTools: string[];
+  enabledTools: McpToolDescription[];
   enabledResources: string[];
   enabledPrompts: string[];
 }

@@ -2,7 +2,7 @@ import { Box, Button, HStack, Input, Select, Text, VStack } from '@chakra-ui/rea
 import type { LlmManifest } from 'llm-bridge-spec';
 import React, { useEffect, useState } from 'react';
 
-import { ServiceContainer } from '../../shared/ipc/service-container';
+import { ServiceContainer } from '../../../shared/ipc/service-container';
 
 export interface LlmBridgeManagerProps {
   onChange?(): void;
