@@ -1,5 +1,6 @@
 import { DocumentSplitter, SplitterOptions } from './document-splitter';
 import { KnowledgeChunk, KnowledgeDocumentMeta, BreadcrumbNode } from '../types';
+import { str } from '@agentos/lang';
 
 interface Heading {
   level: number; // 1..6
@@ -88,7 +89,7 @@ export class MarkdownSplitter implements DocumentSplitter {
         const level = Math.min(m[1].length, maxDepth);
         if (level <= maxDepth) {
           const rawTitle = m[2].trim();
-          const anchor = this.slugify(rawTitle);
+          const anchor = str.slugify(rawTitle);
           // maintain one breadcrumb per level using a stack
           while (stack.length > 0 && stack[stack.length - 1].level >= level) {
             stack.pop();
@@ -102,14 +103,5 @@ export class MarkdownSplitter implements DocumentSplitter {
       offset += line.length + 1; // + newline
     }
     return headings;
-  }
-
-  private slugify(title: string): string {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .trim()
-      .replace(/[\s-]+/g, '-')
-      .replace(/^-+|-+$/g, '');
   }
 }

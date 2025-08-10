@@ -1,5 +1,6 @@
 import { LlmBridge, UserMessage, LlmBridgeResponse } from 'llm-bridge-spec';
 import { KeywordExtractor } from '../tokenizer';
+import { json } from '@agentos/lang';
 
 export interface LlmKeywordExtractorOptions {
   systemPrompt?: string;
@@ -40,7 +41,7 @@ export class LlmBridgeKeywordExtractor implements KeywordExtractor {
 
     const resp: LlmBridgeResponse = await this.llm.invoke({ messages });
     const textOut = extractText(resp);
-    const keywords = parseJsonArray(textOut);
+    const keywords = json.parseJsonArray(textOut);
     // sanitize: trim/lower and unique preserve original case for now to respect proper nouns
     const seen = new Set<string>();
     const result: string[] = [];
@@ -62,24 +63,4 @@ function extractText(resp: LlmBridgeResponse): string {
   }
 
   return resp.content.value as string;
-}
-
-function parseJsonArray(s: string): string[] {
-  if (!s) return [];
-  const trimmed = s.trim();
-  try {
-    const parsed = JSON.parse(trimmed);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    const m = trimmed.match(/\[[\s\S]*\]/);
-    if (m) {
-      try {
-        const parsed = JSON.parse(m[0]);
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        // ignore
-      }
-    }
-    return [];
-  }
 }
