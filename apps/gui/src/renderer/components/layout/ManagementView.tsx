@@ -17,7 +17,7 @@ import { UseAppNavigationReturn } from '../../stores/store-types';
 import { getPageTitle } from '../../utils/appUtils';
 import { MCPToolCreate } from '../mcp/MCPToolCreate';
 import { PresetCreate } from '../preset/PresetCreate';
-import { PresetDetail } from '../preset/PresetDetail';
+import PresetDetailContainer from '../preset/PresetDetailContainer';
 import { RACPManager } from '../racp/RACPManager';
 import { SettingsManager } from '../settings/SettingManager';
 import { SubAgentCreate } from '../sub-agent/SubAgentCreate';
@@ -155,14 +155,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
 
     // Handle preset detail view
     if (selectedPreset) {
-      return (
-        <PresetDetail
-          onBack={handleBackToPresets}
-          preset={selectedPreset}
-          onUpdate={onUpdatePreset}
-          onDelete={onDeletePreset}
-        />
-      );
+      return <PresetDetailContainer presetId={selectedPreset.id} onBack={handleBackToPresets} />;
     }
 
     // Handle main section routing (like design/App.tsx)
