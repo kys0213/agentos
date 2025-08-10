@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
 import { Box, Button, HStack, Input, Select, Text, VStack } from '@chakra-ui/react';
-import { Services } from '../bootstrap';
 import type { LlmManifest } from 'llm-bridge-spec';
+import React, { useEffect, useState } from 'react';
+
+import { ServiceContainer } from '../../shared/ipc/service-container';
 
 export interface LlmBridgeManagerProps {
   onChange?(): void;
@@ -16,7 +17,7 @@ const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ onChange }) => {
   const [id, setId] = useState('');
   const [type, setType] = useState<'openai' | 'anthropic' | 'local' | 'custom'>('custom');
 
-  const bridgeService = Services.getBridge();
+  const bridgeService = ServiceContainer.getOrThrow('bridge');
 
   useEffect(() => {
     const loadBridges = async () => {

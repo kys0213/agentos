@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Services } from '../../bootstrap';
-import type { Preset } from '../../types/core-types';
+import { ServiceContainer } from '../../../shared/ipc/service-container';
+import { Preset } from '@agentos/core';
 
 // Query Keys
 const QUERY_KEYS = {
@@ -10,7 +10,7 @@ const QUERY_KEYS = {
 
 // 프리셋 목록 조회
 export const usePresets = () => {
-  const presetService = Services.getPreset();
+  const presetService = ServiceContainer.getOrThrow('preset');
 
   return useQuery({
     queryKey: QUERY_KEYS.presets,
@@ -21,7 +21,7 @@ export const usePresets = () => {
 
 // 특정 프리셋 조회
 export const usePreset = (presetId: string) => {
-  const presetService = Services.getPreset();
+  const presetService = ServiceContainer.getOrThrow('preset');
 
   return useQuery({
     queryKey: QUERY_KEYS.preset(presetId),
@@ -34,7 +34,7 @@ export const usePreset = (presetId: string) => {
 // 프리셋 생성 뮤테이션
 export const useCreatePreset = () => {
   const queryClient = useQueryClient();
-  const presetService = Services.getPreset();
+  const presetService = ServiceContainer.getOrThrow('preset');
 
   return useMutation({
     mutationFn: (preset: Preset) => presetService.createPreset(preset as any),
@@ -47,7 +47,7 @@ export const useCreatePreset = () => {
 // 프리셋 업데이트 뮤테이션
 export const useUpdatePreset = () => {
   const queryClient = useQueryClient();
-  const presetService = Services.getPreset();
+  const presetService = ServiceContainer.getOrThrow('preset');
 
   return useMutation({
     mutationFn: (preset: Preset) => presetService.updatePreset(preset.id, preset),
@@ -61,7 +61,7 @@ export const useUpdatePreset = () => {
 // 프리셋 삭제 뮤테이션
 export const useDeletePreset = () => {
   const queryClient = useQueryClient();
-  const presetService = Services.getPreset();
+  const presetService = ServiceContainer.getOrThrow('preset');
 
   return useMutation({
     mutationFn: (presetId: string) => presetService.deletePreset(presetId),

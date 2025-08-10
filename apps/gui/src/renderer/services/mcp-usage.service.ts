@@ -1,5 +1,6 @@
 import { McpUsageLog, McpUsageStats } from '@agentos/core';
-import type { IpcChannel, McpUsageLogProtocol } from '../../shared/types/ipc-channel';
+import type { IpcChannel } from '../../shared/types/ipc-channel';
+import type { McpUsageLogProtocol } from '../../shared/types/mcp-usage-log-protocol';
 import {
   UsageLogQueryOptions,
   HourlyStatsResponse,

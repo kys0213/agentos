@@ -1,4 +1,5 @@
-import type { IpcChannel, PresetProtocol } from '../../shared/types/ipc-channel';
+import type { IpcChannel } from '../../shared/types/ipc-channel';
+import type { PresetProtocol } from '../../shared/types/proset-protocol';
 import type { CreatePreset, Preset } from '@agentos/core';
 
 /**

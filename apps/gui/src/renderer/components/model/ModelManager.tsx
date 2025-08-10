@@ -23,7 +23,7 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { ServiceContainer } from '../../services/service-container';
+import { ServiceContainer } from '../../../shared/ipc/service-container';
 import type { BridgeService } from '../../services/bridge.service';
 
 // Model data types based on BridgeService
@@ -70,7 +70,7 @@ export function ModelManager() {
   const [bridgeIds, setBridgeIds] = useState<string[]>([]);
 
   // Get BridgeService from ServiceContainer
-  const bridgeService = ServiceContainer.get<BridgeService>('bridge');
+  const bridgeService = ServiceContainer.getOrThrow('bridge');
 
   // Load bridge data on mount
   useEffect(() => {

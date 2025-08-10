@@ -1,4 +1,4 @@
-import { Preset } from '../types/core-types';
+import { Preset } from '../stores/store-types';
 import { PresetStore, loadPresets, savePreset, deletePreset } from '../stores/preset-store';
 
 const sample: Preset = {

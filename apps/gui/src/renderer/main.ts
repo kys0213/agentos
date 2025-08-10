@@ -5,7 +5,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { bootstrap } from './bootstrap';
-import { createIpcChannel, getEnvironmentInfo } from './services/ipc/IpcChannelFactory';
+import { createIpcChannel, getEnvironmentInfo } from '../shared/ipc/ipc-channel.factory';
 import NewAppLayout from './components/layout/NewAppLayout';
 import './styles/globals.css';
 

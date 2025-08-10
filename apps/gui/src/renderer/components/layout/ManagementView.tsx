@@ -12,7 +12,7 @@ import Sidebar from './Sidebar';
 // Import new design hooks like design/App.tsx
 import { useAppData } from '../../hooks/useAppData';
 import { useChatState } from '../../hooks/useChatState';
-import { UseAppNavigationReturn } from '../../types/core-types';
+import { UseAppNavigationReturn } from '../../stores/store-types';
 import { getPageTitle } from '../../utils/appUtils';
 import { RACPManager } from '../racp/RACPManager';
 import { SettingsManager } from '../settings/SettingManager';

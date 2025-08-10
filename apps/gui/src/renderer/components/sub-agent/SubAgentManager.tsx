@@ -1,4 +1,4 @@
-import { ReadonlyAgentMetadata } from '@agentos/core';
+import { Agent, ReadonlyAgentMetadata } from '@agentos/core';
 import {
   Bot,
   Filter,
@@ -20,154 +20,22 @@ import { Input } from '../ui/input';
 
 interface SubAgentManagerProps {
   onOpenChat?: (agentId: string) => void;
+  agents: Agent[];
+  onUpdateAgentStatus: (agentId: string, newStatus: 'active' | 'idle' | 'inactive') => void;
+  onCreateAgent?: () => void;
 }
 
-export function SubAgentManager({ onOpenChat }: SubAgentManagerProps) {
+export function SubAgentManager({
+  agents,
+  onUpdateAgentStatus,
+  onOpenChat,
+  onCreateAgent,
+}: SubAgentManagerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   // TODO: 이 부분 수정 필요
   const { currentAgents, loading, handleCreateAgent, handleUpdateAgentStatus } = useAppData();
-
-  const defaultAgents: ReadonlyAgentMetadata[] = [
-    {
-      id: '1',
-      name: 'Data Analyzer Pro',
-      description: 'Advanced data analysis and visualization specialist',
-      keywords: ['data analysis', 'visualization', 'sql', 'python'],
-      icon: '🔍',
-      preset: {
-        id: 'preset-1',
-        name: 'Data Analysis Expert',
-        description: 'Advanced data analysis and visualization specialist',
-        author: 'John Doe',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        version: '1.0.0',
-        systemPrompt: 'You are a data analysis and visualization specialist',
-        enabledMcps: [],
-        llmBridgeName: 'openai',
-        llmBridgeConfig: {},
-        status: 'active',
-        usageCount: 45,
-        knowledgeDocuments: 45,
-        knowledgeStats: {
-          indexed: 45,
-          vectorized: 45,
-          totalSize: 45,
-        },
-        category: ['general'],
-      },
-      status: 'active',
-      sessionCount: 45,
-      lastUsed: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago
-      usageCount: 45,
-    },
-    {
-      id: '2',
-      name: 'Code Reviewer',
-      description: 'Code quality assurance and debugging expert',
-      keywords: ['code review', 'debugging', 'testing', 'documentation'],
-      icon: '💻',
-      preset: {
-        id: 'preset-2',
-        name: 'Development Helper',
-        description: 'Code quality assurance and debugging expert',
-        author: 'Jane Doe',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        version: '1.0.0',
-        systemPrompt: 'You are a code quality assurance and debugging expert',
-        enabledMcps: [],
-        llmBridgeName: 'openai',
-        llmBridgeConfig: {},
-        status: 'active',
-        usageCount: 32,
-        knowledgeDocuments: 32,
-        knowledgeStats: {
-          indexed: 32,
-          vectorized: 32,
-          totalSize: 32,
-        },
-        category: ['general'],
-      },
-      status: 'active',
-      sessionCount: 32,
-      lastUsed: new Date(Date.now() - 1 * 60 * 1000), // 1 minute ago
-      usageCount: 32,
-    },
-    {
-      id: '3',
-      name: 'Content Creator',
-      description: 'Creative writing and content generation assistant',
-      keywords: ['writing', 'editing', 'seo', 'marketing'],
-      icon: '📝',
-      preset: {
-        id: 'preset-3',
-        name: 'Writing Specialist',
-        description: 'Creative writing and content generation assistant',
-        author: 'John Doe',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        version: '1.0.0',
-        systemPrompt: 'You are a creative writing and content generation assistant',
-        enabledMcps: [],
-        llmBridgeName: 'openai',
-        llmBridgeConfig: {},
-        status: 'active',
-        usageCount: 28,
-        knowledgeDocuments: 28,
-        knowledgeStats: {
-          indexed: 28,
-          vectorized: 28,
-          totalSize: 28,
-        },
-        category: ['general'],
-      },
-      status: 'active',
-      sessionCount: 28,
-      lastUsed: new Date(Date.now() - 1 * 60 * 1000), // 1 minute ago
-      usageCount: 28,
-    },
-    {
-      id: '4',
-      name: 'Research Assistant',
-      description: 'Information gathering and analysis specialist',
-      keywords: ['research', 'fact-checking', 'analysis', 'summarization'],
-      icon: '🔍',
-      preset: {
-        id: 'preset-4',
-        name: 'Research Specialist',
-        description: 'Information gathering and analysis specialist',
-        author: 'John Doe',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        version: '1.0.0',
-        systemPrompt:
-          'You are a research assistant that can help with gathering and analyzing information',
-        enabledMcps: [],
-        llmBridgeName: 'openai',
-        llmBridgeConfig: {},
-        status: 'active',
-        usageCount: 52,
-        knowledgeDocuments: 52,
-        knowledgeStats: {
-          indexed: 52,
-          vectorized: 52,
-          totalSize: 52,
-        },
-        category: ['general'],
-      },
-      status: 'active',
-      sessionCount: 52,
-      lastUsed: new Date(Date.now() - 1 * 60 * 1000), // 1 minute ago
-      usageCount: 52,
-    },
-  ];
-
-  // If no agents exist, create some sample agents for demonstration
-  const agents: ReadonlyAgentMetadata[] =
-    currentAgents.length === 0 ? defaultAgents : currentAgents;
 
   const filteredAgents = agents.filter((agent) => {
     const matchesSearch =

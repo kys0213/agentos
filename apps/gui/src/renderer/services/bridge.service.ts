@@ -1,5 +1,6 @@
 import type { LlmManifest } from 'llm-bridge-spec';
-import type { IpcChannel, LlmBridgeProtocol } from '../../shared/types/ipc-channel';
+import type { IpcChannel } from '../../shared/types/ipc-channel';
+import type { LlmBridgeProtocol } from '../../shared/types/llm-bridge-protocol';
 
 /**
  * Bridge 관련 기능을 제공하는 서비스 클래스

@@ -1,11 +1,11 @@
-import type { Preset } from '../types/core-types';
-import { PresetService } from '../services/preset-service';
-import { Services } from '../bootstrap';
+import type { Preset } from '@agentos/core';
+import type { PresetProtocol } from '../../shared/types/proset-protocol';
+import { ServiceContainer } from '../../shared/ipc/service-container';
 
 // IPC 기반 프리셋 스토어 (브라우저 호환)
 export class PresetStore {
-  private get presetService(): PresetService {
-    return Services.getPreset();
+  private get presetService(): PresetProtocol {
+    return ServiceContainer.getOrThrow('preset');
   }
 
   async list(): Promise<Preset[]> {
@@ -29,17 +29,4 @@ export class PresetStore {
     const presets = await this.list();
     return presets.some((p) => p.id === id);
   }
-}
-
-// 기존 함수들을 async로 업데이트
-export async function loadPresets(store: PresetStore): Promise<Preset[]> {
-  return store.list();
-}
-
-export async function savePreset(store: PresetStore, preset: Preset): Promise<void> {
-  return store.save(preset);
-}
-
-export async function deletePreset(store: PresetStore, id: string): Promise<void> {
-  return store.delete(id);
 }
