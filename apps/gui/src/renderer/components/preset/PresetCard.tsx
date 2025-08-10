@@ -30,7 +30,10 @@ export const PresetCard: React.FC<PresetCardProps> = ({
           </div>
           <div>
             <h3 className="font-medium text-foreground">{preset.name}</h3>
-            <p className="text-sm text-muted-foreground capitalize">{preset.category} project</p>
+            <p className="text-sm text-muted-foreground capitalize">
+              {(Array.isArray(preset.category) ? preset.category[0] : preset.category ?? 'general')}{' '}
+              project
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -50,7 +53,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Model:</span>
-          <span className="font-medium text-foreground">{preset.llmBridgeConfig?.model}</span>
+          <span className="font-medium text-foreground">{(preset.llmBridgeConfig as any)?.model ?? ''}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Usage:</span>
