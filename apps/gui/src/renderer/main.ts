@@ -6,7 +6,8 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { bootstrap } from './bootstrap';
 import { createIpcChannel, getEnvironmentInfo } from '../shared/ipc/ipc-channel.factory';
-import NewAppLayout from './components/layout/NewAppLayout';
+import NewAppLayout from './components/App';
+import { QueryProvider } from './providers/QueryProvider';
 import './styles/globals.css';
 
 async function initializeApp() {
@@ -45,7 +46,7 @@ async function initializeApp() {
   const container = document.getElementById('root');
   if (container) {
     const root = createRoot(container);
-    root.render(React.createElement(NewAppLayout));
+    root.render(React.createElement(QueryProvider, null, React.createElement(NewAppLayout)));
     console.log('⚛️ React app mounted successfully');
   } else {
     console.error('❌ Failed to find root element');
