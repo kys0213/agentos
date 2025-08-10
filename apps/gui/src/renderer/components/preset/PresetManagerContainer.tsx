@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { PresetManager } from './PresetManager';
 import {
@@ -10,6 +10,7 @@ import {
 } from '../../services/fetchers/presets';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 export const PresetManagerContainer: React.FC = () => {
   const queryClient = useQueryClient();
@@ -66,15 +67,77 @@ export const PresetManagerContainer: React.FC = () => {
     );
   }
 
+  const alert = useMemo(() => {
+    if (createMutation.isSuccess)
+      return (
+        <Alert className="mb-3">
+          <AlertTitle>Preset created</AlertTitle>
+          <AlertDescription>New preset has been added.</AlertDescription>
+        </Alert>
+      );
+    if (updateMutation.isSuccess)
+      return (
+        <Alert className="mb-3">
+          <AlertTitle>Preset updated</AlertTitle>
+          <AlertDescription>Changes have been saved.</AlertDescription>
+        </Alert>
+      );
+    if (deleteMutation.isSuccess)
+      return (
+        <Alert className="mb-3">
+          <AlertTitle>Preset deleted</AlertTitle>
+          <AlertDescription>Preset has been removed.</AlertDescription>
+        </Alert>
+      );
+    if (duplicateMutation.isSuccess)
+      return (
+        <Alert className="mb-3">
+          <AlertTitle>Preset duplicated</AlertTitle>
+          <AlertDescription>Copy created successfully.</AlertDescription>
+        </Alert>
+      );
+    if (
+      createMutation.isError ||
+      updateMutation.isError ||
+      deleteMutation.isError ||
+      duplicateMutation.isError
+    ) {
+      const err =
+        (createMutation.error as Error) ||
+        (updateMutation.error as Error) ||
+        (deleteMutation.error as Error) ||
+        (duplicateMutation.error as Error);
+      return (
+        <Alert variant="destructive" className="mb-3">
+          <AlertTitle>Operation failed</AlertTitle>
+          <AlertDescription>{err?.message || 'Action failed'}</AlertDescription>
+        </Alert>
+      );
+    }
+    return null;
+  }, [
+    createMutation.isSuccess,
+    updateMutation.isSuccess,
+    deleteMutation.isSuccess,
+    duplicateMutation.isSuccess,
+    createMutation.isError,
+    updateMutation.isError,
+    deleteMutation.isError,
+    duplicateMutation.isError,
+  ]);
+
   return (
-    <PresetManager
-      presets={presets}
-      isLoading={false}
-      onDeletePreset={(id) => deleteMutation.mutate(id)}
-      onDuplicatePreset={(p) => duplicateMutation.mutate(p.id)}
-      onCreatePreset={(data) => createMutation.mutate(data as any)}
-      onUpdatePreset={(id, data) => updateMutation.mutate({ id, data } as any)}
-    />
+    <div className="space-y-2">
+      {alert}
+      <PresetManager
+        presets={presets}
+        isLoading={false}
+        onDeletePreset={(id) => deleteMutation.mutate(id)}
+        onDuplicatePreset={(p) => duplicateMutation.mutate(p.id)}
+        onCreatePreset={(data) => createMutation.mutate(data as any)}
+        onUpdatePreset={(id, data) => updateMutation.mutate({ id, data } as any)}
+      />
+    </div>
   );
 };
 

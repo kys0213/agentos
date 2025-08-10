@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { PresetDetail } from './PresetDetail';
 import { fetchPresetById, updatePreset, deletePreset } from '../../services/fetchers/presets';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import type { Preset } from '@agentos/core';
 
 interface PresetDetailContainerProps {
@@ -53,15 +54,49 @@ export const PresetDetailContainer: React.FC<PresetDetailContainerProps> = ({ pr
     );
   }
 
+  const alert = useMemo(() => {
+    if (updateMutation.isSuccess) {
+      return (
+        <Alert className="mb-3">
+          <AlertTitle>Preset saved</AlertTitle>
+          <AlertDescription>Changes have been saved successfully.</AlertDescription>
+        </Alert>
+      );
+    }
+    if (updateMutation.isError) {
+      return (
+        <Alert variant="destructive" className="mb-3">
+          <AlertTitle>Save failed</AlertTitle>
+          <AlertDescription>
+            {(updateMutation.error as Error)?.message || 'Failed to save changes'}
+          </AlertDescription>
+        </Alert>
+      );
+    }
+    if (deleteMutation.isError) {
+      return (
+        <Alert variant="destructive" className="mb-3">
+          <AlertTitle>Delete failed</AlertTitle>
+          <AlertDescription>
+            {(deleteMutation.error as Error)?.message || 'Failed to delete preset'}
+          </AlertDescription>
+        </Alert>
+      );
+    }
+    return null;
+  }, [updateMutation.isSuccess, updateMutation.isError, deleteMutation.isError]);
+
   return (
-    <PresetDetail
-      onBack={onBack}
-      preset={preset}
-      onUpdate={(p) => updateMutation.mutate(p)}
-      onDelete={() => deleteMutation.mutate()}
-    />
+    <div className="space-y-2">
+      {alert}
+      <PresetDetail
+        onBack={onBack}
+        preset={preset}
+        onUpdate={(p) => updateMutation.mutate(p)}
+        onDelete={() => deleteMutation.mutate()}
+      />
+    </div>
   );
 };
 
 export default PresetDetailContainer;
-

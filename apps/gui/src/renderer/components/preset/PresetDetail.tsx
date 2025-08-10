@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -36,6 +35,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { Preset } from '@agentos/core';
+import { PresetStatusBadge } from './PresetStatusBadge';
 import { CategoryIcon } from '../common/CategoryIcon';
 
 interface PresetDetailProps {
@@ -80,33 +80,7 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return (
-          <Badge className="gap-1 status-active">
-            <CheckCircle className="w-3 h-3" />
-            Active
-          </Badge>
-        );
-      case 'idle':
-        return (
-          <Badge className="gap-1 status-idle">
-            <Clock className="w-3 h-3" />
-            Idle
-          </Badge>
-        );
-      case 'inactive':
-        return (
-          <Badge variant="outline" className="gap-1 status-inactive-subtle">
-            <AlertCircle className="w-3 h-3" />
-            Inactive
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
+  const getStatusBadge = (status: string) => <PresetStatusBadge status={status as any} />;
 
   return (
     <div className="h-full flex flex-col">

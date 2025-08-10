@@ -379,14 +379,17 @@ export function PrestForm({
                 <Label>Status</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value: 'active' | 'draft') => updateFormData('status', value)}
+                  onValueChange={(value: 'active' | 'idle' | 'inactive') =>
+                    updateFormData('status', value)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="idle">Idle</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
