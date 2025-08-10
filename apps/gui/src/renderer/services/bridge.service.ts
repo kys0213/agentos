@@ -31,21 +31,6 @@ export class BridgeService implements LlmBridgeProtocol {
     return this.ipcChannel.getBridgeConfig(id);
   }
 
-  // Backward-compat convenience aliases (to ease migration)
-  // TODO: Remove once all callsites use the spec methods
-  register(id: string, config: LlmManifest): Promise<{ success: boolean }> {
-    return this.registerBridge({ ...config, name: id });
-  }
-  getCurrent(): Promise<{ id: string; config: LlmManifest } | null> {
-    return this.getCurrentBridge();
-  }
-  getIds(): Promise<string[]> {
-    return this.getBridgeIds();
-  }
-  getConfig(id: string): Promise<LlmManifest | null> {
-    return this.getBridgeConfig(id);
-  }
-
   // ==================== 편의 메서드들 ====================
 
   /**

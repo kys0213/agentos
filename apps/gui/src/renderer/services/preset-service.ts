@@ -24,27 +24,4 @@ export class PresetService implements PresetProtocol {
     return this.ipcChannel.getPreset(id);
   }
 
-  // Backward-compat convenience aliases (to ease migration)
-  // TODO: Remove once all callsites use the spec methods
-  getAll(): Promise<Preset[]> {
-    return this.getAllPresets();
-  }
-  get(id: string): Promise<Preset | null> {
-    return this.getPreset(id);
-  }
-  create(preset: any): Promise<Preset> {
-    return this.createPreset(preset);
-  }
-  // Overloaded update to support legacy single-arg call style
-  update(id: string, preset: Partial<Omit<Preset, 'id'>>): Promise<Preset>;
-  update(preset: Preset): Promise<Preset>;
-  update(a: string | Preset, b?: Partial<Omit<Preset, 'id'>>): Promise<Preset> {
-    if (typeof a === 'string') {
-      return this.updatePreset(a, b ?? {});
-    }
-    return this.updatePreset(a.id, a);
-  }
-  delete(id: string): Promise<Preset> {
-    return this.deletePreset(id);
-  }
 }

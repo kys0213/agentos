@@ -69,21 +69,6 @@ export class McpService implements McpProtocol {
     this.usageUpdateCallbacks.clear();
   }
 
-  // Backward-compat convenience aliases (to ease migration)
-  // TODO: Remove once all callsites use the spec methods
-  getAll(): Promise<McpConfig[]> {
-    return this.getAllMcp();
-  }
-  getStatus(clientName: string): Promise<{ connected: boolean; error?: string }> {
-    return this.getMcpStatus(clientName);
-  }
-  connect(config: McpConfig): Promise<{ success: boolean }> {
-    return this.connectMcp(config);
-  }
-  disconnect(name: string): Promise<{ success: boolean }> {
-    return this.disconnectMcp(name);
-  }
-
   // Usage log methods were moved to McpUsageLogService in the new spec,
   // but provide pass-throughs here for compatibility.
   getUsageLogs(clientName: string, options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {

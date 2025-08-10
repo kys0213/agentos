@@ -68,7 +68,7 @@ export const testHelpers = {
       },
     });
 
-    await services.bridgeService.register('test-bridge', ({ name: 'Test Bridge' } as any));
+    await services.bridgeService.registerBridge({ name: 'Test Bridge' } as any);
 
     console.log('🧪 Test data setup completed');
   },

@@ -16,12 +16,6 @@ export interface PresetServiceInterface {
   createPreset(preset: any): Promise<Preset>;
   updatePreset(id: string, preset: Partial<Omit<Preset, 'id'>>): Promise<Preset>;
   deletePreset(id: string): Promise<Preset>;
-  // legacy aliases
-  getAll(): Promise<Preset[]>;
-  get(id: string): Promise<Preset | null>;
-  create(preset: any): Promise<Preset>;
-  update(a: any, b?: any): Promise<Preset>;
-  delete(id: string): Promise<Preset>;
 }
 
 export interface McpServiceInterface {
@@ -32,9 +26,6 @@ export interface McpServiceInterface {
   // usage methods (compat)
   getUsageLogs(clientName: string, options?: any): Promise<any[]>;
   getAllUsageLogs(options?: any): Promise<any[]>;
-  // legacy aliases
-  connect(config: McpConfig): Promise<{ success: boolean }>;
-  disconnect(name: string): Promise<{ success: boolean }>;
 }
 
 // IPC 통신을 위한 추가 타입들

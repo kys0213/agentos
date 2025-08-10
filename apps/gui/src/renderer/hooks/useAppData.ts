@@ -25,9 +25,9 @@ export function useAppData(): UseAppDataReturn {
 
         if (ServiceContainer.has('preset')) {
           const presetService = ServiceContainer.get<PresetServiceInterface>('preset');
-          console.log('📦 PresetService found, calling getAll()...');
+          console.log('📦 PresetService found, calling getAllPresets()...');
 
-          const corePresets = await presetService.getAll();
+          const corePresets = await presetService.getAllPresets();
           console.log('✅ Presets loaded from service:', corePresets);
 
           // Core Preset을 DesignPreset으로 변환
@@ -126,7 +126,7 @@ export function useAppData(): UseAppDataReturn {
         };
 
         console.log('📤 Sending preset to service:', presetToCreate);
-        const result = await presetService.create(presetToCreate);
+        const result = await presetService.createPreset(presetToCreate as any);
         console.log('📥 Service create result:', result);
 
         setPresets((prev) => [...prev, result]);
@@ -146,7 +146,7 @@ export function useAppData(): UseAppDataReturn {
     try {
       if (ServiceContainer.has('mcp')) {
         const mcpService = ServiceContainer.get<McpServiceInterface>('mcp');
-        await mcpService.connect(mcpConfig);
+        await mcpService.connectMcp(mcpConfig);
         return mcpConfig;
       }
 
@@ -228,7 +228,7 @@ export function useAppData(): UseAppDataReturn {
         };
 
         console.log('📤 Sending preset update to service:', corePreset);
-        const result = await presetService.update(corePreset);
+        const result = await presetService.updatePreset(corePreset.id, corePreset);
         console.log('📥 Service update result:', result);
       }
 
@@ -254,7 +254,7 @@ export function useAppData(): UseAppDataReturn {
         const presetService = ServiceContainer.get<PresetServiceInterface>('preset');
 
         console.log('📤 Sending delete request to service for:', presetId);
-        const result = await presetService.delete(presetId);
+        const result = await presetService.deletePreset(presetId);
         console.log('📥 Service delete result:', result);
       }
 

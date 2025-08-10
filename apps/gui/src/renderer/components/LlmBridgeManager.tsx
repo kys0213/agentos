@@ -59,7 +59,7 @@ const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ onChange }) => {
         description: '',
       };
 
-      await bridgeService.register(id, config);
+      await bridgeService.registerBridge(config);
 
       // Refresh bridge list
       const [ids, current] = await Promise.all([

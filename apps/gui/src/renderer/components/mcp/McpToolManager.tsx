@@ -256,7 +256,7 @@ export function MCPToolsManager() {
           };
 
           // Connect the tool
-          await mcpService.connect(mcpConfig);
+          await mcpService.connectMcp(mcpConfig as any);
 
           // Update local state
           setTools((prev) =>
@@ -277,7 +277,7 @@ export function MCPToolsManager() {
         const mcpService = ServiceContainer.get<McpService>('mcp');
 
         // Disconnect the tool
-        await mcpService.disconnect(toolId);
+        await mcpService.disconnectMcp(toolId);
 
         // Update local state
         setTools((prev) =>
