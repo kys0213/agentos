@@ -28,10 +28,10 @@ export function safeZone<T>(
           }))
           .catch((reason) => {
             logger?.error?.(reason);
-            
+
             if (attempt < retries) {
               if (retryDelay > 0) {
-                return new Promise<Result<T>>(resolve => {
+                return new Promise<Result<T>>((resolve) => {
                   setTimeout(() => {
                     const retryResult = execute(attempt + 1);
                     if (isPromise(retryResult)) {
@@ -45,7 +45,7 @@ export function safeZone<T>(
               const retryResult = execute(attempt + 1);
               return retryResult as Promise<Result<T>>;
             }
-            
+
             return {
               success: false as const,
               reason,
@@ -59,10 +59,10 @@ export function safeZone<T>(
       };
     } catch (error) {
       logger?.error?.(error);
-      
+
       if (attempt < retries) {
         if (retryDelay > 0) {
-          return new Promise<Result<T>>(resolve => {
+          return new Promise<Result<T>>((resolve) => {
             setTimeout(() => {
               const retryResult = execute(attempt + 1);
               if (isPromise(retryResult)) {
@@ -75,7 +75,7 @@ export function safeZone<T>(
         }
         return execute(attempt + 1);
       }
-      
+
       return {
         success: false as const,
         reason: error,
