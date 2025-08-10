@@ -17,7 +17,7 @@ pnpm install
 개별 패키지 의존성은 다음과 같습니다.
 
 ```bash
-pnpm add -w date-fns date-fns-tz mnemonist change-case slugify escape-string-regexp string-width
+pnpm add -w date-fns date-fns-tz mnemonist change-case slugify escape-string-regexp @innei/string-width
 ```
 
 ## 사용 예시
@@ -65,12 +65,12 @@ const width = str.stringWidth('한글A');
 
 > 덱(Deque)은 큐/스택을 일반화한 구조로, 앞/뒤 O(1) 연산이 가능해 메시지 버퍼·작업 스케줄러 등에 유용합니다.
 
-### 문자열: `change-case` + `slugify` + `escape-string-regexp` + `string-width`
+### 문자열: `change-case` + `slugify` + `escape-string-regexp` + `@innei/string-width`
 
 - change-case: `camelCase`, `PascalCase`, `param-case`, `snake_case` 등 표준 케이스 변환
 - slugify: 로캘/옵션 기반 슬러그 생성(`{ lower: true, strict: true }` 권장)
 - escape-string-regexp: 사용자 입력을 안전하게 정규식으로 활용
-- string-width: 이모지/한중일 문자 폭 계산으로 콘솔/표 렌더 정렬 보장
+- @innei/string-width: 이모지/한중일 문자 폭 계산으로 콘솔/표 렌더 정렬 보장(CJS/ESM 듀얼)
 
 ## 내보내기(Exports)
 
