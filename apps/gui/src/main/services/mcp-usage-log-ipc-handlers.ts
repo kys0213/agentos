@@ -169,7 +169,7 @@ export function setupMcpUsageLogIpcHandlers(window?: BrowserWindow) {
     'mcpUsageLog:clear-usage-logs',
     async (_e: IpcMainInvokeEvent, olderThan?: string) => {
       const clients = await registry.getAll();
-      let totalCleared = 0;
+      const totalCleared = 0;
       for (const c of clients) {
         try {
           console.log(
