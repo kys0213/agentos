@@ -35,7 +35,7 @@ import {
   Wand2,
 } from 'lucide-react';
 
-interface Agent {
+export interface Agent {
   id: string;
   name: string;
   description: string;
@@ -48,10 +48,10 @@ interface Agent {
   tags?: string[];
 }
 
-interface SubAgentManagerProps {
+export interface SubAgentManagerProps {
   agents: Agent[];
   onUpdateAgentStatus: (agentId: string, newStatus: 'active' | 'idle' | 'inactive') => void;
-  onOpenChat: (agentId: number, agentName: string, agentPreset: string) => void;
+  onOpenChat: (agentId: string, agentName: string, agentPreset: string) => void;
   onCreateAgent?: () => void;
 }
 

@@ -81,7 +81,7 @@ export function SubAgentManager({
     }
   };
 
-  const getPerformanceScore = (agent: ReadonlyAgentMetadata) => {
+  const getPerformanceScore = (agent: Agent) => {
     // Calculate performance based on usage count and recency
     const baseScore = Math.min(90, (agent.usageCount / 10) * 20); // Up to 90% from usage
     const recencyBonus =
