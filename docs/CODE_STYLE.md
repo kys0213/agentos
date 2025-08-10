@@ -13,3 +13,34 @@ This project uses **TypeScript** with ESLint and Prettier to keep the codebase c
 2. **Clean Architecture** — aim for a clear dependency flow and avoid circular references.
 3. **Test-Driven Development** — write tests first when adding new behavior.
 4. **Type Safety** — favor generics and avoid `any`. If you must accept unknown input, use `unknown` and guard types before use.
+
+## Frontend Architecture
+
+- **Container/Presentation Split**
+  - Presentation components: consume synchronous props only. No server/IPC access inside. Reusable, dumb.
+  - Container components: use React Query to load/mutate server state via IPC fetchers, then inject data/handlers into presentation.
+  - Query keys standard: lists `['presets']`, item `['preset', id]`, agents `['agents']`.
+
+- **IPC Fetchers (Renderer)**
+  - Fetchers call `ServiceContainer.resolve('<service>')` and the corresponding Protocol methods.
+  - Map Core/loose types to app DTOs at the boundary; never pass loose types to presentation.
+  - Handle domain mismatches (e.g., status variants) explicitly in adapters.
+
+- **Shared UI Extraction**
+  - Repeated input groups (e.g., preset basic fields, model settings) must be extracted into shared components.
+  - Options (categories, model lists) should be injected via props for testability/i18n.
+
+## Dead Code and Console
+
+- Remove unused code and exports before PR. Use:
+  - `npx ts-prune` for dead exports
+  - ESLint `import/no-unused-modules` to catch unused modules
+- Avoid `console.*` in committed code; keep only `console.warn`/`console.error` for critical paths.
+
+## Pre‑push Quality Checks
+
+```bash
+pnpm -r typecheck
+pnpm -r lint -- --max-warnings=0
+npx ts-prune
+```
