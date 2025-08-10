@@ -31,7 +31,8 @@ export function setupMcpUsageLogIpcHandlers(window?: BrowserWindow) {
       let logs = client.getUsageLogs();
       if (options?.status) logs = logs.filter((l) => l.status === options.status);
       if (options?.agentId) logs = logs.filter((l) => l.agentId === options.agentId);
-      if (options?.sortOrder === 'asc') logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+      if (options?.sortOrder === 'asc')
+        logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
       else logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
       if (options?.offset !== undefined || options?.limit !== undefined) {
         const offset = options.offset || 0;
@@ -42,48 +43,58 @@ export function setupMcpUsageLogIpcHandlers(window?: BrowserWindow) {
     }
   );
 
-  ipcMain.handle('mcpUsageLog:get-all-usage-logs', async (_e: IpcMainInvokeEvent, options?: any) => {
-    const clients = await registry.getAll();
-    let allLogs: any[] = [];
-    for (const client of clients) {
-      try {
-        allLogs = allLogs.concat(client.getUsageLogs());
-      } catch (err) {
-        console.error(`Failed to get logs for ${client.name}:`, err);
+  ipcMain.handle(
+    'mcpUsageLog:get-all-usage-logs',
+    async (_e: IpcMainInvokeEvent, options?: any) => {
+      const clients = await registry.getAll();
+      let allLogs: any[] = [];
+      for (const client of clients) {
+        try {
+          allLogs = allLogs.concat(client.getUsageLogs());
+        } catch (err) {
+          console.error(`Failed to get logs for ${client.name}:`, err);
+        }
       }
+      if (options?.status) allLogs = allLogs.filter((l) => l.status === options.status);
+      if (options?.agentId) allLogs = allLogs.filter((l) => l.agentId === options.agentId);
+      if (options?.sortOrder === 'asc')
+        allLogs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+      else allLogs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      if (options?.offset !== undefined || options?.limit !== undefined) {
+        const offset = options.offset || 0;
+        const limit = options.limit || 50;
+        allLogs = allLogs.slice(offset, offset + limit);
+      }
+      return allLogs;
     }
-    if (options?.status) allLogs = allLogs.filter((l) => l.status === options.status);
-    if (options?.agentId) allLogs = allLogs.filter((l) => l.agentId === options.agentId);
-    if (options?.sortOrder === 'asc') allLogs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-    else allLogs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-    if (options?.offset !== undefined || options?.limit !== undefined) {
-      const offset = options.offset || 0;
-      const limit = options.limit || 50;
-      allLogs = allLogs.slice(offset, offset + limit);
-    }
-    return allLogs;
-  });
+  );
 
-  ipcMain.handle('mcpUsageLog:get-usage-stats', async (_e: IpcMainInvokeEvent, clientName?: string) => {
-    if (clientName) {
-      const client = await registry.get(clientName);
-      if (!client) throw new Error(`MCP client not found: ${clientName}`);
-      return client.getUsageStats();
+  ipcMain.handle(
+    'mcpUsageLog:get-usage-stats',
+    async (_e: IpcMainInvokeEvent, clientName?: string) => {
+      if (clientName) {
+        const client = await registry.get(clientName);
+        if (!client) throw new Error(`MCP client not found: ${clientName}`);
+        return client.getUsageStats();
+      }
+      const clients = await registry.getAll();
+      const allStats = await Promise.all(clients.map((c) => c.getUsageStats()));
+      const totalUsage = allStats.reduce((sum, s) => sum + s.totalUsage, 0);
+      const totalErrors = allStats.reduce((sum, s) => sum + s.errorCount, 0);
+      const totalDuration = allStats.reduce((sum, s) => sum + s.averageDuration * s.totalUsage, 0);
+      const lastTimes = allStats
+        .map((s) => s.lastUsedAt)
+        .filter(Boolean)
+        .map((d) => d!.getTime());
+      return {
+        totalUsage,
+        successRate: totalUsage > 0 ? (totalUsage - totalErrors) / totalUsage : 0,
+        averageDuration: totalUsage > 0 ? totalDuration / totalUsage : 0,
+        lastUsedAt: lastTimes.length > 0 ? new Date(Math.max(...lastTimes)) : undefined,
+        errorCount: totalErrors,
+      };
     }
-    const clients = await registry.getAll();
-    const allStats = await Promise.all(clients.map((c) => c.getUsageStats()));
-    const totalUsage = allStats.reduce((sum, s) => sum + s.totalUsage, 0);
-    const totalErrors = allStats.reduce((sum, s) => sum + s.errorCount, 0);
-    const totalDuration = allStats.reduce((sum, s) => sum + s.averageDuration * s.totalUsage, 0);
-    const lastTimes = allStats.map((s) => s.lastUsedAt).filter(Boolean).map((d) => d!.getTime());
-    return {
-      totalUsage,
-      successRate: totalUsage > 0 ? (totalUsage - totalErrors) / totalUsage : 0,
-      averageDuration: totalUsage > 0 ? totalDuration / totalUsage : 0,
-      lastUsedAt: lastTimes.length > 0 ? new Date(Math.max(...lastTimes)) : undefined,
-      errorCount: totalErrors,
-    };
-  });
+  );
 
   ipcMain.handle(
     'mcpUsageLog:get-hourly-stats',
@@ -154,18 +165,23 @@ export function setupMcpUsageLogIpcHandlers(window?: BrowserWindow) {
     }
   );
 
-  ipcMain.handle('mcpUsageLog:clear-usage-logs', async (_e: IpcMainInvokeEvent, olderThan?: string) => {
-    const clients = await registry.getAll();
-    let totalCleared = 0;
-    for (const c of clients) {
-      try {
-        console.log(`Clearing usage logs for ${c.name}${olderThan ? ` older than ${olderThan}` : ''}`);
-      } catch (err) {
-        console.error(`Failed to clear logs for ${c.name}:`, err);
+  ipcMain.handle(
+    'mcpUsageLog:clear-usage-logs',
+    async (_e: IpcMainInvokeEvent, olderThan?: string) => {
+      const clients = await registry.getAll();
+      let totalCleared = 0;
+      for (const c of clients) {
+        try {
+          console.log(
+            `Clearing usage logs for ${c.name}${olderThan ? ` older than ${olderThan}` : ''}`
+          );
+        } catch (err) {
+          console.error(`Failed to clear logs for ${c.name}:`, err);
+        }
       }
+      return { success: true, clearedCount: totalCleared };
     }
-    return { success: true, clearedCount: totalCleared };
-  });
+  );
 
   ipcMain.handle(
     'mcpUsageLog:set-usage-tracking',
@@ -188,7 +204,9 @@ export function setupMcpUsageLogIpcHandlers(window?: BrowserWindow) {
             try {
               const currentUsageCount = client.getMetadata().usageCount;
               if (currentUsageCount > lastUsageCount) {
-                const recentLogs = client.getUsageLogs().slice(-(currentUsageCount - lastUsageCount));
+                const recentLogs = client
+                  .getUsageLogs()
+                  .slice(-(currentUsageCount - lastUsageCount));
                 recentLogs.forEach((log) => {
                   broadcastUsageEvent({
                     type: 'usage-logged',

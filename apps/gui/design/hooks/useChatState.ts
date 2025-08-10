@@ -26,7 +26,7 @@ export function useChatState(): UseChatStateReturn {
     if (activeChatAgent) {
       // 중복 방지: 이미 최소화된 채팅이 있는지 확인
       setMinimizedChats((prev) => {
-        const alreadyMinimized = prev.some(chat => chat.id === activeChatAgent.id);
+        const alreadyMinimized = prev.some((chat) => chat.id === activeChatAgent.id);
         return alreadyMinimized ? prev : [...prev, activeChatAgent];
       });
       setActiveChatAgent(null);

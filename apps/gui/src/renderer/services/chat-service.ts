@@ -49,11 +49,14 @@ export class ChatService {
     return { messages: [], total: 0, hasMore: false, nextCursor: undefined };
   }
 
-  async sendMessage(_sessionId: string, _text: string): Promise<{ success: boolean; messageId?: string; error?: string }>{
+  async sendMessage(
+    _sessionId: string,
+    _text: string
+  ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     return { success: true, messageId: `msg_${Date.now()}` };
   }
 
-  async deleteSession(_sessionId: string): Promise<{ success: boolean; error?: string }>{
+  async deleteSession(_sessionId: string): Promise<{ success: boolean; error?: string }> {
     return { success: true };
   }
 }

@@ -27,7 +27,11 @@
 ```typescript
 // apps/gui/src/shared/types/ipc-channel.ts 핵심 일부
 export interface AgentProtocol {
-  chat(agentId: string, messages: UserMessage[], options?: AgentExecuteOptions): Promise<AgentChatResult>;
+  chat(
+    agentId: string,
+    messages: UserMessage[],
+    options?: AgentExecuteOptions
+  ): Promise<AgentChatResult>;
   endSession(agentId: string, sessionId: string): Promise<void>;
   getAgentMetadata(id: string): Promise<AgentMetadata | null>;
   getAllAgentMetadatas(): Promise<AgentMetadata[]>;

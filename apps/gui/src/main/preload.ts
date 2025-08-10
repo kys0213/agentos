@@ -6,8 +6,7 @@ const electronAPI: AgentOsAPI = {
   agent: {
     chat: (agentId, messages, options) =>
       ipcRenderer.invoke('agent:chat', agentId, messages, options),
-    endSession: (agentId, sessionId) =>
-      ipcRenderer.invoke('agent:end-session', agentId, sessionId),
+    endSession: (agentId, sessionId) => ipcRenderer.invoke('agent:end-session', agentId, sessionId),
     getAgentMetadata: (id) => ipcRenderer.invoke('agent:get-metadata', id),
     getAllAgentMetadatas: () => ipcRenderer.invoke('agent:get-all-metadatas'),
     updateAgent: (agentId, agent) => ipcRenderer.invoke('agent:update', agentId, agent),
@@ -27,8 +26,7 @@ const electronAPI: AgentOsAPI = {
   builtinTool: {
     getAllBuiltinTools: () => ipcRenderer.invoke('builtinTool:get-all'),
     getBuiltinTool: (id) => ipcRenderer.invoke('builtinTool:get', id),
-    invokeBuiltinTool: (toolName, args) =>
-      ipcRenderer.invoke('builtinTool:invoke', toolName, args),
+    invokeBuiltinTool: (toolName, args) => ipcRenderer.invoke('builtinTool:invoke', toolName, args),
   },
 
   mcp: {

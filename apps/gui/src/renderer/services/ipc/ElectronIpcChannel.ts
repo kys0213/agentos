@@ -12,7 +12,11 @@ import type {
   Preset,
 } from '@agentos/core';
 import type { IpcChannel } from '../../../shared/types/ipc-channel';
-import type { ResourceListResponse, ResourceResponse, ToolExecutionResponse } from '../../types/core-types';
+import type {
+  ResourceListResponse,
+  ResourceResponse,
+  ToolExecutionResponse,
+} from '../../types/core-types';
 import { LlmManifest, UserMessage } from 'llm-bridge-spec';
 import type {
   ClearUsageLogsResponse,
@@ -31,7 +35,11 @@ export class ElectronIpcChannel implements IpcChannel {
   }
 
   // Agent
-  async chat(agentId: string, messages: UserMessage[], options?: AgentExecuteOptions): Promise<AgentChatResult> {
+  async chat(
+    agentId: string,
+    messages: UserMessage[],
+    options?: AgentExecuteOptions
+  ): Promise<AgentChatResult> {
     return this.electronAPI.agent.chat(agentId, messages, options);
   }
   async endSession(agentId: string, sessionId: string): Promise<void> {
@@ -43,7 +51,10 @@ export class ElectronIpcChannel implements IpcChannel {
   async getAllAgentMetadatas(): Promise<AgentMetadata[]> {
     return this.electronAPI.agent.getAllAgentMetadatas();
   }
-  async updateAgent(agentId: string, agent: Partial<Omit<AgentMetadata, 'id'>>): Promise<AgentMetadata> {
+  async updateAgent(
+    agentId: string,
+    agent: Partial<Omit<AgentMetadata, 'id'>>
+  ): Promise<AgentMetadata> {
     return this.electronAPI.agent.updateAgent(agentId, agent);
   }
   async createAgent(agent: CreateAgentMetadata): Promise<AgentMetadata> {
@@ -94,7 +105,11 @@ export class ElectronIpcChannel implements IpcChannel {
   async disconnectMcp(name: string): Promise<{ success: boolean }> {
     return this.electronAPI.mcp.disconnectMcp(name);
   }
-  async executeMcpTool(clientName: string, toolName: string, args: McpToolMetadata): Promise<ToolExecutionResponse> {
+  async executeMcpTool(
+    clientName: string,
+    toolName: string,
+    args: McpToolMetadata
+  ): Promise<ToolExecutionResponse> {
     return this.electronAPI.mcp.executeMcpTool(clientName, toolName, args);
   }
   async getMcpResources(clientName: string): Promise<ResourceListResponse> {
@@ -126,7 +141,11 @@ export class ElectronIpcChannel implements IpcChannel {
   async getHourlyStats(date: Date, clientName?: string): Promise<HourlyStatsResponse> {
     return this.electronAPI.mcpUsageLog.getHourlyStats(date, clientName);
   }
-  async getUsageLogsInRange(startDate: Date, endDate: Date, clientName?: string): Promise<McpUsageLog[]> {
+  async getUsageLogsInRange(
+    startDate: Date,
+    endDate: Date,
+    clientName?: string
+  ): Promise<McpUsageLog[]> {
     return this.electronAPI.mcpUsageLog.getUsageLogsInRange(startDate, endDate, clientName);
   }
   async clearUsageLogs(olderThan?: Date): Promise<ClearUsageLogsResponse> {
@@ -135,7 +154,9 @@ export class ElectronIpcChannel implements IpcChannel {
   async setUsageTracking(clientName: string, enabled: boolean): Promise<SetUsageTrackingResponse> {
     return this.electronAPI.mcpUsageLog.setUsageTracking(clientName, enabled);
   }
-  async subscribeToUsageUpdates(callback: (event: McpUsageUpdateEvent) => void): Promise<() => void> {
+  async subscribeToUsageUpdates(
+    callback: (event: McpUsageUpdateEvent) => void
+  ): Promise<() => void> {
     await this.electronAPI.mcpUsageLog.subscribeToUsageUpdates(callback);
     const { ipcRenderer } = (window as any).require('electron');
     const handler = (_e: any, ev: McpUsageUpdateEvent) => callback(ev);

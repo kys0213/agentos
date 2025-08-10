@@ -41,11 +41,11 @@ import { Preset } from '@agentos/core';
 interface UsePresetDataReturn {
   // Core 타입 직접 사용
   presets: Preset[];
-  
+
   // 실제 비동기 작업
   isLoading: boolean;
   error: Error | null;
-  
+
   // Core 서비스 연동 액션들
   createPreset: (preset: Omit<Preset, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updatePreset: (preset: Preset) => Promise<void>;
@@ -56,12 +56,12 @@ interface UsePresetDataReturn {
 // 실제 ServiceContainer 연동 구조
 export function usePresetData(): UsePresetDataReturn {
   const presetService = ServiceContainer.get<PresetService>('preset');
-  
+
   // React Query 또는 직접 state 관리로 비동기 데이터 처리
   const [presets, setPresets] = useState<Preset[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  
+
   // 실제 Core 서비스 호출
   const refreshPresets = async () => {
     try {
@@ -74,13 +74,13 @@ export function usePresetData(): UsePresetDataReturn {
       setIsLoading(false);
     }
   };
-  
+
   return {
     presets,
     isLoading,
     error,
     createPreset,
-    updatePreset, 
+    updatePreset,
     deletePreset,
     refreshPresets
   };
@@ -216,7 +216,7 @@ git commit -m "✅ [TODO 2/8] Identify all Preset Mock usage points"
 gh pr create --title "Integrate real Preset data with Core services" --body "$(cat <<'EOF'
 ## Summary
 - Replace Mock Preset data with FileBasedPresetRepository integration
-- Implement async data handling and error states  
+- Implement async data handling and error states
 - Preserve all existing UI/UX functionality
 - Full Core service integration through ServiceContainer
 
@@ -238,6 +238,7 @@ EOF
 ## 예상 결과
 
 이 계획서 완료 후:
+
 - Preset 데이터가 실제 파일 시스템에 영구 저장됨
 - 모든 Preset UI가 실제 Core 서비스와 연동됨
 - 사용자 경험은 기존과 100% 동일하게 유지됨

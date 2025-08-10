@@ -12,7 +12,11 @@ import type {
   Preset,
 } from '@agentos/core';
 import type { IpcChannel } from '../../../shared/types/ipc-channel';
-import type { ResourceListResponse, ResourceResponse, ToolExecutionResponse } from '../../types/core-types';
+import type {
+  ResourceListResponse,
+  ResourceResponse,
+  ToolExecutionResponse,
+} from '../../types/core-types';
 import { LlmManifest, UserMessage, Message } from 'llm-bridge-spec';
 import type {
   ClearUsageLogsResponse,
@@ -33,21 +37,35 @@ export class MockIpcChannel implements IpcChannel {
   private agents: AgentMetadata[] = [];
 
   // Agent
-  async chat(agentId: string, messages: UserMessage[], options?: AgentExecuteOptions): Promise<AgentChatResult> {
+  async chat(
+    agentId: string,
+    messages: UserMessage[],
+    options?: AgentExecuteOptions
+  ): Promise<AgentChatResult> {
     // Simple echo behavior for mock
     const sessionId = options?.sessionId ?? `session_${Date.now()}`;
     const text = messages
       .map((m) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content)))
       .join('\n');
-    const reply = { role: 'assistant', content: { type: 'text', text: `Echo: ${text}` } } as unknown as Message;
+    const reply = {
+      role: 'assistant',
+      content: { type: 'text', text: `Echo: ${text}` },
+    } as unknown as Message;
     return { messages: [reply], sessionId };
   }
-  async endSession(_agentId: string, _sessionId: string): Promise<void> { return; }
+  async endSession(_agentId: string, _sessionId: string): Promise<void> {
+    return;
+  }
   async getAgentMetadata(id: string): Promise<AgentMetadata | null> {
     return this.agents.find((a) => a.id === id) ?? null;
   }
-  async getAllAgentMetadatas(): Promise<AgentMetadata[]> { return [...this.agents]; }
-  async updateAgent(agentId: string, patch: Partial<Omit<AgentMetadata, 'id'>>): Promise<AgentMetadata> {
+  async getAllAgentMetadatas(): Promise<AgentMetadata[]> {
+    return [...this.agents];
+  }
+  async updateAgent(
+    agentId: string,
+    patch: Partial<Omit<AgentMetadata, 'id'>>
+  ): Promise<AgentMetadata> {
     const idx = this.agents.findIndex((a) => a.id === agentId);
     if (idx === -1) throw new Error(`Agent not found: ${agentId}`);
     const updated = { ...this.agents[idx], ...patch, id: agentId } as AgentMetadata;
@@ -79,9 +97,15 @@ export class MockIpcChannel implements IpcChannel {
   }
 
   // BuiltinTool
-  async getAllBuiltinTools(): Promise<BuiltinTool[]> { return []; }
-  async getBuiltinTool(_id: string): Promise<BuiltinTool | null> { return null; }
-  async invokeBuiltinTool<R>(_toolName: string, _args: Record<string, any>): Promise<R> { return {} as R; }
+  async getAllBuiltinTools(): Promise<BuiltinTool[]> {
+    return [];
+  }
+  async getBuiltinTool(_id: string): Promise<BuiltinTool | null> {
+    return null;
+  }
+  async invokeBuiltinTool<R>(_toolName: string, _args: Record<string, any>): Promise<R> {
+    return {} as R;
+  }
 
   // Bridge
   async registerBridge(config: LlmManifest): Promise<{ success: boolean }> {
@@ -92,21 +116,31 @@ export class MockIpcChannel implements IpcChannel {
   }
   async unregisterBridge(id: string): Promise<{ success: boolean }> {
     const ok = this.bridges.delete(id);
-    if (this.currentBridgeId === id) this.currentBridgeId = this.bridges.keys().next().value ?? null;
+    if (this.currentBridgeId === id)
+      this.currentBridgeId = this.bridges.keys().next().value ?? null;
     return { success: ok };
   }
-  async switchBridge(id: string): Promise<{ success: boolean }> { this.currentBridgeId = id; return { success: true }; }
+  async switchBridge(id: string): Promise<{ success: boolean }> {
+    this.currentBridgeId = id;
+    return { success: true };
+  }
   async getCurrentBridge(): Promise<{ id: string; config: LlmManifest } | null> {
     if (!this.currentBridgeId) return null;
     const cfg = this.bridges.get(this.currentBridgeId);
     if (!cfg) return null;
     return { id: this.currentBridgeId, config: cfg };
   }
-  async getBridgeIds(): Promise<string[]> { return Array.from(this.bridges.keys()); }
-  async getBridgeConfig(id: string): Promise<LlmManifest | null> { return this.bridges.get(id) ?? null; }
+  async getBridgeIds(): Promise<string[]> {
+    return Array.from(this.bridges.keys());
+  }
+  async getBridgeConfig(id: string): Promise<LlmManifest | null> {
+    return this.bridges.get(id) ?? null;
+  }
 
   // MCP
-  async getAllMcp(): Promise<McpConfig[]> { return [...this.mcpConfigs]; }
+  async getAllMcp(): Promise<McpConfig[]> {
+    return [...this.mcpConfigs];
+  }
   async connectMcp(config: McpConfig): Promise<{ success: boolean }> {
     const existing = this.mcpConfigs.find((c) => (c as any).name === (config as any).name);
     if (!existing) this.mcpConfigs.push(config);
@@ -117,7 +151,11 @@ export class MockIpcChannel implements IpcChannel {
     this.mcpConnected.delete(name);
     return { success: true };
   }
-  async executeMcpTool(client: string, tool: string, args: McpToolMetadata): Promise<ToolExecutionResponse> {
+  async executeMcpTool(
+    client: string,
+    tool: string,
+    args: McpToolMetadata
+  ): Promise<ToolExecutionResponse> {
     // Record usage log
     const log: McpUsageLog = {
       id: `log_${Date.now()}`,
@@ -135,7 +173,9 @@ export class MockIpcChannel implements IpcChannel {
     this.usageLogs.push(log);
     return { success: true, result: { echoedArgs: args } };
   }
-  async getMcpResources(_client: string): Promise<ResourceListResponse> { return { resources: [] }; }
+  async getMcpResources(_client: string): Promise<ResourceListResponse> {
+    return { resources: [] };
+  }
   async readMcpResource(_client: string, uri: string): Promise<ResourceResponse> {
     return { uri, content: '', mimeType: 'text/plain' };
   }
@@ -144,14 +184,27 @@ export class MockIpcChannel implements IpcChannel {
   }
   async getToolMetadata(client: string): Promise<McpToolMetadata> {
     const list = this.toolMetadataByClient.get(client) ?? [];
-    return list[0] ?? ({ id: 'mock', name: 'Mock Tool', description: '', version: '1.0.0', provider: 'mock', usageCount: 0, permissions: [] } as any);
+    return (
+      list[0] ??
+      ({
+        id: 'mock',
+        name: 'Mock Tool',
+        description: '',
+        version: '1.0.0',
+        provider: 'mock',
+        usageCount: 0,
+        permissions: [],
+      } as any)
+    );
   }
   async getAllToolMetadata(): Promise<McpToolMetadata[]> {
     return Array.from(this.toolMetadataByClient.values()).flat();
   }
 
   // Preset
-  async getAllPresets(): Promise<Preset[]> { return [...this.presets]; }
+  async getAllPresets(): Promise<Preset[]> {
+    return [...this.presets];
+  }
   async createPreset(preset: CreatePreset): Promise<Preset> {
     const created: Preset = { id: `preset_${Date.now()}`, ...preset } as Preset;
     this.presets.push(created);
@@ -170,14 +223,17 @@ export class MockIpcChannel implements IpcChannel {
     this.presets = this.presets.filter((p) => p.id !== id);
     return found;
   }
-  async getPreset(id: string): Promise<Preset | null> { return this.presets.find((p) => p.id === id) ?? null; }
+  async getPreset(id: string): Promise<Preset | null> {
+    return this.presets.find((p) => p.id === id) ?? null;
+  }
 
   // Usage Log
   async getUsageLogs(clientName: string, options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
     let logs = [...this.usageLogs];
     if (options?.status) logs = logs.filter((l) => l.status === options.status);
     if (options?.agentId) logs = logs.filter((l) => l.agentId === options.agentId);
-    if (options?.sortOrder === 'asc') logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    if (options?.sortOrder === 'asc')
+      logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
     else logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
     if (options?.offset !== undefined || options?.limit !== undefined) {
       const offset = options.offset || 0;
@@ -191,7 +247,8 @@ export class MockIpcChannel implements IpcChannel {
       let all = [...this.usageLogs];
       if (options?.status) all = all.filter((l) => l.status === options.status);
       if (options?.agentId) all = all.filter((l) => l.agentId === options.agentId);
-      if (options?.sortOrder === 'asc') all.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+      if (options?.sortOrder === 'asc')
+        all.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
       else all.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
       if (options?.offset !== undefined || options?.limit !== undefined) {
         const offset = options.offset || 0;
@@ -202,13 +259,38 @@ export class MockIpcChannel implements IpcChannel {
     });
   }
   async getUsageStats(_clientName?: string): Promise<McpUsageStats> {
-    return { totalUsage: 0, successRate: 0, averageDuration: 0, lastUsedAt: undefined, errorCount: 0 } as any;
+    return {
+      totalUsage: 0,
+      successRate: 0,
+      averageDuration: 0,
+      lastUsedAt: undefined,
+      errorCount: 0,
+    } as any;
   }
-  async getHourlyStats(_date: Date, _clientName?: string): Promise<HourlyStatsResponse> { return { hourlyData: Array.from({ length: 24 }, (_, h) => [h, 0]) }; }
-  async getUsageLogsInRange(_start: Date, _end: Date, _clientName?: string): Promise<McpUsageLog[]> { return []; }
-  async clearUsageLogs(_olderThan?: Date): Promise<ClearUsageLogsResponse> { return { success: true, clearedCount: 0 }; }
-  async setUsageTracking(_clientName: string, _enabled: boolean): Promise<SetUsageTrackingResponse> { return { success: true }; }
-  async subscribeToUsageUpdates(_callback: (event: McpUsageUpdateEvent) => void): Promise<() => void> { return () => {}; }
+  async getHourlyStats(_date: Date, _clientName?: string): Promise<HourlyStatsResponse> {
+    return { hourlyData: Array.from({ length: 24 }, (_, h) => [h, 0]) };
+  }
+  async getUsageLogsInRange(
+    _start: Date,
+    _end: Date,
+    _clientName?: string
+  ): Promise<McpUsageLog[]> {
+    return [];
+  }
+  async clearUsageLogs(_olderThan?: Date): Promise<ClearUsageLogsResponse> {
+    return { success: true, clearedCount: 0 };
+  }
+  async setUsageTracking(
+    _clientName: string,
+    _enabled: boolean
+  ): Promise<SetUsageTrackingResponse> {
+    return { success: true };
+  }
+  async subscribeToUsageUpdates(
+    _callback: (event: McpUsageUpdateEvent) => void
+  ): Promise<() => void> {
+    return () => {};
+  }
 }
 
 // Test utilities to seed mock data in dev/test

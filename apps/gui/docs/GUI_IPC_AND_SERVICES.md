@@ -55,18 +55,42 @@ const usage = Services.getMcpUsageLog();
 
 ```ts
 // Bridge
-await bridge.registerBridge({ name: 'my-bridge', schemaVersion: '1.0.0', language: 'typescript', entry: 'index.ts', capabilities: { modalities: [], supportsToolCall: true, supportsFunctionCall: true, supportsMultiTurn: true, supportsStreaming: true, supportsVision: true }, configSchema: { type: 'object', properties: {} }, description: '' });
+await bridge.registerBridge({
+  name: 'my-bridge',
+  schemaVersion: '1.0.0',
+  language: 'typescript',
+  entry: 'index.ts',
+  capabilities: {
+    modalities: [],
+    supportsToolCall: true,
+    supportsFunctionCall: true,
+    supportsMultiTurn: true,
+    supportsStreaming: true,
+    supportsVision: true,
+  },
+  configSchema: { type: 'object', properties: {} },
+  description: '',
+});
 const ids = await bridge.getBridgeIds();
 
 // MCP
-await mcp.connectMcp({ name: 'mcp-x', type: 'streamableHttp', version: '1.0.0', url: 'https://example.com/mcp' } as any);
+await mcp.connectMcp({
+  name: 'mcp-x',
+  type: 'streamableHttp',
+  version: '1.0.0',
+  url: 'https://example.com/mcp',
+} as any);
 const status = await mcp.getMcpStatus('mcp-x');
 
 // Preset
 const presets = await preset.getAllPresets();
 
 // Agent
-const result = await agent.chat('agent-id', [{ role: 'user', content: { type: 'text', text: 'Hello' } }], { maxTurnCount: 1 });
+const result = await agent.chat(
+  'agent-id',
+  [{ role: 'user', content: { type: 'text', text: 'Hello' } }],
+  { maxTurnCount: 1 }
+);
 
 // Usage Log
 const logs = await usage.getAllUsageLogs();

@@ -111,25 +111,31 @@ export function setupAgentIpcHandlers() {
       const userText = messages
         .map((m) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content)))
         .join('\n');
-      const assistantReply: Message = { role: 'assistant', content: { type: 'text', text: `Echo: ${userText}` } as any };
+      const assistantReply: Message = {
+        role: 'assistant',
+        content: { type: 'text', text: `Echo: ${userText}` } as any,
+      };
       s.messages.push(assistantReply);
       s.updatedAt = new Date();
       return { messages: [assistantReply], sessionId };
     }
   );
 
-  ipcMain.handle('agent:end-session', async (_e: IpcMainInvokeEvent, agentId: string, sessionId: string) => {
-    try {
-      const agentMeta = agents.get(agentId) ?? null;
-      const simpleAgent = createSimpleAgent(agentId, agentMeta);
-      if (simpleAgent) {
-        await simpleAgent.endSession(sessionId);
+  ipcMain.handle(
+    'agent:end-session',
+    async (_e: IpcMainInvokeEvent, agentId: string, sessionId: string) => {
+      try {
+        const agentMeta = agents.get(agentId) ?? null;
+        const simpleAgent = createSimpleAgent(agentId, agentMeta);
+        if (simpleAgent) {
+          await simpleAgent.endSession(sessionId);
+        }
+      } finally {
+        sessions.delete(sessionId);
       }
-    } finally {
-      sessions.delete(sessionId);
+      return;
     }
-    return;
-  });
+  );
 
   ipcMain.handle('agent:get-metadata', async (_e: IpcMainInvokeEvent, id: string) => {
     return agents.get(id) ?? null;

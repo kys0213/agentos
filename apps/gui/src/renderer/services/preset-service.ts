@@ -23,5 +23,4 @@ export class PresetService implements PresetProtocol {
   getPreset(id: string): Promise<Preset | null> {
     return this.ipcChannel.getPreset(id);
   }
-
 }
