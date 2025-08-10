@@ -8,12 +8,13 @@ import type {
 import { UserMessage } from 'llm-bridge-spec';
 import { IpcAgent } from './ipc-agent';
 import type { IpcChannel } from '../../shared/types/ipc-channel';
+import type { AgentProtocol } from '../../shared/types/agent-protocol';
 
 /**
  * Agent 관련 기능을 제공하는 서비스 클래스
  * IpcChannel을 통해 환경에 독립적으로 동작
  */
-export class AgentService {
+export class AgentService implements AgentProtocol {
   constructor(private ipcChannel: IpcChannel) {}
 
   async getAllAgents(): Promise<Agent[]> {
@@ -23,18 +24,18 @@ export class AgentService {
     return metadatas.map((metadata) => new IpcAgent(this.ipcChannel, metadata.id));
   }
 
-  async createAgent(agent: CreateAgentMetadata): Promise<Agent> {
-    const metadata = await this.ipcChannel.createAgent(agent);
-    return new IpcAgent(this.ipcChannel, metadata.id);
+  async createAgent(agent: CreateAgentMetadata): Promise<AgentMetadata> {
+    return this.ipcChannel.createAgent(agent);
   }
 
-  async updateAgent(agentId: string, agent: Partial<Omit<AgentMetadata, 'id'>>): Promise<Agent> {
-    const metadata = await this.ipcChannel.updateAgent(agentId, agent);
-    return new IpcAgent(this.ipcChannel, metadata.id);
+  async updateAgent(
+    agentId: string,
+    agent: Partial<Omit<AgentMetadata, 'id'>>
+  ): Promise<AgentMetadata> {
+    return this.ipcChannel.updateAgent(agentId, agent);
   }
-  async deleteAgent(id: string): Promise<Agent> {
-    const metadata = await this.ipcChannel.deleteAgent(id);
-    return new IpcAgent(this.ipcChannel, metadata.id);
+  async deleteAgent(id: string): Promise<AgentMetadata> {
+    return this.ipcChannel.deleteAgent(id);
   }
 
   async getAgentMetadata(id: string): Promise<AgentMetadata | null> {
@@ -52,6 +53,10 @@ export class AgentService {
   async getActiveAgents(): Promise<Agent[]> {
     const agents = await this.getAllAgents();
     return await Promise.all(agents.filter(async (agent) => await agent.isActive()));
+  }
+
+  async getAllAgentMetadatas(): Promise<AgentMetadata[]> {
+    return this.ipcChannel.getAllAgentMetadatas();
   }
 
   async endSession(agentId: string, sessionId: string): Promise<void> {

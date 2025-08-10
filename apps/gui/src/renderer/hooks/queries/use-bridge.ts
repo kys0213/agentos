@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Services } from '../../bootstrap';
+import { ServiceContainer } from '../../../shared/ipc/service-container';
 
 // Query Keys
 const QUERY_KEYS = {
@@ -10,7 +10,7 @@ const QUERY_KEYS = {
 
 // 현재 브릿지 조회
 export const useCurrentBridge = () => {
-  const bridgeService = Services.getBridge();
+  const bridgeService = ServiceContainer.getOrThrow('bridge');
 
   return useQuery({
     queryKey: QUERY_KEYS.currentBridge,
@@ -21,7 +21,7 @@ export const useCurrentBridge = () => {
 
 // 사용 가능한 브릿지 ID 목록 조회
 export const useBridgeIds = () => {
-  const bridgeService = Services.getBridge();
+  const bridgeService = ServiceContainer.getOrThrow('bridge');
 
   return useQuery({
     queryKey: QUERY_KEYS.bridgeIds,
@@ -33,7 +33,7 @@ export const useBridgeIds = () => {
 // 브릿지 전환 뮤테이션
 export const useSwitchBridge = () => {
   const queryClient = useQueryClient();
-  const bridgeService = Services.getBridge();
+  const bridgeService = ServiceContainer.getOrThrow('bridge');
 
   return useMutation({
     mutationFn: (bridgeId: string) => bridgeService.switchBridge(bridgeId),
@@ -48,7 +48,7 @@ export const useSwitchBridge = () => {
 
 // 브릿지 설정 조회
 export const useBridgeConfig = (bridgeId: string) => {
-  const bridgeService = Services.getBridge();
+  const bridgeService = ServiceContainer.getOrThrow('bridge');
 
   return useQuery({
     queryKey: QUERY_KEYS.bridgeConfig(bridgeId),

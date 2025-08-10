@@ -1,4 +1,5 @@
-import type { IpcChannel, BuiltinToolProtocol } from '../../shared/types/ipc-channel';
+import type { IpcChannel } from '../../shared/types/ipc-channel';
+import type { BuiltinToolProtocol } from '../../shared/types/builtin-protocol';
 import type { BuiltinTool } from '@agentos/core';
 
 export class BuiltinToolService implements BuiltinToolProtocol {

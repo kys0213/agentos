@@ -1,8 +1,9 @@
 import type { McpConfig, McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
+import type { IpcChannel } from '../../shared/types/ipc-channel';
+import type { McpProtocol } from '../../shared/types/mcp-protocol';
 import type {
   ClearUsageLogsResponse,
   HourlyStatsResponse,
-  McpUsageDashboard,
   McpUsageUpdateEvent,
   SetUsageTrackingResponse,
   UsageLogQueryOptions,
@@ -11,8 +12,7 @@ import type {
   ResourceListResponse,
   ResourceResponse,
   ToolExecutionResponse,
-} from '../types/core-types';
-import type { IpcChannel, McpProtocol } from '../../shared/types/ipc-channel';
+} from '../../shared/types/ipc-channel';
 
 /**
  * MCP 관련 기능을 제공하는 서비스 클래스

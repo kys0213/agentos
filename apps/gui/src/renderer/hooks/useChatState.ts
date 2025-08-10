@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { UseChatStateReturn } from '../types/core-types';
+import type { UseChatStateReturn } from '../stores/store-types';
 import { ReadonlyAgentMetadata } from '@agentos/core';
 
 /**

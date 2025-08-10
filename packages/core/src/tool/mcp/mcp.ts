@@ -20,11 +20,11 @@ import { McpConfig } from './mcp-config';
 import { McpEvent, McpEventMap } from './mcp-event';
 import { McpTransportFactory } from './mcp-transport.factory';
 import {
-  McpToolMetadata,
+  McpToolDescription,
   McpUsageTracker,
   McpUsageLog,
   McpUsageStats,
-  McpConnectionStatus,
+  McpToolMetadata,
 } from './mcp-types';
 import { InMemoryUsageTracker, NoOpUsageTracker } from './mcp-usage-tracker';
 

@@ -1,12 +1,9 @@
-import {
-  AgentProtocol,
-  ConversationProtocol,
-  BuiltinToolProtocol,
-  LlmBridgeProtocol,
-  McpProtocol,
-  McpUsageLogProtocol,
-  PresetProtocol,
-} from './ipc-channel';
+import { PresetProtocol } from './proset-protocol';
+import { McpUsageLogProtocol } from './mcp-usage-log-protocol';
+import { BuiltinToolProtocol } from './builtin-protocol';
+import { McpProtocol } from './mcp-protocol';
+import { LlmBridgeProtocol } from './llm-bridge-protocol';
+import { AgentProtocol, ConversationProtocol } from './agent-protocol';
 
 export interface AgentOsAPI {
   agent: AgentProtocol;
@@ -19,10 +16,11 @@ export interface AgentOsAPI {
 }
 
 export type AgentOsServiceName = keyof AgentOsAPI;
+export type AgentOsService = AgentOsAPI[AgentOsServiceName];
 
 export const AgentOsServiceNames: AgentOsServiceName[] = [
   'agent',
-  // 'conversation' is part of IpcChannel but not a DI service
+  'conversation',
   'bridge',
   'builtinTool',
   'mcp',

@@ -1,13 +1,13 @@
+import { AgentOsServiceNames } from '../shared/types/agentos-api';
 import type { IpcChannel } from '../shared/types/ipc-channel';
-import { createIpcChannel } from './services/ipc/IpcChannelFactory';
-import { ServiceContainer } from './services/service-container';
-import { BridgeService } from './services/bridge.service';
-import { McpService } from './services/mcp-service';
-import { PresetService } from './services/preset-service';
 import { AgentService } from './services/agent.service';
-import { AgentOsServiceName, AgentOsServiceNames } from '../shared/types/agentos-api';
-import { McpUsageLogService } from './services/mcp-usage.service';
+import { BridgeService } from './services/bridge.service';
 import { BuiltinToolService } from './services/builtin-tool.service';
+import { createIpcChannel } from '../shared/ipc/ipc-channel.factory';
+import { McpService } from './services/mcp-service';
+import { McpUsageLogService } from './services/mcp-usage.service';
+import { PresetService } from './services/preset-service';
+import { ServiceContainer } from '../shared/ipc/service-container';
 
 /**
  * Bootstrap 결과 타입
@@ -63,19 +63,6 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
     agentService,
   };
 }
-
-/**
- * 서비스 컨테이너에서 서비스를 가져오는 헬퍼 함수들
- * 컴포넌트에서 쉽게 서비스에 접근할 수 있도록 제공
- */
-export const Services = {
-  getBridge: (): BridgeService => ServiceContainer.get<BridgeService>('bridge'),
-  getMcp: (): McpService => ServiceContainer.get<McpService>('mcp'),
-  getPreset: (): PresetService => ServiceContainer.get<PresetService>('preset'),
-  getAgent: (): AgentService => ServiceContainer.get<AgentService>('agent'),
-  getBuiltinTool: (): BuiltinToolService => ServiceContainer.get<BuiltinToolService>('builtinTool'),
-  getMcpUsageLog: (): McpUsageLogService => ServiceContainer.get<McpUsageLogService>('mcpUsageLog'),
-} as const;
 
 /**
  * Bootstrap이 완료되었는지 확인하는 함수

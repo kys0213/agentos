@@ -11,7 +11,7 @@ import type {
   McpUsageStats,
   Preset,
 } from '@agentos/core';
-import type { IpcChannel } from '../../../shared/types/ipc-channel';
+import type { IpcChannel } from '../../types/ipc-channel';
 import type { CursorPagination, CursorPaginationResult } from '@agentos/core';
 import type { ChatSessionDescription } from '@agentos/core';
 import type { MessageHistory } from '@agentos/core';
@@ -19,7 +19,7 @@ import type {
   ResourceListResponse,
   ResourceResponse,
   ToolExecutionResponse,
-} from '../../types/core-types';
+} from '../../types/ipc-channel';
 import { LlmManifest, UserMessage } from 'llm-bridge-spec';
 import type {
   ClearUsageLogsResponse,
@@ -27,7 +27,7 @@ import type {
   McpUsageUpdateEvent,
   SetUsageTrackingResponse,
   UsageLogQueryOptions,
-} from '../../../shared/types/mcp-usage-types';
+} from '../../types/mcp-usage-types';
 
 export class ElectronIpcChannel implements IpcChannel {
   private get electronAPI() {

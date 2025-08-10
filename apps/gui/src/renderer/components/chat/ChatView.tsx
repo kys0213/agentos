@@ -18,7 +18,7 @@ import { Card } from '../ui/card';
 import { ChatHistory } from './ChatHistory';
 import { MessageInputWithMentions } from './MessageInputWithMentions';
 import MessageRenderer from './MessageRenderer';
-import { AppSection } from '../../types/core-types';
+import { AppSection } from '../../stores/store-types';
 
 interface ChatViewProps {
   onNavigate: (section: AppSection) => void;

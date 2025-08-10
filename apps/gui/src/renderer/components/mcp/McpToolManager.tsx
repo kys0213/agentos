@@ -1,3 +1,4 @@
+import { McpToolMetadata, McpUsageLog } from '@agentos/core';
 import {
   AlertCircle,
   AlertTriangle,
@@ -22,7 +23,8 @@ import {
   Wrench,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { McpToolMetadata, McpUsageLog } from '@agentos/core';
+import type { McpService } from '../../services/mcp-service';
+import { ServiceContainer } from '../../../shared/ipc/service-container';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -31,9 +33,6 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { ServiceContainer } from '../../services/service-container';
-import type { McpService } from '../../services/mcp-service';
-import type { McpUsageLogService } from '../../services/mcp-usage.service';
 
 /**
  * GUI-specific extension of Core McpToolMetadata
@@ -87,7 +86,7 @@ export function MCPToolsManager() {
         setIsLoading(true);
 
         if (ServiceContainer.has('mcp')) {
-          const mcpService = ServiceContainer.get<McpService>('mcp');
+          const mcpService = ServiceContainer.getOrThrow('mcp');
 
           try {
             // Get all MCP tool metadata
@@ -103,7 +102,7 @@ export function MCPToolsManager() {
 
             // Get usage logs if available
             try {
-              const usageService = ServiceContainer.get<any>('mcpUsageLog');
+              const usageService = ServiceContainer.getOrThrow('mcpUsageLog');
               const logs = await usageService.getAllUsageLogs();
               setUsageLogs(logs);
             } catch (logError) {
@@ -242,13 +241,13 @@ export function MCPToolsManager() {
   const handleConnectTool = async (toolId: string) => {
     try {
       if (ServiceContainer.has('mcp')) {
-        const mcpService = ServiceContainer.get<McpService>('mcp');
+        const mcpService = ServiceContainer.getOrThrow('mcp');
 
         // Find the tool configuration
         const tool = tools.find((t) => t.id === toolId);
         if (tool) {
           // Create a basic MCP config for the tool
-          const mcpConfig = {
+          const mcpConfig: Parameters<McpService['connectMcp']>[0] = {
             type: 'streamableHttp' as const,
             name: tool.name,
             version: tool.version,
@@ -256,7 +255,7 @@ export function MCPToolsManager() {
           };
 
           // Connect the tool
-          await mcpService.connectMcp(mcpConfig as any);
+          await mcpService.connectMcp(mcpConfig);
 
           // Update local state
           setTools((prev) =>
@@ -274,7 +273,7 @@ export function MCPToolsManager() {
   const handleDisconnectTool = async (toolId: string) => {
     try {
       if (ServiceContainer.has('mcp')) {
-        const mcpService = ServiceContainer.get<McpService>('mcp');
+        const mcpService = ServiceContainer.getOrThrow('mcp');
 
         // Disconnect the tool
         await mcpService.disconnectMcp(toolId);
@@ -293,7 +292,7 @@ export function MCPToolsManager() {
     setIsLoading(true);
     try {
       if (ServiceContainer.has('mcp')) {
-        const mcpService = ServiceContainer.get<McpService>('mcp');
+        const mcpService = ServiceContainer.getOrThrow('mcp');
         const mcpTools = await mcpService.getAllToolMetadata();
 
         const guiTools: GuiMcpTool[] = mcpTools.map((tool) => ({

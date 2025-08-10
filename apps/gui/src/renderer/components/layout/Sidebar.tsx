@@ -12,7 +12,7 @@ import {
   Zap,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { AppSection } from '../../types/core-types';
+import { AppSection } from '../../stores/store-types';
 import { Button } from '../ui/button';
 
 interface SidebarProps {

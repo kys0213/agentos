@@ -1,17 +1,11 @@
-import { useState, useEffect } from 'react';
-import { Preset, AgentMetadata } from '../types';
+import { useEffect, useState } from 'react';
+import { AgentMetadata, Preset } from '../types';
 // Mock 데이터 의존성 제거
 // import { mockPresets, mockAgents } from '../data/mockData';
 import { McpConfig } from '@agentos/core';
 
 // ServiceContainer와 서비스들 import (renderer와 동일한 패턴)
-import { ServiceContainer } from '../../src/renderer/services/service-container';
-import type {
-  PresetServiceInterface,
-  McpServiceInterface,
-  AgentServiceInterface,
-} from '../../src/renderer/types/core-types';
-import type { UseAppDataReturn } from '../../src/renderer/types/design-types';
+import { ServiceContainer } from '../../src/shared/ipc/service-container';
 
 /**
  * Design 폴더용 useAppData - ServiceContainer 기반으로 재작성
@@ -32,14 +26,14 @@ export function useAppData(): UseAppDataReturn {
 
         // Preset Service를 통해 프리셋 로드
         if (ServiceContainer.has('preset')) {
-          const presetService = ServiceContainer.get<PresetServiceInterface>('preset');
-          const corePresets = await presetService.getAll();
+          const presetService = ServiceContainer.getOrThrow('preset');
+          const corePresets = await presetService.getAllPresets();
           setPresets(corePresets);
         }
 
         // AgentService를 통해 Agent 데이터 로드
         if (ServiceContainer.has('agent')) {
-          const agentService = ServiceContainer.get<AgentServiceInterface>('agent');
+          const agentService = ServiceContainer.getOrThrow<AgentServiceInterface>('agent');
           const coreAgents = await agentService.getAll();
           setAgents(coreAgents);
         } else {
@@ -68,7 +62,7 @@ export function useAppData(): UseAppDataReturn {
   ): Promise<void> => {
     try {
       if (ServiceContainer.has('agent')) {
-        const agentService = ServiceContainer.get<AgentServiceInterface>('agent');
+        const agentService = ServiceContainer.getOrThrow<AgentServiceInterface>('agent');
         const existingAgent = agents.find((agent) => agent.id === agentId);
 
         if (existingAgent) {
@@ -93,7 +87,7 @@ export function useAppData(): UseAppDataReturn {
     try {
       // PresetService를 통한 생성
       if (ServiceContainer.has('preset')) {
-        const presetService = ServiceContainer.get<PresetServiceInterface>('preset');
+        const presetService = ServiceContainer.getOrThrow<PresetServiceInterface>('preset');
         const presetToCreate: Preset = {
           id: `preset-${Date.now()}`,
           name: newPresetData.name || '',
@@ -132,7 +126,7 @@ export function useAppData(): UseAppDataReturn {
   const handleCreateMCPTool = async (mcpConfig: McpConfig): Promise<McpConfig> => {
     try {
       if (ServiceContainer.has('mcp')) {
-        const mcpService = ServiceContainer.get<McpServiceInterface>('mcp');
+        const mcpService = ServiceContainer.getOrThrow<McpServiceInterface>('mcp');
         await mcpService.connect(mcpConfig);
         return mcpConfig;
       }
@@ -154,7 +148,7 @@ export function useAppData(): UseAppDataReturn {
 
       // AgentService를 통해 Agent 생성
       if (ServiceContainer.has('agent')) {
-        const agentService = ServiceContainer.get<AgentServiceInterface>('agent');
+        const agentService = ServiceContainer.getOrThrow<AgentServiceInterface>('agent');
         const agentToCreate: AgentMetadata = {
           id: `agent-${Date.now()}`,
           name: newAgentData.name || '',
@@ -199,7 +193,7 @@ export function useAppData(): UseAppDataReturn {
   const handleUpdatePreset = async (updatedPreset: Preset): Promise<void> => {
     try {
       if (ServiceContainer.has('preset')) {
-        const presetService = ServiceContainer.get<PresetServiceInterface>('preset');
+        const presetService = ServiceContainer.getOrThrow<PresetServiceInterface>('preset');
         const presetToUpdate = { ...updatedPreset, updatedAt: new Date() };
         await presetService.update(presetToUpdate);
       }
@@ -219,7 +213,7 @@ export function useAppData(): UseAppDataReturn {
   const handleDeletePreset = async (presetId: string): Promise<void> => {
     try {
       if (ServiceContainer.has('preset')) {
-        const presetService = ServiceContainer.get<PresetServiceInterface>('preset');
+        const presetService = ServiceContainer.getOrThrow<PresetServiceInterface>('preset');
         await presetService.delete(presetId);
       }
 
