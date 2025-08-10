@@ -13,6 +13,12 @@ import type {
 } from '@agentos/core';
 import type { IpcChannel } from '../../../shared/types/ipc-channel';
 import type {
+  CursorPagination,
+  CursorPaginationResult,
+  ChatSessionDescription,
+} from '@agentos/core';
+import type { MessageHistory } from '@agentos/core';
+import type {
   ResourceListResponse,
   ResourceResponse,
   ToolExecutionResponse,
@@ -35,6 +41,8 @@ export class MockIpcChannel implements IpcChannel {
   private usageLogs: McpUsageLog[] = [];
   private presets: Preset[] = [];
   private agents: AgentMetadata[] = [];
+  private sessions: Map<string, { title: string; updatedAt: Date; messages: MessageHistory[] }> =
+    new Map();
 
   // Agent
   async chat(
@@ -225,6 +233,35 @@ export class MockIpcChannel implements IpcChannel {
   }
   async getPreset(id: string): Promise<Preset | null> {
     return this.presets.find((p) => p.id === id) ?? null;
+  }
+
+  // Conversation
+  async listSessions(
+    pagination?: CursorPagination
+  ): Promise<CursorPaginationResult<ChatSessionDescription>> {
+    const items: ChatSessionDescription[] = Array.from(this.sessions.entries())
+      .map(([id, s]) => ({ id, title: s.title, updatedAt: s.updatedAt }))
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+    const idx = pagination?.cursor ? items.findIndex((i) => i.id === pagination.cursor) : -1;
+    const limit = pagination?.limit ?? items.length;
+    const startIndex = idx >= 0
+      ? pagination?.direction === 'backward'
+        ? Math.max(0, idx - limit)
+        : idx + 1
+      : 0;
+    const paged = items.slice(startIndex, startIndex + limit);
+    return { items: paged, nextCursor: paged.at(-1)?.id ?? '' };
+  }
+  async getMessages(
+    sessionId: string,
+    _pagination?: CursorPagination
+  ): Promise<CursorPaginationResult<Readonly<MessageHistory>>> {
+    const s = this.sessions.get(sessionId);
+    return { items: (s?.messages ?? []) as Readonly<MessageHistory>[], nextCursor: '' };
+  }
+  async deleteSession(sessionId: string): Promise<{ success: boolean; error?: string }> {
+    this.sessions.delete(sessionId);
+    return { success: true };
   }
 
   // Usage Log

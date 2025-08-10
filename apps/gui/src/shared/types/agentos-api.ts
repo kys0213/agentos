@@ -1,5 +1,6 @@
 import {
   AgentProtocol,
+  ConversationProtocol,
   BuiltinToolProtocol,
   LlmBridgeProtocol,
   McpProtocol,
@@ -9,6 +10,7 @@ import {
 
 export interface AgentOsAPI {
   agent: AgentProtocol;
+  conversation: ConversationProtocol;
   bridge: LlmBridgeProtocol;
   builtinTool: BuiltinToolProtocol;
   mcp: McpProtocol;
@@ -20,6 +22,7 @@ export type AgentOsServiceName = keyof AgentOsAPI;
 
 export const AgentOsServiceNames: AgentOsServiceName[] = [
   'agent',
+  // 'conversation' is part of IpcChannel but not a DI service
   'bridge',
   'builtinTool',
   'mcp',
