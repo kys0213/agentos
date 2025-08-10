@@ -8,7 +8,6 @@ import { AgentService } from './services/agent.service';
 import { AgentOsServiceName, AgentOsServiceNames } from '../shared/types/agentos-api';
 import { McpUsageLogService } from './services/mcp-usage.service';
 import { BuiltinToolService } from './services/builtin-tool.service';
-import { ChatService } from './services/chat-service';
 
 /**
  * Bootstrap 결과 타입
@@ -19,8 +18,6 @@ export interface BootstrapResult {
   mcpService: McpService;
   presetService: PresetService;
   agentService: AgentService;
-  // legacy testing convenience
-  chatService?: ChatService;
 }
 
 /**
@@ -41,7 +38,6 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
   const agentService = new AgentService(channel);
   const builtinToolService = new BuiltinToolService(channel);
   const mcpUsageLogService = new McpUsageLogService(channel);
-  const chatService = new ChatService(channel);
 
   console.log('⚙️ All services created with IpcChannel dependency injection');
 
@@ -52,9 +48,6 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
   ServiceContainer.register('agent', agentService);
   ServiceContainer.register('builtinTool', builtinToolService);
   ServiceContainer.register('mcpUsageLog', mcpUsageLogService);
-  // Compatibility-only: not part of AgentOsServiceName
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (ServiceContainer as any).register?.('chat', chatService);
 
   console.log('📦 All services registered in ServiceContainer');
   console.log('✅ Bootstrap completed successfully');
@@ -68,7 +61,6 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
     mcpService,
     presetService,
     agentService,
-    chatService,
   };
 }
 
@@ -83,9 +75,6 @@ export const Services = {
   getAgent: (): AgentService => ServiceContainer.get<AgentService>('agent'),
   getBuiltinTool: (): BuiltinToolService => ServiceContainer.get<BuiltinToolService>('builtinTool'),
   getMcpUsageLog: (): McpUsageLogService => ServiceContainer.get<McpUsageLogService>('mcpUsageLog'),
-  // Legacy accessor (registered dynamically above)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getChat: (): ChatService => (ServiceContainer as any).get('chat'),
 } as const;
 
 /**
