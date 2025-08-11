@@ -36,7 +36,7 @@ import { MCPToolCreate } from '../mcp/MCPToolCreate';
 
 interface PresetCreateProps {
   onBack: () => void;
-  onCreate: (preset: CreatePreset) => Preset;
+  onCreate: (preset: CreatePreset) => Promise<Preset>;
 }
 
 export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
@@ -183,7 +183,9 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
   };
 
   const handleToolToggle = (toolName: string) => {
-    const newTools = formData.enabledMcps?.filter((mcp) => mcp.enabledTools.includes(toolName));
+    const newTools = formData.enabledMcps?.filter((mcp) =>
+      mcp.enabledTools.some((tool) => tool.name === toolName)
+    );
 
     updateFormData({
       enabledMcps: newTools,
@@ -642,7 +644,7 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                           key={tool.id}
                           className={`p-4 cursor-pointer transition-all hover:shadow-sm ${
                             formData.enabledMcps?.some((mcp) =>
-                              mcp.enabledTools.includes(tool.name)
+                              mcp.enabledTools.some((enabledTool) => enabledTool.name === tool.name)
                             )
                               ? 'ring-1 ring-primary bg-primary/5'
                               : ''
@@ -652,7 +654,9 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                           <div className="flex items-start gap-3">
                             <Checkbox
                               checked={formData.enabledMcps?.some((mcp) =>
-                                mcp.enabledTools.includes(tool.name)
+                                mcp.enabledTools.some(
+                                  (enabledTool) => enabledTool.name === tool.name
+                                )
                               )}
                               onChange={() => handleToolToggle(tool.name)}
                             />

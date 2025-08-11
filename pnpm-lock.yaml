@@ -68,7 +68,7 @@ importers:
         version: 2.15.0
       llm-bridge-loader:
         specifier: ^0.0.3
-        version: 0.0.3(llm-bridge-spec@1.0.2)(zod@3.25.76)
+        version: 0.0.3(llm-bridge-spec@1.0.2)(zod@4.0.17)
       llm-bridge-spec:
         specifier: ^1.0.2
         version: 1.0.2
@@ -96,7 +96,7 @@ importers:
         version: 11.1.0
       llm-bridge-loader:
         specifier: ^0.0.3
-        version: 0.0.3(llm-bridge-spec@1.0.2)(zod@3.25.76)
+        version: 0.0.3(llm-bridge-spec@1.0.2)(zod@4.0.17)
     devDependencies:
       '@types/node':
         specifier: ^20.11.19
@@ -263,6 +263,9 @@ importers:
       vaul:
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      zod:
+        specifier: ^4.0.17
+        version: 4.0.17
       zustand:
         specifier: ^5.0.7
         version: 5.0.7(@types/react@18.3.23)(react@18.3.1)(use-sync-external-store@1.5.0(react@18.3.1))
@@ -391,7 +394,7 @@ importers:
         version: 29.7.0(@types/node@20.19.9)(babel-plugin-macros@3.1.0)
       ts-jest:
         specifier: ^29.1.2
-        version: 29.4.0(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest-util@29.7.0)(jest@29.7.0(@types/node@20.19.9)(babel-plugin-macros@3.1.0))(typescript@5.8.3)
+        version: 29.4.0(@babel/core@7.28.0)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.0))(jest-util@29.7.0)(jest@29.7.0(@types/node@20.19.9)(babel-plugin-macros@3.1.0))(typescript@5.8.3)
       typescript:
         specifier: ^5.3.3
         version: 5.8.3
@@ -5630,6 +5633,9 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
+  zod@4.0.17:
+    resolution: {integrity: sha512-1PHjlYRevNxxdy2JZ8JcNAw7rX8V9P1AKkP+x/xZfxB0K5FYfuV+Ug6P/6NVSR2jHQ+FzDDoDHS04nYUsOIyLQ==}
+
   zustand@5.0.7:
     resolution: {integrity: sha512-Ot6uqHDW/O2VdYsKLLU8GQu8sCOM1LcoE8RwvLv9uuRT9s6SOHCKs0ZEOhxg+I1Ld+A1Q5lwx+UlKXXUoCZITg==}
     engines: {node: '>=12.20.0'}
@@ -10362,10 +10368,10 @@ snapshots:
 
   lines-and-columns@1.2.4: {}
 
-  llm-bridge-loader@0.0.3(llm-bridge-spec@1.0.2)(zod@3.25.76):
+  llm-bridge-loader@0.0.3(llm-bridge-spec@1.0.2)(zod@4.0.17):
     dependencies:
       llm-bridge-spec: 1.0.2
-      zod: 3.25.76
+      zod: 4.0.17
 
   llm-bridge-spec@1.0.2: {}
 
@@ -11876,6 +11882,8 @@ snapshots:
       zod: 3.25.76
 
   zod@3.25.76: {}
+
+  zod@4.0.17: {}
 
   zustand@5.0.7(@types/react@18.3.23)(react@18.3.1)(use-sync-external-store@1.5.0(react@18.3.1)):
     optionalDependencies:

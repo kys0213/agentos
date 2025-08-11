@@ -1,7 +1,7 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import { ChakraProvider, useColorMode } from '@chakra-ui/react';
-import ColorModeToggle from '../components/ColorModeToggle';
+import ColorModeToggle from '../components/common/ColorModeToggle';
 import theme from '../theme';
 
 let mode: string;

@@ -35,31 +35,8 @@ import {
   CheckCircle,
   Clock,
 } from 'lucide-react';
-
-interface Preset {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  model: string;
-  systemPrompt: string;
-  parameters: {
-    temperature: number;
-    maxTokens: number;
-    topP: number;
-  };
-  tools: string[];
-  status: 'active' | 'idle' | 'inactive';
-  createdAt: Date;
-  updatedAt: Date;
-  usageCount: number;
-  knowledgeDocuments: number;
-  knowledgeStats?: {
-    indexed: number;
-    vectorized: number;
-    totalSize: number;
-  };
-}
+import { Preset } from '@agentos/core';
+import { CategoryIcon } from '../common/CategoryIcon';
 
 interface PresetDetailProps {
   preset: Preset;
@@ -144,7 +121,9 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
 
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg flex items-center justify-center">
-                <div className="text-blue-600">{getCategoryIcon(editedPreset.category)}</div>
+                <div className="text-blue-600">
+                  <CategoryIcon category={editedPreset.category[0]} />
+                </div>
               </div>
               <div>
                 <h1 className="text-2xl font-semibold text-foreground">{editedPreset.name}</h1>
@@ -229,7 +208,9 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                 <Brain className="w-4 h-4 text-blue-600" />
               </div>
               <div>
-                <p className="text-lg font-semibold text-foreground">{editedPreset.model}</p>
+                <p className="text-lg font-semibold text-foreground">
+                  {editedPreset.llmBridgeConfig?.model}
+                </p>
                 <p className="text-xs text-muted-foreground">Model</p>
               </div>
             </div>
@@ -241,7 +222,9 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                 <Zap className="w-4 h-4 text-orange-600" />
               </div>
               <div>
-                <p className="text-lg font-semibold text-foreground">{editedPreset.tools.length}</p>
+                <p className="text-lg font-semibold text-foreground">
+                  {editedPreset.enabledMcps?.length}
+                </p>
                 <p className="text-xs text-muted-foreground">Tools</p>
               </div>
             </div>
@@ -307,8 +290,8 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                         <div>
                           <Label htmlFor="category">Category</Label>
                           <Select
-                            value={editedPreset.category}
-                            onValueChange={(value) => updatePreset({ category: value })}
+                            value={editedPreset.category[0]}
+                            onValueChange={(value) => updatePreset({ category: [value] })}
                           >
                             <SelectTrigger className="mt-1">
                               <SelectValue />
@@ -350,8 +333,12 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                       <div>
                         <Label htmlFor="model">Model</Label>
                         <Select
-                          value={editedPreset.model}
-                          onValueChange={(value) => updatePreset({ model: value })}
+                          value={editedPreset.llmBridgeConfig?.model}
+                          onValueChange={(value) =>
+                            updatePreset({
+                              llmBridgeConfig: { ...editedPreset.llmBridgeConfig, model: value },
+                            })
+                          }
                         >
                           <SelectTrigger className="mt-1">
                             <SelectValue />
@@ -366,12 +353,15 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                       </div>
 
                       <div>
-                        <Label>Temperature: {editedPreset.parameters.temperature}</Label>
+                        <Label>Temperature: {editedPreset.llmBridgeConfig?.temperature}</Label>
                         <Slider
-                          value={[editedPreset.parameters.temperature]}
+                          value={[editedPreset.llmBridgeConfig?.temperature]}
                           onValueChange={([value]) =>
                             updatePreset({
-                              parameters: { ...editedPreset.parameters, temperature: value },
+                              llmBridgeConfig: {
+                                ...editedPreset.llmBridgeConfig,
+                                temperature: value,
+                              },
                             })
                           }
                           max={1}
@@ -382,12 +372,15 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                       </div>
 
                       <div>
-                        <Label>Max Tokens: {editedPreset.parameters.maxTokens}</Label>
+                        <Label>Max Tokens: {editedPreset.llmBridgeConfig?.maxTokens}</Label>
                         <Slider
-                          value={[editedPreset.parameters.maxTokens]}
+                          value={[editedPreset.llmBridgeConfig?.maxTokens]}
                           onValueChange={([value]) =>
                             updatePreset({
-                              parameters: { ...editedPreset.parameters, maxTokens: value },
+                              llmBridgeConfig: {
+                                ...editedPreset.llmBridgeConfig,
+                                maxTokens: value,
+                              },
                             })
                           }
                           max={8000}
@@ -398,12 +391,15 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                       </div>
 
                       <div>
-                        <Label>Top P: {editedPreset.parameters.topP}</Label>
+                        <Label>Top P: {editedPreset.llmBridgeConfig?.topP}</Label>
                         <Slider
-                          value={[editedPreset.parameters.topP]}
+                          value={[editedPreset.llmBridgeConfig?.topP]}
                           onValueChange={([value]) =>
                             updatePreset({
-                              parameters: { ...editedPreset.parameters, topP: value },
+                              llmBridgeConfig: {
+                                ...editedPreset.llmBridgeConfig,
+                                topP: value,
+                              },
                             })
                           }
                           max={1}
@@ -430,9 +426,9 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                   <Card className="p-6">
                     <h3 className="text-lg font-semibold text-foreground mb-4">Available Tools</h3>
                     <div className="flex flex-wrap gap-2">
-                      {editedPreset.tools.map((tool, index) => (
+                      {editedPreset.enabledMcps?.map((mcp, index) => (
                         <Badge key={index} variant="outline" className="px-3 py-1">
-                          {tool}
+                          {mcp.name}
                         </Badge>
                       ))}
                     </div>

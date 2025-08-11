@@ -2,7 +2,7 @@ import React from 'react';
 import { VStack, HStack, Text, Button, Box } from '@chakra-ui/react';
 import { usePresets } from '../../hooks/queries/use-presets';
 import { useSettingsState, useSettingsActions } from '../../stores/app-store';
-import PresetSelector from '../PresetSelector';
+import PresetSelector from './PresetSelector';
 
 /**
  * 프리셋 설정 컴포넌트

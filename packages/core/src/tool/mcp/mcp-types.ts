@@ -1,11 +1,4 @@
 /**
- * Core MCP Usage Tracking Types
- *
- * GUI의 MCPTool/ToolUsageLog 타입을 Core로 통합하여
- * 모든 앱에서 일관된 MCP 사용량 데이터 활용이 가능하도록 합니다.
- */
-
-/**
  * MCP 도구의 메타데이터 정보
  */
 export interface McpToolMetadata {
@@ -117,4 +110,16 @@ export interface McpUsageStats {
   lastUsedAt?: Date;
   /** 에러 발생 횟수 */
   errorCount: number;
+}
+
+export interface McpTool extends McpToolDescription {
+  input?: Record<string, any>;
+  output?: Record<string, any>;
+  annotations?: Record<string, any>;
+}
+
+export interface McpToolDescription {
+  name: string;
+  title: string;
+  description: string;
 }

@@ -1,12 +1,12 @@
-import { McpService } from '../services/mcp-service';
-import { Services } from '../bootstrap';
 import { McpConfig } from '@agentos/core';
+import { McpProtocol } from '../../shared/types/mcp-protocol';
+import { ServiceContainer } from '../../shared/ipc/service-container';
 
 // IPC 기반 MCP 설정 스토어 (브라우저 호환)
 export class McpConfigStore {
   private cachedConfig: McpConfig | undefined;
-  private get mcpService(): McpService {
-    return Services.getMcp();
+  private get mcpService(): McpProtocol {
+    return ServiceContainer.getOrThrow('mcp');
   }
 
   async get(): Promise<McpConfig | undefined> {

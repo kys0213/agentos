@@ -1,5 +1,5 @@
 import { Preset } from '@agentos/core';
-import type { AppSection } from '../types/core-types';
+import type { AppSection } from '../stores/store-types';
 
 /**
  * Get page title based on current navigation state

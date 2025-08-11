@@ -28,8 +28,6 @@ export const isArray = is.array;
 export const isFunction = is.function;
 export const isDate = is.date;
 export const isRegexp = is.regexp;
-
-// Error type guard - proper TypeScript type guard implementation
 export const isError = (value: unknown): value is Error => value instanceof Error;
 
 // Combined type guards

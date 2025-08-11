@@ -2,8 +2,8 @@ import React from 'react';
 import { Box, Button, VStack, HStack, Text } from '@chakra-ui/react';
 import { useSettingsState, useSettingsActions, useUIActions } from '../../stores/app-store';
 import { useMcpConfigs, useConnectMcp } from '../../hooks/queries/use-mcp';
-import LLMSettings from './LLMSettings';
-import PresetSettings from './PresetSettings';
+import LLMSettings from '../llm/LLMSettings';
+import PresetSettings from '../preset/PresetSettings';
 import type { McpConfig } from '@agentos/core';
 
 /**

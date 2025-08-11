@@ -1,6 +1,6 @@
 import { Agent, AgentChatResult, AgentExecuteOptions, ReadonlyAgentMetadata } from '@agentos/core';
 import { UserMessage } from 'llm-bridge-spec';
-import { AgentProtocol } from '../../shared/types/ipc-channel';
+import { AgentProtocol } from '../../shared/types/agent-protocol';
 
 /**
  * IpcChannel을 통해 환경에 독립적으로 동작하는 Agent 클래스

@@ -1,21 +1,28 @@
 import { ArrowLeft, MessageSquare } from 'lucide-react';
 import React from 'react';
 import { Dashboard } from '../dashboard/Dashboard';
+import { ModelManager } from '../llm/ModelManager';
 import { MCPToolsManager } from '../mcp/McpToolManager';
-import { ModelManager } from '../model/ModelManager';
 import { PresetManager } from '../preset/PresetManager';
-import { SubAgentManager } from '../sub-agent/SubAgentManager';
+import SubAgentManagerContainer from '../sub-agent/SubAgentManagerContainer';
 import { ToolBuilder } from '../tool/ToolBuilder';
 import { Button } from '../ui/button';
 import Sidebar from './Sidebar';
 
 // Import new design hooks like design/App.tsx
+import { CreateAgentMetadata, CreatePreset } from '@agentos/core';
 import { useAppData } from '../../hooks/useAppData';
 import { useChatState } from '../../hooks/useChatState';
-import { UseAppNavigationReturn } from '../../types/core-types';
+import { UseAppNavigationReturn } from '../../stores/store-types';
 import { getPageTitle } from '../../utils/appUtils';
+import { MCPToolCreate } from '../mcp/MCPToolCreate';
+import { PresetCreate } from '../preset/PresetCreate';
+import { PresetDetail } from '../preset/PresetDetail';
 import { RACPManager } from '../racp/RACPManager';
 import { SettingsManager } from '../settings/SettingManager';
+import { SubAgentCreate } from '../sub-agent/SubAgentCreate';
+import { ToolBuilderCreate } from '../tool/ToolBuilderCreate';
+import PresetManagerContainer from '../preset/PresetManagerContainer';
 
 interface ManagementViewProps {
   navigation: UseAppNavigationReturn;
@@ -76,7 +83,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
   } = appData;
 
   // Create handlers that combine navigation and data operations (like design/App.tsx)
-  const onCreatePreset = async (newPreset: any) => {
+  const onCreatePreset = async (newPreset: CreatePreset) => {
     const preset = await handleCreatePreset(newPreset);
     handleSelectPreset(preset);
     return preset;
@@ -88,7 +95,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     return tool;
   };
 
-  const onCreateAgent = (newAgent: any) => {
+  const onCreateAgent = async (newAgent: CreateAgentMetadata) => {
     const agent = handleCreateAgent(newAgent);
     setActiveSection('subagents');
     return agent;
@@ -129,159 +136,32 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
   const renderManagementContent = () => {
     // Handle creation modes first (like design/App.tsx)
     if (creatingPreset) {
-      return (
-        <div className="p-6">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center gap-3 mb-6">
-              <Button variant="outline" size="sm" onClick={handleBackToPresets} className="gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Back to Presets
-              </Button>
-              <h1 className="text-2xl font-semibold">Create New Preset</h1>
-            </div>
-            {/* TODO: Replace with actual PresetCreate component when available */}
-            <div className="bg-card border rounded-lg p-6">
-              <p className="text-muted-foreground">Preset creation form coming soon...</p>
-              <div className="flex gap-2 mt-4">
-                <Button
-                  onClick={() =>
-                    onCreatePreset({ name: 'New Preset', description: 'Created preset' })
-                  }
-                >
-                  Create Sample Preset
-                </Button>
-                <Button variant="outline" onClick={handleBackToPresets}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
+      return <PresetCreate onBack={handleBackToPresets} onCreate={onCreatePreset} />;
     }
 
     if (creatingMCPTool) {
-      return (
-        <div className="p-6">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center gap-3 mb-6">
-              <Button variant="outline" size="sm" onClick={handleBackToTools} className="gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Back to Tools
-              </Button>
-              <h1 className="text-2xl font-semibold">Add MCP Tool</h1>
-            </div>
-            {/* TODO: Replace with actual MCPToolCreate component when available */}
-            <div className="bg-card border rounded-lg p-6">
-              <p className="text-muted-foreground">MCP tool creation form coming soon...</p>
-              <div className="flex gap-2 mt-4">
-                <Button onClick={() => onCreateMCPTool({ name: 'New Tool', type: 'mcp' })}>
-                  Create Sample Tool
-                </Button>
-                <Button variant="outline" onClick={handleBackToTools}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
+      return <MCPToolCreate onBack={handleBackToTools} onCreate={onCreateMCPTool} />;
     }
 
     if (creatingAgent) {
       return (
-        <div className="p-6">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center gap-3 mb-6">
-              <Button variant="outline" size="sm" onClick={handleBackToAgents} className="gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Back to Agents
-              </Button>
-              <h1 className="text-2xl font-semibold">Create New Agent</h1>
-            </div>
-            {/* TODO: Replace with actual AgentCreate component when available */}
-            <div className="bg-card border rounded-lg p-6">
-              <p className="text-muted-foreground">Agent creation form coming soon...</p>
-              <div className="flex gap-2 mt-4">
-                <Button
-                  onClick={() => onCreateAgent({ name: 'New Agent', description: 'Created agent' })}
-                >
-                  Create Sample Agent
-                </Button>
-                <Button variant="outline" onClick={handleBackToAgents}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <SubAgentCreate onBack={handleBackToAgents} onCreate={onCreateAgent} presets={presets} />
       );
     }
 
     if (creatingCustomTool) {
-      return (
-        <div className="p-6">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center gap-3 mb-6">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleBackToToolBuilder}
-                className="gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Tool Builder
-              </Button>
-              <h1 className="text-2xl font-semibold">Create Custom Tool</h1>
-            </div>
-            {/* TODO: Replace with actual ToolBuilderCreate component when available */}
-            <div className="bg-card border rounded-lg p-6">
-              <p className="text-muted-foreground">Custom tool creation form coming soon...</p>
-              <div className="flex gap-2 mt-4">
-                <Button onClick={() => onCreateCustomTool({ name: 'New Custom Tool' })}>
-                  Create Sample Tool
-                </Button>
-                <Button variant="outline" onClick={handleBackToToolBuilder}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
+      return <ToolBuilderCreate onBack={handleBackToToolBuilder} onCreate={onCreateCustomTool} />;
     }
 
     // Handle preset detail view
     if (selectedPreset) {
       return (
-        <div className="p-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-3 mb-6">
-              <Button variant="outline" size="sm" onClick={handleBackToPresets} className="gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Back to Presets
-              </Button>
-              <h1 className="text-2xl font-semibold">{selectedPreset.name}</h1>
-            </div>
-            {/* TODO: Replace with actual PresetDetail component when available */}
-            <div className="bg-card border rounded-lg p-6">
-              <h3 className="text-lg font-medium mb-2">{selectedPreset.name}</h3>
-              <p className="text-muted-foreground mb-4">{selectedPreset.description}</p>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() =>
-                    onUpdatePreset({ ...selectedPreset, name: selectedPreset.name + ' (Updated)' })
-                  }
-                >
-                  Update Preset
-                </Button>
-                <Button variant="destructive" onClick={() => onDeletePreset(selectedPreset.id)}>
-                  Delete Preset
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <PresetDetail
+          onBack={handleBackToPresets}
+          preset={selectedPreset}
+          onUpdate={onUpdatePreset}
+          onDelete={onDeletePreset}
+        />
       );
     }
 
@@ -292,9 +172,17 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
         handleBackToChat();
         return null;
       case 'dashboard':
-        return <Dashboard onOpenChat={handleOpenChat} />;
+        return (
+          <Dashboard
+            onOpenChat={handleOpenChat}
+            presets={presets}
+            currentAgents={currentAgents}
+            loading={false}
+            onCreateAgent={handleStartCreateAgent}
+          />
+        );
       case 'presets':
-        return <PresetManager />;
+        return <PresetManagerContainer />;
       case 'subagents':
         if (currentAgents.length === 0 && !showEmptyState) {
           return (
@@ -316,7 +204,8 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
             </div>
           );
         }
-        return <SubAgentManager onOpenChat={handleOpenChat} />;
+        // Use renderer container wired with React Query + core services
+        return <SubAgentManagerContainer />;
       case 'models':
         return <ModelManager />;
       case 'tools':
