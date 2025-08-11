@@ -136,7 +136,11 @@ export function PresetManager({
               Create and manage isolated AI agent projects with dedicated knowledge bases
             </p>
           </div>
-          <Button onClick={() => setCreateWizardOpen(true)} className="gap-2">
+          <Button
+            onClick={() => setCreateWizardOpen(true)}
+            className="gap-2"
+            data-testid="btn-create-project"
+          >
             <Plus className="w-4 h-4" />
             Create Project
           </Button>

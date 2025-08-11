@@ -77,6 +77,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => 
                   : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
               } ${isCollapsed ? 'px-3' : 'px-3'}`}
               onClick={() => onSectionChange(item.id)}
+              data-testid={`nav-${item.id}`}
               title={isCollapsed ? item.label : undefined}
             >
               <Icon className="w-4 h-4 flex-shrink-0" />

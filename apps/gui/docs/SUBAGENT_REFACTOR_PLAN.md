@@ -13,16 +13,19 @@ Target Branch: `feature/subagent-refactor-integration`
 
 ## Requirements
 
-1) Data correctness
+1. Data correctness
+
 - After creating presets, the sub-agent create wizard must list them for selection.
 - Uses `@agentos/core` types (`CreateAgentMetadata`, `ReadonlyAgentMetadata`, `Preset`).
 - No `any`; use precise types and type guards when needed.
 
-2) UX parity
+2. UX parity
+
 - Use the same step-based layout as `apps/gui/design/components/AgentCreate.tsx` (Overview → Category → Preset → Settings).
 - Render as a full page (not a modal), like `PresetCreate`.
 
-3) Architecture
+3. Architecture
+
 - Mirror `PresetManagerContainer` pattern:
   - Container uses React Query (`useQuery`, `useMutation`) to fetch/update agents.
   - Presentational component handles UI only.
@@ -38,7 +41,7 @@ Target Branch: `feature/subagent-refactor-integration`
 - Refactor `SubAgentCreate` to new-UX, relying on container-provided data and callbacks.
 - Ensure `SubAgentManagerContainer` uses React Query consistently for list and mutations.
 - Reuse or add reusable components:
-  - `components/preset/PresetPicker.tsx`: 
+  - `components/preset/PresetPicker.tsx`:
     - New, shadcn/Radix-based picker for selecting a preset (list + search + category filters).
   - Reuse `PresetStatsChips`, `PresetCard` display patterns where helpful.
   - If needed, add `components/common/StepHeader.tsx` and `components/common/WizardProgress.tsx`.

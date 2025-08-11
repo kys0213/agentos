@@ -52,9 +52,9 @@ export const PresetPicker: React.FC<PresetPickerProps> = ({ presets, value, onCh
                   <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{p.description}</p>
                   <div className="mt-2">
                     <PresetStatsChips
-                      indexed={(p as any)?.knowledgeStats?.indexed}
-                      vectorized={(p as any)?.knowledgeStats?.vectorized}
-                      totalDocs={(p as any)?.knowledgeDocuments}
+                      indexed={p.knowledgeStats?.indexed}
+                      vectorized={p.knowledgeStats?.vectorized}
+                      totalDocs={p.knowledgeDocuments}
                     />
                   </div>
                 </div>
