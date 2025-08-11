@@ -1,7 +1,7 @@
 # Sub-Agent Integration & Refactor Plan
 
 Owner: GUI
-Status: Draft → Implementing
+Status: Completed
 Target Branch: `feature/subagent-refactor-integration`
 
 ## Goals
@@ -74,7 +74,7 @@ Target Branch: `feature/subagent-refactor-integration`
 3. [x] Refactor UI: Update `SubAgentCreate.tsx` to use a picker UI in the Preset step.
 4. [x] Add `PresetPicker.tsx` (new UI) and reuse `PresetStatsChips`.
 5. [x] Update `ManagementView` routing to use new container when `creatingAgent`.
-6. [ ] Verify end-to-end with Playwright: create preset → create agent → agent appears.
+6. [x] Verify end-to-end with Playwright: create preset → create agent → agent appears.
 7. [x] Documentation: Update this doc with decisions and follow-ups.
 
 ## Progress Notes
