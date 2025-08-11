@@ -28,7 +28,18 @@ export function PrestForm({
   onComplete,
   onSubmit,
 }: DynamicFormRendererProps) {
-  const [formData, setFormData] = useState<Partial<Preset>>({ ...preset });
+  // Initialize with safe defaults to avoid uncontrolled→controlled warnings
+  const initialForm: Partial<Preset> = {
+    name: '',
+    description: '',
+    systemPrompt: '',
+    category: ['research'],
+    llmBridgeConfig: {},
+    status: 'active' as any,
+    ...preset,
+  };
+
+  const [formData, setFormData] = useState<Partial<Preset>>(initialForm);
 
   const [selectedTools, setSelectedTools] = useState<McpToolDescription[]>(
     preset?.enabledMcps?.flatMap((mcp) => mcp.enabledTools) || []
@@ -105,7 +116,7 @@ export function PrestForm({
                 <div className="space-y-2">
                   <Label>Preset Name</Label>
                   <Input
-                    value={formData.name}
+                    value={formData.name ?? ''}
                     onChange={(e) => updateFormData('name', e.target.value)}
                     placeholder="e.g., Research Assistant"
                   />
@@ -113,7 +124,7 @@ export function PrestForm({
                 <div className="space-y-2">
                   <Label>Description</Label>
                   <Textarea
-                    value={formData.description}
+                    value={formData.description ?? ''}
                     onChange={(e) => updateFormData('description', e.target.value)}
                     placeholder="Describe what this agent specializes in..."
                     className="min-h-[100px]"
@@ -160,7 +171,7 @@ export function PrestForm({
                 <div className="space-y-2">
                   <Label>System Instructions</Label>
                   <Textarea
-                    value={formData.systemPrompt}
+                    value={formData.systemPrompt ?? ''}
                     onChange={(e) => updateFormData('systemPrompt', e.target.value)}
                     placeholder="You are a helpful assistant that..."
                     className="min-h-[200px]"
