@@ -242,13 +242,16 @@ interface SomeLibraryResponse {
 ## 8. 추가 지침 (Adapter/Pre-push/경계 설계)
 
 ### 8.1 Adapter(매핑) 계층 권장
+
 - Core/외부의 느슨한 타입을 앱 레이어 DTO로 변환한 뒤 UI에 주입합니다.
 - 예) IPC fetcher에서 `Preset`/`LlmBridgeConfig`를 `AppPreset`/`AppLlmBridgeConfig`로 매핑.
 
 ### 8.2 단언 최소화
+
 - `as any`/이중 단언은 금지합니다. `unknown` + 타입가드, 구체 타입/제네릭으로 대체합니다.
 
 ### 8.3 Pre‑push 타입 안전성 체크
+
 ```bash
 pnpm -r typecheck
 pnpm -r lint -- --max-warnings=0
@@ -256,6 +259,7 @@ npx ts-prune # dead export 확인
 ```
 
 ### 8.4 컨테이너/프레젠테이션 경계의 타입
+
 - 프레젠테이션: 동기 props만 소비(서버/IPC 접근 금지), DTO로 정규화된 타입만 사용
 - 컨테이너: React Query + IPC fetchers로 비동기/뮤테이션 처리, invalidate 키 표준 유지
 - 상태 도메인 불일치(예: UI draft vs core status)는 어댑터에서 명시적으로 매핑

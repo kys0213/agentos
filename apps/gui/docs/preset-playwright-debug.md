@@ -11,14 +11,16 @@ This document tracks errors found while reproducing the Preset creation/edit fun
 
 ## Observed Issues
 
-1) Uncontrolled → controlled input warning
+1. Uncontrolled → controlled input warning
+
 - Symptom: Console warning when opening the Create Project dialog.
 - Message: `Warning: A component is changing an uncontrolled input to be controlled.`
 - Context: Step 1 inputs in `PrestForm` use `value={formData.name}` / `value={formData.description}` when `formData` is initially `undefined` for those fields.
 - Likely root cause: Using `undefined` for controlled inputs. Should default to empty string.
 - Scope: `apps/gui/src/renderer/components/preset/PresetForm.tsx`
 
-2) Hard crash after "Create Preset"
+2. Hard crash after "Create Preset"
+
 - Symptom: After completing the wizard and clicking "Create Preset", the page crashes.
 - Console error (multiple times): `TypeError: Cannot read properties of undefined (reading 'includes')`
 - Where: Inside `PresetManager` when computing category filters/counters and when filtering by `selectedCategory`.
@@ -27,10 +29,12 @@ This document tracks errors found while reproducing the Preset creation/edit fun
   - Category counters like `p.category.includes('research')`.
   - Filtering logic:
     ```ts
-    const matchesCategory = selectedCategory === 'all' || preset.category.includes(selectedCategory);
+    const matchesCategory =
+      selectedCategory === 'all' || preset.category.includes(selectedCategory);
     ```
 
-3) Additional safety gaps (not yet thrown but risky)
+3. Additional safety gaps (not yet thrown but risky)
+
 - In filtering: `preset.description.toLowerCase()` will throw if `description` is undefined.
 - In rendering: `preset.category` is used directly for display in multiple places (e.g., card subtitle) and may render as `undefined` or throw when used as array.
 

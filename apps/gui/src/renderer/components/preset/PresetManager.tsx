@@ -59,22 +59,30 @@ export function PresetManager({
     {
       id: 'research',
       label: 'Research',
-      count: sourcePresets.filter((p) => (Array.isArray(p.category) ? p.category : []).includes('research')).length,
+      count: sourcePresets.filter((p) =>
+        (Array.isArray(p.category) ? p.category : []).includes('research')
+      ).length,
     },
     {
       id: 'development',
       label: 'Development',
-      count: sourcePresets.filter((p) => (Array.isArray(p.category) ? p.category : []).includes('development')).length,
+      count: sourcePresets.filter((p) =>
+        (Array.isArray(p.category) ? p.category : []).includes('development')
+      ).length,
     },
     {
       id: 'creative',
       label: 'Creative',
-      count: sourcePresets.filter((p) => (Array.isArray(p.category) ? p.category : []).includes('creative')).length,
+      count: sourcePresets.filter((p) =>
+        (Array.isArray(p.category) ? p.category : []).includes('creative')
+      ).length,
     },
     {
       id: 'analytics',
       label: 'Analytics',
-      count: sourcePresets.filter((p) => (Array.isArray(p.category) ? p.category : []).includes('analytics')).length,
+      count: sourcePresets.filter((p) =>
+        (Array.isArray(p.category) ? p.category : []).includes('analytics')
+      ).length,
     },
   ];
 
@@ -103,10 +111,7 @@ export function PresetManager({
   };
 
   // Calculate aggregated stats
-  const totalKnowledgeDocs = sourcePresets.reduce(
-    (sum, p) => sum + (p.knowledgeDocuments ?? 0),
-    0
-  );
+  const totalKnowledgeDocs = sourcePresets.reduce((sum, p) => sum + (p.knowledgeDocuments ?? 0), 0);
   const totalIndexedDocs = sourcePresets.reduce(
     (sum, p) => sum + (p.knowledgeStats?.indexed || 0),
     0

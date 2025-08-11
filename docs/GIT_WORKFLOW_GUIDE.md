@@ -204,6 +204,7 @@ npx ts-prune  # dead export 확인
 ```
 
 ### **리뷰 체크리스트(요약)**
+
 - [ ] any 사용 없음(unknown + 타입가드/제네릭/Adapter로 대체)
 - [ ] dead code/미사용 export 없음(ts-prune/ESLint)
 - [ ] 컨테이너/프레젠테이션 분리(프레젠테이션은 동기 props만)

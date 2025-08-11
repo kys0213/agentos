@@ -18,7 +18,12 @@ export const PresetDetailContainer: React.FC<PresetDetailContainerProps> = ({
 }) => {
   const queryClient = useQueryClient();
 
-  const { data: preset, status, error, refetch } = useQuery({
+  const {
+    data: preset,
+    status,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['preset', presetId],
     queryFn: () => fetchPresetById(presetId),
     staleTime: 60_000,
@@ -87,7 +92,9 @@ export const PresetDetailContainer: React.FC<PresetDetailContainerProps> = ({
         <div className="text-sm text-red-600">
           Failed to load preset{error ? `: ${(error as Error).message}` : ''}
         </div>
-        <Button variant="outline" onClick={() => refetch()}>Retry</Button>
+        <Button variant="outline" onClick={() => refetch()}>
+          Retry
+        </Button>
       </Card>
     );
   }
@@ -106,4 +113,3 @@ export const PresetDetailContainer: React.FC<PresetDetailContainerProps> = ({
 };
 
 export default PresetDetailContainer;
-
