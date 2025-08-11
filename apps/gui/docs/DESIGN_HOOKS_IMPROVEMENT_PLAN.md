@@ -1,5 +1,7 @@
 # Design 폴더 상태 관리 Hooks 개선 계획서
 
+Status: Completed
+
 ## Requirements
 
 ### 성공 조건
