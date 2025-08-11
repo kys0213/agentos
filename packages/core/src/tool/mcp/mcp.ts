@@ -15,11 +15,10 @@ import EventEmitter from 'node:events';
 import { Scheduler } from '../../common/scheduler/scheduler';
 import { utils, validation } from '@agentos/lang';
 
-const { isNonEmptyArray, isPlainObject } = validation;
+const { isNonEmptyArray, isPlainObject, isError } = validation;
 
 // 타입 가드 함수들 (임시로 직접 정의 - lang 패키지의 is.* 타입들이 any이므로)
 const isString = (value: unknown): value is string => typeof value === 'string';
-const isError = (value: unknown): value is Error => value instanceof Error;
 const isArray = (value: unknown): value is unknown[] => Array.isArray(value);
 
 const { safeZone } = utils;

@@ -11,10 +11,7 @@ import {
 import { CursorPagination, CursorPaginationResult } from '../common/pagination/cursor-pagination';
 import { validation } from '@agentos/lang';
 
-const { isNonEmptyArray } = validation;
-
-// TODO: lang 패키지의 isError가 제대로 타입 가드로 동작할 때까지 임시 정의
-const isError = (value: unknown): value is Error => value instanceof Error;
+const { isNonEmptyArray, isError } = validation;
 
 /**
  * 간단한 Agent 매니저 구현체
