@@ -6,6 +6,9 @@ import { FileBasedChatSessionCheckpointFile } from './file-based-chat-session-ch
 import { FileBasedChatSessionMessageHistoryFile } from './file-based-chat-session-message-history-file';
 import { FileBasedChatSessionMetadataFile } from './file-based-chat-session-metadata-file';
 import { FileBasedSessionMetadata } from './file-based-session.metadata';
+import { validation } from '@agentos/lang';
+
+const { isNonEmptyArray, isPlainObject } = validation;
 
 export class FileBasedSessionStorage {
   // TODO LRU Cache 적용
@@ -98,10 +101,12 @@ export class FileBasedSessionStorage {
             createdAt: new Date(meta.latestSummary.createdAt),
           }
         : undefined,
-      recentMessages: meta.recentMessages.map((message) => ({
-        ...message,
-        createdAt: new Date(message.createdAt),
-      })),
+      recentMessages: isNonEmptyArray(meta.recentMessages) 
+        ? meta.recentMessages.map((message) => ({
+            ...message,
+            createdAt: new Date(message.createdAt),
+          }))
+        : [],
       updatedAt: new Date(meta.updatedAt),
       createdAt: new Date(meta.createdAt),
     };

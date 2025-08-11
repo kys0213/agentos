@@ -1,6 +1,8 @@
 import { DocumentSplitter, SplitterOptions } from './document-splitter';
 import { KnowledgeChunk, KnowledgeDocumentMeta, BreadcrumbNode } from '../types';
-import { str } from '@agentos/lang';
+import { str, validation } from '@agentos/lang';
+
+const { isNonEmptyArray, isNonEmptyString } = validation;
 
 interface Heading {
   level: number; // 1..6
@@ -24,7 +26,7 @@ export class MarkdownSplitter implements DocumentSplitter {
     const chunks: KnowledgeChunk[] = [];
 
     // If no headings, fallback to sliding window over entire doc
-    if (headings.length === 0) {
+    if (!isNonEmptyArray(headings)) {
       this.pushSlidingWindows(meta, content, 0, maxChars, overlap, [], chunks);
       return chunks;
     }
@@ -61,7 +63,7 @@ export class MarkdownSplitter implements DocumentSplitter {
     while (start < section.length) {
       const end = Math.min(section.length, start + maxChars);
       const text = section.slice(start, end).trim();
-      if (text.length > 0) {
+      if (isNonEmptyString(text)) {
         const chunkId = `${meta.id}:${sectionStartOffset + start}:${chunkSeq++}` as any;
         out.push({
           docId: meta.id,
