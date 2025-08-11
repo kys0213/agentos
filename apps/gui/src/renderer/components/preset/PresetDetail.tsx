@@ -1,13 +1,19 @@
+import { Preset } from '@agentos/core';
+import {
+  ArrowLeft,
+  BarChart3,
+  Brain,
+  Calendar,
+  Code,
+  Database,
+  FileText,
+  Save,
+  Trash2,
+  Users,
+  Zap,
+} from 'lucide-react';
 import { useState } from 'react';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
-import { Slider } from '../ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { CategoryIcon } from '../common/CategoryIcon';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,24 +25,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../ui/alert-dialog';
-import {
-  ArrowLeft,
-  Save,
-  Trash2,
-  Brain,
-  Database,
-  Code,
-  BarChart3,
-  Users,
-  Calendar,
-  Zap,
-  FileText,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-} from 'lucide-react';
-import { Preset } from '@agentos/core';
-import { CategoryIcon } from '../common/CategoryIcon';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Textarea } from '../ui/textarea';
+import PresetBasicFields from './PresetBasicFields';
+import PresetModelSettings from './PresetModelSettings';
+import { PresetStatusBadge } from './PresetStatusBadge';
 
 interface PresetDetailProps {
   preset: Preset;
@@ -65,49 +61,6 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
     onBack();
   };
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'research':
-        return <Database className="w-5 h-5" />;
-      case 'development':
-        return <Code className="w-5 h-5" />;
-      case 'creative':
-        return <FileText className="w-5 h-5" />;
-      case 'analytics':
-        return <BarChart3 className="w-5 h-5" />;
-      default:
-        return <Brain className="w-5 h-5" />;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return (
-          <Badge className="gap-1 status-active">
-            <CheckCircle className="w-3 h-3" />
-            Active
-          </Badge>
-        );
-      case 'idle':
-        return (
-          <Badge className="gap-1 status-idle">
-            <Clock className="w-3 h-3" />
-            Idle
-          </Badge>
-        );
-      case 'inactive':
-        return (
-          <Badge variant="outline" className="gap-1 status-inactive-subtle">
-            <AlertCircle className="w-3 h-3" />
-            Inactive
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -129,7 +82,7 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                 <h1 className="text-2xl font-semibold text-foreground">{editedPreset.name}</h1>
                 <p className="text-muted-foreground capitalize">{editedPreset.category} preset</p>
               </div>
-              {getStatusBadge(editedPreset.status)}
+              <PresetStatusBadge status={editedPreset.status} />
             </div>
           </div>
 
@@ -264,151 +217,22 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                     <h3 className="text-lg font-semibold text-foreground mb-4">
                       Basic Information
                     </h3>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="name">Preset Name</Label>
-                        <Input
-                          id="name"
-                          value={editedPreset.name}
-                          onChange={(e) => updatePreset({ name: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="description">Description</Label>
-                        <Textarea
-                          id="description"
-                          value={editedPreset.description}
-                          onChange={(e) => updatePreset({ description: e.target.value })}
-                          className="mt-1"
-                          rows={3}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="category">Category</Label>
-                          <Select
-                            value={editedPreset.category[0]}
-                            onValueChange={(value) => updatePreset({ category: [value] })}
-                          >
-                            <SelectTrigger className="mt-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="research">Research</SelectItem>
-                              <SelectItem value="development">Development</SelectItem>
-                              <SelectItem value="creative">Creative</SelectItem>
-                              <SelectItem value="analytics">Analytics</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div>
-                          <Label htmlFor="status">Status</Label>
-                          <Select
-                            value={editedPreset.status}
-                            onValueChange={(value: 'active' | 'idle' | 'inactive') =>
-                              updatePreset({ status: value })
-                            }
-                          >
-                            <SelectTrigger className="mt-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="active">Active</SelectItem>
-                              <SelectItem value="idle">Idle</SelectItem>
-                              <SelectItem value="inactive">Inactive</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    </div>
+                    <PresetBasicFields
+                      name={editedPreset.name}
+                      description={editedPreset.description}
+                      category={editedPreset.category}
+                      status={editedPreset.status}
+                      onChange={updatePreset}
+                      showStatus
+                    />
                   </Card>
 
                   <Card className="p-6">
                     <h3 className="text-lg font-semibold text-foreground mb-4">Model Settings</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="model">Model</Label>
-                        <Select
-                          value={editedPreset.llmBridgeConfig?.model}
-                          onValueChange={(value) =>
-                            updatePreset({
-                              llmBridgeConfig: { ...editedPreset.llmBridgeConfig, model: value },
-                            })
-                          }
-                        >
-                          <SelectTrigger className="mt-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="gpt-4">GPT-4</SelectItem>
-                            <SelectItem value="claude-3-5-sonnet">Claude 3.5 Sonnet</SelectItem>
-                            <SelectItem value="claude-3-haiku">Claude 3 Haiku</SelectItem>
-                            <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <Label>Temperature: {editedPreset.llmBridgeConfig?.temperature}</Label>
-                        <Slider
-                          value={[editedPreset.llmBridgeConfig?.temperature]}
-                          onValueChange={([value]) =>
-                            updatePreset({
-                              llmBridgeConfig: {
-                                ...editedPreset.llmBridgeConfig,
-                                temperature: value,
-                              },
-                            })
-                          }
-                          max={1}
-                          min={0}
-                          step={0.1}
-                          className="mt-2"
-                        />
-                      </div>
-
-                      <div>
-                        <Label>Max Tokens: {editedPreset.llmBridgeConfig?.maxTokens}</Label>
-                        <Slider
-                          value={[editedPreset.llmBridgeConfig?.maxTokens]}
-                          onValueChange={([value]) =>
-                            updatePreset({
-                              llmBridgeConfig: {
-                                ...editedPreset.llmBridgeConfig,
-                                maxTokens: value,
-                              },
-                            })
-                          }
-                          max={8000}
-                          min={100}
-                          step={100}
-                          className="mt-2"
-                        />
-                      </div>
-
-                      <div>
-                        <Label>Top P: {editedPreset.llmBridgeConfig?.topP}</Label>
-                        <Slider
-                          value={[editedPreset.llmBridgeConfig?.topP]}
-                          onValueChange={([value]) =>
-                            updatePreset({
-                              llmBridgeConfig: {
-                                ...editedPreset.llmBridgeConfig,
-                                topP: value,
-                              },
-                            })
-                          }
-                          max={1}
-                          min={0}
-                          step={0.1}
-                          className="mt-2"
-                        />
-                      </div>
-                    </div>
+                    <PresetModelSettings
+                      config={editedPreset.llmBridgeConfig}
+                      onChange={updatePreset}
+                    />
                   </Card>
                 </div>
 

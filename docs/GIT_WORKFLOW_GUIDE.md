@@ -195,6 +195,22 @@ pnpm build     # 빌드 오류 확인
 - [ ] 브랜치가 원격에 푸시되었는가?
 - [ ] PR 제목과 설명이 명확한가?
 
+### **Pre-push 품질 체크(권장)**
+
+```bash
+pnpm -r typecheck
+pnpm -r lint -- --max-warnings=0
+npx ts-prune  # dead export 확인
+```
+
+### **리뷰 체크리스트(요약)**
+
+- [ ] any 사용 없음(unknown + 타입가드/제네릭/Adapter로 대체)
+- [ ] dead code/미사용 export 없음(ts-prune/ESLint)
+- [ ] 컨테이너/프레젠테이션 분리(프레젠테이션은 동기 props만)
+- [ ] IPC fetcher는 ServiceContainer + Protocol만 호출하며 DTO 매핑 수행
+- [ ] React Query queryKey 표준 사용 및 invalidate 일관성
+
 ### **Pull Request 승인 대기 중 체크리스트**
 
 - [ ] 브랜치를 삭제하지 않았는가?
