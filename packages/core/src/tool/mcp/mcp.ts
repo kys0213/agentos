@@ -178,7 +178,9 @@ export class Mcp extends EventEmitter {
 
       return {
         isError: result.isError == true,
-        contents: isArray(result.content) ? result.content as Array<McpContent> : [result.content as McpContent],
+        contents: isArray(result.content)
+          ? (result.content as Array<McpContent>)
+          : [result.content as McpContent],
         resumptionToken: freshResumptionToken,
       };
     } catch (e) {

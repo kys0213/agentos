@@ -36,14 +36,14 @@ export class FileBasedChatSessionCheckpointFile {
     try {
       const content = await fs.readFile(this.fullPath, 'utf-8');
       const parsed = json.parseJsonWithFallback(content, null, {
-        validator: isPlainObject
+        validator: isPlainObject,
       });
-      
+
       if (!parsed) {
         console.warn(`Invalid checkpoint format in ${this.fullPath}`);
         return undefined;
       }
-      
+
       return parsed as Checkpoint;
     } catch (error) {
       console.error(`Failed to read checkpoint from ${this.fullPath}:`, error);

@@ -101,7 +101,7 @@ export class FileBasedSessionStorage {
             createdAt: new Date(meta.latestSummary.createdAt),
           }
         : undefined,
-      recentMessages: isNonEmptyArray(meta.recentMessages) 
+      recentMessages: isNonEmptyArray(meta.recentMessages)
         ? meta.recentMessages.map((message) => ({
             ...message,
             createdAt: new Date(message.createdAt),
