@@ -50,7 +50,7 @@ Other form elements use accessible labels (e.g., “Agent Name”, “Descriptio
 
 ## E2E Tests (Reference)
 
-- `apps/gui/e2e/web-gui-basic.e2e.test.ts`
+- `apps/gui/e2e/web-gui-basic.e2e.test.ts` (supersedes `web-gui-basic.test.ts`)
 - `apps/gui/e2e/subagent-create-flow.e2e.test.ts`
 
 These tests mirror the MCP flow using the same selectors. They should not be executed in CI unless explicitly allowed; use them as living documentation for MCP scenarios.
