@@ -30,9 +30,9 @@ Scope: apps/gui – Sub-Agent create flow verification for plan item 6
 
 ## TODOs
 
-- [x] Wire `onCreated` in `ManagementView` to toggle `showEmptyState` to `true` after creation.
+- [x] Wire `onCreated` in `ManagementView` to toggle `showEmptyState` to `true` after creation. (superseded by next item)
 - [x] Verify with Playwright that the created agent appears in the Sub Agents list.
-- [ ] (Optional) Refactor gating to rely on React Query only and consolidate agent state.
+- [x] Refactor: Always mount React Query container in Sub Agents; remove local empty-state gating.
 
 ## Notes
 
