@@ -362,7 +362,12 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button onClick={handleCreate} disabled={!isFormValid()} className="gap-2">
+            <Button
+              onClick={handleCreate}
+              disabled={!isFormValid()}
+              className="gap-2"
+              data-testid="btn-create-preset"
+            >
               <Save className="w-4 h-4" />
               Create Preset
             </Button>

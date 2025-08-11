@@ -45,3 +45,7 @@ coverage
 
 # Design files
 apps/gui/design/current/image.png
+
+# Playwright
+**/**/playwright-report/
+**/**/test-results/

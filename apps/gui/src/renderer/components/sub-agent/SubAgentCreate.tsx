@@ -1,4 +1,4 @@
-import { Agent, AgentMetadata, CreateAgentMetadata, Preset } from '@agentos/core';
+import { CreateAgentMetadata, ReadonlyPreset } from '@agentos/core';
 import {
   ArrowLeft,
   Bot,
@@ -31,7 +31,7 @@ import PresetPicker from '../preset/PresetPicker';
 interface AgentCreateProps {
   onBack: () => void;
   onCreate: (agent: CreateAgentMetadata) => void;
-  presets: Preset[];
+  presets: ReadonlyPreset[];
 }
 
 export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) {
@@ -165,7 +165,12 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
           </div>
 
           <div className="flex items-center gap-2">
-            <Button onClick={handleCreate} disabled={!validateFormData(formData)} className="gap-2">
+            <Button
+              onClick={handleCreate}
+              disabled={!validateFormData(formData)}
+              className="gap-2"
+              data-testid="btn-final-create-agent"
+            >
               <Save className="w-4 h-4" />
               Create Agent
             </Button>
@@ -403,7 +408,9 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                     onChange={(id) => {
                       setSelectedPresetId(id);
                       const selected = presets.find((p) => p.id === id);
-                      updateFormData({ preset: selected as any });
+                      if (selected) {
+                        updateFormData({ preset: selected });
+                      }
                     }}
                   />
                 </Card>

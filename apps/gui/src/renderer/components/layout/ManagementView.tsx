@@ -145,7 +145,12 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     }
 
     if (creatingAgent) {
-      return <SubAgentCreateContainer onBack={handleBackToAgents} />;
+      return (
+        <SubAgentCreateContainer
+          onBack={handleBackToAgents}
+          onCreated={() => setShowEmptyState(true)}
+        />
+      );
     }
 
     if (creatingCustomTool) {
