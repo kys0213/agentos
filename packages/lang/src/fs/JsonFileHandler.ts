@@ -71,10 +71,7 @@ export class JsonFileHandler<T> {
 
     const parseResult =
       reviver || reviveDates
-        ? jsonUtils.safeJsonParseWithReviver<T>(
-            content,
-            reviver ?? jsonUtils.dateReviver,
-          )
+        ? jsonUtils.safeJsonParseWithReviver<T>(content, reviver ?? jsonUtils.dateReviver)
         : jsonUtils.safeJsonParse<T>(content);
     if (!parseResult.success) {
       if (useDefaultOnError && this.defaultValue !== undefined) {

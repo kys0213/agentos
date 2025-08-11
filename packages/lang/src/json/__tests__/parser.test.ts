@@ -4,10 +4,10 @@ describe('JSON parser utilities', () => {
   it('applies provided reviver', () => {
     const json = '{"value":"42"}';
     const res = safeJsonParseWithReviver<{ value: number }>(json, (key, value) =>
-      key === 'value' ? Number(value) : value,
+      key === 'value' ? Number(value) : value
     );
     expect(res.success).toBe(true);
-    expect(res.success && (res.result.value === 42)).toBe(true);
+    expect(res.success && res.result.value === 42).toBe(true);
   });
 
   it('converts ISO strings to Date with safeJsonParseWithDates', () => {

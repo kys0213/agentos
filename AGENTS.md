@@ -27,6 +27,7 @@ Welcome to the AgentOS repository. This file summarizes key resources and comman
 - Install dependencies: `pnpm install`
 - Build all packages: `pnpm build`
 - Run tests: `pnpm test`
+- Format and fix lint: `pnpm format` (run before committing)
 - **GUI 앱 개발**: `cd apps/gui && pnpm run dev` ⭐
 
 Additional design documents for each package live under `<apps|packages>/<n>/docs`.

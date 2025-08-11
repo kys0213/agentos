@@ -35,12 +35,12 @@ export function safeJsonParse<T = unknown>(json: string): Result<T> {
  */
 export function safeJsonParseWithReviver<T = unknown>(
   json: string,
-  reviver: (key: string, value: unknown) => unknown,
+  reviver: (key: string, value: unknown) => unknown
 ): Result<T> {
   try {
     const parsed = JSON.parse(
       json,
-      reviver as (this: unknown, key: string, value: unknown) => unknown,
+      reviver as (this: unknown, key: string, value: unknown) => unknown
     );
     return {
       success: true,
