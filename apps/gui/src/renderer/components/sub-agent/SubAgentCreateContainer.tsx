@@ -56,13 +56,8 @@ export const SubAgentCreateContainer: React.FC<SubAgentCreateContainerProps> = (
   }
 
   return (
-    <SubAgentCreate
-      onBack={onBack}
-      onCreate={(data) => mutation.mutate(data)}
-      presets={presets}
-    />
+    <SubAgentCreate onBack={onBack} onCreate={(data) => mutation.mutate(data)} presets={presets} />
   );
 };
 
 export default SubAgentCreateContainer;
-

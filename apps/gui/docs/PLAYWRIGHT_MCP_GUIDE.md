@@ -30,15 +30,13 @@ Other form elements use accessible labels (e.g., “Agent Name”, “Descriptio
 
 ## Typical MCP Script Flow
 
-1) Start dev server in one terminal:
-
+1. Start dev server in one terminal:
    - `cd apps/gui`
    - `pnpm dev:web`
 
-2) In MCP tool, open the browser to `http://localhost:5173`.
+2. In MCP tool, open the browser to `http://localhost:5173`.
 
-3) Preset → Agent creation flow:
-
+3. Preset → Agent creation flow:
    - Click `nav-presets`
    - Click `btn-create-project`
    - Fill “Preset Name” and “Description” (placeholders as in UI)
@@ -47,8 +45,7 @@ Other form elements use accessible labels (e.g., “Agent Name”, “Descriptio
    - Click `btn-create-agent`
    - Fill “Agent Name”, “Description”, select the newly created preset, finalize via `btn-final-create-agent`
 
-4) Console error capture:
-
+4. Console error capture:
    - Collect `console.error` and React warnings; any error or uncaught exception fails the flow.
 
 ## E2E Tests (Reference)
@@ -57,4 +54,3 @@ Other form elements use accessible labels (e.g., “Agent Name”, “Descriptio
 - `apps/gui/e2e/subagent-create-flow.e2e.test.ts`
 
 These tests mirror the MCP flow using the same selectors. They should not be executed in CI unless explicitly allowed; use them as living documentation for MCP scenarios.
-

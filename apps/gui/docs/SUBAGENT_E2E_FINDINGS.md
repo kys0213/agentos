@@ -24,9 +24,9 @@ Scope: apps/gui – Sub-Agent create flow verification for plan item 6
 
 ## Fix Plan (Minimal, Safe)
 
-1) ManagementView: Pass `onCreated` to `SubAgentCreateContainer` and, on success, set `showEmptyState` to `true` so that `SubAgentManagerContainer` mounts. React Query then fetches and renders the newly created agent (since `invalidateQueries(['agents'])` is already in place).
+1. ManagementView: Pass `onCreated` to `SubAgentCreateContainer` and, on success, set `showEmptyState` to `true` so that `SubAgentManagerContainer` mounts. React Query then fetches and renders the newly created agent (since `invalidateQueries(['agents'])` is already in place).
 
-2) Follow-up (nice-to-have): Remove/relax gating based on `currentAgents` and let `SubAgentManagerContainer` handle its own empty state using query data to avoid dual sources of truth.
+2. Follow-up (nice-to-have): Remove/relax gating based on `currentAgents` and let `SubAgentManagerContainer` handle its own empty state using query data to avoid dual sources of truth.
 
 ## TODOs
 

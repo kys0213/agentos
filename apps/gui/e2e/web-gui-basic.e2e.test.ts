@@ -35,4 +35,3 @@ test.describe('Web GUI Basic Functionality', () => {
     await expect(page.getByText('Dashboard')).toBeVisible();
   });
 });
-
