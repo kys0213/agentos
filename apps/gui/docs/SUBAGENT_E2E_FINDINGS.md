@@ -30,12 +30,11 @@ Scope: apps/gui – Sub-Agent create flow verification for plan item 6
 
 ## TODOs
 
-- [ ] Wire `onCreated` in `ManagementView` to toggle `showEmptyState` to `true` after creation.
-- [ ] Verify with Playwright that the created agent appears in the Sub Agents list.
+- [x] Wire `onCreated` in `ManagementView` to toggle `showEmptyState` to `true` after creation.
+- [x] Verify with Playwright that the created agent appears in the Sub Agents list.
 - [ ] (Optional) Refactor gating to rely on React Query only and consolidate agent state.
 
 ## Notes
 
 - Query invalidation on creation (`invalidateQueries(['agents'])`) already exists in `SubAgentCreateContainer`.
 - MockIpcChannel persists created agents in-memory, and `fetchAgentMetadatas()` reads from the same source.
-
