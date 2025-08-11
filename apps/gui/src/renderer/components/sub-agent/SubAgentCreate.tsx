@@ -26,6 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Textarea } from '../ui/textarea';
 import { agentMetadataSchema } from '../../../shared/schema/agent.schemas';
+import PresetPicker from '../preset/PresetPicker';
 
 interface AgentCreateProps {
   onBack: () => void;
@@ -47,6 +48,7 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
     preset: undefined,
     keywords: [],
   });
+  const [selectedPresetId, setSelectedPresetId] = useState<string | undefined>(undefined);
 
   // Tags management
   const [newTag, setNewTag] = useState('');
@@ -395,21 +397,15 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                     and behavior patterns.
                   </p>
 
-                  <div className="space-y-6">
-                    {presets.map((preset) => (
-                      <div key={preset.id}>
-                        <div>{preset.name}</div>
-                        <div>{preset.description}</div>
-                        <div>{preset.category.join(', ')}</div>
-                        <div>{preset.author}</div>
-                        <div>{preset.createdAt.toLocaleDateString()}</div>
-                        <div>{preset.updatedAt.toLocaleDateString()}</div>
-                        <div>{preset.version}</div>
-                        <div>{preset.systemPrompt}</div>
-                        <div>{preset.enabledMcps?.map((mcp) => mcp.name).join(', ')}</div>
-                      </div>
-                    ))}
-                  </div>
+                  <PresetPicker
+                    presets={presets}
+                    value={selectedPresetId}
+                    onChange={(id) => {
+                      setSelectedPresetId(id);
+                      const selected = presets.find((p) => p.id === id);
+                      updateFormData({ preset: selected as any });
+                    }}
+                  />
                 </Card>
 
                 {/* Navigation */}

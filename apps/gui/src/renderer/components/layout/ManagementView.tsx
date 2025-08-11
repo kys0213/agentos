@@ -21,6 +21,7 @@ import PresetDetailContainer from '../preset/PresetDetailContainer';
 import { RACPManager } from '../racp/RACPManager';
 import { SettingsManager } from '../settings/SettingManager';
 import { SubAgentCreate } from '../sub-agent/SubAgentCreate';
+import SubAgentCreateContainer from '../sub-agent/SubAgentCreateContainer';
 import { ToolBuilderCreate } from '../tool/ToolBuilderCreate';
 import PresetManagerContainer from '../preset/PresetManagerContainer';
 
@@ -144,9 +145,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     }
 
     if (creatingAgent) {
-      return (
-        <SubAgentCreate onBack={handleBackToAgents} onCreate={onCreateAgent} presets={presets} />
-      );
+      return <SubAgentCreateContainer onBack={handleBackToAgents} />;
     }
 
     if (creatingCustomTool) {
@@ -198,7 +197,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
           );
         }
         // Use renderer container wired with React Query + core services
-        return <SubAgentManagerContainer />;
+        return <SubAgentManagerContainer onCreateAgent={handleStartCreateAgent} />;
       case 'models':
         return <ModelManager />;
       case 'tools':
