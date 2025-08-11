@@ -11,6 +11,10 @@ export interface JsonFileOptions extends FileOptions {
   prettyPrint?: boolean;
   /** 들여쓰기 크기 (prettyPrint가 true일 때, default: 2) */
   indent?: number;
+  /** JSON.parse reviver 함수 */
+  reviver?: (key: string, value: unknown) => unknown;
+  /** ISO 8601 날짜 문자열을 Date 객체로 변환 */
+  reviveDates?: boolean;
 }
 
 /**
@@ -46,7 +50,7 @@ export class JsonFileHandler<T> {
    * 안전한 JSON 파일 읽기
    */
   async read(options: JsonFileOptions = {}): Promise<Result<T>> {
-    const { useDefaultOnError = false } = options;
+    const { useDefaultOnError = false, reviver, reviveDates = false } = options;
 
     const readResult = await FileUtils.readSafe(this.filePath, options);
 
@@ -65,7 +69,13 @@ export class JsonFileHandler<T> {
       return { success: false, reason: new Error('Empty JSON file') };
     }
 
-    const parseResult = jsonUtils.safeJsonParse<T>(content);
+    const parseResult =
+      reviver || reviveDates
+        ? jsonUtils.safeJsonParseWithReviver<T>(
+            content,
+            reviver ?? jsonUtils.dateReviver,
+          )
+        : jsonUtils.safeJsonParse<T>(content);
     if (!parseResult.success) {
       if (useDefaultOnError && this.defaultValue !== undefined) {
         return { success: true, result: this.defaultValue };

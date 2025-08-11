@@ -31,6 +31,52 @@ export function safeJsonParse<T = unknown>(json: string): Result<T> {
 }
 
 /**
+ * reviver를 지원하는 JSON 파싱
+ */
+export function safeJsonParseWithReviver<T = unknown>(
+  json: string,
+  reviver: (key: string, value: unknown) => unknown,
+): Result<T> {
+  try {
+    const parsed = JSON.parse(
+      json,
+      reviver as (this: unknown, key: string, value: unknown) => unknown,
+    );
+    return {
+      success: true,
+      result: parsed as T,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      reason: error,
+    };
+  }
+}
+
+const ISO_8601_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
+
+/**
+ * ISO 8601 문자열을 Date 객체로 변환하는 reviver
+ */
+export function dateReviver(_key: string, value: unknown): unknown {
+  if (typeof value === 'string' && ISO_8601_REGEX.test(value)) {
+    const date = new Date(value);
+    if (!isNaN(date.getTime())) {
+      return date;
+    }
+  }
+  return value;
+}
+
+/**
+ * ISO 8601 날짜 문자열을 Date로 변환하면서 JSON 파싱
+ */
+export function safeJsonParseWithDates<T = unknown>(json: string): Result<T> {
+  return safeJsonParseWithReviver<T>(json, dateReviver);
+}
+
+/**
  * 기본값을 가진 JSON 파싱
  */
 export function parseJsonWithFallback<T>(
