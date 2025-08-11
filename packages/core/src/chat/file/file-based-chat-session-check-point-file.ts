@@ -1,6 +1,9 @@
 import path from 'path';
 import fs from 'fs/promises';
 import { Checkpoint } from '../chat-session';
+import { json, validation } from '@agentos/lang';
+
+const { isPlainObject } = validation;
 
 export class FileBasedChatSessionCheckpointFile {
   private readonly fileName = 'checkpoint.json';
@@ -30,8 +33,22 @@ export class FileBasedChatSessionCheckpointFile {
       return;
     }
 
-    const content = await fs.readFile(this.fullPath, 'utf-8');
-    return JSON.parse(content);
+    try {
+      const content = await fs.readFile(this.fullPath, 'utf-8');
+      const parsed = json.parseJsonWithFallback(content, null, {
+        validator: isPlainObject,
+      });
+
+      if (!parsed) {
+        console.warn(`Invalid checkpoint format in ${this.fullPath}`);
+        return undefined;
+      }
+
+      return parsed as Checkpoint;
+    } catch (error) {
+      console.error(`Failed to read checkpoint from ${this.fullPath}:`, error);
+      return undefined;
+    }
   }
 
   async readOrThrow(): Promise<Checkpoint> {

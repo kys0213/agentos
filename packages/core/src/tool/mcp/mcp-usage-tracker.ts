@@ -1,4 +1,7 @@
 import { McpUsageLog, McpUsageStats, McpUsageTracker } from './mcp-types';
+import { validation } from '@agentos/lang';
+
+const { isNonEmptyArray } = validation;
 
 /**
  * 메모리 기반 MCP 사용량 추적기 구현
@@ -45,7 +48,7 @@ export class InMemoryUsageTracker implements McpUsageTracker {
   getUsageStats(toolId?: string): McpUsageStats {
     const targetLogs = this.getUsageLogs(toolId);
 
-    if (targetLogs.length === 0) {
+    if (!isNonEmptyArray(targetLogs)) {
       return {
         totalUsage: 0,
         successRate: 0,
@@ -57,15 +60,14 @@ export class InMemoryUsageTracker implements McpUsageTracker {
     const successCount = targetLogs.filter((log) => log.status === 'success').length;
     const errorCount = targetLogs.filter((log) => log.status === 'error').length;
     const totalDuration = targetLogs.reduce((sum, log) => sum + log.duration, 0);
-    const lastUsedAt =
-      targetLogs.length > 0
-        ? new Date(Math.max(...targetLogs.map((log) => log.timestamp.getTime())))
-        : undefined;
+    const lastUsedAt = isNonEmptyArray(targetLogs)
+      ? new Date(Math.max(...targetLogs.map((log) => log.timestamp.getTime())))
+      : undefined;
 
     return {
       totalUsage: targetLogs.length,
-      successRate: targetLogs.length > 0 ? successCount / targetLogs.length : 0,
-      averageDuration: targetLogs.length > 0 ? totalDuration / targetLogs.length : 0,
+      successRate: isNonEmptyArray(targetLogs) ? successCount / targetLogs.length : 0,
+      averageDuration: isNonEmptyArray(targetLogs) ? totalDuration / targetLogs.length : 0,
       lastUsedAt,
       errorCount,
     };
