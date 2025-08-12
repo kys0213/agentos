@@ -64,5 +64,3 @@ export function normalizeToCoreContentArray(input: unknown): CoreContent[] {
   // 기타(숫자/불리언 등)
   return [{ contentType: 'text', value: String(input) } as CoreContent];
 }
-
-
