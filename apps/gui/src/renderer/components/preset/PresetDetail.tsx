@@ -46,6 +46,16 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
   const [activeTab, setActiveTab] = useState('overview');
   const [hasChanges, setHasChanges] = useState(false);
 
+  const formatDate = (d?: Date | string): string => {
+    try {
+      if (!d) return '-';
+      const date = typeof d === 'string' ? new Date(d) : d;
+      return isNaN(date.getTime()) ? '-' : date.toLocaleDateString();
+    } catch {
+      return '-';
+    }
+  };
+
   const updatePreset = (updates: Partial<Preset>) => {
     setEditedPreset((prev) => ({ ...prev, ...updates }));
     setHasChanges(true);
@@ -189,9 +199,7 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                 <Calendar className="w-4 h-4 text-gray-600" />
               </div>
               <div>
-                <p className="text-lg font-semibold text-foreground">
-                  {editedPreset.updatedAt.toLocaleDateString()}
-                </p>
+                <p className="text-lg font-semibold text-foreground">{formatDate(editedPreset.updatedAt as any)}</p>
                 <p className="text-xs text-muted-foreground">Last Updated</p>
               </div>
             </div>
