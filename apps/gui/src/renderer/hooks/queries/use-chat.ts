@@ -88,15 +88,14 @@ export const useSendChatMessage = (agentId: string | undefined) => {
       );
 
       // 응답 메시지들을 MessageHistory로 매핑(간단 매핑)
-      const assistantMessages: MessageHistory[] = result.messages.map((m, idx) => ({
-        messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
-        role: m.role === 'assistant' ? 'assistant' : (m.role as any),
-        content:
-          m.content.contentType === 'text'
-            ? { contentType: 'text', value: (m.content as any).value }
-            : { contentType: 'text', value: JSON.stringify(m.content) },
-        createdAt: new Date(),
-      }));
+      const assistantMessages: MessageHistory[] = result.messages.map(
+        (m, idx): MessageHistory => ({
+          messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
+          role: m.role,
+          content: m.content,
+          createdAt: new Date(),
+        })
+      );
 
       return { userMessage, assistantMessages } as const;
     },

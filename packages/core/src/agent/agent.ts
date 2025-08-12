@@ -1,5 +1,5 @@
 import { Message, UserMessage } from 'llm-bridge-spec';
-import { AgentMetadata, ReadonlyAgentMetadata } from './agent-metadata';
+import { ReadonlyAgentMetadata } from './agent-metadata';
 
 /**
  * Agent 상태 타입
