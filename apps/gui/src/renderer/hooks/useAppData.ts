@@ -15,6 +15,22 @@ export function useAppData(): UseAppDataReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // 데이터를 다시 로드하는 함수 (Agent 생성 후 동기화용)
+  const reloadAgents = async () => {
+    try {
+      console.log('🔄 Reloading agents from AgentService...');
+
+      if (ServiceContainer.has('agent')) {
+        const agentService = ServiceContainer.getOrThrow('agent');
+        const coreAgents = await agentService.getAllAgentMetadatas();
+        console.log('✅ Agents reloaded:', coreAgents);
+        setCurrentAgents(coreAgents);
+      }
+    } catch (error) {
+      console.error('❌ Failed to reload agents:', error);
+    }
+  };
+
   // Core 서비스들에서 데이터 로드
   useEffect(() => {
     const loadData = async () => {
@@ -187,7 +203,12 @@ export function useAppData(): UseAppDataReturn {
         keywords: newAgentData.keywords || [],
       });
 
+      // 즉시 로컬 상태 업데이트 + 전체 데이터 재로드로 이중 보장
       setCurrentAgents((prev) => [...prev, agent]);
+
+      // 추가 안전장치: 전체 Agent 데이터 재로드
+      setTimeout(() => reloadAgents(), 100);
+
       return agent;
     } catch (error) {
       console.error('Failed to create agent:', error);
@@ -292,5 +313,6 @@ export function useAppData(): UseAppDataReturn {
     handleDeletePreset,
     getMentionableAgents,
     getActiveAgents,
+    reloadAgents, // Agent 생성 후 수동 동기화용
   };
 }
