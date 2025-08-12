@@ -167,7 +167,11 @@ export class DefaultAgentSession implements AgentSession {
     chatSession: ChatSession,
     options?: { abortSignal?: AbortSignal; timeout?: number; maxTurnCount?: number }
   ): Promise<LlmBridgeResponse> {
-    const response = await this.llmBridge.invoke({ messages }, { tools });
+    this.ensureNotAborted(options?.abortSignal);
+    const response = await this.invokeWithTimeout(
+      () => this.llmBridge.invoke({ messages }, { tools }),
+      options?.timeout
+    );
 
     const assistantMessage: AssistantMessage = {
       role: 'assistant',
@@ -200,9 +204,7 @@ export class DefaultAgentSession implements AgentSession {
     options?: { abortSignal?: AbortSignal; timeout?: number; maxTurnCount?: number }
   ): Promise<LlmBridgeResponse> {
     for (let i = 0; i < (options?.maxTurnCount ?? 3); i++) {
-      if (options?.abortSignal?.aborted) {
-        throw new Error('stopped by abort signal');
-      }
+      this.ensureNotAborted(options?.abortSignal);
 
       for (const toolCall of toolCalls) {
         const { mcp, tool } = await this.mcpRegistry.getToolOrThrow(toolCall.name);
@@ -219,7 +221,10 @@ export class DefaultAgentSession implements AgentSession {
         await chatSession.appendMessage(toolMessage);
       }
 
-      const llmResponse = await this.llmBridge.invoke({ messages }, { tools });
+      const llmResponse = await this.invokeWithTimeout(
+        () => this.llmBridge.invoke({ messages }, { tools }),
+        options?.timeout
+      );
       if (
         !Array.isArray((llmResponse as any).toolCalls) ||
         (llmResponse as any).toolCalls.length === 0
@@ -238,5 +243,21 @@ export class DefaultAgentSession implements AgentSession {
       }
       return { contentType: content.type, value: Buffer.from(content.data) };
     });
+  }
+
+  private ensureNotAborted(signal?: AbortSignal) {
+    if (signal?.aborted) {
+      throw new Error('stopped by abort signal');
+    }
+  }
+
+  private async invokeWithTimeout<T>(fn: () => Promise<T>, timeoutMs?: number): Promise<T> {
+    if (!timeoutMs || timeoutMs <= 0) return fn();
+    return await Promise.race<Promise<T>>([
+      fn(),
+      new Promise<T>((_, reject) => {
+        setTimeout(() => reject(new Error('timeout')), timeoutMs);
+      }),
+    ]);
   }
 }
