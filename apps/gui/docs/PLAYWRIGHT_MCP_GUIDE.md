@@ -48,9 +48,8 @@ Other form elements use accessible labels (e.g., “Agent Name”, “Descriptio
 4. Console error capture:
    - Collect `console.error` and React warnings; any error or uncaught exception fails the flow.
 
-## E2E Tests (Reference)
+## Policy: No GUI E2E tests
 
-- `apps/gui/e2e/web-gui-basic.e2e.test.ts` (supersedes `web-gui-basic.test.ts`)
-- `apps/gui/e2e/subagent-create-flow.e2e.test.ts`
-
-These tests mirror the MCP flow using the same selectors. They should not be executed in CI unless explicitly allowed; use them as living documentation for MCP scenarios.
+- GUI 기능 검증은 dev 서버(`pnpm dev:web`) + Playwright MCP 디버깅으로 진행합니다.
+- 새로운 GUI E2E 테스트 파일을 추가하지 않습니다. 기존 참고용 E2E는 문서적 참고로만 유지합니다.
+- MCP 스크립트/플레이북을 통해 동일 시나리오를 재현하고, 셀렉터는 본 문서의 data-testid를 사용하세요.

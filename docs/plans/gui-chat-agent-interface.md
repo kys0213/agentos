@@ -35,12 +35,12 @@ interface Agent {
 - [ ] Align MockIpcChannel.chat to return MultiModalContent shape
 - [ ] Verify and adjust `useSendChatMessage` mapping (array normalization)
 - [ ] Ensure ChatViewContainer session handling uses returned `sessionId`
-- [ ] Add Playwright E2E test for chat send/receive
-- [ ] Run unit + e2e tests, fix regressions
-- [ ] Update docs (this plan) and brief notes in code where needed
+- [ ] Validate via dev server + Playwright MCP (no GUI E2E tests)
+- [ ] Run unit tests, fix regressions
+- [ ] Update docs (this plan + GUI testing policy)
 
 ## 작업 순서
 1. Mock fix: return `{ contentType, value }[]` (완료 조건: normalize passes; UI shows text)
 2. Verify hooks/container integration and minimally adjust (완료 조건: types OK)
-3. Add E2E: create preset/agent → chat send/receive (완료 조건: test green)
-4. Run all tests, polish (완료 조건: CI-equivalent passes locally)
+3. Validate flows using Playwright MCP scripts against dev:web (완료 조건: manual MCP run passes)
+4. Run unit tests, polish (완료 조건: local checks pass)
