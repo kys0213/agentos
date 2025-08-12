@@ -95,17 +95,17 @@ export interface SidebarState {
 ## Todo
 
 - [x] Typography/base tokens: set body 14px, h2/h5/control sizes; adopt OKLCH color tokens.
-- [ ] Input/button sizing: align line-heights, paddings, radii to mock.
+- [x] Input/button sizing: align line-heights, paddings, radii to mock.
 - [x] Sidebar: add "Archived (n)" filter pill; section headers (📌 Pinned, Older).
 - [x] Conversation cards: implement cell layout (avatar/title/menu/preview/badges/timestamp) + hover/active.
-- [ ] Empty states: design-matching placeholders for no conversations/agents.
+- [x] Empty states: design-matching placeholders for no conversations/agents.
 - [x] Thread header: render active agent chips; fallback text for none.
 - [x] Available Agents: list rows with status pill + count summary.
 - [x] Transcript bubbles: avatar, role label, timestamp alignment and spacing.
 - [x] Composer: mention button/icon size, disabled Send state style.
 - [x] Debug UI gating: hide TanStack button unless `VITE_DEVTOOLS=true`.
-- [ ] Tests: visual contract via component tests (DOM structure, classnames), unit tests for state (pinned/grouping/archived).
-- [ ] Docs: update apps/gui/docs/FRONTEND_IMPLEMENTATION_ROADMAP.md with checkboxes.
+- [x] Tests: visual contract via component tests (DOM structure, classnames), unit tests for state (pinned/grouping/archived).
+- [x] Docs: update apps/gui/docs/FRONTEND_IMPLEMENTATION_ROADMAP.md with checkboxes.
 
 ## 작업 순서
 
