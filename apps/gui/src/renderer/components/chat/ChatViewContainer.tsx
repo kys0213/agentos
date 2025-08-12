@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   useActiveAgents,
   useChatHistory,
@@ -16,6 +16,14 @@ export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) =>
 
   const initialAgentId = activeAgents[0]?.id ?? mentionableAgents[0]?.id;
   const [selectedAgentId, setSelectedAgentId] = useState<string | undefined>(initialAgentId);
+
+  // Ensure selectedAgentId is set once agents load
+  useEffect(() => {
+    if (!selectedAgentId) {
+      const next = activeAgents[0]?.id ?? mentionableAgents[0]?.id;
+      if (next) setSelectedAgentId(next);
+    }
+  }, [selectedAgentId, activeAgents, mentionableAgents]);
 
   const { data: messages = [] } = useChatHistory(selectedAgentId);
 

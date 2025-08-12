@@ -48,8 +48,10 @@ Other form elements use accessible labels (e.g., “Agent Name”, “Descriptio
 4. Console error capture:
    - Collect `console.error` and React warnings; any error or uncaught exception fails the flow.
 
-## Policy: No GUI E2E tests
+## Playwright Running Tips
 
-- GUI 기능 검증은 dev 서버(`pnpm dev:web`) + Playwright MCP 디버깅으로 진행합니다.
-- 새로운 GUI E2E 테스트 파일을 추가하지 않습니다. 기존 참고용 E2E는 문서적 참고로만 유지합니다.
-- MCP 스크립트/플레이북을 통해 동일 시나리오를 재현하고, 셀렉터는 본 문서의 data-testid를 사용하세요.
+- Use console reporters to avoid HTML report/UIs:
+  - `pnpm --filter @agentos/apps-gui test:e2e:line`
+  - `pnpm --filter @agentos/apps-gui test:e2e:json`
+- Config defaults to `reporter: line`; override with `PW_REPORTER` if needed.
+- Tests reuse an existing dev server at `http://localhost:5173` when present; otherwise they launch via `webServer`.
