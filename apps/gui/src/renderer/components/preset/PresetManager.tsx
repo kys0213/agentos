@@ -15,7 +15,7 @@ import {
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-// Modal imports removed for create funnel
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { ScrollArea } from '../ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { KnowledgeBaseManager } from './KnowledgeBaseManager';
