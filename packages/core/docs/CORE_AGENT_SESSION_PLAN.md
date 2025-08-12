@@ -27,7 +27,7 @@
 - [x] Implement `DefaultAgentSession` (direct LLM/Tool orchestration)
 - [x] Integrate `SimpleAgent.createSession()` with `DefaultAgentSession`
 - [x] Implement interaction events (prompt/consent/sensitive input) and `provide*` handlers
-- [ ] Abort/timeout/error branches tests
+- [x] Abort/timeout/error branches tests
 - [ ] ChatManager cohesion tests with file-based storage (incremental history)
 
 ### Phase 3 — File-based Session/Storage (Core)
