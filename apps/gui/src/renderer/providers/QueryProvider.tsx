@@ -8,11 +8,19 @@ interface QueryProviderProps {
 }
 
 export const QueryProvider: React.FC<QueryProviderProps> = ({ children }) => {
+  const showDevtools =
+    // Vite env preferred
+    ((typeof import.meta !== 'undefined' && (import.meta as any)?.env?.VITE_DEVTOOLS === 'true') ||
+      // Fallback to process.env for tests/build
+      (typeof process !== 'undefined' && process.env?.VITE_DEVTOOLS === 'true')) &&
+    // Only in dev mode
+    ((typeof import.meta !== 'undefined' && (import.meta as any)?.env?.DEV) ||
+      process.env.NODE_ENV === 'development');
   return (
     <QueryClientProvider client={queryClient}>
       {children}
       {/* 개발 환경에서만 DevTools 표시 */}
-      {process.env.NODE_ENV === 'development' && (
+      {showDevtools && (
         <ReactQueryDevtools initialIsOpen={false} position="bottom" />
       )}
     </QueryClientProvider>

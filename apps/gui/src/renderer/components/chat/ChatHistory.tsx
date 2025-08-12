@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { Avatar, AvatarFallback } from '../ui/avatar';
 import MessageRenderer from './MessageRenderer';
 
 interface ChatHistoryProps {
@@ -104,6 +105,11 @@ export function ChatHistory({
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="text-[10px]">
+                            {agent.name.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
                         <h4 className="text-sm font-medium truncate">{agent.name}</h4>
                       </div>
                       <Button
@@ -161,6 +167,11 @@ export function ChatHistory({
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="text-[10px]">
+                            {agent.name.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
                         <h4 className="text-sm font-medium truncate">{agent.name}</h4>
                       </div>
                       <Button
