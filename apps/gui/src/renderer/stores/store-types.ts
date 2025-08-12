@@ -85,4 +85,5 @@ export interface UseAppDataReturn {
   handleDeletePreset: (presetId: string) => Promise<void>;
   getMentionableAgents: () => ReadonlyAgentMetadata[];
   getActiveAgents: () => ReadonlyAgentMetadata[];
+  reloadAgents: () => Promise<void>; // Agent 생성 후 수동 동기화용
 }

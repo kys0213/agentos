@@ -15,7 +15,7 @@ export function parseMessageContent(message: MessageHistory): string {
     return message.content;
   }
 
-  // MessageHistory 타입 (Core 패키지)
+  // MessageHistory 타입 (Core 표준: 배열)
   if (Array.isArray(message.content)) {
     return message.content
       .filter((c) => c.contentType === 'text')
@@ -23,9 +23,10 @@ export function parseMessageContent(message: MessageHistory): string {
       .join('\n');
   }
 
-  // Single content object
+  // 단일 콘텐츠(레거시) 호환 처리
   if (typeof message.content === 'object' && 'contentType' in message.content) {
-    return message.content.contentType === 'text' ? message.content.value : '';
+    const legacy = message.content as any;
+    return legacy.contentType === 'text' ? legacy.value : '';
   }
 
   return '';

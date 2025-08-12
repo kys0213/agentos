@@ -5,9 +5,8 @@ import { Button } from './ui/button';
 import { useAppNavigation } from '../hooks/useAppNavigation';
 import { useAppData } from '../hooks/useAppData';
 
-// Temporary imports for components that will be migrated in Phase 2
-// TODO: These will be replaced with actual migrated components
-import { ChatView } from './chat/ChatView';
+// Chat 컨테이너 적용
+import { ChatViewContainer } from './chat/ChatViewContainer';
 import ManagementView from './layout/ManagementView';
 import { bootstrap, isBootstrapped } from '../bootstrap';
 
@@ -63,16 +62,10 @@ const NewAppLayout: React.FC = () => {
       );
     }
 
-    // TODO: Replace with new design ChatView in Phase 2
+    // 컨테이너 기반 ChatView 렌더링
     return (
       <div className="h-screen bg-background">
-        <ChatView
-          onNavigate={setActiveSection}
-          agents={currentAgents}
-          mentionableAgents={currentAgents}
-          activeAgents={currentAgents}
-          // Pass agents and mentionable agents when ChatView is updated
-        />
+        <ChatViewContainer onNavigate={setActiveSection} />
       </div>
     );
   }

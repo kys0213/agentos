@@ -1,4 +1,10 @@
-import { Agent, AgentChatResult, AgentExecuteOptions, ReadonlyAgentMetadata } from '@agentos/core';
+import {
+  Agent,
+  AgentChatResult,
+  AgentExecuteOptions,
+  AgentSession,
+  ReadonlyAgentMetadata,
+} from '@agentos/core';
 import { UserMessage } from 'llm-bridge-spec';
 import { AgentProtocol } from '../../shared/types/agent-protocol';
 
@@ -11,6 +17,10 @@ export class IpcAgent implements Agent {
     private readonly agentProtocol: AgentProtocol,
     private readonly agentId: string
   ) {}
+
+  createSession(options?: { sessionId?: string; presetId?: string }): Promise<AgentSession> {
+    throw new Error('Method not implemented.');
+  }
 
   async getMetadata(): Promise<ReadonlyAgentMetadata> {
     const metadata = await this.agentProtocol.getAgentMetadata(this.agentId);

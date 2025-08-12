@@ -15,6 +15,22 @@ export function useAppData(): UseAppDataReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // 데이터를 다시 로드하는 함수 (Agent 생성 후 동기화용)
+  const reloadAgents = async () => {
+    try {
+      console.log('🔄 Reloading agents from AgentService...');
+
+      if (ServiceContainer.has('agent')) {
+        const agentService = ServiceContainer.getOrThrow('agent');
+        const coreAgents = await agentService.getAllAgentMetadatas();
+        console.log('✅ Agents reloaded:', coreAgents);
+        setCurrentAgents(coreAgents);
+      }
+    } catch (error) {
+      console.error('❌ Failed to reload agents:', error);
+    }
+  };
+
   // Core 서비스들에서 데이터 로드
   useEffect(() => {
     const loadData = async () => {
@@ -52,9 +68,21 @@ export function useAppData(): UseAppDataReturn {
           console.warn('⚠️ PresetService not found in ServiceContainer');
         }
 
-        // TODO: Agent 데이터는 현재 Core에 없으므로 임시로 빈 배열
-        // 실제로는 AgentManager나 별도 서비스에서 로드해야 함
-        setCurrentAgents([]);
+        // Agent Service를 통해 실제 에이전트 로드
+        console.log('🔄 Loading agents from AgentService...');
+
+        if (ServiceContainer.has('agent')) {
+          const agentService = ServiceContainer.getOrThrow('agent');
+          console.log('📦 AgentService found, calling getAllAgentMetadatas()...');
+
+          const coreAgents = await agentService.getAllAgentMetadatas();
+          console.log('✅ Agents loaded from service:', coreAgents);
+
+          setCurrentAgents(coreAgents);
+        } else {
+          console.warn('⚠️ AgentService not found in ServiceContainer');
+          setCurrentAgents([]);
+        }
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
         console.error('Failed to load app data:', error);
@@ -175,7 +203,12 @@ export function useAppData(): UseAppDataReturn {
         keywords: newAgentData.keywords || [],
       });
 
+      // 즉시 로컬 상태 업데이트 + 전체 데이터 재로드로 이중 보장
       setCurrentAgents((prev) => [...prev, agent]);
+
+      // 추가 안전장치: 전체 Agent 데이터 재로드
+      setTimeout(() => reloadAgents(), 100);
+
       return agent;
     } catch (error) {
       console.error('Failed to create agent:', error);
@@ -280,5 +313,6 @@ export function useAppData(): UseAppDataReturn {
     handleDeletePreset,
     getMentionableAgents,
     getActiveAgents,
+    reloadAgents, // Agent 생성 후 수동 동기화용
   };
 }

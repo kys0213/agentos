@@ -87,14 +87,15 @@ export class FileBasedChatSession implements ChatSession {
    * Append a message to the chat session
    * @param message - The message to append
    */
-  async appendMessage(message: Message): Promise<void> {
-    this.metadata.recentMessages.push({
+  async appendMessage(message: Message): Promise<MessageHistory> {
+    const history: MessageHistory = {
       messageId: this.nextMessageId(),
       createdAt: new Date(),
       ...message,
-    });
-
+    };
+    this.metadata.recentMessages.push(history);
     this.metadata.totalMessages++;
+    return history;
   }
 
   async getHistories(options?: CursorPagination): Promise<CursorPaginationResult<MessageHistory>> {

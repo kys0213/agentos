@@ -1,5 +1,6 @@
 import { Message, UserMessage } from 'llm-bridge-spec';
-import { AgentMetadata, ReadonlyAgentMetadata } from './agent-metadata';
+import { ReadonlyAgentMetadata } from './agent-metadata';
+import type { AgentSession } from './agent-session';
 
 /**
  * Agent 상태 타입
@@ -37,6 +38,11 @@ export interface Agent {
    * @returns 응답 메시지들
    */
   chat(messages: UserMessage[], options?: AgentExecuteOptions): Promise<AgentChatResult>;
+
+  /**
+   * 세션 생성 (세션 중심 DX)
+   */
+  createSession(options?: { sessionId?: string; presetId?: string }): Promise<AgentSession>;
 
   /**
    * Agent의 메타데이터를 가져옵니다.

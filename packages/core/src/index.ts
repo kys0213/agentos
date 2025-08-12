@@ -4,12 +4,14 @@ export * from './chat/chat-session-metata';
 export * from './chat/file/file-based-chat-session';
 export * from './chat/file/file-based-session-storage';
 export * from './chat/file/file-based-chat.manager';
+export * from './chat/content';
 
 export * from './agent/agent';
 export * from './agent/simple-agent';
 export * from './agent/agent-manager';
 export * from './agent/simple-agent-manager';
 export * from './agent/agent-metadata';
+export * from './agent/agent-session';
 
 export * from './tool/mcp/mcp';
 export * from './tool/mcp/mcp-config';

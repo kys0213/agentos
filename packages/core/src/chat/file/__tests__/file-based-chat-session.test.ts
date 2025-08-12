@@ -119,6 +119,73 @@ describe('FileBasedChatSession', () => {
       expect(mockStorage.saveMessageHistories).toHaveBeenCalled();
       expect(mockStorage.saveCheckpoint).toHaveBeenCalled();
     });
+
+    it('커밋 시 체크포인트 메타데이터가 정확해야 한다', async () => {
+      const firstCreatedAt = new Date();
+      const testMessages: Message[] = [
+        { role: 'user', content: { contentType: 'text', value: 'm1' } },
+        { role: 'assistant', content: { contentType: 'text', value: 'm2' } },
+        {
+          role: 'tool',
+          name: 'dummy',
+          toolCallId: 'tc-1',
+          content: [
+            { contentType: 'text', value: 't1' },
+            { contentType: 'file', value: Buffer.from('b') },
+          ] as any,
+        } as any,
+      ];
+
+      // 첫 메시지 생성 시각 고정
+      jest.spyOn(global, 'Date').mockImplementationOnce(() => firstCreatedAt as any);
+      await session.appendMessage(testMessages[0]);
+      await session.appendMessage(testMessages[1]);
+      await session.appendMessage(testMessages[2]);
+
+      await session.commit();
+
+      expect(mockStorage.saveCheckpoint).toHaveBeenCalledWith(
+        'test-session',
+        expect.objectContaining({
+          checkpointId: expect.any(String),
+          message: expect.objectContaining({
+            role: 'system',
+            content: expect.objectContaining({ contentType: 'text', value: 'compressed message' }),
+          }),
+          coveringUpTo: firstCreatedAt,
+        })
+      );
+    });
+  });
+
+  describe('tool message (array content)', () => {
+    it('배열 콘텐츠를 가진 tool 메시지를 저장해야 한다', async () => {
+      const toolMessage: Message = {
+        role: 'tool',
+        name: 'dummy-tool',
+        toolCallId: 'tc-1',
+        content: [
+          { contentType: 'text', value: 'result text' },
+          { contentType: 'file', value: Buffer.from('file-bytes') },
+        ],
+      } as Message;
+
+      await session.appendMessage(toolMessage);
+      await session.commit();
+
+      expect(mockStorage.saveMessageHistories).toHaveBeenCalledWith(
+        'test-session',
+        expect.arrayContaining([
+          expect.objectContaining({
+            role: 'tool',
+            content: expect.arrayContaining([
+              { contentType: 'text', value: 'result text' },
+              expect.objectContaining({ contentType: 'file' }),
+            ]),
+          }),
+        ])
+      );
+    });
   });
 
   describe('getHistories', () => {
@@ -183,6 +250,44 @@ describe('FileBasedChatSession', () => {
       expect(result.items[0]).toEqual(histories[1]);
       expect(result.items[1]).toEqual(histories[2]);
       expect(result.nextCursor).toBe('3');
+    });
+
+    it('커밋 후 페이지네이션에서도 배열 콘텐츠가 유지되어야 한다', async () => {
+      const msgs: Message[] = [
+        { role: 'user', content: { contentType: 'text', value: 'u' } },
+        { role: 'assistant', content: { contentType: 'text', value: 'a1' } },
+        {
+          role: 'tool',
+          name: 'dummy',
+          toolCallId: 'tc-1',
+          content: [
+            { contentType: 'text', value: 'tool-text' },
+            { contentType: 'file', value: Buffer.from('bytes') },
+          ] as any,
+        } as any,
+        { role: 'assistant', content: { contentType: 'text', value: 'a2' } },
+      ];
+
+      for (const m of msgs) {
+        await session.appendMessage(m);
+      }
+      await session.commit();
+
+      // saveMessageHistories로 전달된 데이터를 기반으로 read() 동작을 흉내냄
+      const flushed = mockStorage.saveMessageHistories.mock.calls[0][1] as any[];
+      mockStorage.read.mockImplementation(async function* () {
+        for (const h of flushed) yield h;
+      });
+
+      const page = await session.getHistories({ cursor: '1', limit: 2, direction: 'forward' });
+      expect(page.items.map((i) => i.role)).toEqual(['tool', 'assistant']);
+      const toolMsg = page.items[0] as any;
+      expect(Array.isArray(toolMsg.content)).toBe(true);
+      const arr = toolMsg.content as any[];
+      expect(arr[0]).toEqual({ contentType: 'text', value: 'tool-text' });
+      expect(arr[1].contentType).toBe('file');
+      const fileVal: any = arr[1].value;
+      expect(Buffer.isBuffer(fileVal) || (fileVal && fileVal.type === 'Buffer')).toBe(true);
     });
   });
 
