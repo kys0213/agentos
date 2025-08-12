@@ -1,4 +1,4 @@
-import { AgentMetadata, MessageHistory, Preset, ReadonlyAgentMetadata } from '@agentos/core';
+import { AgentMetadata, MessageHistory, ReadonlyAgentMetadata } from '@agentos/core';
 import {
   Bot,
   CheckCircle,
@@ -11,7 +11,7 @@ import {
   Users,
   Zap,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -25,120 +25,23 @@ interface ChatViewProps {
   agents: ReadonlyAgentMetadata[];
   mentionableAgents: ReadonlyAgentMetadata[];
   activeAgents: ReadonlyAgentMetadata[];
+  messages: Readonly<MessageHistory>[];
+  selectedAgentId?: string;
+  onSelectAgent: (agentId: string) => void;
+  onSendMessage: (messageContent: string, mentionedAgents: AgentMetadata[]) => void;
 }
 
-export function ChatView({ onNavigate, agents, mentionableAgents, activeAgents }: ChatViewProps) {
-  const [selectedChatId, setSelectedChatId] = useState<string | null>('chat-1');
-
-  const preset: Readonly<Preset> = {
-    id: 'preset-research-001',
-    name: 'Research Assistant',
-    description: 'A research assistant that can help with analyzing research data',
-    author: 'John Doe',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    version: '1.0.0',
-    systemPrompt: 'You are a research assistant that can help with analyzing research data',
-    enabledMcps: [],
-    llmBridgeName: 'openai',
-    llmBridgeConfig: {},
-    status: 'active',
-    usageCount: 0,
-    knowledgeDocuments: 0,
-    knowledgeStats: {
-      indexed: 0,
-      vectorized: 0,
-      totalSize: 0,
-    },
-    category: ['research'],
-  };
-
-  const [messages, setMessages] = useState<Readonly<MessageHistory>[]>([
-    {
-      messageId: 'msg-1',
-      role: 'user',
-      content: {
-        contentType: 'text',
-        value: 'Hello! I need help with analyzing some research data. Can you assist me?',
-      },
-      createdAt: new Date(Date.now() - 1000 * 60 * 30),
-    },
-    {
-      messageId: 'msg-2',
-      role: 'assistant',
-      content: {
-        contentType: 'text',
-        value:
-          "I'd be happy to help you analyze your research data! Could you share more details about the type of data you're working with and what specific analysis you need?",
-      },
-      createdAt: new Date(Date.now() - 1000 * 60 * 29),
-      agentMetadata: {
-        id: 'agent-research-001',
-        name: 'Research Assistant',
-        description: 'A research assistant that can help with analyzing research data',
-        icon: '🔍',
-        keywords: ['research', 'data', 'analysis'],
-        preset: preset,
-        sessionCount: 1,
-        lastUsed: new Date(Date.now() - 1000 * 60 * 29),
-        status: 'active',
-        usageCount: 15,
-      },
-    },
-    {
-      messageId: 'msg-3',
-      role: 'user',
-      content: {
-        contentType: 'text',
-        value:
-          "It's survey data from about 500 respondents. I need to identify key trends and create some visualizations.",
-      },
-      createdAt: new Date(Date.now() - 1000 * 60 * 25),
-    },
-    {
-      messageId: 'msg-4',
-      role: 'assistant',
-      content: {
-        contentType: 'text',
-        value:
-          'Perfect! For survey data analysis and visualization, I can help you with statistical analysis and creating meaningful charts. Let me start by asking about your survey structure...',
-      },
-      createdAt: new Date(Date.now() - 1000 * 60 * 24),
-      agentMetadata: {
-        id: 'agent-research-001',
-        name: 'Research Assistant',
-        description: 'A research assistant that can help with analyzing research data',
-        icon: '🔍',
-        keywords: ['research', 'data', 'analysis'],
-        preset: {
-          id: 'preset-research-001',
-          name: 'Research Assistant',
-          description: 'A research assistant that can help with analyzing research data',
-          author: 'John Doe',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          version: '1.0.0',
-          systemPrompt: 'You are a research assistant that can help with analyzing research data',
-          enabledMcps: [],
-          llmBridgeName: 'openai',
-          llmBridgeConfig: {},
-          status: 'active',
-          usageCount: 0,
-          knowledgeDocuments: 0,
-          knowledgeStats: {
-            indexed: 0,
-            vectorized: 0,
-            totalSize: 0,
-          },
-          category: ['research'],
-        },
-        status: 'active',
-        sessionCount: 1,
-        lastUsed: new Date(Date.now() - 1000 * 60 * 24),
-        usageCount: 10,
-      },
-    },
-  ]);
+export const ChatView: React.FC<ChatViewProps> = ({
+  onNavigate,
+  agents,
+  mentionableAgents,
+  activeAgents,
+  messages,
+  selectedAgentId,
+  onSelectAgent,
+  onSendMessage,
+}) => {
+  const selectedChatId = useMemo(() => selectedAgentId, [selectedAgentId]);
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -184,21 +87,7 @@ export function ChatView({ onNavigate, agents, mentionableAgents, activeAgents }
   };
 
   const handleSendMessage = (messageContent: string, mentionedAgents: AgentMetadata[]) => {
-    // Add user message
-    const userMessage: MessageHistory = {
-      role: 'user',
-      content: {
-        contentType: 'text',
-        value: messageContent,
-      },
-      createdAt: new Date(),
-      agentMetadata: mentionedAgents.length > 0 ? mentionedAgents[0] : undefined,
-      messageId: 'msg-1',
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-
-    // TODO agent 와 대화하기
+    onSendMessage(messageContent, mentionedAgents);
   };
 
   return (
@@ -244,8 +133,10 @@ export function ChatView({ onNavigate, agents, mentionableAgents, activeAgents }
 
         <div className="flex-1 min-h-0">
           <ChatHistory
-            selectedChatId={selectedChatId || undefined}
-            onSelectChat={setSelectedChatId}
+            agents={agents}
+            selectedChatId={selectedChatId}
+            onSelectChat={onSelectAgent}
+            lastMessageByAgentId={{}}
           />
         </div>
       </div>
@@ -369,4 +260,4 @@ export function ChatView({ onNavigate, agents, mentionableAgents, activeAgents }
       </div>
     </div>
   );
-}
+};

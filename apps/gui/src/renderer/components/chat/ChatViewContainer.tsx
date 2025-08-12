@@ -1,5 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { useActiveAgents, useChatHistory, useMentionableAgents, useSendChatMessage } from '../../hooks/queries/use-chat';
+import {
+  useActiveAgents,
+  useChatHistory,
+  useMentionableAgents,
+  useSendChatMessage,
+} from '../../hooks/queries/use-chat';
 import { ChatView } from './ChatView';
 
 export const ChatViewContainer: React.FC = () => {
@@ -38,5 +43,3 @@ export const ChatViewContainer: React.FC = () => {
 };
 
 export default ChatViewContainer;
-
-
