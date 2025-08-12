@@ -27,6 +27,12 @@
 
 /* 전역 스타일 */
 @layer base {
+  /* Base typography to match design tokens */
+  html {
+    /* Set 1rem = 14px for precise scaling */
+    font-size: 14px;
+  }
+
   html,
   body,
   #root {
@@ -35,6 +41,41 @@
 
   * {
     @apply box-border;
+  }
+
+  body {
+    /* Design foreground color (OKLCH) for better contrast parity with mock */
+    color: oklch(0.145 0 0);
+    background-color: transparent;
+  }
+
+  /* Headings scale from 14px root to match mock measurements */
+  h1,
+  h2 {
+    font-size: 1.125rem; /* 15.75px */
+    line-height: 1.75rem; /* 24.5px */
+    font-weight: 600;
+  }
+
+  h5 {
+    font-size: 0.75rem; /* 10.5px */
+    line-height: 1rem;   /* 14px */
+    font-weight: 500;
+    color: rgb(113 113 130);
+  }
+
+  /* Controls (inputs/buttons) align to control scale */
+  input,
+  select,
+  textarea {
+    font-size: 0.875rem; /* 12.25px */
+    line-height: 1.25rem; /* 17.5px */
+  }
+
+  button {
+    font-size: 0.875rem; /* 12.25px */
+    line-height: 1.25rem; /* 17.5px */
+    font-weight: 500;
   }
 
   /* 모든 border 클래스에 일관된 gray-200 색상 적용 */
