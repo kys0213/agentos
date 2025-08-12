@@ -1,4 +1,4 @@
-import { Preset, PresetStatus } from '@agentos/core';
+import { CreatePreset, Preset, PresetStatus } from '@agentos/core';
 import {
   Archive,
   BarChart3,
@@ -20,6 +20,8 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { KnowledgeBaseManager } from './KnowledgeBaseManager';
 import { PrestForm } from './PresetForm';
+import { PresetCreate } from './PresetCreate';
+import { PresetDetail } from './PresetDetail';
 import PresetCard from './PresetCard';
 import PresetListFilters, { PresetCategoryOption } from './PresetListFilters';
 import { Badge } from '../ui/badge';
@@ -31,6 +33,7 @@ export interface PresetManagerProps {
   onDuplicatePreset?: (preset: Preset) => void;
   onCreatePreset?: (data: Partial<Preset>) => void;
   onUpdatePreset?: (id: string, data: Partial<Preset>) => void;
+  onCreatePresetAsync?: (data: CreatePreset) => Promise<Preset>;
 }
 
 export function PresetManager({
@@ -42,6 +45,7 @@ export function PresetManager({
   onUpdatePreset,
 }: PresetManagerProps) {
   const [activeTab, setActiveTab] = useState('list');
+  const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null);
@@ -100,6 +104,11 @@ export function PresetManager({
     setEditDialogOpen(true);
   };
 
+  const handleOpenDetail = (preset: Preset) => {
+    setSelectedPreset(preset);
+    setViewMode('detail');
+  };
+
   const duplicatePreset = (preset: Preset) => {
     if (onDuplicatePreset) return onDuplicatePreset(preset);
     setPresets((prev) => [...prev, preset]);
@@ -124,6 +133,21 @@ export function PresetManager({
   const activeProjects = sourcePresets.filter((p) => p.status === 'active').length;
   const avgDocsPerProject =
     sourcePresets.length > 0 ? (totalKnowledgeDocs / sourcePresets.length).toFixed(1) : 0;
+
+  // If in detail view, render PresetDetail and return
+  if (viewMode === 'detail' && selectedPreset) {
+    return (
+      <PresetDetail
+        preset={selectedPreset}
+        onBack={() => setViewMode('list')}
+        onUpdate={(p) => onUpdatePreset?.(p.id, p)}
+        onDelete={(id) => {
+          onDeletePreset?.(id);
+          setViewMode('list');
+        }}
+      />
+    );
+  }
 
   return (
     <div className="h-full flex flex-col">
@@ -279,6 +303,7 @@ export function PresetManager({
                             <PresetCard
                               key={preset.id}
                               preset={preset}
+                              onOpenDetail={handleOpenDetail}
                               onEdit={handleEditPreset}
                               onDuplicate={duplicatePreset}
                               onDelete={deletePresetLocal}
@@ -334,13 +359,21 @@ export function PresetManager({
           <DialogHeader>
             <DialogTitle>Create New Agent Project</DialogTitle>
           </DialogHeader>
-          <PrestForm
-            preset={null}
-            isCreateMode={true}
-            currentStep={currentStep}
-            onStepChange={setCurrentStep}
-            onComplete={() => setCreateWizardOpen(false)}
-            onSubmit={(data) => onCreatePreset?.(data)}
+          <PresetCreate
+            onBack={() => setCreateWizardOpen(false)}
+            onCreate={async (data) => {
+              if (onCreatePresetAsync) {
+                const created = await onCreatePresetAsync(data);
+                setCreateWizardOpen(false);
+                return created;
+              }
+              // Fallback for backward compatibility
+              onCreatePreset?.(data as unknown as Partial<Preset>);
+              setCreateWizardOpen(false);
+              return {
+                ...(data as unknown as Preset),
+              } as Preset;
+            }}
           />
         </DialogContent>
       </Dialog>
