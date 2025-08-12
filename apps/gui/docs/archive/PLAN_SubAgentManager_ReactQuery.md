@@ -1,4 +1,7 @@
-# SubAgentManager: React Query 전환 설계서
+# [ARCHIVED] SubAgentManager: React Query 전환 설계서
+
+Archived: 2025-08-12
+Reason: Implemented in code. Sub Agents now always mount the React Query–backed container (`SubAgentManagerContainer`) and no longer rely on local empty-state gating. See commits under branch `feature/subagent-e2e-fix` and `apps/gui/src/renderer/components/layout/ManagementView.tsx`.
 
 ## Requirements
 

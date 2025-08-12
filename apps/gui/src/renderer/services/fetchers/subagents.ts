@@ -1,5 +1,10 @@
 import { ServiceContainer } from '../../../shared/ipc/service-container';
-import type { AgentMetadata, AgentStatus, ReadonlyAgentMetadata } from '@agentos/core';
+import type {
+  AgentMetadata,
+  AgentStatus,
+  ReadonlyAgentMetadata,
+  CreateAgentMetadata,
+} from '@agentos/core';
 
 export async function fetchDesignAgents(): Promise<AgentMetadata[]> {
   const agentService = ServiceContainer.getOrThrow('agent');
@@ -25,4 +30,16 @@ export async function updateAgentStatus(
 ): Promise<void> {
   const agentService = ServiceContainer.getOrThrow('agent');
   await agentService.updateAgent(agentId, { status });
+}
+
+export async function createAgent(data: CreateAgentMetadata): Promise<ReadonlyAgentMetadata> {
+  const agentService = ServiceContainer.getOrThrow('agent');
+  const created = await agentService.createAgent(data);
+  return created;
+}
+
+export async function deleteAgent(id: string): Promise<ReadonlyAgentMetadata> {
+  const agentService = ServiceContainer.getOrThrow('agent');
+  const removed = await agentService.deleteAgent(id);
+  return removed;
 }

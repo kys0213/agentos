@@ -116,6 +116,7 @@ export function SubAgentManager({
                 onClick={handleCreateAgent}
                 className="gap-2 relative overflow-hidden group bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg"
                 size="lg"
+                data-testid="btn-create-agent"
               >
                 <div className="flex items-center gap-2 relative z-10">
                   <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">

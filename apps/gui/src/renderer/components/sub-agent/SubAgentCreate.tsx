@@ -1,4 +1,4 @@
-import { Agent, AgentMetadata, CreateAgentMetadata, Preset } from '@agentos/core';
+import { CreateAgentMetadata, ReadonlyPreset } from '@agentos/core';
 import {
   ArrowLeft,
   Bot,
@@ -26,11 +26,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Textarea } from '../ui/textarea';
 import { agentMetadataSchema } from '../../../shared/schema/agent.schemas';
+import PresetPicker from '../preset/PresetPicker';
 
 interface AgentCreateProps {
   onBack: () => void;
   onCreate: (agent: CreateAgentMetadata) => void;
-  presets: Preset[];
+  presets: ReadonlyPreset[];
 }
 
 export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) {
@@ -47,6 +48,7 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
     preset: undefined,
     keywords: [],
   });
+  const [selectedPresetId, setSelectedPresetId] = useState<string | undefined>(undefined);
 
   // Tags management
   const [newTag, setNewTag] = useState('');
@@ -163,7 +165,12 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
           </div>
 
           <div className="flex items-center gap-2">
-            <Button onClick={handleCreate} disabled={!validateFormData(formData)} className="gap-2">
+            <Button
+              onClick={handleCreate}
+              disabled={!validateFormData(formData)}
+              className="gap-2"
+              data-testid="btn-final-create-agent"
+            >
               <Save className="w-4 h-4" />
               Create Agent
             </Button>
@@ -395,21 +402,17 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                     and behavior patterns.
                   </p>
 
-                  <div className="space-y-6">
-                    {presets.map((preset) => (
-                      <div key={preset.id}>
-                        <div>{preset.name}</div>
-                        <div>{preset.description}</div>
-                        <div>{preset.category.join(', ')}</div>
-                        <div>{preset.author}</div>
-                        <div>{preset.createdAt.toLocaleDateString()}</div>
-                        <div>{preset.updatedAt.toLocaleDateString()}</div>
-                        <div>{preset.version}</div>
-                        <div>{preset.systemPrompt}</div>
-                        <div>{preset.enabledMcps?.map((mcp) => mcp.name).join(', ')}</div>
-                      </div>
-                    ))}
-                  </div>
+                  <PresetPicker
+                    presets={presets}
+                    value={selectedPresetId}
+                    onChange={(id) => {
+                      setSelectedPresetId(id);
+                      const selected = presets.find((p) => p.id === id);
+                      if (selected) {
+                        updateFormData({ preset: selected });
+                      }
+                    }}
+                  />
                 </Card>
 
                 {/* Navigation */}

@@ -6,7 +6,13 @@ import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { AgentStatus } from '@agentos/core';
 
-export const SubAgentManagerContainer: React.FC = () => {
+export interface SubAgentManagerContainerProps {
+  onCreateAgent?: () => void;
+}
+
+export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> = ({
+  onCreateAgent,
+}) => {
   const queryClient = useQueryClient();
   const {
     data: agents = [],
@@ -50,7 +56,7 @@ export const SubAgentManagerContainer: React.FC = () => {
     <SubAgentManager
       agents={agents}
       onOpenChat={() => {}}
-      onCreateAgent={() => {}}
+      onCreateAgent={onCreateAgent}
       onUpdateAgentStatus={(id, status) => mutation.mutate({ id, status })}
     />
   );

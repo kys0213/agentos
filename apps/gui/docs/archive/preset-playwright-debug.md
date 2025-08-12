@@ -1,4 +1,7 @@
-# Preset Funnel Debug Notes (Playwright)
+# [ARCHIVED] Preset Funnel Debug Notes (Playwright)
+
+Archived: 2025-08-12
+Reason: Debug notes superseded by stable E2E flow and PLAYWRIGHT_MCP_GUIDE. Retained for historical context.
 
 This document tracks errors found while reproducing the Preset creation/edit funnel in the web GUI via Playwright, along with likely root causes and fix ideas.
 

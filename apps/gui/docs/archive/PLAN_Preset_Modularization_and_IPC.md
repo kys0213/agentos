@@ -1,4 +1,7 @@
-# Preset 컴포넌트 모듈화 및 IPC 연동 설계서
+# [ARCHIVED] Preset 컴포넌트 모듈화 및 IPC 연동 설계서
+
+Archived: 2025-08-12
+Reason: Implemented — PresetManagerContainer and presets fetchers exist; React Query + ServiceContainer wiring is in place.
 
 ## 목표
 

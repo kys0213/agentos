@@ -21,6 +21,7 @@ import PresetDetailContainer from '../preset/PresetDetailContainer';
 import { RACPManager } from '../racp/RACPManager';
 import { SettingsManager } from '../settings/SettingManager';
 import { SubAgentCreate } from '../sub-agent/SubAgentCreate';
+import SubAgentCreateContainer from '../sub-agent/SubAgentCreateContainer';
 import { ToolBuilderCreate } from '../tool/ToolBuilderCreate';
 import PresetManagerContainer from '../preset/PresetManagerContainer';
 
@@ -144,9 +145,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     }
 
     if (creatingAgent) {
-      return (
-        <SubAgentCreate onBack={handleBackToAgents} onCreate={onCreateAgent} presets={presets} />
-      );
+      return <SubAgentCreateContainer onBack={handleBackToAgents} />;
     }
 
     if (creatingCustomTool) {
@@ -177,28 +176,8 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
       case 'presets':
         return <PresetManagerContainer />;
       case 'subagents':
-        if (currentAgents.length === 0 && !showEmptyState) {
-          return (
-            <div className="p-6 h-full flex items-center justify-center">
-              <div className="max-w-md text-center">
-                <h2 className="text-2xl font-bold mb-4">No Agents Yet</h2>
-                <p className="text-muted-foreground mb-6">
-                  Create your first AI agent to start automating tasks and having intelligent
-                  conversations. Agents can be specialized for research, coding, content creation,
-                  and more.
-                </p>
-                <Button onClick={handleStartCreateAgent} className="mr-4">
-                  Create First Agent
-                </Button>
-                <Button variant="outline" onClick={() => setShowEmptyState(true)}>
-                  Show Sample Agents
-                </Button>
-              </div>
-            </div>
-          );
-        }
-        // Use renderer container wired with React Query + core services
-        return <SubAgentManagerContainer />;
+        // Always render the React Query–backed container; it handles loading/empty states
+        return <SubAgentManagerContainer onCreateAgent={handleStartCreateAgent} />;
       case 'models':
         return <ModelManager />;
       case 'tools':
