@@ -100,9 +100,9 @@ export interface SidebarState {
 - [x] Conversation cards: implement cell layout (avatar/title/menu/preview/badges/timestamp) + hover/active.
 - [ ] Empty states: design-matching placeholders for no conversations/agents.
 - [x] Thread header: render active agent chips; fallback text for none.
-- [ ] Available Agents: list rows with status pill + count summary.
-- [ ] Transcript bubbles: avatar, role label, timestamp alignment and spacing.
-- [ ] Composer: mention button/icon size, disabled Send state style.
+- [x] Available Agents: list rows with status pill + count summary.
+- [x] Transcript bubbles: avatar, role label, timestamp alignment and spacing.
+- [x] Composer: mention button/icon size, disabled Send state style.
 - [x] Debug UI gating: hide TanStack button unless `VITE_DEVTOOLS=true`.
 - [ ] Tests: visual contract via component tests (DOM structure, classnames), unit tests for state (pinned/grouping/archived).
 - [ ] Docs: update apps/gui/docs/FRONTEND_IMPLEMENTATION_ROADMAP.md with checkboxes.
