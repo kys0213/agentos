@@ -15,7 +15,7 @@ import {
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+// Modal imports removed for create funnel
 import { ScrollArea } from '../ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { KnowledgeBaseManager } from './KnowledgeBaseManager';
@@ -46,13 +46,12 @@ export function PresetManager({
   onCreatePresetAsync,
 }: PresetManagerProps) {
   const [activeTab, setActiveTab] = useState('list');
-  const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'detail' | 'create'>('list');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [createWizardOpen, setCreateWizardOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
+  // Removed create wizard modal state
   const [presets, setPresets] = useState<Preset[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -150,6 +149,25 @@ export function PresetManager({
     );
   }
 
+  // Full-screen create funnel
+  if (viewMode === 'create') {
+    return (
+      <PresetCreate
+        onBack={() => setViewMode('list')}
+        onCreate={async (data) => {
+          if (onCreatePresetAsync) {
+            const created = await onCreatePresetAsync(data);
+            setViewMode('list');
+            return created;
+          }
+          onCreatePreset?.(data as unknown as Partial<Preset>);
+          setViewMode('list');
+          return { ...(data as unknown as Preset) } as Preset;
+        }}
+      />
+    );
+  }
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -162,7 +180,7 @@ export function PresetManager({
             </p>
           </div>
           <Button
-            onClick={() => setCreateWizardOpen(true)}
+            onClick={() => setViewMode('create')}
             className="gap-2"
             data-testid="btn-create-project"
           >
@@ -354,30 +372,7 @@ export function PresetManager({
         </Tabs>
       </div>
 
-      {/* Create Wizard Dialog */}
-      <Dialog open={createWizardOpen} onOpenChange={setCreateWizardOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle>Create New Agent Project</DialogTitle>
-          </DialogHeader>
-          <PresetCreate
-            onBack={() => setCreateWizardOpen(false)}
-            onCreate={async (data) => {
-              if (onCreatePresetAsync) {
-                const created = await onCreatePresetAsync(data);
-                setCreateWizardOpen(false);
-                return created;
-              }
-              // Fallback for backward compatibility
-              onCreatePreset?.(data as unknown as Partial<Preset>);
-              setCreateWizardOpen(false);
-              return {
-                ...(data as unknown as Preset),
-              } as Preset;
-            }}
-          />
-        </DialogContent>
-      </Dialog>
+      {/* Create funnel moved to full-screen view (no modal) */}
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
