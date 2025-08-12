@@ -3,7 +3,6 @@ import type { IpcChannel } from '../shared/types/ipc-channel';
 import { AgentService } from './services/agent.service';
 import { BridgeService } from './services/bridge.service';
 import { BuiltinToolService } from './services/builtin-tool.service';
-import { ChatService } from './services/chat.service';
 import { createIpcChannel } from '../shared/ipc/ipc-channel.factory';
 import { McpService } from './services/mcp-service';
 import { McpUsageLogService } from './services/mcp-usage.service';
@@ -19,7 +18,6 @@ export interface BootstrapResult {
   mcpService: McpService;
   presetService: PresetService;
   agentService: AgentService;
-  chatService: ChatService;
 }
 
 /**

@@ -68,27 +68,32 @@ export const useSendChatMessage = (agentId: string | undefined) => {
       };
 
       // 캐시에 유저 메시지 먼저 추가 (낙관적)
-      queryClient.setQueryData(CHAT_QUERY_KEYS.history(agentId), (prev?: Readonly<MessageHistory>[]) => {
-        const history = prev ?? [];
-        return [...history, userMessage];
-      });
+      queryClient.setQueryData(
+        CHAT_QUERY_KEYS.history(agentId),
+        (prev?: Readonly<MessageHistory>[]) => {
+          const history = prev ?? [];
+          return [...history, userMessage];
+        }
+      );
 
       // AgentProtocol.chat 호출
-      const result = await agentService.chat(agentId, [
-        { role: 'user', content: { type: 'text', text } },
-      ], {
-        // 세션 = agentId 전략. 필요 시 서버에서 실제 sessionId를 반환하여 관리 가능
-        sessionId: agentId,
-        maxTurnCount: 1,
-      });
+      const result = await agentService.chat(
+        agentId,
+        [{ role: 'user', content: { contentType: 'text', value: text } }],
+        {
+          // 세션 = agentId 전략. 필요 시 서버에서 실제 sessionId를 반환하여 관리 가능
+          sessionId: agentId,
+          maxTurnCount: 1,
+        }
+      );
 
       // 응답 메시지들을 MessageHistory로 매핑(간단 매핑)
       const assistantMessages: MessageHistory[] = result.messages.map((m, idx) => ({
         messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
         role: m.role === 'assistant' ? 'assistant' : (m.role as any),
         content:
-          m.content.type === 'text'
-            ? { contentType: 'text', value: (m.content as any).text }
+          m.content.contentType === 'text'
+            ? { contentType: 'text', value: (m.content as any).value }
             : { contentType: 'text', value: JSON.stringify(m.content) },
         createdAt: new Date(),
       }));
@@ -104,5 +109,3 @@ export const useSendChatMessage = (agentId: string | undefined) => {
     },
   });
 };
-
-
