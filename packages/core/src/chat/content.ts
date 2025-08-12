@@ -1,4 +1,5 @@
 import type { MultiModalContent as BridgeContent } from 'llm-bridge-spec';
+import { Readable } from 'stream';
 
 /**
  * Core 표준 콘텐츠 타입
@@ -36,6 +37,15 @@ export function toCoreContentArray(
  */
 export function normalizeToCoreContentArray(input: unknown): CoreContent[] {
   if (input == null) return [];
+
+  // Buffer / Readable은 바이너리 데이터로 간주하여 file 기본 타입으로 처리
+  // (구체 타입이 필요하면 호출 측에서 { contentType, value } 형태로 전달해야 함)
+  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(input)) {
+    return [{ contentType: 'file', value: input } as CoreContent];
+  }
+  if (input instanceof Readable) {
+    return [{ contentType: 'file', value: input } as CoreContent];
+  }
 
   if (typeof input === 'string') {
     return [{ contentType: 'text', value: input } as CoreContent];

@@ -1,4 +1,5 @@
 import { normalizeToCoreContentArray, toCoreContentArray, CoreContent } from '../../index';
+import { Readable } from 'stream';
 
 describe('Core content standardization', () => {
   test('toCoreContentArray: normalizes single to array', () => {
@@ -77,6 +78,21 @@ describe('Core content standardization', () => {
     expect(arr[0].contentType).toBe('text');
     expect(typeof arr[0].value).toBe('string');
     expect(arr[0].value).toBe(JSON.stringify({ foo: 'bar' }));
+  });
+
+  test('normalizeToCoreContentArray: Buffer → file content', () => {
+    const buf = Buffer.from('abc');
+    const arr = normalizeToCoreContentArray(buf);
+    expect(arr).toHaveLength(1);
+    expect(arr[0].contentType).toBe('file');
+    expect(Buffer.isBuffer(arr[0].value)).toBe(true);
+  });
+
+  test('normalizeToCoreContentArray: Readable → file content', () => {
+    const readable = Readable.from(['chunk1']);
+    const arr = normalizeToCoreContentArray(readable as any);
+    expect(arr).toHaveLength(1);
+    expect(arr[0].contentType).toBe('file');
   });
 });
 
