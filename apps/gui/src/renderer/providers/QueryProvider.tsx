@@ -20,9 +20,7 @@ export const QueryProvider: React.FC<QueryProviderProps> = ({ children }) => {
     <QueryClientProvider client={queryClient}>
       {children}
       {/* 개발 환경에서만 DevTools 표시 */}
-      {showDevtools && (
-        <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-      )}
+      {showDevtools && <ReactQueryDevtools initialIsOpen={false} position="bottom" />}
     </QueryClientProvider>
   );
 };
