@@ -142,7 +142,7 @@ export function PresetManager({
             data-testid="btn-create-project"
           >
             <Plus className="w-4 h-4" />
-            Create Project
+            Create Preset
           </Button>
         </div>
 
