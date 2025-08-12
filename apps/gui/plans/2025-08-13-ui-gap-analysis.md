@@ -96,7 +96,7 @@ export interface SidebarState {
 
 - [x] Typography/base tokens: set body 14px, h2/h5/control sizes; adopt OKLCH color tokens.
 - [ ] Input/button sizing: align line-heights, paddings, radii to mock.
-- [ ] Sidebar: add "Archived (n)" filter pill; section headers (📌 Pinned, Older).
+- [x] Sidebar: add "Archived (n)" filter pill; section headers (📌 Pinned, Older).
 - [ ] Conversation cards: implement cell layout (avatar/title/menu/preview/badges/timestamp) + hover/active.
 - [ ] Empty states: design-matching placeholders for no conversations/agents.
 - [ ] Thread header: render active agent chips; fallback text for none.
