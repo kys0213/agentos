@@ -39,7 +39,7 @@ export const getPageTitle = (
     case 'presets':
       return 'Presets';
     case 'subagents':
-      return 'Sub Agents';
+      return 'Agents';
     case 'models':
       return 'Models';
     case 'tools':

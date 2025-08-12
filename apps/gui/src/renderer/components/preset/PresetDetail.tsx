@@ -199,7 +199,9 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
                 <Calendar className="w-4 h-4 text-gray-600" />
               </div>
               <div>
-                <p className="text-lg font-semibold text-foreground">{formatDate(editedPreset.updatedAt as any)}</p>
+                <p className="text-lg font-semibold text-foreground">
+                  {formatDate(editedPreset.updatedAt as any)}
+                </p>
                 <p className="text-xs text-muted-foreground">Last Updated</p>
               </div>
             </div>

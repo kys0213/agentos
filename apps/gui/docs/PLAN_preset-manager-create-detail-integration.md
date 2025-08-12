@@ -3,6 +3,7 @@
 ## Requirements
 
 ### 성공 조건
+
 - [ ] Preset 생성 버튼 클릭 시 모달이 `PresetCreate` 컴포넌트로 표시된다.
 - [ ] `PresetCreate`에서 생성 완료 시 목록이 새로고침되고 모달이 닫힌다.
 - [ ] 프리셋 목록 카드 영역 클릭 시 `PresetDetail` 화면으로 전환되어 상세 정보를 열람/수정할 수 있다.
@@ -10,6 +11,7 @@
 - [ ] 타입 안전성 준수: `any` 사용 금지, 기존 컨테이너(`PresetManagerContainer`)와 인터페이스 불일치 없음.
 
 ### 사용 시나리오
+
 - 사용자는 Preset Manager 화면에서 “Create Preset” 버튼을 눌러 생성 모달을 연다.
 - 생성 모달은 단계형 UI(`PresetCreate`)를 통해 기본정보/설정/툴/지식베이스 순으로 입력한다.
 - “Create Preset” 클릭 시 서버에 생성 요청이 성공하면 모달을 닫고 목록에 새 항목이 보인다.
@@ -18,6 +20,7 @@
 - 상세 화면에서 삭제를 선택하면 확인 후 삭제되고 목록으로 돌아간다.
 
 ### 제약 조건
+
 - 기존 컨테이너(`PresetManagerContainer`)는 React Query mutation을 사용 중이므로, 생성은 비동기 프로미스 인터페이스를 보존해야 한다.
 - UI 구조는 `PresetManager` 내부 탭 레이아웃을 유지하되, 상세 보기 모드 진입 시 탭 대신 `PresetDetail` 단일 화면을 표시한다.
 - 기존 편집 폼(`PrestForm`) 기반 생성/수정 플로우는 제거/대체하되, 유지되는 편집 버튼(카드 하단 Edit)은 탭의 Edit 섹션으로 이동하도록 유지 가능.
@@ -106,6 +109,7 @@ export interface PresetCardProps {
 5. 문서/테스트: 동작 시나리오 체크리스트, 추후 E2E 커버리지 포인트 명시 (완료 조건: 문서 반영)
 
 ## 테스트 체크리스트 (통합)
+
 - [ ] “Create Preset” 클릭 시 `PresetCreate` 모달 표출
 - [ ] 필수값 입력 전까지 생성 버튼 비활성
 - [ ] 생성 성공 시 모달 닫힘 및 목록에 항목 추가
@@ -115,7 +119,7 @@ export interface PresetCardProps {
 - [ ] 카드 하단 Edit/Copy/Delete 버튼 클릭 시 상세 진입이 아닌 해당 기능만 수행
 
 ## 리스크 및 대응
+
 - 컨테이너의 `onCreatePreset`(void)와 `PresetCreate.onCreate(Promise)` 시그니처 차이 → `onCreatePresetAsync`를 신규 도입하여 해결, 하위호환 유지.
 - 상세 화면 진입 시 기존 탭 구조와의 충돌 → `viewMode` 분기로 탭과 상세를 상호배타적으로 렌더링.
 - 이벤트 버블링으로 잘못된 네비게이션 발생 → 카드 내부 버튼 `stopPropagation` 처리.
-

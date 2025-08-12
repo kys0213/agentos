@@ -336,7 +336,7 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full min-h-0 flex flex-col">
       {/* Header */}
       <div className="flex-shrink-0 p-6 border-b">
         <div className="flex items-center justify-between mb-4">
@@ -417,414 +417,438 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
               <div className="pr-2">
                 <TabsContent value="overview" className="h-full">
                   <div className="max-w-4xl mx-auto space-y-6">
-                {/* Category Selection with Templates */}
-                <Card className="p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Lightbulb className="w-5 h-5 text-orange-500" />
-                    <h3 className="text-lg font-semibold text-foreground">Choose Template</h3>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {Object.entries(presetTemplates).map(([key, template]) => (
-                      <Card
-                        key={key}
-                        className={`p-4 cursor-pointer transition-all hover:shadow-md ${
-                          formData.category.includes(key) ? 'ring-2 ring-primary bg-primary/5' : ''
-                        }`}
-                        onClick={() => handleCategoryChange(key)}
-                      >
-                        <div className="flex flex-col items-center text-center gap-3">
-                          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                            {getCategoryIcon(key)}
-                          </div>
+                    {/* Category Selection with Templates */}
+                    <Card className="p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Lightbulb className="w-5 h-5 text-orange-500" />
+                        <h3 className="text-lg font-semibold text-foreground">Choose Template</h3>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {Object.entries(presetTemplates).map(([key, template]) => (
+                          <Card
+                            key={key}
+                            className={`p-4 cursor-pointer transition-all hover:shadow-md ${
+                              formData.category.includes(key)
+                                ? 'ring-2 ring-primary bg-primary/5'
+                                : ''
+                            }`}
+                            onClick={() => handleCategoryChange(key)}
+                          >
+                            <div className="flex flex-col items-center text-center gap-3">
+                              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                                {getCategoryIcon(key)}
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-foreground capitalize">{key}</h4>
+                                <p className="text-xs text-muted-foreground line-clamp-2">
+                                  {template.description}
+                                </p>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </Card>
+
+                    {/* Basic Information */}
+                    <Card className="p-6">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
+                        Basic Information
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
                           <div>
-                            <h4 className="font-medium text-foreground capitalize">{key}</h4>
-                            <p className="text-xs text-muted-foreground line-clamp-2">
-                              {template.description}
-                            </p>
+                            <Label htmlFor="name">Preset Name *</Label>
+                            <Input
+                              id="name"
+                              value={formData.name}
+                              onChange={(e) => updateFormData({ name: e.target.value })}
+                              placeholder="Enter preset name"
+                              className="mt-1"
+                            />
+                          </div>
+
+                          <div>
+                            <Label htmlFor="description">Description *</Label>
+                            <Textarea
+                              id="description"
+                              value={formData.description}
+                              onChange={(e) => updateFormData({ description: e.target.value })}
+                              placeholder="Describe what this preset is designed for"
+                              className="mt-1"
+                              rows={3}
+                            />
                           </div>
                         </div>
-                      </Card>
-                    ))}
-                  </div>
-                </Card>
 
-                {/* Basic Information */}
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Basic Information</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="name">Preset Name *</Label>
-                        <Input
-                          id="name"
-                          value={formData.name}
-                          onChange={(e) => updateFormData({ name: e.target.value })}
-                          placeholder="Enter preset name"
-                          className="mt-1"
-                        />
-                      </div>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="model">AI Model</Label>
+                            <Select
+                              value={formData.llmBridgeName}
+                              onValueChange={(value) => updateFormData({ llmBridgeName: value })}
+                            >
+                              <SelectTrigger className="mt-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="openai">OpenAI</SelectItem>
+                                <SelectItem value="anthropic">Anthropic</SelectItem>
+                                <SelectItem value="gemini">Google Gemini</SelectItem>
+                                <SelectItem value="local">Local LLM</SelectItem>
+                                <SelectItem value="custom">Custom</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
 
-                      <div>
-                        <Label htmlFor="description">Description *</Label>
-                        <Textarea
-                          id="description"
-                          value={formData.description}
-                          onChange={(e) => updateFormData({ description: e.target.value })}
-                          placeholder="Describe what this preset is designed for"
-                          className="mt-1"
-                          rows={3}
-                        />
+                          <div>
+                            <Label htmlFor="status">Initial Status</Label>
+                            <Select
+                              value={formData.status}
+                              onValueChange={(value: 'active' | 'idle' | 'inactive') =>
+                                updateFormData({ status: value })
+                              }
+                            >
+                              <SelectTrigger className="mt-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="active">Active (Auto-participates)</SelectItem>
+                                <SelectItem value="idle">Idle (Mention only)</SelectItem>
+                                <SelectItem value="inactive">Inactive (Disabled)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    </Card>
 
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="model">AI Model</Label>
-                        <Select
-                          value={formData.llmBridgeName}
-                          onValueChange={(value) => updateFormData({ llmBridgeName: value })}
-                        >
-                          <SelectTrigger className="mt-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="openai">OpenAI</SelectItem>
-                            <SelectItem value="anthropic">Anthropic</SelectItem>
-                            <SelectItem value="gemini">Google Gemini</SelectItem>
-                            <SelectItem value="local">Local LLM</SelectItem>
-                            <SelectItem value="custom">Custom</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    {/* System Prompt */}
+                    <Card className="p-6">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
+                        System Prompt *
+                      </h3>
+                      <Textarea
+                        value={formData.systemPrompt}
+                        onChange={(e) => updateFormData({ systemPrompt: e.target.value })}
+                        className="min-h-[150px] font-mono text-sm"
+                        placeholder="Enter the system prompt that defines this preset's behavior and personality..."
+                      />
+                      <p className="text-xs text-muted-foreground mt-2">
+                        This prompt defines how the AI agent will behave and respond. Be specific
+                        about its role, expertise, and communication style.
+                      </p>
+                    </Card>
 
-                      <div>
-                        <Label htmlFor="status">Initial Status</Label>
-                        <Select
-                          value={formData.status}
-                          onValueChange={(value: 'active' | 'idle' | 'inactive') =>
-                            updateFormData({ status: value })
-                          }
-                        >
-                          <SelectTrigger className="mt-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="active">Active (Auto-participates)</SelectItem>
-                            <SelectItem value="idle">Idle (Mention only)</SelectItem>
-                            <SelectItem value="inactive">Inactive (Disabled)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    {/* Navigation */}
+                    <div className="flex justify-between">
+                      <div></div>
+                      <Button onClick={handleNextStep} className="gap-2">
+                        Next: Configuration
+                        <ArrowLeft className="w-4 h-4 rotate-180" />
+                      </Button>
                     </div>
                   </div>
-                </Card>
-
-                {/* System Prompt */}
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">System Prompt *</h3>
-                  <Textarea
-                    value={formData.systemPrompt}
-                    onChange={(e) => updateFormData({ systemPrompt: e.target.value })}
-                    className="min-h-[150px] font-mono text-sm"
-                    placeholder="Enter the system prompt that defines this preset's behavior and personality..."
-                  />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    This prompt defines how the AI agent will behave and respond. Be specific about
-                    its role, expertise, and communication style.
-                  </p>
-                </Card>
-
-                {/* Navigation */}
-                <div className="flex justify-between">
-                  <div></div>
-                  <Button onClick={handleNextStep} className="gap-2">
-                    Next: Configuration
-                    <ArrowLeft className="w-4 h-4 rotate-180" />
-                  </Button>
-                </div>
-              </div>
                 </TabsContent>
 
                 <TabsContent value="configuration" className="h-full">
                   <div className="max-w-4xl mx-auto space-y-6">
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Model Parameters</h3>
-                  <div className="space-y-6">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <Label>Temperature</Label>
-                        <span className="text-sm font-medium">
-                          {formData.llmBridgeConfig.temperature}
-                        </span>
-                      </div>
-                      <Slider
-                        value={[formData.llmBridgeConfig.temperature]}
-                        onValueChange={([value]) =>
-                          updateFormData({
-                            llmBridgeConfig: { ...formData.llmBridgeConfig, temperature: value },
-                          })
-                        }
-                        max={1}
-                        min={0}
-                        step={0.1}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Controls randomness: 0 = focused, 1 = creative
-                      </p>
-                    </div>
+                    <Card className="p-6">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
+                        Model Parameters
+                      </h3>
+                      <div className="space-y-6">
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <Label>Temperature</Label>
+                            <span className="text-sm font-medium">
+                              {formData.llmBridgeConfig.temperature}
+                            </span>
+                          </div>
+                          <Slider
+                            value={[formData.llmBridgeConfig.temperature]}
+                            onValueChange={([value]) =>
+                              updateFormData({
+                                llmBridgeConfig: {
+                                  ...formData.llmBridgeConfig,
+                                  temperature: value,
+                                },
+                              })
+                            }
+                            max={1}
+                            min={0}
+                            step={0.1}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Controls randomness: 0 = focused, 1 = creative
+                          </p>
+                        </div>
 
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <Label>Max Tokens</Label>
-                        <span className="text-sm font-medium">
-                          {formData.llmBridgeConfig.maxTokens}
-                        </span>
-                      </div>
-                      <Slider
-                        value={[formData.llmBridgeConfig.maxTokens]}
-                        onValueChange={([value]) =>
-                          updateFormData({
-                            llmBridgeConfig: { ...formData.llmBridgeConfig, maxTokens: value },
-                          })
-                        }
-                        max={8000}
-                        min={100}
-                        step={100}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">Maximum response length</p>
-                    </div>
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <Label>Max Tokens</Label>
+                            <span className="text-sm font-medium">
+                              {formData.llmBridgeConfig.maxTokens}
+                            </span>
+                          </div>
+                          <Slider
+                            value={[formData.llmBridgeConfig.maxTokens]}
+                            onValueChange={([value]) =>
+                              updateFormData({
+                                llmBridgeConfig: { ...formData.llmBridgeConfig, maxTokens: value },
+                              })
+                            }
+                            max={8000}
+                            min={100}
+                            step={100}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Maximum response length
+                          </p>
+                        </div>
 
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <Label>Top P</Label>
-                        <span className="text-sm font-medium">{formData.llmBridgeConfig.topP}</span>
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <Label>Top P</Label>
+                            <span className="text-sm font-medium">
+                              {formData.llmBridgeConfig.topP}
+                            </span>
+                          </div>
+                          <Slider
+                            value={[formData.llmBridgeConfig.topP]}
+                            onValueChange={([value]) =>
+                              updateFormData({
+                                llmBridgeConfig: { ...formData.llmBridgeConfig, topP: value },
+                              })
+                            }
+                            max={1}
+                            min={0}
+                            step={0.1}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Controls diversity of word choices
+                          </p>
+                        </div>
                       </div>
-                      <Slider
-                        value={[formData.llmBridgeConfig.topP]}
-                        onValueChange={([value]) =>
-                          updateFormData({
-                            llmBridgeConfig: { ...formData.llmBridgeConfig, topP: value },
-                          })
-                        }
-                        max={1}
-                        min={0}
-                        step={0.1}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Controls diversity of word choices
-                      </p>
-                    </div>
-                  </div>
-                </Card>
+                    </Card>
 
-                {/* Navigation */}
-                <div className="flex justify-between">
-                  <Button variant="outline" onClick={handlePrevStep} className="gap-2">
-                    <ArrowLeft className="w-4 h-4" />
-                    Previous: Basic Info
-                  </Button>
-                  <Button onClick={handleNextStep} className="gap-2">
-                    Next: Tools
-                    <ArrowLeft className="w-4 h-4 rotate-180" />
-                  </Button>
-                </div>
+                    {/* Navigation */}
+                    <div className="flex justify-between">
+                      <Button variant="outline" onClick={handlePrevStep} className="gap-2">
+                        <ArrowLeft className="w-4 h-4" />
+                        Previous: Basic Info
+                      </Button>
+                      <Button onClick={handleNextStep} className="gap-2">
+                        Next: Tools
+                        <ArrowLeft className="w-4 h-4 rotate-180" />
+                      </Button>
+                    </div>
                   </div>
                 </TabsContent>
 
                 <TabsContent value="tools" className="h-full">
                   <div className="max-w-4xl mx-auto space-y-6">
-                {/* Built-in Tools */}
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Built-in Tools</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Select the built-in tools and capabilities this preset should have access to.
-                  </p>
+                    {/* Built-in Tools */}
+                    <Card className="p-6">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">Built-in Tools</h3>
+                      <p className="text-muted-foreground mb-6">
+                        Select the built-in tools and capabilities this preset should have access
+                        to.
+                      </p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {availableTools
-                      .filter(
-                        (tool) =>
-                          formData.category.includes(tool.category) ||
-                          formData.category.includes('research')
-                      )
-                      .map((tool) => (
-                        <Card
-                          key={tool.id}
-                          className={`p-4 cursor-pointer transition-all hover:shadow-sm ${
-                            formData.enabledMcps?.some((mcp) =>
-                              mcp.enabledTools.some((enabledTool) => enabledTool.name === tool.name)
-                            )
-                              ? 'ring-1 ring-primary bg-primary/5'
-                              : ''
-                          }`}
-                          onClick={() => handleToolToggle(tool.name)}
-                        >
-                          <div className="flex items-start gap-3">
-                            <Checkbox
-                              checked={formData.enabledMcps?.some((mcp) =>
-                                mcp.enabledTools.some(
-                                  (enabledTool) => enabledTool.name === tool.name
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {availableTools
+                          .filter(
+                            (tool) =>
+                              formData.category.includes(tool.category) ||
+                              formData.category.includes('research')
+                          )
+                          .map((tool) => (
+                            <Card
+                              key={tool.id}
+                              className={`p-4 cursor-pointer transition-all hover:shadow-sm ${
+                                formData.enabledMcps?.some((mcp) =>
+                                  mcp.enabledTools.some(
+                                    (enabledTool) => enabledTool.name === tool.name
+                                  )
                                 )
-                              )}
-                              onChange={() => handleToolToggle(tool.name)}
-                            />
-                            <div className="flex-1">
-                              <h4 className="font-medium text-foreground">{tool.name}</h4>
-                              <p className="text-sm text-muted-foreground">{tool.description}</p>
-                            </div>
-                          </div>
-                        </Card>
-                      ))}
-                  </div>
-
-                  {formData.enabledMcps && formData.enabledMcps.length > 0 && (
-                    <div className="mt-6 p-4 bg-green-50 rounded-lg">
-                      <h4 className="font-medium text-green-800 mb-2">
-                        Selected Built-in Tools ({formData.enabledMcps.length})
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {formData.enabledMcps.map((mcp) => {
-                          const tool = availableTools.find((t) => t.id === mcp.name);
-                          return (
-                            <Badge key={mcp.name} variant="outline" className="bg-white">
-                              {tool?.name}
-                            </Badge>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </Card>
-
-                {/* MCP Tools */}
-                <Card className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-foreground">MCP Tools</h3>
-                      <p className="text-muted-foreground text-sm">
-                        Add Model Context Protocol tools for extended functionality.
-                      </p>
-                    </div>
-                    <Button onClick={() => setShowMCPDialog(true)} className="gap-2">
-                      <Plus className="w-4 h-4" />
-                      Add MCP Tool
-                    </Button>
-                  </div>
-
-                  {formData.enabledMcps && formData.enabledMcps.length === 0 ? (
-                    <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
-                      <Settings className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-                      <h4 className="font-medium text-foreground mb-2">No MCP Tools Added</h4>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        MCP tools provide external functionality through standardized protocols.
-                      </p>
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowMCPDialog(true)}
-                        className="gap-2"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Add Your First MCP Tool
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {formData.enabledMcps &&
-                        formData.enabledMcps.map((mcpTool, index) => (
-                          <Card key={index} className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                                  {getMCPIcon(mcpTool.name)}
-                                </div>
-                                <div>
-                                  <h4 className="font-medium text-foreground">{mcpTool.name}</h4>
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Badge variant="outline" className="text-xs">
-                                      {mcpTool.name}
-                                    </Badge>
-                                    <span>v{mcpTool.version}</span>
-                                    {mcpTool.name === 'stdio' && (
-                                      <span className="font-mono text-xs">
-                                        {(mcpTool as any).command}
-                                      </span>
-                                    )}
-                                    {(mcpTool.name === 'streamableHttp' ||
-                                      mcpTool.name === 'websocket' ||
-                                      mcpTool.name === 'sse') && (
-                                      <span className="font-mono text-xs">
-                                        {(mcpTool as any).url}
-                                      </span>
-                                    )}
-                                  </div>
+                                  ? 'ring-1 ring-primary bg-primary/5'
+                                  : ''
+                              }`}
+                              onClick={() => handleToolToggle(tool.name)}
+                            >
+                              <div className="flex items-start gap-3">
+                                <Checkbox
+                                  checked={formData.enabledMcps?.some((mcp) =>
+                                    mcp.enabledTools.some(
+                                      (enabledTool) => enabledTool.name === tool.name
+                                    )
+                                  )}
+                                  onChange={() => handleToolToggle(tool.name)}
+                                />
+                                <div className="flex-1">
+                                  <h4 className="font-medium text-foreground">{tool.name}</h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    {tool.description}
+                                  </p>
                                 </div>
                               </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleRemoveMCPTool(index)}
-                                className="gap-1 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
-                              >
-                                <X className="w-3 h-3" />
-                                Remove
-                              </Button>
-                            </div>
-                          </Card>
-                        ))}
-                    </div>
-                  )}
-                </Card>
+                            </Card>
+                          ))}
+                      </div>
 
-                {/* Navigation */}
-                <div className="flex justify-between">
-                  <Button variant="outline" onClick={handlePrevStep} className="gap-2">
-                    <ArrowLeft className="w-4 h-4" />
-                    Previous: Configuration
-                  </Button>
-                  <Button onClick={handleNextStep} className="gap-2">
-                    Next: Knowledge Base
-                    <ArrowLeft className="w-4 h-4 rotate-180" />
-                  </Button>
-                </div>
+                      {formData.enabledMcps && formData.enabledMcps.length > 0 && (
+                        <div className="mt-6 p-4 bg-green-50 rounded-lg">
+                          <h4 className="font-medium text-green-800 mb-2">
+                            Selected Built-in Tools ({formData.enabledMcps.length})
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {formData.enabledMcps.map((mcp) => {
+                              const tool = availableTools.find((t) => t.id === mcp.name);
+                              return (
+                                <Badge key={mcp.name} variant="outline" className="bg-white">
+                                  {tool?.name}
+                                </Badge>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+
+                    {/* MCP Tools */}
+                    <Card className="p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="text-lg font-semibold text-foreground">MCP Tools</h3>
+                          <p className="text-muted-foreground text-sm">
+                            Add Model Context Protocol tools for extended functionality.
+                          </p>
+                        </div>
+                        <Button onClick={() => setShowMCPDialog(true)} className="gap-2">
+                          <Plus className="w-4 h-4" />
+                          Add MCP Tool
+                        </Button>
+                      </div>
+
+                      {formData.enabledMcps && formData.enabledMcps.length === 0 ? (
+                        <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
+                          <Settings className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+                          <h4 className="font-medium text-foreground mb-2">No MCP Tools Added</h4>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            MCP tools provide external functionality through standardized protocols.
+                          </p>
+                          <Button
+                            variant="outline"
+                            onClick={() => setShowMCPDialog(true)}
+                            className="gap-2"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Add Your First MCP Tool
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {formData.enabledMcps &&
+                            formData.enabledMcps.map((mcpTool, index) => (
+                              <Card key={index} className="p-4">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
+                                      {getMCPIcon(mcpTool.name)}
+                                    </div>
+                                    <div>
+                                      <h4 className="font-medium text-foreground">
+                                        {mcpTool.name}
+                                      </h4>
+                                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <Badge variant="outline" className="text-xs">
+                                          {mcpTool.name}
+                                        </Badge>
+                                        <span>v{mcpTool.version}</span>
+                                        {mcpTool.name === 'stdio' && (
+                                          <span className="font-mono text-xs">
+                                            {(mcpTool as any).command}
+                                          </span>
+                                        )}
+                                        {(mcpTool.name === 'streamableHttp' ||
+                                          mcpTool.name === 'websocket' ||
+                                          mcpTool.name === 'sse') && (
+                                          <span className="font-mono text-xs">
+                                            {(mcpTool as any).url}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleRemoveMCPTool(index)}
+                                    className="gap-1 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                  >
+                                    <X className="w-3 h-3" />
+                                    Remove
+                                  </Button>
+                                </div>
+                              </Card>
+                            ))}
+                        </div>
+                      )}
+                    </Card>
+
+                    {/* Navigation */}
+                    <div className="flex justify-between">
+                      <Button variant="outline" onClick={handlePrevStep} className="gap-2">
+                        <ArrowLeft className="w-4 h-4" />
+                        Previous: Configuration
+                      </Button>
+                      <Button onClick={handleNextStep} className="gap-2">
+                        Next: Knowledge Base
+                        <ArrowLeft className="w-4 h-4 rotate-180" />
+                      </Button>
+                    </div>
                   </div>
                 </TabsContent>
 
                 <TabsContent value="knowledge" className="h-full">
                   <div className="max-w-4xl mx-auto space-y-6">
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">
-                    Knowledge Base (Optional)
-                  </h3>
-                  <p className="text-muted-foreground mb-6">
-                    You can add knowledge documents after creating the preset.
-                  </p>
+                    <Card className="p-6">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
+                        Knowledge Base (Optional)
+                      </h3>
+                      <p className="text-muted-foreground mb-6">
+                        You can add knowledge documents after creating the preset.
+                      </p>
 
-                  <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
-                    <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h4 className="font-medium text-foreground mb-2">No Knowledge Documents Yet</h4>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Upload documents, PDFs, or text files to enhance this preset's knowledge.
-                    </p>
-                    <Button variant="outline" disabled>
-                      Upload Documents
-                    </Button>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Available after preset creation
-                    </p>
-                  </div>
-                </Card>
+                      <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
+                        <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <h4 className="font-medium text-foreground mb-2">
+                          No Knowledge Documents Yet
+                        </h4>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Upload documents, PDFs, or text files to enhance this preset's knowledge.
+                        </p>
+                        <Button variant="outline" disabled>
+                          Upload Documents
+                        </Button>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Available after preset creation
+                        </p>
+                      </div>
+                    </Card>
 
-                {/* Navigation */}
-                <div className="flex justify-between">
-                  <Button variant="outline" onClick={handlePrevStep} className="gap-2">
-                    <ArrowLeft className="w-4 h-4" />
-                    Previous: Tools
-                  </Button>
-                  <Button onClick={handleCreate} disabled={!isFormValid()} className="gap-2">
-                    <Save className="w-4 h-4" />
-                    Create Preset
-                  </Button>
-                </div>
+                    {/* Navigation */}
+                    <div className="flex justify-between">
+                      <Button variant="outline" onClick={handlePrevStep} className="gap-2">
+                        <ArrowLeft className="w-4 h-4" />
+                        Previous: Tools
+                      </Button>
+                      <Button onClick={handleCreate} disabled={!isFormValid()} className="gap-2">
+                        <Save className="w-4 h-4" />
+                        Create Preset
+                      </Button>
+                    </div>
                   </div>
                 </TabsContent>
               </div>
@@ -834,7 +858,9 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
       </div>
 
       {/* MCP Tool Add Dialog */}
-      <MCPToolCreate onBack={() => setShowMCPDialog(false)} onCreate={handleAddMCPTool} />
+      {showMCPDialog && (
+        <MCPToolCreate onBack={() => setShowMCPDialog(false)} onCreate={handleAddMCPTool} />
+      )}
     </div>
   );
 }

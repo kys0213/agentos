@@ -99,7 +99,7 @@ export function SubAgentManager({
                 </div>
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-foreground">Sub Agent Manager</h1>
+                <h1 className="text-2xl font-semibold text-foreground">Agent Manager</h1>
                 <p className="text-muted-foreground">
                   Manage agent status and orchestration settings
                 </p>

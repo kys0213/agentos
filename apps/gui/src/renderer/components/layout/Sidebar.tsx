@@ -1,4 +1,5 @@
 import {
+  Book,
   Bot,
   Cpu,
   Hammer,
@@ -31,8 +32,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'chat', label: 'Chat', icon: MessageSquare },
-    { id: 'subagents', label: 'Sub Agents', icon: Users },
-    { id: 'presets', label: 'Presets', icon: Bot },
+    { id: 'subagents', label: 'Agents', icon: Bot },
+    { id: 'presets', label: 'Presets', icon: Book },
     { id: 'models', label: 'Models', icon: Cpu },
     { id: 'tools', label: 'Tools', icon: Wrench },
     { id: 'toolbuilder', label: 'Tool Builder', icon: Hammer },
