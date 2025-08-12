@@ -14,7 +14,9 @@ test.describe('Chat UX end-to-end', () => {
       .fill('Preset for chat UX test');
     // System prompt
     await page
-      .getByPlaceholder("Enter the system prompt that defines this preset's behavior and personality...")
+      .getByPlaceholder(
+        "Enter the system prompt that defines this preset's behavior and personality..."
+      )
       .fill('You are helpful.');
     // Go to configuration and create
     await page.getByRole('button', { name: /Next: Configuration/i }).click();
@@ -43,4 +45,3 @@ test.describe('Chat UX end-to-end', () => {
     await expect(page.getByText('Echo: Hello from Playwright')).toBeVisible({ timeout: 5000 });
   });
 });
-

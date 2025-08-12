@@ -1,15 +1,14 @@
 import React, { useEffect } from 'react';
-import { Button } from './ui/button';
 
 // Import new design hooks for Chat mode only
-import { useAppNavigation } from '../hooks/useAppNavigation';
-import { useAppData } from '../hooks/useAppData';
 import { useMentionableAgents } from '../hooks/queries/use-chat';
+import { useAppData } from '../hooks/useAppData';
+import { useAppNavigation } from '../hooks/useAppNavigation';
 
 // Chat 컨테이너 적용
+import { bootstrap, isBootstrapped } from '../bootstrap';
 import { ChatViewContainer } from './chat/ChatViewContainer';
 import ManagementView from './layout/ManagementView';
-import { bootstrap, isBootstrapped } from '../bootstrap';
 
 /**
  * New App Layout - 새 디자인 기반으로 완전히 재작성된 버전
