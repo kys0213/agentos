@@ -86,6 +86,34 @@ describe('FileBasedSessionStorage E2E', () => {
       expect(loadedHistories).toHaveLength(2);
       expect(loadedHistories).toEqual(messageHistories);
     });
+
+    it('도구 메시지의 배열 콘텐츠가 저장/로드 시 유지되어야 한다', async () => {
+      await initMetadata(sessionId);
+
+      const toolHistory: MessageHistory = {
+        messageId: '1',
+        createdAt: new Date(),
+        role: 'tool',
+        name: 'dummy.tool',
+        toolCallId: 'tc-1',
+        content: [
+          { contentType: 'text', value: 'result text' } as any,
+          { contentType: 'file', value: Buffer.from('file-bytes') } as any,
+        ] as any,
+      };
+
+      await storage.saveMessageHistories(sessionId, [toolHistory]);
+      const loaded = await storage.readAll(sessionId);
+
+      expect(Array.isArray(loaded[0].content)).toBe(true);
+      const arr = loaded[0].content as any[];
+      expect(arr[0]).toEqual({ contentType: 'text', value: 'result text' });
+      // Buffer는 JSON 직렬화 시 { type: 'Buffer', data: [...] }로 로드됨
+      expect(arr[1].contentType).toBe('file');
+      expect(typeof arr[1].value).toBe('object');
+      expect(arr[1].value && arr[1].value.type).toBe('Buffer');
+      expect(Array.isArray(arr[1].value.data)).toBe(true);
+    });
   });
 
   describe('체크포인트 저장 및 로드', () => {
