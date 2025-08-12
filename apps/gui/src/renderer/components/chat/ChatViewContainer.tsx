@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   useActiveAgents,
   useChatHistory,
@@ -17,8 +17,28 @@ export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) =>
   const initialAgentId = activeAgents[0]?.id ?? mentionableAgents[0]?.id;
   const [selectedAgentId, setSelectedAgentId] = useState<string | undefined>(initialAgentId);
 
+  // Ensure selectedAgentId is set once agents load
+  useEffect(() => {
+    if (!selectedAgentId) {
+      const next = activeAgents[0]?.id ?? mentionableAgents[0]?.id;
+      if (next) setSelectedAgentId(next);
+    }
+  }, [selectedAgentId, activeAgents, mentionableAgents]);
+
   const { data: messages = [] } = useChatHistory(selectedAgentId);
-  const sendMutation = useSendChatMessage(selectedAgentId);
+
+  // Maintain sessionId per agent for consecutive turns
+  const sessionIdMapRef = useRef<Map<string, string>>(new Map());
+  const currentSessionId = selectedAgentId
+    ? sessionIdMapRef.current.get(selectedAgentId)
+    : undefined;
+
+  const sendMutation = useSendChatMessage(selectedAgentId, {
+    sessionId: currentSessionId,
+    onSessionId: (sid) => {
+      if (selectedAgentId) sessionIdMapRef.current.set(selectedAgentId, sid);
+    },
+  });
 
   const loading = useMemo(
     () => mentionableStatus === 'pending' || activeStatus === 'pending',

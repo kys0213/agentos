@@ -180,6 +180,15 @@ pnpm test      # 단위 테스트 실행
 pnpm build     # 빌드 오류 확인
 ```
 
+### **GUI 테스트 정책 (Playwright MCP)**
+
+- GUI(Electron/Web) 기능 검증은 E2E 테스트 추가 대신 dev 서버 + Playwright MCP로 디버깅합니다.
+- 실행 절차:
+  - `cd apps/gui && pnpm dev:web` 로 서버 기동
+  - Playwright MCP 스크립트로 브라우저를 구동해 시나리오 검증
+- 세부 가이드는 `apps/gui/docs/PLAYWRIGHT_MCP_GUIDE.md`를 따르세요.
+- 참고용 E2E 스펙은 문서적 레퍼런스로만 유지하며, 신규 작성 금지.
+
 # 수동 체크
 
 - [ ] TODO 항목이 완전히 완료되었는가?

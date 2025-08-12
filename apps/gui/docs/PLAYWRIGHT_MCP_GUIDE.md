@@ -48,9 +48,10 @@ Other form elements use accessible labels (e.g., “Agent Name”, “Descriptio
 4. Console error capture:
    - Collect `console.error` and React warnings; any error or uncaught exception fails the flow.
 
-## E2E Tests (Reference)
+## Playwright Running Tips
 
-- `apps/gui/e2e/web-gui-basic.e2e.test.ts` (supersedes `web-gui-basic.test.ts`)
-- `apps/gui/e2e/subagent-create-flow.e2e.test.ts`
-
-These tests mirror the MCP flow using the same selectors. They should not be executed in CI unless explicitly allowed; use them as living documentation for MCP scenarios.
+- Use console reporters to avoid HTML report/UIs:
+  - `pnpm --filter @agentos/apps-gui test:e2e:line`
+  - `pnpm --filter @agentos/apps-gui test:e2e:json`
+- Config defaults to `reporter: line`; override with `PW_REPORTER` if needed.
+- Tests reuse an existing dev server at `http://localhost:5173` when present; otherwise they launch via `webServer`.

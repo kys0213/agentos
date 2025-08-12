@@ -53,11 +53,25 @@ export class MockIpcChannel implements IpcChannel {
     // Simple echo behavior for mock
     const sessionId = options?.sessionId ?? `session_${Date.now()}`;
     const text = messages
-      .map((m) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content)))
+      .map((m) => {
+        const c: any = (m as any).content;
+        if (typeof c === 'string') return c;
+        if (Array.isArray(c)) {
+          return c
+            .map((it) => (typeof it === 'string' ? it : (it?.value ?? it?.text ?? '')))
+            .join('\n');
+        }
+        if (c && typeof c === 'object') {
+          return c.value ?? c.text ?? JSON.stringify(c);
+        }
+        return '';
+      })
       .join('\n');
+
+    // Return content using MultiModalContent shape expected by GUI
     const reply = {
       role: 'assistant',
-      content: { type: 'text', text: `Echo: ${text}` },
+      content: [{ contentType: 'text', value: `Echo: ${text}` }],
     } as unknown as Message;
     return { messages: [reply], sessionId };
   }
