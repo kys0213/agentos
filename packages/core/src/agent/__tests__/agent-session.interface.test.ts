@@ -5,6 +5,7 @@ describe('AgentSession interface', () => {
     // 타입 레벨 확인용 더미 구현
     const impl: AgentSession = {
       id: 's-1',
+      sessionId: 's-1',
       async chat() {
         return [];
       },

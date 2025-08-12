@@ -1,41 +1,46 @@
-import type { AgentSession, AgentSessionEventMap } from './agent-session';
-import type {
-  CursorPagination,
-  CursorPaginationResult,
-} from '../common/pagination/cursor-pagination';
-import type { MessageHistory, ChatSession } from '../chat/chat-session';
+import { Tool } from '@modelcontextprotocol/sdk/types';
 import type {
   LlmBridge,
   LlmBridgeResponse,
   LlmBridgeTool,
-  ToolCall,
-  UserMessage,
   Message,
-  AssistantMessage,
+  MultiModalContent,
   ToolMessage,
+  UserMessage,
 } from 'llm-bridge-spec';
-import type { ReadonlyAgentMetadata } from './agent-metadata';
+import type { ChatSession, MessageHistory } from '../chat/chat-session';
+import type {
+  CursorPagination,
+  CursorPaginationResult,
+} from '../common/pagination/cursor-pagination';
+import { McpContent } from '../tool/mcp/mcp';
 import type { McpRegistry } from '../tool/mcp/mcp.registery';
-
-type Unsubscribe = () => void;
+import type { ReadonlyAgentMetadata } from './agent-metadata';
+import type {
+  AgentSession,
+  AgentSessionEvent,
+  AgentSessionEventMap,
+  AgentSessionStatus,
+  Unsubscribe,
+} from './agent-session';
 
 export class DefaultAgentSession implements AgentSession {
-  private readonly handlers: Partial<{
-    [K in keyof AgentSessionEventMap]: Set<(payload: AgentSessionEventMap[K]) => void>;
-  }> = {};
+  private readonly handlers: Partial<
+    Record<AgentSessionEvent, Set<(payload: AgentSessionEventMap[AgentSessionEvent]) => void>>
+  > = {};
 
-  private getHandlerSet<E extends keyof AgentSessionEventMap>(
-    event: E
-  ): Set<(payload: AgentSessionEventMap[E]) => void> {
-    const existing = this.handlers[event] as
-      | Set<(payload: AgentSessionEventMap[E]) => void>
-      | undefined;
-    if (existing) return existing;
-    const created: Set<(payload: AgentSessionEventMap[E]) => void> = new Set();
-    // Assign without using any; index via Record<string, unknown> then cast on read
-    (this.handlers as Record<string, unknown>)[event as string] = created;
-    return created;
-  }
+  private readonly promptRequests = new Map<
+    string,
+    { resolve: (v: string) => void; reject: (e: Error) => void }
+  >();
+  private readonly consentRequests = new Map<
+    string,
+    { resolve: (v: boolean) => void; reject: (e: Error) => void }
+  >();
+  private readonly sensitiveRequests = new Map<
+    string,
+    { resolve: (v: Record<string, string>) => void; reject: (e: Error) => void }
+  >();
 
   constructor(
     private readonly agentId: string,
@@ -46,9 +51,18 @@ export class DefaultAgentSession implements AgentSession {
     private readonly endSessionFn?: (sessionId: string) => Promise<void>
   ) {}
 
-  private lastCursor: string = '';
+  private readonly terminatedHandlers: Set<
+    (payload: { by: 'user' | 'timeout' | 'agent' }) => void
+  > = new Set();
+
+  private status: AgentSessionStatus = 'idle';
 
   get id(): string {
+    // AgentSession 고유 식별자로 세션 ID를 노출
+    return this.chatSession.sessionId;
+  }
+
+  get sessionId(): string {
     return this.chatSession.sessionId;
   }
 
@@ -56,79 +70,138 @@ export class DefaultAgentSession implements AgentSession {
     input: UserMessage | UserMessage[],
     options?: { abortSignal?: AbortSignal; timeout?: number }
   ): Promise<Readonly<MessageHistory>[]> {
-    const messages = Array.isArray(input) ? input : [input];
-    this.emit('status', { state: 'running' });
-    const buffer: Message[] = Array.from(messages);
-    const tools = await this.getEnabledTools();
-    await this.invoke(buffer, tools, this.chatSession, {
-      abortSignal: options?.abortSignal,
-      timeout: options?.timeout,
-      maxTurnCount: 1,
-    });
-    // Agent는 내부적으로 ChatSession에 메시지를 append 하므로, 최신 히스토리를 조회하여 반환
+    if (this.status !== 'idle') {
+      throw new Error('session is not idle');
+    }
+
+    this.setStatus('running');
+
+    const abortController = this.registerChatAbortController(options);
+
     try {
-      const histories = await this.getHistory({
-        cursor: this.lastCursor,
-        direction: 'forward',
-        limit: 100,
-      } as any);
-      const items = histories?.items ?? [];
-      // 신규 메시지 이벤트 발행
-      if (items.length > 0) {
-        this.lastCursor = histories.nextCursor ?? this.lastCursor;
-        for (const mh of items) {
-          this.emit('message', { message: mh });
-        }
+      // TODO 가장 마지막 checkpoint 와 checkpoint 사이의 메시지 조회 후 같이 전달해야함 ( 인터페이스 신규로 추가 필요 )
+
+      const messages = Array.isArray(input) ? input : [input];
+
+      const persistedMessages: MessageHistory[] = [];
+
+      for (const message of messages) {
+        const persistedMessage = await this.chatSession.appendMessage(message);
+        persistedMessages.push(persistedMessage);
       }
-      this.emit('status', { state: 'idle' });
-      return items;
-    } catch {
-      this.emit('status', { state: 'idle' });
-      // 스토리지가 구현되지 않은 테스트 환경 등을 고려해 빈 배열 반환
-      return [];
+
+      const tools = await this.getEnabledTools();
+
+      const assistantMessages = await this.invoke(messages, tools, {
+        abortSignal: abortController.signal,
+        timeout: options?.timeout,
+        maxTurnCount: 1,
+      });
+
+      // 일부 테스트 환경(mock)에서 appendMessage가 undefined를 반환할 수 있으므로 방어적으로 처리
+      const safeAssistant = assistantMessages.filter((m): m is MessageHistory => Boolean(m));
+      persistedMessages.push(...safeAssistant);
+
+      return persistedMessages;
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.emit('error', { error: err });
+      throw err;
+    } finally {
+      this.setStatus('idle');
+      this.terminatedHandlers.clear();
     }
   }
 
-  async getHistory(
-    pagination?: CursorPagination
-  ): Promise<CursorPaginationResult<Readonly<MessageHistory>>> {
-    return this.chatSession.getHistories(pagination);
+  private setStatus(status: AgentSessionStatus) {
+    this.status = status;
+    this.emit('status', { state: status });
+  }
+
+  private registerChatAbortController(
+    options: { abortSignal?: AbortSignal; timeout?: number } | undefined
+  ) {
+    const abortController = new AbortController();
+
+    options?.abortSignal?.addEventListener('abort', () => {
+      abortController.abort();
+      this.emit('status', { state: 'terminated', detail: 'stopped by user' });
+    });
+
+    this.terminatedHandlers.add((reason) => {
+      abortController.abort(reason);
+    });
+
+    return abortController;
   }
 
   async terminate(): Promise<void> {
     if (this.endSessionFn) {
       await this.endSessionFn(this.chatSession.sessionId);
     }
+
+    for (const handler of this.terminatedHandlers) {
+      handler({ by: 'user' });
+      this.terminatedHandlers.delete(handler);
+    }
+
     this.emit('terminated', { by: 'user' });
   }
 
-  on<E extends keyof AgentSessionEventMap>(
+  async getHistory(
+    pagination?: CursorPagination
+  ): Promise<CursorPaginationResult<Readonly<MessageHistory>>> {
+    return await this.chatSession.getHistories(pagination);
+  }
+
+  on<E extends AgentSessionEvent>(
     event: E,
     handler: (payload: AgentSessionEventMap[E]) => void
   ): Unsubscribe {
     const set = this.getHandlerSet(event);
-    set.add(handler);
+
+    set.add(handler as (payload: AgentSessionEventMap[AgentSessionEvent]) => void);
+
     return () => {
-      set.delete(handler);
+      set.delete(handler as (payload: AgentSessionEventMap[AgentSessionEvent]) => void);
     };
   }
 
-  async providePromptResponse(): Promise<void> {
-    // no-op (미구현 이벤트 경로)
-  }
-  async provideConsentDecision(): Promise<void> {
-    // no-op
-  }
-  async provideSensitiveInput(): Promise<void> {
-    // no-op
+  async providePromptResponse(requestId: string, response: string): Promise<void> {
+    const deferred = this.promptRequests.get(requestId);
+    if (!deferred) {
+      throw new Error(`Unknown promptRequest id: ${requestId}`);
+    }
+    this.promptRequests.delete(requestId);
+    deferred.resolve(response);
   }
 
-  private emit<E extends keyof AgentSessionEventMap>(event: E, payload: AgentSessionEventMap[E]) {
+  async provideConsentDecision(requestId: string, accepted: boolean): Promise<void> {
+    const deferred = this.consentRequests.get(requestId);
+    if (!deferred) {
+      throw new Error(`Unknown consentRequest id: ${requestId}`);
+    }
+    this.consentRequests.delete(requestId);
+    deferred.resolve(accepted);
+  }
+
+  async provideSensitiveInput(requestId: string, values: Record<string, string>): Promise<void> {
+    const deferred = this.sensitiveRequests.get(requestId);
+    if (!deferred) {
+      throw new Error(`Unknown sensitiveInputRequest id: ${requestId}`);
+    }
+    this.sensitiveRequests.delete(requestId);
+    deferred.resolve(values);
+  }
+
+  private emit(event: AgentSessionEvent, payload: AgentSessionEventMap[AgentSessionEvent]) {
     const set = this.getHandlerSet(event);
-    for (const h of set) h(payload);
+
+    for (const handler of set) {
+      handler(payload);
+    }
   }
 
-  // ===== LLM/Tool orchestration (세션 로컬 구현) =====
   private async getEnabledTools(): Promise<LlmBridgeTool[]> {
     const mcps = await this.mcpRegistry.getAll();
     const enabledMcps = this.agentMetadata.preset.enabledMcps;
@@ -141,11 +214,15 @@ export class DefaultAgentSession implements AgentSession {
     const foundTools = await Promise.all(
       enabledMcps.map(async (enabled) => {
         const mcp = await this.mcpRegistry.getOrThrow(enabled.name);
+
         const tools = await mcp.getTools();
+
         if (!Array.isArray(enabled.enabledTools) || enabled.enabledTools.length === 0) {
           return tools;
         }
+
         const enabledTools = enabled.enabledTools;
+
         return tools.filter((t) => enabledTools.some((et) => et.name === t.name));
       })
     );
@@ -153,7 +230,7 @@ export class DefaultAgentSession implements AgentSession {
     return foundTools.flat().map(this.toLlmBridgeTool);
   }
 
-  private toLlmBridgeTool(tool: any): LlmBridgeTool {
+  private toLlmBridgeTool(tool: Tool): LlmBridgeTool {
     return {
       name: tool.name,
       description: tool.description ?? '',
@@ -164,79 +241,124 @@ export class DefaultAgentSession implements AgentSession {
   private async invoke(
     messages: Message[],
     tools: LlmBridgeTool[],
-    chatSession: ChatSession,
-    options?: { abortSignal?: AbortSignal; timeout?: number; maxTurnCount?: number }
-  ): Promise<LlmBridgeResponse> {
-    this.ensureNotAborted(options?.abortSignal);
-    const response = await this.invokeWithTimeout(
+    options: { abortSignal: AbortSignal; timeout?: number; maxTurnCount?: number }
+  ): Promise<MessageHistory[]> {
+    this.ensureNotAborted(options.abortSignal);
+
+    const { llmResponse, assistantMessage } = await this.invokeWithTimeout(
       () => this.llmBridge.invoke({ messages }, { tools }),
-      options?.timeout
+      { abortSignal: options.abortSignal, timeout: options.timeout }
     );
 
-    const assistantMessage: AssistantMessage = {
-      role: 'assistant',
-      content: response.content,
-    };
-    await chatSession.appendMessage(assistantMessage);
-    if ((response as any).usage) {
-      await chatSession.sumUsage((response as any).usage);
+    if (!Array.isArray(llmResponse.toolCalls) || llmResponse.toolCalls.length === 0) {
+      return [assistantMessage];
     }
 
-    if (!Array.isArray((response as any).toolCalls) || (response as any).toolCalls.length === 0) {
-      return response;
-    }
-
-    messages.push(assistantMessage);
-    return await this.invokeWithTool(
-      messages,
-      (response as any).toolCalls,
-      tools,
-      chatSession,
-      options
-    );
+    return await this.invokeWithTool(messages, llmResponse, options);
   }
 
   private async invokeWithTool(
     messages: Message[],
-    toolCalls: ToolCall[],
-    tools: LlmBridgeTool[],
-    chatSession: ChatSession,
-    options?: { abortSignal?: AbortSignal; timeout?: number; maxTurnCount?: number }
-  ): Promise<LlmBridgeResponse> {
-    for (let i = 0; i < (options?.maxTurnCount ?? 3); i++) {
-      this.ensureNotAborted(options?.abortSignal);
+    response: LlmBridgeResponse,
+    options: { abortSignal: AbortSignal; timeout?: number; maxTurnCount?: number }
+  ): Promise<MessageHistory[]> {
+    const toolResults: ToolMessage[] = [];
 
-      for (const toolCall of toolCalls) {
+    for (let i = 0; i < (options?.maxTurnCount ?? 10); i++) {
+      this.ensureNotAborted(options.abortSignal);
+
+      for (const toolCall of response?.toolCalls ?? []) {
         const { mcp, tool } = await this.mcpRegistry.getToolOrThrow(toolCall.name);
+
+        // 사용자 동의 요청 (Phase 2: interaction events)
+        const allowed = await this.requestConsent(
+          `Allow tool call: ${tool.name}?`,
+          { tool: tool.name, mcp: mcp.name, arguments: toolCall.arguments },
+          { abortSignal: options.abortSignal, timeout: options.timeout }
+        );
+
+        if (!allowed) {
+          throw new Error('tool call denied by user');
+        }
+
         const { contents, isError } = await mcp.invokeTool(tool, { input: toolCall.arguments });
+
         if (isError) {
           throw new Error('Tool call failed');
         }
+
         const toolMessage: ToolMessage = {
           role: 'tool',
           content: this.toMultiModalContents(contents),
           name: tool.name,
           toolCallId: toolCall.toolCallId,
         };
-        await chatSession.appendMessage(toolMessage);
+
+        toolResults.push(toolMessage);
+
+        const persistedTool = await this.chatSession.appendMessage(toolMessage);
+        if (persistedTool) {
+          this.emit('message', { message: persistedTool });
+        }
       }
 
-      const llmResponse = await this.invokeWithTimeout(
-        () => this.llmBridge.invoke({ messages }, { tools }),
-        options?.timeout
+      const { llmResponse, assistantMessage } = await this.invokeWithTimeout(
+        () =>
+          this.llmBridge.invoke({
+            messages: [...messages, ...toolResults],
+          }),
+        { abortSignal: options.abortSignal, timeout: options.timeout }
       );
-      if (
-        !Array.isArray((llmResponse as any).toolCalls) ||
-        (llmResponse as any).toolCalls.length === 0
-      ) {
-        return llmResponse;
+
+      if (!Array.isArray(llmResponse.toolCalls) || llmResponse.toolCalls.length === 0) {
+        return [assistantMessage];
       }
-      toolCalls = (llmResponse as any).toolCalls;
     }
+
     throw new Error('Tool call count exceeded');
   }
 
-  private toMultiModalContents(contents: any[]): any[] {
+  private async requestConsent(
+    reason: string,
+    data: unknown,
+    options: { abortSignal: AbortSignal; timeout?: number }
+  ): Promise<boolean> {
+    const id = this.createRequestId();
+    this.setStatus('waiting-input');
+
+    const decision = new Promise<boolean>((resolve, reject) => {
+      this.consentRequests.set(id, { resolve, reject });
+
+      const onAbort = () => {
+        this.consentRequests.delete(id);
+        reject(new Error('stopped by abort signal'));
+      };
+      options.abortSignal.addEventListener('abort', onAbort, { once: true });
+
+      if (options.timeout && options.timeout > 0) {
+        setTimeout(() => {
+          if (this.consentRequests.has(id)) {
+            this.consentRequests.delete(id);
+            reject(new Error('timeout'));
+          }
+        }, options.timeout);
+      }
+    });
+
+    this.emit('consentRequest', { id, reason, data });
+
+    try {
+      const result = await decision;
+      return result;
+    } finally {
+      // Return to running if still active
+      if (this.status === 'waiting-input') {
+        this.setStatus('running');
+      }
+    }
+  }
+
+  private toMultiModalContents(contents: McpContent[]): MultiModalContent[] {
     return contents.map((content) => {
       if (content.type === 'text') {
         return { contentType: content.type, value: content.text };
@@ -251,13 +373,62 @@ export class DefaultAgentSession implements AgentSession {
     }
   }
 
-  private async invokeWithTimeout<T>(fn: () => Promise<T>, timeoutMs?: number): Promise<T> {
-    if (!timeoutMs || timeoutMs <= 0) return fn();
-    return await Promise.race<Promise<T>>([
-      fn(),
-      new Promise<T>((_, reject) => {
-        setTimeout(() => reject(new Error('timeout')), timeoutMs);
-      }),
-    ]);
+  private async invokeWithTimeout(
+    fn: () => Promise<LlmBridgeResponse>,
+    options: { abortSignal: AbortSignal; timeout?: number; maxTurnCount?: number }
+  ): Promise<{ llmResponse: LlmBridgeResponse; assistantMessage: MessageHistory }> {
+    const { abortSignal, timeout } = options;
+
+    const promise =
+      !timeout || timeout <= 0
+        ? fn()
+        : await Promise.race<Promise<LlmBridgeResponse>>([
+            fn(),
+            new Promise<LlmBridgeResponse>((_, reject) => {
+              setTimeout(() => reject(new Error('timeout')), timeout);
+            }),
+          ]);
+
+    const response = await promise;
+
+    if (abortSignal.aborted) {
+      throw new Error('stopped by abort signal');
+    }
+
+    const persistedAssistant = await this.chatSession.appendMessage({
+      role: 'assistant',
+      content: response.content,
+    });
+    if (persistedAssistant) {
+      this.emit('message', { message: persistedAssistant });
+    }
+
+    if (response.usage) {
+      await this.chatSession.sumUsage(response.usage);
+    }
+
+    // TODO : 컨텍스트 윈도우 초과시 체크포인트 저장
+
+    return { llmResponse: response, assistantMessage: persistedAssistant };
+  }
+
+  private getHandlerSet(
+    event: AgentSessionEvent
+  ): Set<(payload: AgentSessionEventMap[AgentSessionEvent]) => void> {
+    const existing = this.handlers[event];
+
+    if (existing) {
+      return existing;
+    }
+
+    const created: Set<(payload: AgentSessionEventMap[AgentSessionEvent]) => void> = new Set();
+
+    this.handlers[event] = created;
+
+    return created;
+  }
+
+  private createRequestId(): string {
+    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
   }
 }

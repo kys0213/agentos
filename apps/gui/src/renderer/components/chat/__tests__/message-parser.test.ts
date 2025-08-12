@@ -1,4 +1,8 @@
-import { parseMessageContent, parseMessagePreview, hasTextContent } from '../../../utils/message-parser';
+import {
+  parseMessageContent,
+  parseMessagePreview,
+  hasTextContent,
+} from '../../../utils/message-parser';
 import type { MessageHistory } from '@agentos/core';
 
 const msg = (content: any): MessageHistory => ({
@@ -38,5 +42,3 @@ describe('message-parser', () => {
     expect(p.length).toBe(20);
   });
 });
-
-

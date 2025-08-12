@@ -54,27 +54,29 @@ export function useSendChatMessage(agentId: string);
 
 ### Phase 1: 서비스/훅 기반 구축
 
-1) hooks 생성: `use-chat.ts`
+1. hooks 생성: `use-chat.ts`
+
 - mentionable/active agents 쿼리 추가
 - history 쿼리(초기 빈 배열), send 뮤테이션(캐시 append) 추가
 
-2) fetchers 보완: `services/fetchers/chat.ts`
+2. fetchers 보완: `services/fetchers/chat.ts`
+
 - `sendMessage(agentId, text, mentions?)`에서 `AgentService.chat` 호출
 - `fetchMentionableAgents`/`fetchActiveAgents`는 현 구조 유지(필터 확정)
 
-3) 불용 파일 제거: `services/chat.service.ts`
+3. 불용 파일 제거: `services/chat.service.ts`
 
 ### Phase 2: 컨테이너 생성 및 연결
 
-4) `ChatViewContainer.tsx` 신설: 상태(selectedAgentId) + 훅 결합 + `ChatView`에 전달
+4. `ChatViewContainer.tsx` 신설: 상태(selectedAgentId) + 훅 결합 + `ChatView`에 전달
 
-5) `ChatView.tsx` 리팩터: mock 제거, props 기반 렌더
+5. `ChatView.tsx` 리팩터: mock 제거, props 기반 렌더
 
-6) (옵션) `ChatInterfaceContainer.tsx` 추가 및 `ChatInterface.tsx` 경량화
+6. (옵션) `ChatInterfaceContainer.tsx` 추가 및 `ChatInterface.tsx` 경량화
 
 ### Phase 3: 정리 및 테스트
 
-7) 타입/린트/빌드 통과, 간단 상호작용 테스트 작성/수정
+7. 타입/린트/빌드 통과, 간단 상호작용 테스트 작성/수정
 
 ## 커밋 계획 (GIT_WORKFLOW_GUIDE 준수)
 
@@ -92,5 +94,3 @@ export function useSendChatMessage(agentId: string);
 - `apps/gui/docs/CHAT_TO_AGENT_REFACTOR_PLAN.md`
 - `apps/gui/docs/GUI_IPC_AND_SERVICES.md`
 - `docs/GIT_WORKFLOW_GUIDE.md`
-
-

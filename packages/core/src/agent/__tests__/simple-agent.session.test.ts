@@ -65,13 +65,15 @@ describe('SimpleAgent.createSession', () => {
     const messages: UserMessage[] = [
       { role: 'user', content: { contentType: 'text', value: 'hello' } },
     ];
-    const events: any[] = [];
+    const events: Array<['status', string] | ['message', string]> = [];
     const offStatus = session.on('status', (p) => events.push(['status', p.state]));
     const offMsg = session.on('message', (p) => events.push(['message', p.message.role]));
 
     const result = await session.chat(messages);
     // 기본 구현은 history 조회 실패 시 빈 배열을 반환
     expect(Array.isArray(result)).toBe(true);
+    // 이벤트가 최소 한 번은 발생해야 함 (running/idle)
+    expect(events.some(([t]) => t === 'status')).toBe(true);
 
     offStatus();
     offMsg();

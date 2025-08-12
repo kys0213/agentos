@@ -5,9 +5,13 @@ import type {
 import type { MessageHistory } from '../chat/chat-session';
 import type { UserMessage } from 'llm-bridge-spec';
 
+export type Unsubscribe = () => void;
+
+export type AgentSessionStatus = 'idle' | 'running' | 'waiting-input' | 'terminated' | 'error';
+
 export type AgentSessionEventMap = {
   message: { message: MessageHistory };
-  status: { state: 'idle' | 'running' | 'waiting-input' | 'terminated' | 'error'; detail?: string };
+  status: { state: AgentSessionStatus; detail?: string };
   error: { error: Error };
   terminated: { by: 'user' | 'timeout' | 'agent' };
   promptRequest: { id: string; message: string; schema?: unknown };
@@ -18,8 +22,11 @@ export type AgentSessionEventMap = {
   };
 };
 
+export type AgentSessionEvent = keyof AgentSessionEventMap;
+
 export interface AgentSession {
   readonly id: string;
+  readonly sessionId: string;
 
   chat(
     input: UserMessage | UserMessage[],
@@ -32,10 +39,10 @@ export interface AgentSession {
 
   terminate(): Promise<void>;
 
-  on<E extends keyof AgentSessionEventMap>(
+  on<E extends AgentSessionEvent>(
     event: E,
     handler: (payload: AgentSessionEventMap[E]) => void
-  ): () => void;
+  ): Unsubscribe;
 
   providePromptResponse(requestId: string, response: string): Promise<void>;
   provideConsentDecision(requestId: string, accepted: boolean): Promise<void>;

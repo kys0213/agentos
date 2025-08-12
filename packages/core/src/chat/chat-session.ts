@@ -20,8 +20,9 @@ export interface ChatSession {
   /**
    * Append a message to the chat session
    * @param message - The message to append
+   * @returns The persisted MessageHistory
    */
-  appendMessage(message: Message): Promise<void>;
+  appendMessage(message: Message): Promise<MessageHistory>;
 
   /**
    * Append a usage to the chat session
