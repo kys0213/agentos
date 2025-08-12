@@ -94,7 +94,7 @@ export interface SidebarState {
 
 ## Todo
 
-- [ ] Typography/base tokens: set body 14px, h2/h5/control sizes; adopt OKLCH color tokens.
+- [x] Typography/base tokens: set body 14px, h2/h5/control sizes; adopt OKLCH color tokens.
 - [ ] Input/button sizing: align line-heights, paddings, radii to mock.
 - [ ] Sidebar: add "Archived (n)" filter pill; section headers (📌 Pinned, Older).
 - [ ] Conversation cards: implement cell layout (avatar/title/menu/preview/badges/timestamp) + hover/active.
