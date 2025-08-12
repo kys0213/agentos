@@ -26,7 +26,7 @@
 - [x] Define `AgentSession` interface + event map (status/message/terminated/interaction stubs)
 - [x] Implement `DefaultAgentSession` (direct LLM/Tool orchestration)
 - [x] Integrate `SimpleAgent.createSession()` with `DefaultAgentSession`
-- [ ] Implement interaction events (prompt/consent/sensitive input) and `provide*` handlers
+- [x] Implement interaction events (prompt/consent/sensitive input) and `provide*` handlers
 - [ ] Abort/timeout/error branches tests
 - [ ] ChatManager cohesion tests with file-based storage (incremental history)
 
