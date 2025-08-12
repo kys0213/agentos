@@ -10,6 +10,7 @@ import PresetStatsChips from './PresetStatsChips';
 
 export interface PresetCardProps {
   preset: Preset;
+  onOpenDetail?: (preset: Preset) => void;
   onEdit?: (preset: Preset) => void;
   onDuplicate?: (preset: Preset) => void;
   onDelete?: (id: string) => void;
@@ -17,12 +18,16 @@ export interface PresetCardProps {
 
 export const PresetCard: React.FC<PresetCardProps> = ({
   preset,
+  onOpenDetail,
   onEdit,
   onDuplicate,
   onDelete,
 }) => {
   return (
-    <Card className="p-6 hover:shadow-md transition-shadow">
+    <Card
+      className="p-6 hover:shadow-md transition-shadow cursor-pointer"
+      onClick={() => onOpenDetail?.(preset)}
+    >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -70,17 +75,35 @@ export const PresetCard: React.FC<PresetCardProps> = ({
       />
 
       <div className="flex gap-2">
-        <Button variant="outline" size="sm" className="flex-1" onClick={() => onEdit?.(preset)}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit?.(preset);
+          }}
+        >
           <Edit className="w-3 h-3 mr-1" />
           Edit
         </Button>
-        <Button variant="outline" size="sm" onClick={() => onDuplicate?.(preset)}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDuplicate?.(preset);
+          }}
+        >
           <Copy className="w-3 h-3" />
         </Button>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onDelete?.(preset.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete?.(preset.id);
+          }}
           className="text-red-600 hover:text-red-700"
         >
           <Trash2 className="w-3 h-3" />

@@ -135,6 +135,7 @@ export const PresetManagerContainer: React.FC = () => {
         onDeletePreset={(id) => deleteMutation.mutate(id)}
         onDuplicatePreset={(p) => duplicateMutation.mutate(p.id)}
         onCreatePreset={(data) => createMutation.mutate(data as any)}
+        onCreatePresetAsync={(data) => createMutation.mutateAsync(data as any)}
         onUpdatePreset={(id, data) => updateMutation.mutate({ id, data } as any)}
       />
     </div>

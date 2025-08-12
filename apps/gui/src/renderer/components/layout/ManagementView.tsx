@@ -242,8 +242,8 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
           </div>
         )}
 
-        {/* Management Content */}
-        <div className="flex-1 overflow-hidden">{renderManagementContent()}</div>
+        {/* Management Content: make this area scrollable */}
+        <div className="flex-1 min-h-0 overflow-y-auto">{renderManagementContent()}</div>
       </main>
 
       {/* Floating Chat Interface (like design/App.tsx) */}

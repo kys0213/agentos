@@ -29,7 +29,7 @@ export function Dashboard({
       color: 'text-blue-600',
     },
     {
-      title: 'Sub Agents',
+      title: 'Agents',
       value: currentAgents.length.toString(),
       change: `${currentAgents.filter((a) => a.status === 'active').length} active`,
       icon: Bot,
