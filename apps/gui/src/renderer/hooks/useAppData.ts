@@ -52,9 +52,21 @@ export function useAppData(): UseAppDataReturn {
           console.warn('⚠️ PresetService not found in ServiceContainer');
         }
 
-        // TODO: Agent 데이터는 현재 Core에 없으므로 임시로 빈 배열
-        // 실제로는 AgentManager나 별도 서비스에서 로드해야 함
-        setCurrentAgents([]);
+        // Agent Service를 통해 실제 에이전트 로드
+        console.log('🔄 Loading agents from AgentService...');
+
+        if (ServiceContainer.has('agent')) {
+          const agentService = ServiceContainer.getOrThrow('agent');
+          console.log('📦 AgentService found, calling getAllAgentMetadatas()...');
+
+          const coreAgents = await agentService.getAllAgentMetadatas();
+          console.log('✅ Agents loaded from service:', coreAgents);
+
+          setCurrentAgents(coreAgents);
+        } else {
+          console.warn('⚠️ AgentService not found in ServiceContainer');
+          setCurrentAgents([]);
+        }
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
         console.error('Failed to load app data:', error);
