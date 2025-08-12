@@ -16,7 +16,7 @@
 - [x] Define `CoreContent/CoreMessage` and normalizers (`toCoreContentArray`, `normalizeToCoreContentArray`)
 - [x] Handle `Buffer`/`Readable` inputs in normalizer
 - [x] Tests: single/array/string/number/circular/multimodal/buffer/readable
-- [x] Usage audit doc with impact checklist (`packages/core/docs/CORE_CONTENT_USAGE_AUDIT.md`)
+- [x] Usage audit doc with impact checklist (`CORE_CONTENT_USAGE_AUDIT.md`)
 
 ### Phase 2 — Agent/Session (Core)
 - [x] Define `AgentSession` interface + event map (status/message/terminated/interaction stubs)
@@ -48,6 +48,5 @@
 - Clear adapters only at boundaries
 
 ## References
-- `packages/core/docs/CORE_CONTENT_STANDARDIZATION_PLAN.md`
-- `packages/core/docs/CORE_CONTENT_USAGE_AUDIT.md`
-- `apps/gui/docs/CHAT_AGENTID_SESSION_REFACTOR_PLAN.md`
+- `CORE_CONTENT_STANDARDIZATION_PLAN.md`
+- `CORE_CONTENT_USAGE_AUDIT.md`
