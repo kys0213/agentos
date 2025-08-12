@@ -1,0 +1,108 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { MessageHistory, ReadonlyAgentMetadata } from '@agentos/core';
+import { ServiceContainer } from '../../../shared/ipc/service-container';
+
+export const CHAT_QUERY_KEYS = {
+  mentionableAgents: ['chat', 'mentionableAgents'] as const,
+  activeAgents: ['chat', 'activeAgents'] as const,
+  history: (agentId: string) => ['chat', 'history', agentId] as const,
+} as const;
+
+export const useMentionableAgents = () => {
+  return useQuery<ReadonlyAgentMetadata[]>({
+    queryKey: CHAT_QUERY_KEYS.mentionableAgents,
+    queryFn: async () => {
+      const agentService = ServiceContainer.getOrThrow('agent');
+      const all = await agentService.getAllAgentMetadatas();
+      return all.filter((a) => a.status === 'active' || a.status === 'idle');
+    },
+    staleTime: 60_000,
+  });
+};
+
+export const useActiveAgents = () => {
+  return useQuery<ReadonlyAgentMetadata[]>({
+    queryKey: CHAT_QUERY_KEYS.activeAgents,
+    queryFn: async () => {
+      const agentService = ServiceContainer.getOrThrow('agent');
+      const all = await agentService.getAllAgentMetadatas();
+      return all.filter((a) => a.status === 'active');
+    },
+    staleTime: 30_000,
+  });
+};
+
+export const useChatHistory = (agentId: string | undefined) => {
+  return useQuery<Readonly<MessageHistory>[]>({
+    queryKey: agentId ? CHAT_QUERY_KEYS.history(agentId) : ['chat', 'history', 'disabled'],
+    queryFn: async () => {
+      // 서버 저장 없음: 초기 빈 배열. 전송 시 캐시에 append.
+      return [] as Readonly<MessageHistory>[];
+    },
+    enabled: !!agentId,
+    initialData: [] as Readonly<MessageHistory>[],
+  });
+};
+
+export const useSendChatMessage = (agentId: string | undefined) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      text,
+      mentionedAgentIds,
+    }: {
+      text: string;
+      mentionedAgentIds?: string[];
+    }) => {
+      if (!agentId) throw new Error('agentId is required');
+
+      const agentService = ServiceContainer.getOrThrow('agent');
+
+      // 유저 메시지
+      const userMessage: MessageHistory = {
+        messageId: `user-${Date.now()}`,
+        role: 'user',
+        content: { contentType: 'text', value: text },
+        createdAt: new Date(),
+      };
+
+      // 캐시에 유저 메시지 먼저 추가 (낙관적)
+      queryClient.setQueryData(CHAT_QUERY_KEYS.history(agentId), (prev?: Readonly<MessageHistory>[]) => {
+        const history = prev ?? [];
+        return [...history, userMessage];
+      });
+
+      // AgentProtocol.chat 호출
+      const result = await agentService.chat(agentId, [
+        { role: 'user', content: { type: 'text', text } },
+      ], {
+        // 세션 = agentId 전략. 필요 시 서버에서 실제 sessionId를 반환하여 관리 가능
+        sessionId: agentId,
+        maxTurnCount: 1,
+      });
+
+      // 응답 메시지들을 MessageHistory로 매핑(간단 매핑)
+      const assistantMessages: MessageHistory[] = result.messages.map((m, idx) => ({
+        messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
+        role: m.role === 'assistant' ? 'assistant' : (m.role as any),
+        content:
+          m.content.type === 'text'
+            ? { contentType: 'text', value: (m.content as any).text }
+            : { contentType: 'text', value: JSON.stringify(m.content) },
+        createdAt: new Date(),
+      }));
+
+      return { userMessage, assistantMessages } as const;
+    },
+    onSuccess: ({ assistantMessages }) => {
+      if (!agentId) return;
+      queryClient.setQueryData(
+        CHAT_QUERY_KEYS.history(agentId),
+        (prev?: Readonly<MessageHistory>[]) => [...(prev ?? []), ...assistantMessages]
+      );
+    },
+  });
+};
+
+
