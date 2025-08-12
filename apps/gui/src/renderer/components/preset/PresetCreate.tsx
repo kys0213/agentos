@@ -3,6 +3,7 @@ import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { ScrollArea } from '../ui/scroll-area';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
@@ -412,8 +413,10 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
           </TabsList>
 
           <div className="flex-1 min-h-0">
-            <TabsContent value="overview" className="h-full">
-              <div className="max-w-4xl mx-auto space-y-6">
+            <ScrollArea className="h-full">
+              <div className="pr-2">
+                <TabsContent value="overview" className="h-full">
+                  <div className="max-w-4xl mx-auto space-y-6">
                 {/* Category Selection with Templates */}
                 <Card className="p-6">
                   <div className="flex items-center gap-2 mb-4">
@@ -540,10 +543,10 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                   </Button>
                 </div>
               </div>
-            </TabsContent>
+                </TabsContent>
 
-            <TabsContent value="configuration" className="h-full">
-              <div className="max-w-4xl mx-auto space-y-6">
+                <TabsContent value="configuration" className="h-full">
+                  <div className="max-w-4xl mx-auto space-y-6">
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Model Parameters</h3>
                   <div className="space-y-6">
@@ -625,11 +628,11 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                     <ArrowLeft className="w-4 h-4 rotate-180" />
                   </Button>
                 </div>
-              </div>
-            </TabsContent>
+                  </div>
+                </TabsContent>
 
-            <TabsContent value="tools" className="h-full">
-              <div className="max-w-4xl mx-auto space-y-6">
+                <TabsContent value="tools" className="h-full">
+                  <div className="max-w-4xl mx-auto space-y-6">
                 {/* Built-in Tools */}
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Built-in Tools</h3>
@@ -783,11 +786,11 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                     <ArrowLeft className="w-4 h-4 rotate-180" />
                   </Button>
                 </div>
-              </div>
-            </TabsContent>
+                  </div>
+                </TabsContent>
 
-            <TabsContent value="knowledge" className="h-full">
-              <div className="max-w-4xl mx-auto space-y-6">
+                <TabsContent value="knowledge" className="h-full">
+                  <div className="max-w-4xl mx-auto space-y-6">
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">
                     Knowledge Base (Optional)
@@ -822,8 +825,10 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                     Create Preset
                   </Button>
                 </div>
+                  </div>
+                </TabsContent>
               </div>
-            </TabsContent>
+            </ScrollArea>
           </div>
         </Tabs>
       </div>
