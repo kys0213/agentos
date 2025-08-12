@@ -25,10 +25,38 @@ describe('Core content standardization', () => {
     expect(arr[0].value).toBe('hello world');
   });
 
+  test('normalizeToCoreContentArray: null/undefined → empty array', () => {
+    expect(normalizeToCoreContentArray(null)).toEqual([]);
+    expect(normalizeToCoreContentArray(undefined)).toEqual([]);
+  });
+
   test('normalizeToCoreContentArray: legacy-like object kept as CoreContent', () => {
     const arr = normalizeToCoreContentArray({ contentType: 'text', value: 'x' });
     expect(arr).toHaveLength(1);
     expect(arr[0]).toEqual({ contentType: 'text', value: 'x' });
+  });
+
+  test('normalizeToCoreContentArray: circular object → String fallback', () => {
+    const a: any = {};
+    a.self = a; // create circular reference
+    const arr = normalizeToCoreContentArray(a);
+    expect(arr).toHaveLength(1);
+    expect(arr[0].contentType).toBe('text');
+    // JSON.stringify would fail; fallback is String(obj)
+    expect(arr[0].value).toBe('[object Object]');
+  });
+
+  test('normalizeToCoreContentArray: passes through image/audio/video/file contents', () => {
+    const image = { contentType: 'image', value: 'img-bytes' } as unknown as CoreContent;
+    const audio = { contentType: 'audio', value: 'audio-bytes' } as unknown as CoreContent;
+    const video = { contentType: 'video', value: 'video-bytes' } as unknown as CoreContent;
+    const file = { contentType: 'file', value: 'file-bytes' } as unknown as CoreContent;
+    const arr = normalizeToCoreContentArray([image, audio, video, file]);
+    expect(arr).toHaveLength(4);
+    expect(arr[0]).toEqual(image);
+    expect(arr[1]).toEqual(audio);
+    expect(arr[2]).toEqual(video);
+    expect(arr[3]).toEqual(file);
   });
 
   test('normalizeToCoreContentArray: array flattens and normalizes', () => {
