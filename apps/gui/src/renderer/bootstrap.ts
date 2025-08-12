@@ -1,6 +1,7 @@
 import { AgentOsServiceNames } from '../shared/types/agentos-api';
 import type { IpcChannel } from '../shared/types/ipc-channel';
 import { AgentService } from './services/agent.service';
+import { ConversationService } from './services/conversation.service';
 import { BridgeService } from './services/bridge.service';
 import { BuiltinToolService } from './services/builtin-tool.service';
 import { createIpcChannel } from '../shared/ipc/ipc-channel.factory';
@@ -18,6 +19,7 @@ export interface BootstrapResult {
   mcpService: McpService;
   presetService: PresetService;
   agentService: AgentService;
+  conversationService: ConversationService;
 }
 
 /**
@@ -37,6 +39,7 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
   const presetService = new PresetService(channel);
   const agentService = new AgentService(channel);
   const builtinToolService = new BuiltinToolService(channel);
+  const conversationService = new ConversationService(channel);
   const mcpUsageLogService = new McpUsageLogService(channel);
 
   console.log('⚙️ All services created with IpcChannel dependency injection');
@@ -48,6 +51,7 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
   ServiceContainer.register('agent', agentService);
   ServiceContainer.register('builtinTool', builtinToolService);
   ServiceContainer.register('mcpUsageLog', mcpUsageLogService);
+  ServiceContainer.register('conversation', conversationService);
 
   console.log('📦 All services registered in ServiceContainer');
   console.log('✅ Bootstrap completed successfully');
@@ -61,6 +65,7 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
     mcpService,
     presetService,
     agentService,
+    conversationService,
   };
 }
 
