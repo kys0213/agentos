@@ -32,4 +32,3 @@ describe('normalizeToArrayContent', () => {
     expect(out).toEqual([{ contentType: 'text', value: 'raw' }]);
   });
 });
-

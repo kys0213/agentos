@@ -76,9 +76,7 @@ describe('DefaultAgentSession + FileBasedChatManager cohesion', () => {
     // 1st call: tool call
     llm.invoke.mockResolvedValueOnce({
       content: { contentType: 'text', value: 'a1' },
-      toolCalls: [
-        { name: 'dummy.echo', toolCallId: 'tc-1', arguments: { text: 'hi' } } as any,
-      ],
+      toolCalls: [{ name: 'dummy.echo', toolCallId: 'tc-1', arguments: { text: 'hi' } } as any],
     } as LlmBridgeResponse);
     // 2nd call: final assistant
     llm.invoke.mockResolvedValueOnce({

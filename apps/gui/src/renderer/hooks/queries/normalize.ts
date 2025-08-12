@@ -13,4 +13,3 @@ export function normalizeToArrayContent(m: Message): MultiModalContent[] {
   }
   return [{ contentType: 'text', value: String(c ?? '') }];
 }
-

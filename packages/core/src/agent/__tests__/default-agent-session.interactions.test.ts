@@ -105,9 +105,7 @@ describe('DefaultAgentSession interactions', () => {
   test('timeout rejects with error and emits error event', async () => {
     const llm = mock<LlmBridge>();
     // LLM never resolves within timeout
-    llm.invoke.mockImplementation(
-      () => new Promise<LlmBridgeResponse>(() => {})
-    );
+    llm.invoke.mockImplementation(() => new Promise<LlmBridgeResponse>(() => {}));
 
     const chat = createChatSession('s-timeout');
     const mcp = { getAll: jest.fn().mockResolvedValue([]) } as any;
@@ -144,4 +142,3 @@ describe('DefaultAgentSession interactions', () => {
     expect(errors[0].message).toContain('boom');
   });
 });
-

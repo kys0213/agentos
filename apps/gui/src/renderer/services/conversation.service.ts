@@ -23,8 +23,9 @@ export class ConversationService implements ConversationProtocol {
     return this.ipc.getMessages(sessionId, pagination);
   }
 
-  async deleteSession(sessionId: string): Promise<{ success: boolean; error?: string | undefined }> {
+  async deleteSession(
+    sessionId: string
+  ): Promise<{ success: boolean; error?: string | undefined }> {
     return this.ipc.deleteSession(sessionId);
   }
 }
-

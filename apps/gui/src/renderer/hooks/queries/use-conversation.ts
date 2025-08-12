@@ -39,4 +39,3 @@ export function useSessionMessages(sessionId: string | undefined, pagination?: C
     initialData: null,
   });
 }
-

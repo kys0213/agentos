@@ -92,12 +92,26 @@ export const useSendChatMessage = (agentId: string | undefined) => {
       // 응답 메시지들을 MessageHistory로 매핑 (배열 콘텐츠로 정규화)
       const assistantMessages: MessageHistory[] = result.messages.map((m, idx): MessageHistory => {
         const content = normalizeToArrayContent(m);
-        return {
-          messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
-          role: m.role,
-          content,
-          createdAt: new Date(),
-        };
+
+        if (m.role === 'tool') {
+          return {
+            messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
+            role: m.role,
+            content,
+            createdAt: new Date(),
+            name: m.role === 'tool' ? m.name : '',
+            toolCallId: m.role === 'tool' ? m.toolCallId : '',
+            isCompressed: false,
+            agentMetadata: undefined,
+          };
+        } else {
+          return {
+            messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
+            role: m.role,
+            content: content[0],
+            createdAt: new Date(),
+          };
+        }
       });
 
       return { userMessage, assistantMessages } as const;
