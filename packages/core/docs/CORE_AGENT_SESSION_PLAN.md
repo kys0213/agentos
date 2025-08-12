@@ -39,7 +39,7 @@
 ### Phase 4 — GUI/CLI Boundaries
 
 - [x] Parser supports array/legacy/text content
-- [ ] Normalize to array at boundaries; migrate hooks/services to session-centric flow
+- [x] Normalize to array at boundaries; migrate hooks/services to session-centric flow
 - [ ] Minimal E2E path using session
 
 ## Events (AgentSession)
