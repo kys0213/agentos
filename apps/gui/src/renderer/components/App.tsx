@@ -65,7 +65,7 @@ const NewAppLayout: React.FC = () => {
     // 컨테이너 기반 ChatView 렌더링
     return (
       <div className="h-screen bg-background">
-        <ChatViewContainer />
+        <ChatViewContainer onNavigate={setActiveSection} />
       </div>
     );
   }

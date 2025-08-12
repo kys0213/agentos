@@ -6,8 +6,11 @@ import {
   useSendChatMessage,
 } from '../../hooks/queries/use-chat';
 import { ChatView } from './ChatView';
+import type { AppSection } from '../../stores/store-types';
 
-export const ChatViewContainer: React.FC = () => {
+export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) => void }> = ({
+  onNavigate,
+}) => {
   const { data: mentionableAgents = [], status: mentionableStatus } = useMentionableAgents();
   const { data: activeAgents = [], status: activeStatus } = useActiveAgents();
 
@@ -31,7 +34,7 @@ export const ChatViewContainer: React.FC = () => {
       agents={mentionableAgents}
       mentionableAgents={mentionableAgents}
       activeAgents={activeAgents}
-      onNavigate={() => {}}
+      onNavigate={onNavigate ?? (() => {})}
       messages={messages}
       selectedAgentId={selectedAgentId}
       onSelectAgent={setSelectedAgentId}
