@@ -43,6 +43,7 @@ export function PresetManager({
   onDuplicatePreset,
   onCreatePreset,
   onUpdatePreset,
+  onCreatePresetAsync,
 }: PresetManagerProps) {
   const [activeTab, setActiveTab] = useState('list');
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
