@@ -33,8 +33,8 @@
 ### Phase 3 — File-based Session/Storage (Core)
 
 - [x] Persist tool messages (array content) end-to-end
-- [ ] Ensure array content retained on save/load with pagination
-- [ ] Compression/checkpoint scenarios expanded tests
+- [x] Ensure array content retained on save/load with pagination
+- [x] Compression/checkpoint scenarios expanded tests
 
 ### Phase 4 — GUI/CLI Boundaries
 
