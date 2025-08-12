@@ -46,7 +46,10 @@ export const useChatHistory = (agentId: string | undefined) => {
   });
 };
 
-export const useSendChatMessage = (agentId: string | undefined) => {
+export const useSendChatMessage = (
+  agentId: string | undefined,
+  options?: { sessionId?: string; onSessionId?: (id: string) => void }
+) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -83,8 +86,8 @@ export const useSendChatMessage = (agentId: string | undefined) => {
         agentId,
         [{ role: 'user', content: { contentType: 'text', value: text } }],
         {
-          // 세션 = agentId 전략. 필요 시 서버에서 실제 sessionId를 반환하여 관리 가능
-          sessionId: agentId,
+          // 세션 ID 우선 사용, 없으면 agentId로 폴백
+          sessionId: options?.sessionId ?? agentId,
           maxTurnCount: 1,
         }
       );
@@ -113,6 +116,9 @@ export const useSendChatMessage = (agentId: string | undefined) => {
           };
         }
       });
+
+      // 세션 ID 갱신 콜백 (서버에서 새 세션 발급 시 반영)
+      options?.onSessionId?.(result.sessionId);
 
       return { userMessage, assistantMessages } as const;
     },

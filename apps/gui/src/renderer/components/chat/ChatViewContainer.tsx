@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   useActiveAgents,
   useChatHistory,
@@ -18,7 +18,19 @@ export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) =>
   const [selectedAgentId, setSelectedAgentId] = useState<string | undefined>(initialAgentId);
 
   const { data: messages = [] } = useChatHistory(selectedAgentId);
-  const sendMutation = useSendChatMessage(selectedAgentId);
+
+  // Maintain sessionId per agent for consecutive turns
+  const sessionIdMapRef = useRef<Map<string, string>>(new Map());
+  const currentSessionId = selectedAgentId
+    ? sessionIdMapRef.current.get(selectedAgentId)
+    : undefined;
+
+  const sendMutation = useSendChatMessage(selectedAgentId, {
+    sessionId: currentSessionId,
+    onSessionId: (sid) => {
+      if (selectedAgentId) sessionIdMapRef.current.set(selectedAgentId, sid);
+    },
+  });
 
   const loading = useMemo(
     () => mentionableStatus === 'pending' || activeStatus === 'pending',
