@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { MessageHistory, ReadonlyAgentMetadata } from '@agentos/core';
+import type { Message, MultiModalContent } from 'llm-bridge-spec';
+import { normalizeToArrayContent } from './normalize';
 import { ServiceContainer } from '../../../shared/ipc/service-container';
 
 export const CHAT_QUERY_KEYS = {
@@ -87,10 +89,9 @@ export const useSendChatMessage = (agentId: string | undefined) => {
         }
       );
 
-      // 응답 메시지들을 MessageHistory로 매핑
+      // 응답 메시지들을 MessageHistory로 매핑 (배열 콘텐츠로 정규화)
       const assistantMessages: MessageHistory[] = result.messages.map((m, idx): MessageHistory => {
-        // 브릿지 메시지의 content는 단일 또는 배열이 될 수 있음(툴 메시지 등)
-        const content = Array.isArray(m.content) ? m.content : m.content;
+        const content = normalizeToArrayContent(m);
         return {
           messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
           role: m.role,
