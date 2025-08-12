@@ -121,6 +121,36 @@ describe('FileBasedChatSession', () => {
     });
   });
 
+  describe('tool message (array content)', () => {
+    it('배열 콘텐츠를 가진 tool 메시지를 저장해야 한다', async () => {
+      const toolMessage: Message = {
+        role: 'tool',
+        name: 'dummy-tool',
+        toolCallId: 'tc-1',
+        content: [
+          { contentType: 'text', value: 'result text' },
+          { contentType: 'file', value: Buffer.from('file-bytes') },
+        ],
+      } as Message;
+
+      await session.appendMessage(toolMessage);
+      await session.commit();
+
+      expect(mockStorage.saveMessageHistories).toHaveBeenCalledWith(
+        'test-session',
+        expect.arrayContaining([
+          expect.objectContaining({
+            role: 'tool',
+            content: expect.arrayContaining([
+              { contentType: 'text', value: 'result text' },
+              expect.objectContaining({ contentType: 'file' }),
+            ]),
+          }),
+        ])
+      );
+    });
+  });
+
   describe('getHistories', () => {
     it('메시지 히스토리를 반환해야 한다', async () => {
       const mockHistory: MessageHistory = {

@@ -15,6 +15,7 @@ import { ChatManager } from '../chat/chat.manager';
 import { McpContent } from '../tool/mcp/mcp';
 import { McpRegistry } from '../tool/mcp/mcp.registery';
 import { Agent, AgentChatResult, AgentExecuteOptions } from './agent';
+import { DefaultAgentSession } from './default-agent-session';
 import { AgentMetadata, ReadonlyAgentMetadata } from './agent-metadata';
 import { validation } from '@agentos/lang';
 
@@ -77,6 +78,21 @@ export class SimpleAgent implements Agent {
     }
   }
 
+  async createSession(options?: { sessionId?: string; presetId?: string }) {
+    const chatSession = options?.sessionId
+      ? await this.chatManager.getSession(options.sessionId)
+      : await this.chatManager.create();
+
+    return new DefaultAgentSession(
+      this.id,
+      chatSession,
+      this.llmBridge,
+      this.mcpRegistry,
+      this._metadata,
+      async (sessionId) => this.endSession(sessionId)
+    );
+  }
+
   /**
    * 세션을 종료합니다.
    *
@@ -101,7 +117,8 @@ export class SimpleAgent implements Agent {
   }
 
   private async getEnabledTools(): Promise<LlmBridgeTool[]> {
-    const mcps = await this.mcpRegistry.getAll();
+    const registry = await this.mcpRegistry.getAll();
+    const mcps = Array.isArray(registry) ? registry : [];
 
     const enabledMcps = this._metadata.preset.enabledMcps;
 

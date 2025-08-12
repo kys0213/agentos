@@ -87,15 +87,17 @@ export const useSendChatMessage = (agentId: string | undefined) => {
         }
       );
 
-      // 응답 메시지들을 MessageHistory로 매핑(간단 매핑)
-      const assistantMessages: MessageHistory[] = result.messages.map(
-        (m, idx): MessageHistory => ({
+      // 응답 메시지들을 MessageHistory로 매핑
+      const assistantMessages: MessageHistory[] = result.messages.map((m, idx): MessageHistory => {
+        // 브릿지 메시지의 content는 단일 또는 배열이 될 수 있음(툴 메시지 등)
+        const content = Array.isArray(m.content) ? m.content : m.content;
+        return {
           messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
           role: m.role,
-          content: m.content,
+          content,
           createdAt: new Date(),
-        })
-      );
+        };
+      });
 
       return { userMessage, assistantMessages } as const;
     },

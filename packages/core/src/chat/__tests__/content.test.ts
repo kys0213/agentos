@@ -3,7 +3,7 @@ import { Readable } from 'stream';
 
 describe('Core content standardization', () => {
   test('toCoreContentArray: normalizes single to array', () => {
-    const single: CoreContent = { contentType: 'text', value: 'hello' } as CoreContent;
+    const single: CoreContent = { contentType: 'text', value: 'hello' };
     const arr = toCoreContentArray(single);
     expect(Array.isArray(arr)).toBe(true);
     expect(arr).toHaveLength(1);
@@ -12,8 +12,8 @@ describe('Core content standardization', () => {
 
   test('toCoreContentArray: keeps array as is', () => {
     const content: CoreContent[] = [
-      { contentType: 'text', value: 'a' } as CoreContent,
-      { contentType: 'text', value: 'b' } as CoreContent,
+      { contentType: 'text', value: 'a' },
+      { contentType: 'text', value: 'b' },
     ];
     const arr = toCoreContentArray(content);
     expect(arr).toBe(content);
@@ -48,10 +48,10 @@ describe('Core content standardization', () => {
   });
 
   test('normalizeToCoreContentArray: passes through image/audio/video/file contents', () => {
-    const image = { contentType: 'image', value: 'img-bytes' } as unknown as CoreContent;
-    const audio = { contentType: 'audio', value: 'audio-bytes' } as unknown as CoreContent;
-    const video = { contentType: 'video', value: 'video-bytes' } as unknown as CoreContent;
-    const file = { contentType: 'file', value: 'file-bytes' } as unknown as CoreContent;
+    const image: CoreContent = { contentType: 'image', value: Buffer.from('img') };
+    const audio: CoreContent = { contentType: 'audio', value: Buffer.from('aud') };
+    const video: CoreContent = { contentType: 'video', value: Buffer.from('vid') };
+    const file: CoreContent = { contentType: 'file', value: Buffer.from('fil') };
     const arr = normalizeToCoreContentArray([image, audio, video, file]);
     expect(arr).toHaveLength(4);
     expect(arr[0]).toEqual(image);
@@ -61,11 +61,7 @@ describe('Core content standardization', () => {
   });
 
   test('normalizeToCoreContentArray: array flattens and normalizes', () => {
-    const arr = normalizeToCoreContentArray([
-      'hi',
-      { contentType: 'text', value: 'there' },
-      123,
-    ]);
+    const arr = normalizeToCoreContentArray(['hi', { contentType: 'text', value: 'there' }, 123]);
     expect(arr).toHaveLength(3);
     expect(arr[0]).toEqual({ contentType: 'text', value: 'hi' });
     expect(arr[1]).toEqual({ contentType: 'text', value: 'there' });
@@ -90,10 +86,8 @@ describe('Core content standardization', () => {
 
   test('normalizeToCoreContentArray: Readable → file content', () => {
     const readable = Readable.from(['chunk1']);
-    const arr = normalizeToCoreContentArray(readable as any);
+    const arr = normalizeToCoreContentArray(readable);
     expect(arr).toHaveLength(1);
     expect(arr[0].contentType).toBe('file');
   });
 });
-
-
