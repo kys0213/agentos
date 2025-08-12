@@ -55,29 +55,31 @@ export async function createChatSession(
 }
 
 export async function sendMessage(
-  sessionId: string,
+  agentId: string,
   content: string,
   mentionedAgents?: string[]
-): Promise<MessageHistory> {
+): Promise<MessageHistory[]> {
   try {
-    // TODO: Implement when ChatService is available in ServiceContainer
-    // const chatService = ServiceContainer.getOrThrow('chat');
-    // return await chatService.sendMessage(sessionId, content, mentionedAgents);
+    const agentService = ServiceContainer.getOrThrow('agent');
 
-    console.log('🔄 sendMessage called with:', { sessionId, content, mentionedAgents });
+    const result = await agentService.chat(
+      agentId,
+      [{ role: 'user', content: { contentType: 'text', value: content } } as any],
+      { sessionId: agentId, maxTurnCount: 1 }
+    );
 
-    // Mock implementation for now
-    const mockMessage: MessageHistory = {
-      messageId: `msg-${Date.now()}`,
-      role: 'user',
-      content: {
-        contentType: 'text',
-        value: content,
-      },
+    // 결과 메시지를 MessageHistory로 변환 (간단 매핑)
+    const mapped: MessageHistory[] = result.messages.map((m: any, idx: number) => ({
+      messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
+      role: m.role === 'assistant' ? 'assistant' : (m.role as any),
+      content:
+        m.content?.contentType === 'text'
+          ? { contentType: 'text', value: m.content.value }
+          : { contentType: 'text', value: JSON.stringify(m.content) },
       createdAt: new Date(),
-    };
+    }));
 
-    return mockMessage;
+    return mapped;
   } catch (error) {
     console.error('Failed to send message:', error);
     throw error;
