@@ -16,4 +16,3 @@ export interface AgentSearchQuery {
   /** 설명에서 검색 */
   description?: string;
 }
-

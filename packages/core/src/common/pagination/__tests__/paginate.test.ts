@@ -16,7 +16,10 @@ describe('paginateByCursor', () => {
   });
 
   test('backward without cursor returns last N and sets nextCursor to first of page', () => {
-    const { items: page, nextCursor } = paginateByCursor(items, { limit: 3, direction: 'backward' });
+    const { items: page, nextCursor } = paginateByCursor(items, {
+      limit: 3,
+      direction: 'backward',
+    });
     expect(page.map((x) => x.id)).toEqual(['id-8', 'id-9', 'id-10']);
     expect(nextCursor).toBe('id-8');
   });
@@ -31,4 +34,3 @@ describe('paginateByCursor', () => {
     expect(nextCursor).toBe('id-4');
   });
 });
-

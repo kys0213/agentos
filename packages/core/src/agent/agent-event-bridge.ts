@@ -9,7 +9,10 @@ type Unsub = () => void;
 export class AgentEventBridge {
   private readonly unsubs = new Map<string, Unsub[]>();
 
-  constructor(private readonly manager: AgentManager, private readonly publisher: EventPublisher) {}
+  constructor(
+    private readonly manager: AgentManager,
+    private readonly publisher: EventPublisher
+  ) {}
 
   async attachAll(options?: { pageSize?: number }) {
     const limit = options?.pageSize ?? 1000;
@@ -24,7 +27,8 @@ export class AgentEventBridge {
   }
 
   async attachAgent(agentOrId: Agent | string) {
-    const agent = typeof agentOrId === 'string' ? await this.manager.getAgent(agentOrId) : agentOrId;
+    const agent =
+      typeof agentOrId === 'string' ? await this.manager.getAgent(agentOrId) : agentOrId;
     if (!agent) return;
 
     const supportsEvents = (agent as any as Partial<EventfulAgent>).on;
@@ -82,13 +86,41 @@ export class AgentEventBridge {
       list.push(off);
     };
 
-    add('status', (p) => ({ agentId, sessionId: session.sessionId, ...p }), `agent/session/${session.sessionId}/status`);
-    add('message', (p) => ({ agentId, sessionId: session.sessionId, message: p.message }), `agent/session/${session.sessionId}/message`);
-    add('error', (p) => ({ agentId, sessionId: session.sessionId, error: { message: p.error.message } }), `agent/session/${session.sessionId}/error`);
-    add('terminated', (p) => ({ agentId, sessionId: session.sessionId, ...p }), `agent/session/${session.sessionId}/status`);
-    add('promptRequest', (p) => ({ agentId, sessionId: session.sessionId, ...p }), `agent/session/${session.sessionId}/promptRequest`);
-    add('consentRequest', (p) => ({ agentId, sessionId: session.sessionId, ...p }), `agent/session/${session.sessionId}/consentRequest`);
-    add('sensitiveInputRequest', (p) => ({ agentId, sessionId: session.sessionId, ...p }), `agent/session/${session.sessionId}/sensitiveInputRequest`);
+    add(
+      'status',
+      (p) => ({ agentId, sessionId: session.sessionId, ...p }),
+      `agent/session/${session.sessionId}/status`
+    );
+    add(
+      'message',
+      (p) => ({ agentId, sessionId: session.sessionId, message: p.message }),
+      `agent/session/${session.sessionId}/message`
+    );
+    add(
+      'error',
+      (p) => ({ agentId, sessionId: session.sessionId, error: { message: p.error.message } }),
+      `agent/session/${session.sessionId}/error`
+    );
+    add(
+      'terminated',
+      (p) => ({ agentId, sessionId: session.sessionId, ...p }),
+      `agent/session/${session.sessionId}/status`
+    );
+    add(
+      'promptRequest',
+      (p) => ({ agentId, sessionId: session.sessionId, ...p }),
+      `agent/session/${session.sessionId}/promptRequest`
+    );
+    add(
+      'consentRequest',
+      (p) => ({ agentId, sessionId: session.sessionId, ...p }),
+      `agent/session/${session.sessionId}/consentRequest`
+    );
+    add(
+      'sensitiveInputRequest',
+      (p) => ({ agentId, sessionId: session.sessionId, ...p }),
+      `agent/session/${session.sessionId}/sensitiveInputRequest`
+    );
 
     this.unsubs.set(key, list);
   }
@@ -100,4 +132,3 @@ export class AgentEventBridge {
     this.unsubs.delete(key);
   }
 }
-

@@ -1,5 +1,8 @@
 import type { UserMessage } from 'llm-bridge-spec';
-import type { CursorPagination, CursorPaginationResult } from '../common/pagination/cursor-pagination';
+import type {
+  CursorPagination,
+  CursorPaginationResult,
+} from '../common/pagination/cursor-pagination';
 import type { Agent, AgentChatResult, AgentExecuteOptions } from './agent';
 import type { AgentSession } from './agent-session';
 import type { AgentService } from './agent.service';
@@ -41,7 +44,9 @@ export class SimpleAgentService implements AgentService {
 
     // Fallback: load a page (or all if no pagination) then filter in-memory.
     const all = await this.manager.getAllAgents({ limit: 1000, cursor: pagination?.cursor || '' });
-    const withMeta = await Promise.all(all.items.map(async (a) => ({ a, m: await a.getMetadata() })));
+    const withMeta = await Promise.all(
+      all.items.map(async (a) => ({ a, m: await a.getMetadata() }))
+    );
     const filtered = withMeta.filter(({ m }) => this.matchesMeta(m, query)).map(({ a }) => a);
     return this.paginate(filtered, pagination);
   }
@@ -66,7 +71,8 @@ export class SimpleAgentService implements AgentService {
   private matchesMeta(m: Awaited<ReturnType<Agent['getMetadata']>>, q: AgentSearchQuery): boolean {
     if (q.status && m.status !== q.status) return false;
     if (q.name && !m.name.toLowerCase().includes(q.name.toLowerCase())) return false;
-    if (q.description && !m.description.toLowerCase().includes(q.description.toLowerCase())) return false;
+    if (q.description && !m.description.toLowerCase().includes(q.description.toLowerCase()))
+      return false;
     if (Array.isArray(q.keywords) && q.keywords.length > 0) {
       const kw = new Set(q.keywords.map((k) => k.toLowerCase()));
       const has = m.keywords.some((k) => kw.has(k.toLowerCase()));

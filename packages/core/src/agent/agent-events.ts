@@ -14,4 +14,3 @@ export interface AgentEventSource {
 }
 
 export type EventfulAgent = Agent & AgentEventSource;
-

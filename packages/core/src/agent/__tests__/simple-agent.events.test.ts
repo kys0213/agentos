@@ -14,9 +14,22 @@ function meta(): AgentMetadata {
     icon: '',
     keywords: [],
     preset: {
-      id: 'p-1', name: 'p', description: '', author: '', createdAt: new Date(), updatedAt: new Date(),
-      version: '1.0.0', systemPrompt: '', enabledMcps: [], llmBridgeName: 'x', llmBridgeConfig: {}, status: 'active', usageCount: 0,
-      knowledgeDocuments: 0, knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 }, category: [],
+      id: 'p-1',
+      name: 'p',
+      description: '',
+      author: '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      version: '1.0.0',
+      systemPrompt: '',
+      enabledMcps: [],
+      llmBridgeName: 'x',
+      llmBridgeConfig: {},
+      status: 'active',
+      usageCount: 0,
+      knowledgeDocuments: 0,
+      knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 },
+      category: [],
     },
     sessionCount: 0,
     lastUsed: new Date(),
@@ -36,7 +49,10 @@ describe('SimpleAgent events', () => {
     chatManager.getSession.mockResolvedValue(chatSession as unknown as ChatSession);
 
     // minimal llm response
-    const resp: LlmBridgeResponse = { content: { contentType: 'text', value: 'ok' }, toolCalls: [] } as any;
+    const resp: LlmBridgeResponse = {
+      content: { contentType: 'text', value: 'ok' },
+      toolCalls: [],
+    } as any;
     llm.invoke.mockResolvedValue(resp);
 
     const agent = new SimpleAgent(llm, mcp as any, chatManager, meta());
@@ -61,4 +77,3 @@ describe('SimpleAgent events', () => {
     off();
   });
 });
-

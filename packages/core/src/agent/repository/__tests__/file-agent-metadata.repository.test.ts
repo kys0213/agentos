@@ -67,7 +67,11 @@ describe('FileAgentMetadataRepository', () => {
     expect(searchByName.items.some((m) => m.id === a2.id)).toBe(false);
 
     // optimistic update success
-    const upd = await repo.update(a1.id, { description: 'updated' }, { expectedVersion: a1.version });
+    const upd = await repo.update(
+      a1.id,
+      { description: 'updated' },
+      { expectedVersion: a1.version }
+    );
     expect(upd.version && Number(upd.version) > Number(a1.version)).toBe(true);
 
     // version conflict
@@ -80,4 +84,3 @@ describe('FileAgentMetadataRepository', () => {
     expect(afterDel).toBeNull();
   });
 });
-

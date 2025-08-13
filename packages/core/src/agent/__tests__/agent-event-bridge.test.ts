@@ -15,27 +15,54 @@ type AgentHandler = (e: any) => void;
 class FakeEventfulAgent implements Agent {
   id = 'a-1';
   private handlers = new Set<AgentHandler>();
-  getMetadata = async () => ({ id: this.id, name: 'A', description: '', icon: '', keywords: [], preset: {} as any, status: 'active', sessionCount: 0, usageCount: 0 });
-  isActive = async () => true; isIdle = async () => false; isInactive = async () => false; isError = async () => false;
-  idle = async () => {}; activate = async () => {}; inactive = async () => {};
-  chat = async () => ({ messages: [], sessionId: 's-1' } as any);
-  createSession = async () => ({ sessionId: 's-1' } as any as AgentSession);
+  getMetadata = async () => ({
+    id: this.id,
+    name: 'A',
+    description: '',
+    icon: '',
+    keywords: [],
+    preset: {} as any,
+    status: 'active',
+    sessionCount: 0,
+    usageCount: 0,
+  });
+  isActive = async () => true;
+  isIdle = async () => false;
+  isInactive = async () => false;
+  isError = async () => false;
+  idle = async () => {};
+  activate = async () => {};
+  inactive = async () => {};
+  chat = async () => ({ messages: [], sessionId: 's-1' }) as any;
+  createSession = async () => ({ sessionId: 's-1' }) as any as AgentSession;
   endSession = async () => {};
-  on(handler: AgentHandler): Unsubscribe { this.handlers.add(handler); return () => this.handlers.delete(handler); }
-  emit(event: any) { for (const h of this.handlers) h(event); }
+  on(handler: AgentHandler): Unsubscribe {
+    this.handlers.add(handler);
+    return () => this.handlers.delete(handler);
+  }
+  emit(event: any) {
+    for (const h of this.handlers) h(event);
+  }
 }
 
 class FakeSession implements AgentSession {
-  readonly id: string; readonly sessionId: string;
+  readonly id: string;
+  readonly sessionId: string;
   private handlers: Partial<Record<AgentSessionEvent, Set<(p: any) => void>>> = {};
-  constructor(id: string) { this.id = id; this.sessionId = id; }
+  constructor(id: string) {
+    this.id = id;
+    this.sessionId = id;
+  }
   chat = async () => [] as any;
   getHistory = async () => ({ items: [], nextCursor: '' });
   terminate = async () => {};
   providePromptResponse = async () => {};
   provideConsentDecision = async () => {};
   provideSensitiveInput = async () => {};
-  on<E extends AgentSessionEvent>(event: E, handler: (p: AgentSessionEventMap[E]) => void): Unsubscribe {
+  on<E extends AgentSessionEvent>(
+    event: E,
+    handler: (p: AgentSessionEventMap[E]) => void
+  ): Unsubscribe {
     const set = (this.handlers[event] ??= new Set());
     set.add(handler as any);
     return () => set.delete(handler as any);
@@ -82,4 +109,3 @@ describe('AgentEventBridge', () => {
     expect(publisher.calls.some((c) => c.channel.endsWith('/error'))).toBe(true);
   });
 });
-
