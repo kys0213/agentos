@@ -1,6 +1,6 @@
 import type { AgentStatus, Agent } from './agent';
 import type { AgentMetadata } from './agent-metadata';
-import type { Unsubscribe } from './agent-session';
+import type { Unsubscribe } from '../common/event/event-subscriber';
 
 export type AgentEvent =
   | { type: 'statusChanged'; agentId: string; status: AgentStatus }

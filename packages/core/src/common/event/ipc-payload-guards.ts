@@ -1,8 +1,7 @@
+import { AgentStatus } from '../../agent/agent';
 import type { MessageHistory } from '../../chat/chat-session';
 
 // Basic runtime type guards for IPC payloads described in IPC_EVENT_SPEC.md
-
-export type AgentStatus = 'active' | 'idle' | 'inactive' | 'error';
 
 export interface AgentStatusPayload {
   agentId: string;

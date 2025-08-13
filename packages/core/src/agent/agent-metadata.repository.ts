@@ -4,8 +4,7 @@ import type {
   CursorPaginationResult,
 } from '../common/pagination/cursor-pagination';
 import type { AgentSearchQuery } from './agent-search';
-
-export type Unsubscribe = () => void;
+import { Unsubscribe } from '../common/event/event-subscriber';
 
 export interface AgentMetadataRepository {
   get(id: string): Promise<AgentMetadata | null>;

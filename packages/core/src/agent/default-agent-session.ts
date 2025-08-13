@@ -22,8 +22,8 @@ import type {
   AgentSessionEvent,
   AgentSessionEventMap,
   AgentSessionStatus,
-  Unsubscribe,
 } from './agent-session';
+import type { Unsubscribe } from '../common/event/event-subscriber';
 
 export class DefaultAgentSession implements AgentSession {
   private readonly handlers: Partial<

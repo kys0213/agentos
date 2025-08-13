@@ -12,7 +12,6 @@ import {
   AgentManagerStats,
   validateAgentId,
 } from './agent-manager';
-import { AgentSearchQuery } from './agent-metadata.repository';
 
 const { isError } = validation;
 

@@ -43,7 +43,11 @@ export class SimpleAgentService implements AgentService {
     }
 
     // Fallback: load a page (or all if no pagination) then filter in-memory.
-    const all = await this.manager.getAllAgents({ limit: 1000, cursor: pagination?.cursor || '' });
+    const all = await this.manager.getAllAgents({
+      limit: 1000,
+      cursor: pagination?.cursor || '',
+      direction: 'forward',
+    });
     const withMeta = await Promise.all(
       all.items.map(async (a) => ({ a, m: await a.getMetadata() }))
     );

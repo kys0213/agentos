@@ -20,7 +20,7 @@ import { AgentMetadata, ReadonlyAgentMetadata } from './agent-metadata';
 import { validation } from '@agentos/lang';
 import { Errors } from '../common/error/core-error';
 import type { AgentEvent } from './agent-events';
-import type { Unsubscribe } from './agent-session';
+import type { Unsubscribe } from '../common/event/event-subscriber';
 
 const { isNonEmptyArray } = validation;
 

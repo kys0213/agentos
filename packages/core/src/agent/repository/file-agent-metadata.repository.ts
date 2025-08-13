@@ -11,7 +11,8 @@ import type {
 } from '../../common/pagination/cursor-pagination';
 import { paginateByCursor } from '../../common/pagination/paginate';
 import type { AgentStatus } from '../../agent/agent';
-import type { AgentMetadataRepository, Unsubscribe } from '../../agent/agent-metadata.repository';
+import type { AgentMetadataRepository } from '../../agent/agent-metadata.repository';
+import type { Unsubscribe } from '../../common/event/event-subscriber';
 import type { AgentSearchQuery } from '../agent-search';
 import { Errors } from '../../common/error/core-error';
 
