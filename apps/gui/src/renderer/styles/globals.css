@@ -12,6 +12,19 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  /* Status tokens (aligned with design) */
+  --status-active: #10b981;
+  --status-active-foreground: #ffffff;
+  --status-active-background: #ecfdf5;
+  --status-idle: #f59e0b;
+  --status-idle-foreground: #ffffff;
+  --status-idle-background: #fffbeb;
+  --status-inactive: #6b7280;
+  --status-inactive-foreground: #ffffff;
+  --status-inactive-background: #f9fafb;
+  /* Radius & elevation tokens */
+  --radius: 8px;
+  --elevation-1: 0 1px 2px rgba(16, 24, 40, 0.05);
 }
 
 .dark {
@@ -23,10 +36,26 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+  /* Dark status tokens */
+  --status-active: #059669;
+  --status-active-foreground: #ffffff;
+  --status-active-background: #064e3b;
+  --status-idle: #d97706;
+  --status-idle-foreground: #ffffff;
+  --status-idle-background: #78350f;
+  --status-inactive: #4b5563;
+  --status-inactive-foreground: #ffffff;
+  --status-inactive-background: #1f2937;
 }
 
 /* 전역 스타일 */
 @layer base {
+  /* Base typography to match design tokens */
+  html {
+    /* Set 1rem = 14px for precise scaling */
+    font-size: 14px;
+  }
+
   html,
   body,
   #root {
@@ -35,6 +64,41 @@
 
   * {
     @apply box-border;
+  }
+
+  body {
+    /* Design foreground color (OKLCH) for better contrast parity with mock */
+    color: oklch(0.145 0 0);
+    background-color: transparent;
+  }
+
+  /* Headings scale from 14px root to match mock measurements */
+  h1,
+  h2 {
+    font-size: 1.125rem; /* 15.75px */
+    line-height: 1.75rem; /* 24.5px */
+    font-weight: 600;
+  }
+
+  h5 {
+    font-size: 0.75rem; /* 10.5px */
+    line-height: 1rem;   /* 14px */
+    font-weight: 500;
+    color: rgb(113 113 130);
+  }
+
+  /* Controls (inputs/buttons) align to control scale */
+  input,
+  select,
+  textarea {
+    font-size: 0.875rem; /* 12.25px */
+    line-height: 1.25rem; /* 17.5px */
+  }
+
+  button {
+    font-size: 0.875rem; /* 12.25px */
+    line-height: 1.25rem; /* 17.5px */
+    font-weight: 500;
   }
 
   /* 모든 border 클래스에 일관된 gray-200 색상 적용 */
@@ -93,6 +157,8 @@
     @apply bg-gray-50 border-gray-200;
     @apply overflow-hidden;
     @apply transition-all duration-300;
+    border-radius: var(--radius);
+    box-shadow: var(--elevation-1);
   }
 
   .sidebar-left {
@@ -106,6 +172,20 @@
 
 /* 유틸리티 확장 */
 @layer utilities {
+  /* Status utility classes */
+  .text-status-active { color: var(--status-active); }
+  .text-status-idle { color: var(--status-idle); }
+  .text-status-inactive { color: var(--status-inactive); }
+
+  .status-active { background-color: var(--status-active); color: var(--status-active-foreground); }
+  .status-active-subtle { background-color: var(--status-active-background); color: var(--status-active); }
+
+  .status-idle { background-color: var(--status-idle); color: var(--status-idle-foreground); }
+  .status-idle-subtle { background-color: var(--status-idle-background); color: var(--status-idle); }
+
+  .status-inactive { background-color: var(--status-inactive); color: var(--status-inactive-foreground); }
+  .status-inactive-subtle { background-color: var(--status-inactive-background); color: var(--status-inactive); }
+
   .grid-area-safe {
     min-width: 0;
     min-height: 0;

@@ -150,9 +150,24 @@ export const ChatView: React.FC<ChatViewProps> = ({
               <MessageSquare className="w-5 h-5 text-muted-foreground" />
               <div>
                 <h1 className="text-lg font-semibold text-foreground">Research Data Analysis</h1>
-                <p className="text-sm text-muted-foreground">
-                  Active: {activeAgents.map((a) => a.name).join(', ') || 'No active agents'}
-                </p>
+                {activeAgents.length > 0 ? (
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {activeAgents.map((a) => (
+                      <span
+                        key={a.id}
+                        className="inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 bg-white shadow-sm"
+                      >
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-[10px] text-gray-600">
+                          {a.name.slice(0, 2).toUpperCase()}
+                        </span>
+                        <span className="text-xs font-medium">{a.name}</span>
+                        <Badge className="text-[10px] status-active-subtle">Active</Badge>
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Active: No active agents</p>
+                )}
               </div>
             </div>
 

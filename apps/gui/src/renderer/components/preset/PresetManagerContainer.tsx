@@ -12,7 +12,9 @@ import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
-export const PresetManagerContainer: React.FC = () => {
+export const PresetManagerContainer: React.FC<{ onStartCreatePreset?: () => void }> = ({
+  onStartCreatePreset,
+}) => {
   const queryClient = useQueryClient();
 
   const {
@@ -137,6 +139,7 @@ export const PresetManagerContainer: React.FC = () => {
         onCreatePreset={(data) => createMutation.mutate(data as any)}
         onCreatePresetAsync={(data) => createMutation.mutateAsync(data as any)}
         onUpdatePreset={(id, data) => updateMutation.mutate({ id, data } as any)}
+        onStartCreatePreset={onStartCreatePreset}
       />
     </div>
   );
