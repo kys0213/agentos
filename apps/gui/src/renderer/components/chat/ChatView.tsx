@@ -161,9 +161,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
                           {a.name.slice(0, 2).toUpperCase()}
                         </span>
                         <span className="text-xs font-medium">{a.name}</span>
-                        <Badge className="text-[10px]" variant="secondary">
-                          Active
-                        </Badge>
+                        <Badge className="text-[10px] status-active-subtle">Active</Badge>
                       </span>
                     ))}
                   </div>

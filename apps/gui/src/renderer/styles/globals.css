@@ -12,6 +12,16 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  /* Status tokens (aligned with design) */
+  --status-active: #10b981;
+  --status-active-foreground: #ffffff;
+  --status-active-background: #ecfdf5;
+  --status-idle: #f59e0b;
+  --status-idle-foreground: #ffffff;
+  --status-idle-background: #fffbeb;
+  --status-inactive: #6b7280;
+  --status-inactive-foreground: #ffffff;
+  --status-inactive-background: #f9fafb;
   /* Radius & elevation tokens */
   --radius: 8px;
   --elevation-1: 0 1px 2px rgba(16, 24, 40, 0.05);
@@ -26,6 +36,16 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+  /* Dark status tokens */
+  --status-active: #059669;
+  --status-active-foreground: #ffffff;
+  --status-active-background: #064e3b;
+  --status-idle: #d97706;
+  --status-idle-foreground: #ffffff;
+  --status-idle-background: #78350f;
+  --status-inactive: #4b5563;
+  --status-inactive-foreground: #ffffff;
+  --status-inactive-background: #1f2937;
 }
 
 /* 전역 스타일 */
@@ -152,6 +172,20 @@
 
 /* 유틸리티 확장 */
 @layer utilities {
+  /* Status utility classes */
+  .text-status-active { color: var(--status-active); }
+  .text-status-idle { color: var(--status-idle); }
+  .text-status-inactive { color: var(--status-inactive); }
+
+  .status-active { background-color: var(--status-active); color: var(--status-active-foreground); }
+  .status-active-subtle { background-color: var(--status-active-background); color: var(--status-active); }
+
+  .status-idle { background-color: var(--status-idle); color: var(--status-idle-foreground); }
+  .status-idle-subtle { background-color: var(--status-idle-background); color: var(--status-idle); }
+
+  .status-inactive { background-color: var(--status-inactive); color: var(--status-inactive-foreground); }
+  .status-inactive-subtle { background-color: var(--status-inactive-background); color: var(--status-inactive); }
+
   .grid-area-safe {
     min-width: 0;
     min-height: 0;
