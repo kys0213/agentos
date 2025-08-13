@@ -1,7 +1,9 @@
 import type { Agent } from '../agent';
 import type { AgentSession, AgentSessionEvent, AgentSessionEventMap } from '../agent-session';
-import type { Unsubscribe } from '../agent-session';
+
 import { AgentEventBridge } from '../agent-event-bridge';
+import { Unsubscribe } from '../../common/event/event-subscriber';
+import { AgentStatus } from '../agent';
 
 class TestPublisher {
   calls: Array<{ channel: string; payload: any }> = [];
@@ -22,9 +24,11 @@ class FakeEventfulAgent implements Agent {
     icon: '',
     keywords: [],
     preset: {} as any,
-    status: 'active',
+    status: 'active' as AgentStatus,
     sessionCount: 0,
     usageCount: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
   isActive = async () => true;
   isIdle = async () => false;

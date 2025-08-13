@@ -59,10 +59,13 @@ describe('FileAgentMetadataRepository', () => {
     expect(got?.id).toBe(a1.id);
     expect(got?.version).toBe('1');
 
-    const list = await repo.list({ limit: 10 });
+    const list = await repo.list({ limit: 10, cursor: '', direction: 'forward' });
     expect(list.items.length).toBe(2);
 
-    const searchByName = await repo.search({ name: 'A-1' }, { limit: 10 });
+    const searchByName = await repo.search(
+      { name: 'A-1' },
+      { limit: 10, cursor: '', direction: 'forward' }
+    );
     expect(searchByName.items.some((m) => m.id === a1.id)).toBe(true);
     expect(searchByName.items.some((m) => m.id === a2.id)).toBe(false);
 
