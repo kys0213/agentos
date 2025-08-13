@@ -4,8 +4,7 @@ import type {
 } from '../common/pagination/cursor-pagination';
 import type { MessageHistory } from '../chat/chat-session';
 import type { UserMessage } from 'llm-bridge-spec';
-
-export type Unsubscribe = () => void;
+import { Unsubscribe } from '../common/event/event-subscriber';
 
 export type AgentSessionStatus = 'idle' | 'running' | 'waiting-input' | 'terminated' | 'error';
 

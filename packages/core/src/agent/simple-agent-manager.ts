@@ -1,7 +1,10 @@
 import { validation } from '@agentos/lang';
+import type { AgentSearchQuery } from './agent-search';
 import { UserMessage } from 'llm-bridge-spec';
 import { CursorPagination, CursorPaginationResult } from '../common/pagination/cursor-pagination';
+import { paginateByCursor } from '../common/pagination/paginate';
 import { Agent, AgentChatResult, AgentExecuteOptions, AgentStatus } from './agent';
+import type { AgentSession } from './agent-session';
 import {
   AGENT_MANAGER_ERROR_CODES,
   AgentManager,
@@ -69,15 +72,42 @@ export class SimpleAgentManager implements AgentManager {
   }
 
   async getAvailableAgents(pagination?: CursorPagination): Promise<CursorPaginationResult<Agent>> {
-    const availableAgents = Array.from(this.agents.values()).filter(
-      (agent) => agent.isActive() || agent.isIdle()
+    const list = Array.from(this.agents.values());
+    const flags = await Promise.all(
+      list.map(async (agent) => ({
+        agent,
+        active: await agent.isActive(),
+        idle: await agent.isIdle(),
+      }))
     );
+    const availableAgents = flags.filter((f) => f.active || f.idle).map((f) => f.agent);
     return this.paginateResults(availableAgents, pagination);
   }
 
   async getActiveAgents(pagination?: CursorPagination): Promise<CursorPaginationResult<Agent>> {
-    const activeAgents = Array.from(this.agents.values()).filter((agent) => agent.isActive());
+    const list = Array.from(this.agents.values());
+    const flags = await Promise.all(
+      list.map(async (agent) => ({ agent, active: await agent.isActive() }))
+    );
+    const activeAgents = flags.filter((f) => f.active).map((f) => f.agent);
     return this.paginateResults(activeAgents, pagination);
+  }
+
+  /**
+   * 별칭: 세션 생성
+   */
+  async createAgentSession(
+    agentId: string,
+    options?: { sessionId?: string; presetId?: string }
+  ): Promise<AgentSession> {
+    const agent = this.agents.get(agentId);
+    if (!agent) {
+      throw new AgentManagerError(
+        `Agent with ID '${agentId}' not found`,
+        AGENT_MANAGER_ERROR_CODES.AGENT_NOT_FOUND
+      );
+    }
+    return await agent.createSession(options);
   }
 
   async execute(
@@ -126,10 +156,17 @@ export class SimpleAgentManager implements AgentManager {
       );
     }
 
-    // SimpleAgent의 endSession 메서드 호출 (타입 캐스팅 필요)
-    if ('endSession' in agent && typeof agent.endSession === 'function') {
-      (agent as any).endSession(sessionId);
+    // Agent 인터페이스의 endSession 사용
+    if (typeof agent.endSession === 'function') {
+      await agent.endSession(sessionId);
     }
+  }
+
+  /**
+   * 별칭: 세션 종료
+   */
+  async terminateAgentSession(agentId: string, sessionId: string): Promise<void> {
+    return this.endAgentSession(agentId, sessionId);
   }
 
   async getStats(): Promise<AgentManagerStats> {
@@ -166,29 +203,53 @@ export class SimpleAgentManager implements AgentManager {
   }
 
   /**
+   * 간단한 메타데이터 기반 검색 구현
+   */
+  async searchAgents(
+    query: AgentSearchQuery,
+    pagination?: CursorPagination
+  ): Promise<CursorPaginationResult<Agent>> {
+    const list = Array.from(this.agents.values());
+
+    // 메타데이터를 병렬 조회
+    const withMeta = await Promise.all(
+      list.map(async (agent) => ({ agent, meta: await agent.getMetadata() }))
+    );
+
+    const filtered = withMeta
+      .filter(({ meta }) => this.matchesQuery(meta, query))
+      .map(({ agent }) => agent);
+
+    return this.paginateResults(filtered, pagination);
+  }
+
+  private matchesQuery(
+    meta: Readonly<Awaited<ReturnType<Agent['getMetadata']>>>,
+    q: AgentSearchQuery
+  ): boolean {
+    if (q.status && meta.status !== q.status) return false;
+
+    if (q.name && !meta.name.toLowerCase().includes(q.name.toLowerCase())) return false;
+
+    if (q.description && !meta.description.toLowerCase().includes(q.description.toLowerCase()))
+      return false;
+
+    if (Array.isArray(q.keywords) && q.keywords.length > 0) {
+      const kw = new Set(q.keywords.map((k) => k.toLowerCase()));
+      const has = meta.keywords.some((k) => kw.has(k.toLowerCase()));
+      if (!has) return false;
+    }
+
+    return true;
+  }
+
+  /**
    * 결과를 페이지네이션합니다.
    */
   private paginateResults<T extends { id: string }>(
     items: T[],
     pagination?: CursorPagination
   ): CursorPaginationResult<T> {
-    const { cursor, limit = 20 } = pagination || {};
-
-    let filteredItems = items;
-    if (cursor) {
-      const cursorIndex = items.findIndex((item) => item.id === cursor);
-      if (cursorIndex >= 0) {
-        filteredItems = items.slice(cursorIndex + 1);
-      }
-    }
-
-    const paginatedItems = filteredItems.slice(0, limit);
-    const nextCursor =
-      paginatedItems.length === limit ? paginatedItems[paginatedItems.length - 1].id : '';
-
-    return {
-      items: paginatedItems,
-      nextCursor,
-    };
+    return paginateByCursor(items, pagination);
   }
 }

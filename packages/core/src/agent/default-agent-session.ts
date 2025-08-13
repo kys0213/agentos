@@ -14,6 +14,7 @@ import type {
   CursorPaginationResult,
 } from '../common/pagination/cursor-pagination';
 import { McpContent } from '../tool/mcp/mcp';
+import { Errors } from '../common/error/core-error';
 import type { McpRegistry } from '../tool/mcp/mcp.registery';
 import type { ReadonlyAgentMetadata } from './agent-metadata';
 import type {
@@ -21,8 +22,8 @@ import type {
   AgentSessionEvent,
   AgentSessionEventMap,
   AgentSessionStatus,
-  Unsubscribe,
 } from './agent-session';
+import type { Unsubscribe } from '../common/event/event-subscriber';
 
 export class DefaultAgentSession implements AgentSession {
   private readonly handlers: Partial<
@@ -71,7 +72,7 @@ export class DefaultAgentSession implements AgentSession {
     options?: { abortSignal?: AbortSignal; timeout?: number }
   ): Promise<Readonly<MessageHistory>[]> {
     if (this.status !== 'idle') {
-      throw new Error('session is not idle');
+      throw Errors.operationFailed('session', 'session is not idle');
     }
 
     this.setStatus('running');
@@ -104,7 +105,7 @@ export class DefaultAgentSession implements AgentSession {
 
       return persistedMessages;
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
+      const err = error instanceof Error ? error : Errors.internal('session', String(error));
       this.emit('error', { error: err });
       throw err;
     } finally {
@@ -278,13 +279,13 @@ export class DefaultAgentSession implements AgentSession {
         );
 
         if (!allowed) {
-          throw new Error('tool call denied by user');
+          throw Errors.forbidden('mcp', 'tool call denied by user');
         }
 
         const { contents, isError } = await mcp.invokeTool(tool, { input: toolCall.arguments });
 
         if (isError) {
-          throw new Error('Tool call failed');
+          throw Errors.operationFailed('mcp', 'Tool call failed');
         }
 
         const toolMessage: ToolMessage = {
@@ -315,7 +316,7 @@ export class DefaultAgentSession implements AgentSession {
       }
     }
 
-    throw new Error('Tool call count exceeded');
+    throw Errors.operationFailed('mcp', 'Tool call count exceeded');
   }
 
   private async requestConsent(
@@ -331,7 +332,7 @@ export class DefaultAgentSession implements AgentSession {
 
       const onAbort = () => {
         this.consentRequests.delete(id);
-        reject(new Error('stopped by abort signal'));
+        reject(Errors.aborted('session', 'stopped by abort signal'));
       };
       options.abortSignal.addEventListener('abort', onAbort, { once: true });
 
@@ -339,7 +340,7 @@ export class DefaultAgentSession implements AgentSession {
         setTimeout(() => {
           if (this.consentRequests.has(id)) {
             this.consentRequests.delete(id);
-            reject(new Error('timeout'));
+            reject(Errors.timeout('session', 'timeout'));
           }
         }, options.timeout);
       }
@@ -369,7 +370,7 @@ export class DefaultAgentSession implements AgentSession {
 
   private ensureNotAborted(signal?: AbortSignal) {
     if (signal?.aborted) {
-      throw new Error('stopped by abort signal');
+      throw Errors.aborted('session', 'stopped by abort signal');
     }
   }
 
@@ -385,14 +386,14 @@ export class DefaultAgentSession implements AgentSession {
         : await Promise.race<Promise<LlmBridgeResponse>>([
             fn(),
             new Promise<LlmBridgeResponse>((_, reject) => {
-              setTimeout(() => reject(new Error('timeout')), timeout);
+              setTimeout(() => reject(Errors.timeout('session', 'timeout')), timeout);
             }),
           ]);
 
     const response = await promise;
 
     if (abortSignal.aborted) {
-      throw new Error('stopped by abort signal');
+      throw Errors.aborted('session', 'stopped by abort signal');
     }
 
     const persistedAssistant = await this.chatSession.appendMessage({

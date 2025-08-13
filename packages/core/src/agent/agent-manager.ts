@@ -7,24 +7,10 @@
 
 import { UserMessage } from 'llm-bridge-spec';
 import { Agent, AgentStatus, AgentExecuteOptions, AgentChatResult } from './agent';
+import type { AgentSearchQuery } from './agent-search';
+import type { AgentSession } from './agent-session';
 import { CursorPagination, CursorPaginationResult } from '../common/pagination/cursor-pagination';
-
-/**
- * Agent 검색 쿼리
- */
-export interface AgentSearchQuery {
-  /** 키워드 검색 */
-  keywords?: string[];
-
-  /** 상태 필터 */
-  status?: AgentStatus;
-
-  /** 이름으로 검색 */
-  name?: string;
-
-  /** 설명에서 검색 */
-  description?: string;
-}
+import { CoreError, ErrorCode } from '../common/error/core-error';
 
 /**
  * Agent 매니저 인터페이스
@@ -84,6 +70,15 @@ export interface AgentManager {
   getActiveAgents(pagination?: CursorPagination): Promise<CursorPaginationResult<Agent>>;
 
   /**
+   * 별칭: Agent 세션 생성 (세션 중심 DX)
+   * 기존 API와의 호환성을 유지하면서 세션 중심 워크플로를 지원합니다.
+   */
+  createAgentSession(
+    agentId: string,
+    options?: { sessionId?: string; presetId?: string }
+  ): Promise<AgentSession>;
+
+  /**
    * Agent를 실행합니다.
    *
    * @param agentId - 실행할 Agent ID
@@ -117,11 +112,26 @@ export interface AgentManager {
   endAgentSession(agentId: string, sessionId: string): Promise<void>;
 
   /**
+   * 별칭: Agent 세션 종료 (세션 중심 DX)
+   * 기존 endAgentSession의 가독성 개선 버전입니다.
+   */
+  terminateAgentSession(agentId: string, sessionId: string): Promise<void>;
+
+  /**
    * 전체 Agent 통계를 조회합니다.
    *
    * @returns Agent 통계 정보
    */
   getStats(): Promise<AgentManagerStats>;
+
+  /**
+   * 별칭: Agent 검색 (간단한 메타데이터 기반 필터)
+   * 저장소 기반 정교한 검색이 도입되기 전까지의 임시 구현을 위한 인터페이스입니다.
+   */
+  searchAgents(
+    query: AgentSearchQuery,
+    pagination?: CursorPagination
+  ): Promise<CursorPaginationResult<Agent>>;
 }
 
 /**
@@ -144,14 +154,12 @@ export interface AgentManagerStats {
 /**
  * Agent 매니저 에러
  */
-export class AgentManagerError extends Error {
-  constructor(
-    message: string,
-    public readonly code: string,
-    public readonly details?: Record<string, unknown>
-  ) {
-    super(message);
+export class AgentManagerError extends CoreError {
+  readonly legacyCode: string;
+  constructor(message: string, legacyCode: string, details?: Record<string, unknown>) {
+    super('agent_manager', mapLegacyCode(legacyCode), message, { details });
     this.name = 'AgentManagerError';
+    this.legacyCode = legacyCode;
   }
 }
 
@@ -165,6 +173,23 @@ export const AGENT_MANAGER_ERROR_CODES = {
   INVALID_AGENT_ID: 'INVALID_AGENT_ID',
   OPERATION_FAILED: 'OPERATION_FAILED',
 } as const;
+
+function mapLegacyCode(code: string): ErrorCode {
+  switch (code) {
+    case AGENT_MANAGER_ERROR_CODES.AGENT_NOT_FOUND:
+      return 'NOT_FOUND';
+    case AGENT_MANAGER_ERROR_CODES.AGENT_ALREADY_EXISTS:
+      return 'ALREADY_EXISTS';
+    case AGENT_MANAGER_ERROR_CODES.INVALID_AGENT_ID:
+      return 'INVALID_ARGUMENT';
+    case AGENT_MANAGER_ERROR_CODES.AGENT_EXECUTION_FAILED:
+      return 'OPERATION_FAILED';
+    case AGENT_MANAGER_ERROR_CODES.OPERATION_FAILED:
+      return 'OPERATION_FAILED';
+    default:
+      return 'INTERNAL';
+  }
+}
 
 // Re-export from Lang package for backward compatibility
 import { validation } from '@agentos/lang';

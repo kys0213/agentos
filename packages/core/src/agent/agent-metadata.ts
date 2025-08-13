@@ -8,6 +8,9 @@ export interface AgentMetadata {
   /** Agent 고유 식별자 */
   id: string;
 
+  /** 낙관적 락을 위한 메타 버전 (리포지토리에서 증가, opaque string/etag) */
+  version?: string;
+
   /** Agent 이름 */
   name: string;
 
@@ -40,5 +43,5 @@ export type ReadonlyAgentMetadata = Readonly<AgentMetadata>;
 
 export type CreateAgentMetadata = Omit<
   AgentMetadata,
-  'id' | 'lastUsed' | 'sessionCount' | 'usageCount'
+  'id' | 'version' | 'lastUsed' | 'sessionCount' | 'usageCount'
 >;
