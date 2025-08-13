@@ -3,19 +3,16 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from '../lib/query-client';
 
+// Compile-time flags injected by Vite define (see vite.config.ts)
+declare const __DEV__: boolean;
+declare const __DEVTOOLS__: boolean;
+
 interface QueryProviderProps {
   children: React.ReactNode;
 }
 
 export const QueryProvider: React.FC<QueryProviderProps> = ({ children }) => {
-  const showDevtools =
-    // Vite env preferred
-    ((typeof import.meta !== 'undefined' && (import.meta as any)?.env?.VITE_DEVTOOLS === 'true') ||
-      // Fallback to process.env for tests/build
-      (typeof process !== 'undefined' && process.env?.VITE_DEVTOOLS === 'true')) &&
-    // Only in dev mode
-    ((typeof import.meta !== 'undefined' && (import.meta as any)?.env?.DEV) ||
-      process.env.NODE_ENV === 'development');
+  const showDevtools = Boolean(__DEV__) && Boolean(__DEVTOOLS__);
   return (
     <QueryClientProvider client={queryClient}>
       {children}
