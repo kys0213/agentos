@@ -60,11 +60,6 @@ export interface Agent {
   isIdle(): Promise<boolean>;
 
   /**
-   * Agent가 대기 상태인지 확인합니다.
-   */
-  isIdle(): Promise<boolean>;
-
-  /**
    * Agent가 비활성 상태인지 확인합니다.
    */
   isInactive(): Promise<boolean>;

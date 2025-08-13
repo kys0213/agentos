@@ -8,10 +8,23 @@ export * from './chat/content';
 
 export * from './agent/agent';
 export * from './agent/simple-agent';
+export * from './agent/agent-events';
+export * from './agent/agent-event-bridge';
+export * from './common/event/event-publisher';
+export * from './common/event/function-publisher';
+export * from './common/event/event-subscriber';
+export * from './common/event/ipc-payload-guards';
+export * from './common/event/ipc-renderer-helpers';
 export * from './agent/agent-manager';
 export * from './agent/simple-agent-manager';
 export * from './agent/agent-metadata';
 export * from './agent/agent-session';
+export * from './agent/agent-search';
+export * from './agent/agent-metadata.repository';
+export * from './agent/agent.service';
+export * from './agent/session.service';
+export * from './agent/simple-agent.service';
+export * from './agent/repository/file-agent-metadata.repository';
 
 export * from './tool/mcp/mcp';
 export * from './tool/mcp/mcp-config';
@@ -31,6 +44,8 @@ export * from './knowledge/splitter/document-splitter';
 export * from './knowledge/splitter/markdown-splitter';
 
 export * from './common/pagination/cursor-pagination';
+export * from './common/pagination/paginate';
 
 export * from './tool/builtin/builtin-tool';
 export * from './tool/builtin/builtin-tool.manager';
+export * from './common/error/core-error';

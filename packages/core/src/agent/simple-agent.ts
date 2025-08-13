@@ -18,11 +18,15 @@ import { Agent, AgentChatResult, AgentExecuteOptions } from './agent';
 import { DefaultAgentSession } from './default-agent-session';
 import { AgentMetadata, ReadonlyAgentMetadata } from './agent-metadata';
 import { validation } from '@agentos/lang';
+import { Errors } from '../common/error/core-error';
+import type { AgentEvent } from './agent-events';
+import type { Unsubscribe } from './agent-session';
 
 const { isNonEmptyArray } = validation;
 
 export class SimpleAgent implements Agent {
   private readonly activeSessions = new Map<string, ChatSession>();
+  private readonly agentEventHandlers = new Set<(e: AgentEvent) => void>();
 
   constructor(
     private readonly llmBridge: LlmBridge,
@@ -83,7 +87,15 @@ export class SimpleAgent implements Agent {
       ? await this.chatManager.getSession(options.sessionId)
       : await this.chatManager.create();
 
-    return new DefaultAgentSession(
+    this.activeSessions.set(chatSession.sessionId, chatSession);
+    this._metadata.sessionCount = (this._metadata.sessionCount ?? 0) + 1;
+    this.emitAgentEvent({
+      type: 'sessionCreated',
+      agentId: this.id,
+      sessionId: chatSession.sessionId,
+    });
+
+    const session = new DefaultAgentSession(
       this.id,
       chatSession,
       this.llmBridge,
@@ -91,6 +103,13 @@ export class SimpleAgent implements Agent {
       this._metadata,
       async (sessionId) => this.endSession(sessionId)
     );
+
+    // Bridge session errors to agent-level errors
+    session.on('error', ({ error }) => {
+      this.emitAgentEvent({ type: 'error', agentId: this.id, error });
+    });
+
+    return session;
   }
 
   /**
@@ -102,18 +121,30 @@ export class SimpleAgent implements Agent {
     if (this.activeSessions.has(sessionId)) {
       this.activeSessions.delete(sessionId);
     }
+    this._metadata.sessionCount = Math.max(0, (this._metadata.sessionCount ?? 0) - 1);
+    this.emitAgentEvent({ type: 'sessionEnded', agentId: this.id, sessionId });
   }
 
   async idle(): Promise<void> {
     this._metadata.status = 'idle';
+    this.emitAgentEvent({ type: 'statusChanged', agentId: this.id, status: 'idle' });
+    this.emitAgentEvent({ type: 'metadataUpdated', agentId: this.id, patch: { status: 'idle' } });
   }
 
   async activate(): Promise<void> {
     this._metadata.status = 'active';
+    this.emitAgentEvent({ type: 'statusChanged', agentId: this.id, status: 'active' });
+    this.emitAgentEvent({ type: 'metadataUpdated', agentId: this.id, patch: { status: 'active' } });
   }
 
   async inactive(): Promise<void> {
     this._metadata.status = 'inactive';
+    this.emitAgentEvent({ type: 'statusChanged', agentId: this.id, status: 'inactive' });
+    this.emitAgentEvent({
+      type: 'metadataUpdated',
+      agentId: this.id,
+      patch: { status: 'inactive' },
+    });
   }
 
   private async getEnabledTools(): Promise<LlmBridgeTool[]> {
@@ -187,7 +218,7 @@ export class SimpleAgent implements Agent {
   ) {
     for (let i = 0; i < (options?.maxTurnCount ?? 3); i++) {
       if (options?.abortSignal?.aborted) {
-        throw new Error('stopped by abort signal');
+        throw Errors.aborted('session', 'stopped by abort signal');
       }
 
       const mcpAndTools = await Promise.all(
@@ -205,7 +236,9 @@ export class SimpleAgent implements Agent {
         const { contents, isError } = await mcp.invokeTool(tool, { input: toolCall.arguments });
 
         if (isError) {
-          throw new Error('Tool call failed reason: ' + contents[0].text);
+          throw Errors.operationFailed('mcp', 'Tool call failed', {
+            reason: contents && contents[0] && (contents[0] as any).text,
+          });
         }
 
         const toolMessage: ToolMessage = {
@@ -229,7 +262,7 @@ export class SimpleAgent implements Agent {
       }
     }
 
-    throw new Error('Tool call count exceeded');
+    throw Errors.operationFailed('mcp', 'Tool call count exceeded');
   }
 
   private toLlmBridgeTool(tool: Tool): LlmBridgeTool {
@@ -254,5 +287,21 @@ export class SimpleAgent implements Agent {
         value: Buffer.from(content.data),
       };
     });
+  }
+
+  // Agent event source
+  on(handler: (event: AgentEvent) => void): Unsubscribe {
+    this.agentEventHandlers.add(handler);
+    return () => this.agentEventHandlers.delete(handler);
+  }
+
+  private emitAgentEvent(event: AgentEvent) {
+    for (const h of this.agentEventHandlers) {
+      try {
+        h(event);
+      } catch {
+        // ignore handler errors
+      }
+    }
   }
 }
