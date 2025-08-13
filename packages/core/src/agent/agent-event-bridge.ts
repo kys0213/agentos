@@ -16,14 +16,23 @@ export class AgentEventBridge {
 
   async attachAll(options?: { pageSize?: number }) {
     const limit = options?.pageSize ?? 1000;
+
     let cursor = '';
-    // naive pagination loop
-    while (true) {
-      const page = await this.manager.getAllAgents({ limit, cursor });
-      for (const agent of page.items) await this.attachAgent(agent);
-      if (!page.nextCursor) break;
+    let hasNext = true;
+
+    do {
+      const page = await this.manager.getAllAgents({ limit, cursor, direction: 'forward' });
+
+      for (const agent of page.items) {
+        await this.attachAgent(agent);
+      }
+
+      if (!page.nextCursor) {
+        hasNext = false;
+      }
+
       cursor = page.nextCursor;
-    }
+    } while (hasNext);
   }
 
   async attachAgent(agentOrId: Agent | string) {
