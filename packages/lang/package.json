@@ -63,8 +63,8 @@
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist && rm -rf esm",
-    "verify:esm": "node packages/lang/scripts/verify-esm.mjs",
-    "verify:cjs": "node packages/lang/scripts/verify-cjs.cjs"
+    "verify:esm": "node ./scripts/verify-esm.mjs",
+    "verify:cjs": "node ./scripts/verify-cjs.cjs"
   },
   "dependencies": {
     "@datastructures-js/deque": "^1.0.5",
