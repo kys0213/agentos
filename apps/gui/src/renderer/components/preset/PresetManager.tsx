@@ -34,6 +34,7 @@ export interface PresetManagerProps {
   onCreatePreset?: (data: Partial<Preset>) => void;
   onUpdatePreset?: (id: string, data: Partial<Preset>) => void;
   onCreatePresetAsync?: (data: CreatePreset) => Promise<Preset>;
+  onStartCreatePreset?: () => void; // when provided, prefer global full-screen create mode
 }
 
 export function PresetManager({
@@ -44,6 +45,7 @@ export function PresetManager({
   onCreatePreset,
   onUpdatePreset,
   onCreatePresetAsync,
+  onStartCreatePreset,
 }: PresetManagerProps) {
   const [activeTab, setActiveTab] = useState('list');
   const [viewMode, setViewMode] = useState<'list' | 'detail' | 'create'>('list');
@@ -180,7 +182,7 @@ export function PresetManager({
             </p>
           </div>
           <Button
-            onClick={() => setViewMode('create')}
+            onClick={() => (onStartCreatePreset ? onStartCreatePreset() : setViewMode('create'))}
             className="gap-2"
             data-testid="btn-create-project"
           >

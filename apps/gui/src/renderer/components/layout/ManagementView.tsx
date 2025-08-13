@@ -174,7 +174,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
           />
         );
       case 'presets':
-        return <PresetManagerContainer />;
+        return <PresetManagerContainer onStartCreatePreset={handleStartCreatePreset} />;
       case 'subagents':
         // Always render the React Query–backed container; it handles loading/empty states
         return <SubAgentManagerContainer onCreateAgent={handleStartCreateAgent} />;
