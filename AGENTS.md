@@ -30,7 +30,14 @@ Welcome to the AgentOS repository. This file summarizes key resources and comman
 - Format and fix lint: `pnpm format` (run before committing)
 - **GUI 앱 개발**: `cd apps/gui && pnpm run dev` ⭐
 
-Additional design documents for each package live under `<apps|packages>/<n>/docs`.
+Root-level `docs/` contains shared conventions, 철학, 테스트 가이드, Git 워크플로우 등을 관리합니다.
+
+각 패키지(`<apps|packages>/<name>`)는 다음과 같은 문서 구조를 가질 수 있습니다:
+
+- `docs/`: 패키지의 목적, 주요 기능, 사용법을 정리합니다.
+- `plan/`: 작업 전에 요구사항을 분석하고 TODO를 정리하는 계획서를 둡니다.
+  - 모든 TODO가 완료되면 내용을 정리하여 `docs/`로 이동하고 `plan/`의 해당 파일을 삭제합니다.
+  - 새 파일을 추가하기 전에 기존 문서를 검토하여 관련 내용과 잘 통합합니다.
 
 ## 🎯 **프론트엔드 작업 가이드라인**
 
