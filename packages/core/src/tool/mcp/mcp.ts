@@ -13,15 +13,13 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import EventEmitter from 'node:events';
 import { Scheduler } from '../../common/scheduler/scheduler';
-import { utils, validation } from '@agentos/lang';
-
-const { isNonEmptyArray, isPlainObject, isError } = validation;
+import { isNonEmptyArray, isPlainObject, isError } from '@agentos/lang/validation';
 
 // 타입 가드 함수들 (임시로 직접 정의 - lang 패키지의 is.* 타입들이 any이므로)
 const isString = (value: unknown): value is string => typeof value === 'string';
 const isArray = (value: unknown): value is unknown[] => Array.isArray(value);
 
-const { safeZone } = utils;
+import { safeZone } from '@agentos/lang/utils';
 import { McpConfig } from './mcp-config';
 import { McpEvent, McpEventMap } from './mcp-event';
 import { McpTransportFactory } from './mcp-transport.factory';

@@ -192,10 +192,4 @@ function mapLegacyCode(code: string): ErrorCode {
 }
 
 // Re-export from Lang package for backward compatibility
-import { validation } from '@agentos/lang';
-
-/**
- * Agent ID 유효성 검사
- * @deprecated Use validation.validateAgentId from @agentos/lang instead
- */
-export const validateAgentId = validation.validateAgentId;
+export { validateAgentId } from '@agentos/lang/validation';

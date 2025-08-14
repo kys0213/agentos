@@ -17,12 +17,12 @@ import { McpRegistry } from '../tool/mcp/mcp.registery';
 import { Agent, AgentChatResult, AgentExecuteOptions } from './agent';
 import { DefaultAgentSession } from './default-agent-session';
 import { AgentMetadata, ReadonlyAgentMetadata } from './agent-metadata';
-import { validation } from '@agentos/lang';
+import { isNonEmptyArray } from '@agentos/lang/validation';
 import { Errors } from '../common/error/core-error';
 import type { AgentEvent } from './agent-events';
 import type { Unsubscribe } from '../common/event/event-subscriber';
 
-const { isNonEmptyArray } = validation;
+// use isNonEmptyArray from lang/validation subpath
 
 export class SimpleAgent implements Agent {
   private readonly activeSessions = new Map<string, ChatSession>();

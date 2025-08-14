@@ -1,4 +1,4 @@
-import { validation } from '@agentos/lang';
+import { isError } from '@agentos/lang/validation';
 import type { AgentSearchQuery } from './agent-search';
 import { UserMessage } from 'llm-bridge-spec';
 import { CursorPagination, CursorPaginationResult } from '../common/pagination/cursor-pagination';
@@ -13,7 +13,7 @@ import {
   validateAgentId,
 } from './agent-manager';
 
-const { isError } = validation;
+// use isError from lang/validation subpath
 
 /**
  * 간단한 Agent 매니저 구현체

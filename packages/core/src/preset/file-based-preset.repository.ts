@@ -1,5 +1,5 @@
 import path from 'path';
-import { fs } from '@agentos/lang';
+import { FileUtils, JsonFileHandler } from '@agentos/lang/fs';
 import { CursorPaginationResult } from '../common/pagination/cursor-pagination';
 import { Preset } from './preset';
 import { PresetRepository, PresetSummary } from './preset.repository';
@@ -8,8 +8,8 @@ export class FileBasedPresetRepository implements PresetRepository {
   constructor(private readonly baseDir: string) {}
 
   async list(): Promise<CursorPaginationResult<PresetSummary>> {
-    await fs.FileUtils.ensureDir(this.baseDir);
-    const entriesResult = await fs.FileUtils.readDir(this.baseDir);
+    await FileUtils.ensureDir(this.baseDir);
+    const entriesResult = await FileUtils.readDir(this.baseDir);
     if (!entriesResult.success) {
       return { items: [], nextCursor: '' };
     }
@@ -33,7 +33,7 @@ export class FileBasedPresetRepository implements PresetRepository {
 
   async get(id: string): Promise<Preset | null> {
     const filePath = this.resolvePath(id);
-    const jsonHandler = fs.JsonFileHandler.create<Preset>(filePath);
+    const jsonHandler = JsonFileHandler.create<Preset>(filePath);
 
     const result = await jsonHandler.read();
     if (!result.success) {
@@ -58,7 +58,7 @@ export class FileBasedPresetRepository implements PresetRepository {
 
   async delete(id: string): Promise<void> {
     const filePath = this.resolvePath(id);
-    const result = await fs.FileUtils.remove(filePath);
+    const result = await FileUtils.remove(filePath);
     if (!result.success) {
       throw new Error(`Failed to delete preset: ${String(result.reason)}`);
     }
@@ -66,7 +66,7 @@ export class FileBasedPresetRepository implements PresetRepository {
 
   private async saveFile(id: string, preset: Preset): Promise<void> {
     const filePath = this.resolvePath(id);
-    const jsonHandler = fs.JsonFileHandler.create<Preset>(filePath);
+    const jsonHandler = JsonFileHandler.create<Preset>(filePath);
 
     const result = await jsonHandler.write(preset, {
       prettyPrint: true,

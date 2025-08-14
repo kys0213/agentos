@@ -1,6 +1,6 @@
 import { LlmBridge, UserMessage, LlmBridgeResponse } from 'llm-bridge-spec';
 import { KeywordExtractor } from '../tokenizer';
-import { json } from '@agentos/lang';
+import * as json from '@agentos/lang/json';
 
 export interface LlmKeywordExtractorOptions {
   systemPrompt?: string;

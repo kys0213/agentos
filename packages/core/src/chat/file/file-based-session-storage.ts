@@ -6,9 +6,7 @@ import { FileBasedChatSessionCheckpointFile } from './file-based-chat-session-ch
 import { FileBasedChatSessionMessageHistoryFile } from './file-based-chat-session-message-history-file';
 import { FileBasedChatSessionMetadataFile } from './file-based-chat-session-metadata-file';
 import { FileBasedSessionMetadata } from './file-based-session.metadata';
-import { validation } from '@agentos/lang';
-
-const { isNonEmptyArray, isPlainObject } = validation;
+import { isNonEmptyArray } from '@agentos/lang/validation';
 
 export class FileBasedSessionStorage {
   // TODO LRU Cache 적용

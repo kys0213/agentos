@@ -1,9 +1,8 @@
 import path from 'path';
 import fs from 'fs/promises';
 import { Checkpoint } from '../chat-session';
-import { json, validation } from '@agentos/lang';
-
-const { isPlainObject } = validation;
+import * as json from '@agentos/lang/json';
+import { isPlainObject } from '@agentos/lang/validation';
 
 export class FileBasedChatSessionCheckpointFile {
   private readonly fileName = 'checkpoint.json';

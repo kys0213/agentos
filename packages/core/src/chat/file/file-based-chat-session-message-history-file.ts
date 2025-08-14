@@ -1,17 +1,16 @@
 import path from 'path';
 import { MessageHistory } from '../chat-session';
-import { fs, validation } from '@agentos/lang';
-
-const { isNonEmptyArray } = validation;
+import { JsonLFileHandler, FileUtils } from '@agentos/lang/fs';
+import { isNonEmptyArray } from '@agentos/lang/validation';
 
 export class FileBasedChatSessionMessageHistoryFile {
   private readonly fileName = 'histories.jsonl';
   private readonly _fullPath: string;
-  private readonly jsonlHandler: fs.JsonLFileHandler<MessageHistory>;
+  private readonly jsonlHandler: JsonLFileHandler<MessageHistory>;
 
   constructor(public readonly directoryPath: string) {
     this._fullPath = path.join(directoryPath, this.fileName);
-    this.jsonlHandler = fs.JsonLFileHandler.create<MessageHistory>(this._fullPath);
+    this.jsonlHandler = JsonLFileHandler.create<MessageHistory>(this._fullPath);
   }
 
   get fullPath(): string {
@@ -23,7 +22,7 @@ export class FileBasedChatSessionMessageHistoryFile {
   }
 
   async create(): Promise<void> {
-    const result = await fs.FileUtils.writeSafe(this.fullPath, '');
+    const result = await FileUtils.writeSafe(this.fullPath, '');
     if (!result.success) {
       throw new Error(`Failed to create history file: ${String(result.reason)}`);
     }

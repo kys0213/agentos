@@ -1,15 +1,15 @@
 import path from 'path';
-import { fs } from '@agentos/lang';
+import { JsonFileHandler } from '@agentos/lang/fs';
 import { FileBasedSessionMetadata } from './file-based-session.metadata';
 
 export class FileBasedChatSessionMetadataFile {
   private readonly fileName = 'metadata.json';
   private readonly _fullPath: string;
-  private readonly jsonHandler: fs.JsonFileHandler<FileBasedSessionMetadata>;
+  private readonly jsonHandler: JsonFileHandler<FileBasedSessionMetadata>;
 
   constructor(directoryPath: string) {
     this._fullPath = path.join(directoryPath, this.fileName);
-    this.jsonHandler = fs.JsonFileHandler.create<FileBasedSessionMetadata>(this._fullPath);
+    this.jsonHandler = JsonFileHandler.create<FileBasedSessionMetadata>(this._fullPath);
   }
 
   get fullPath(): string {
