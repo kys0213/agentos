@@ -8,7 +8,43 @@
       "import": "./esm/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./date": {
+      "import": "./esm/date/index.js",
+      "require": "./dist/date/index.js",
+      "types": "./dist/date/index.d.ts"
+    },
+    "./fs": {
+      "import": "./esm/fs/index.js",
+      "require": "./dist/fs/index.js",
+      "types": "./dist/fs/index.d.ts"
+    },
+    "./json": {
+      "import": "./esm/json/index.js",
+      "require": "./dist/json/index.js",
+      "types": "./dist/json/index.d.ts"
+    },
+    "./string": {
+      "import": "./esm/string/index.js",
+      "require": "./dist/string/index.js",
+      "types": "./dist/string/index.d.ts"
+    },
+    "./utils": {
+      "import": "./esm/utils/index.js",
+      "require": "./dist/utils/index.js",
+      "types": "./dist/utils/index.d.ts"
+    },
+    "./validation": {
+      "import": "./esm/validation/index.js",
+      "require": "./dist/validation/index.js",
+      "types": "./dist/validation/index.d.ts"
+    },
+    "./datastructures": {
+      "import": "./esm/datastructures/index.js",
+      "require": "./dist/datastructures/index.js",
+      "types": "./dist/datastructures/index.d.ts"
+    },
+    "./package.json": "./package.json"
   },
   "publishConfig": {
     "main": "dist/index.js",
@@ -26,7 +62,9 @@
     "dev": "tsc -w",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist && rm -rf esm"
+    "clean": "rm -rf dist && rm -rf esm",
+    "verify:esm": "node ./scripts/verify-esm.mjs",
+    "verify:cjs": "node ./scripts/verify-cjs.cjs"
   },
   "dependencies": {
     "@datastructures-js/deque": "^1.0.5",
