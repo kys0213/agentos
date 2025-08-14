@@ -2,5 +2,18 @@
   "extends": ["../../.eslintrc.json"],
   "parserOptions": {
     "project": ["./tsconfig.json"]
+  },
+  "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "@agentos/lang",
+            "message": "Use subpaths like @agentos/lang/fs or @agentos/lang/validation instead of the root entry."
+          }
+        ]
+      }
+    ]
   }
 }
