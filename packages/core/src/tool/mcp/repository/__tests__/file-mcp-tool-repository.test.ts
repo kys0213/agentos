@@ -14,10 +14,10 @@ describe('FileMcpToolRepository', () => {
     // 임시 디렉토리 생성
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mcp-repo-test-'));
     storagePath = path.join(tempDir, 'mcp-tools.json');
-    
+
     repository = new FileMcpToolRepository(storagePath, {
       enableCaching: true,
-      enableWatching: false // 테스트에서는 파일 감시 비활성화
+      enableWatching: false, // 테스트에서는 파일 감시 비활성화
     });
   });
 
@@ -38,7 +38,7 @@ describe('FileMcpToolRepository', () => {
         version: '1.0.0',
         command: 'node',
         args: ['script.js'],
-        env: { API_KEY: 'secret123' }
+        env: { API_KEY: 'secret123' },
       };
 
       const metadata = await repository.create(config);
@@ -49,7 +49,7 @@ describe('FileMcpToolRepository', () => {
         category: 'general',
         provider: 'Local Process',
         status: 'disconnected',
-        usageCount: 0
+        usageCount: 0,
       });
 
       expect(metadata.id).toMatch(/^mcp_test_tool_\d+_[a-z0-9]+$/);
@@ -62,7 +62,7 @@ describe('FileMcpToolRepository', () => {
         type: 'streamableHttp',
         name: 'web-search-tool',
         version: '1.0.0',
-        url: 'https://api.example.com'
+        url: 'https://api.example.com',
       };
 
       const metadata = await repository.create(webConfig);
@@ -74,7 +74,7 @@ describe('FileMcpToolRepository', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
 
       const eventPromise = new Promise((resolve) => {
@@ -86,7 +86,7 @@ describe('FileMcpToolRepository', () => {
 
       expect(event).toEqual({
         id: metadata.id,
-        metadata
+        metadata,
       });
     });
   });
@@ -97,7 +97,7 @@ describe('FileMcpToolRepository', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
 
       const created = await repository.create(config);
@@ -115,7 +115,7 @@ describe('FileMcpToolRepository', () => {
   describe('list', () => {
     it('should return empty list initially', async () => {
       const result = await repository.list();
-      
+
       expect(result.items).toHaveLength(0);
       expect(result.hasMore).toBe(false);
       expect(result.nextCursor).toBe('');
@@ -124,7 +124,7 @@ describe('FileMcpToolRepository', () => {
     it('should return all tools', async () => {
       const configs: McpConfig[] = [
         { type: 'stdio', name: 'tool1', version: '1.0.0', command: 'node' },
-        { type: 'stdio', name: 'tool2', version: '1.0.0', command: 'python' }
+        { type: 'stdio', name: 'tool2', version: '1.0.0', command: 'python' },
       ];
 
       for (const config of configs) {
@@ -134,8 +134,8 @@ describe('FileMcpToolRepository', () => {
       const result = await repository.list();
 
       expect(result.items).toHaveLength(2);
-      expect(result.items.map(t => t.name)).toContain('tool1');
-      expect(result.items.map(t => t.name)).toContain('tool2');
+      expect(result.items.map((t) => t.name)).toContain('tool1');
+      expect(result.items.map((t) => t.name)).toContain('tool2');
     });
 
     it('should support pagination', async () => {
@@ -145,7 +145,7 @@ describe('FileMcpToolRepository', () => {
           type: 'stdio',
           name: `tool${i}`,
           version: '1.0.0',
-          command: 'node'
+          command: 'node',
         });
       }
 
@@ -159,7 +159,7 @@ describe('FileMcpToolRepository', () => {
       const secondPage = await repository.list({
         limit: 2,
         cursor: firstPage.nextCursor,
-        direction: 'forward'
+        direction: 'forward',
       });
       expect(secondPage.items).toHaveLength(1);
       expect(secondPage.hasMore).toBe(false);
@@ -174,21 +174,21 @@ describe('FileMcpToolRepository', () => {
           name: 'web-search',
           version: '1.0.0',
           command: 'node',
-          args: ['web-search.js']
+          args: ['web-search.js'],
         },
         {
           type: 'streamableHttp',
           name: 'code-executor',
           version: '1.0.0',
-          url: 'https://api.codeexec.com'
+          url: 'https://api.codeexec.com',
         },
         {
           type: 'stdio',
           name: 'file-manager',
           version: '1.0.0',
           command: 'python',
-          args: ['file_manager.py']
-        }
+          args: ['file_manager.py'],
+        },
       ];
 
       for (const config of configs) {
@@ -198,14 +198,14 @@ describe('FileMcpToolRepository', () => {
 
     it('should search by category', async () => {
       const result = await repository.search({ category: 'search' });
-      
+
       expect(result.items).toHaveLength(1);
       expect(result.items[0].name).toBe('web-search');
     });
 
     it('should search by keywords', async () => {
       const result = await repository.search({ keywords: ['code'] });
-      
+
       expect(result.items).toHaveLength(1);
       expect(result.items[0].name).toBe('code-executor');
     });
@@ -214,9 +214,9 @@ describe('FileMcpToolRepository', () => {
       // provider가 'Local Process'이면서 키워드에 'file'이 포함된 도구
       const result = await repository.search({
         provider: 'Local Process',
-        keywords: ['file']
+        keywords: ['file'],
       });
-      
+
       expect(result.items).toHaveLength(1);
       expect(result.items[0].name).toBe('file-manager');
     });
@@ -235,7 +235,7 @@ describe('FileMcpToolRepository', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
 
       const metadata = await repository.create(config);
@@ -245,7 +245,7 @@ describe('FileMcpToolRepository', () => {
     it('should update tool metadata', async () => {
       const patch = {
         status: 'connected' as const,
-        usageCount: 5
+        usageCount: 5,
       };
 
       const updated = await repository.update(toolId, patch);
@@ -266,7 +266,7 @@ describe('FileMcpToolRepository', () => {
 
       expect(event).toMatchObject({
         id: toolId,
-        previousStatus: 'disconnected'
+        previousStatus: 'disconnected',
       });
     });
 
@@ -274,16 +274,20 @@ describe('FileMcpToolRepository', () => {
       const wrongVersion = 'wrong-version';
 
       await expect(
-        repository.update(toolId, { status: 'connected' }, {
-          expectedVersion: wrongVersion
-        })
+        repository.update(
+          toolId,
+          { status: 'connected' },
+          {
+            expectedVersion: wrongVersion,
+          }
+        )
       ).rejects.toThrow(/Version conflict/);
     });
 
     it('should throw error for non-existent tool', async () => {
-      await expect(
-        repository.update('non-existent', { status: 'connected' })
-      ).rejects.toThrow(/not found/);
+      await expect(repository.update('non-existent', { status: 'connected' })).rejects.toThrow(
+        /not found/
+      );
     });
   });
 
@@ -295,7 +299,7 @@ describe('FileMcpToolRepository', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
 
       const metadata = await repository.create(config);
@@ -321,9 +325,7 @@ describe('FileMcpToolRepository', () => {
     });
 
     it('should throw error for non-existent tool', async () => {
-      await expect(
-        repository.delete('non-existent')
-      ).rejects.toThrow(/not found/);
+      await expect(repository.delete('non-existent')).rejects.toThrow(/not found/);
     });
   });
 
@@ -333,7 +335,7 @@ describe('FileMcpToolRepository', () => {
         type: 'stdio',
         name: 'persistent-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
 
       // 첫 번째 인스턴스로 데이터 생성

@@ -1,8 +1,14 @@
 import { McpMetadataRegistry } from '../mcp-metadata-registry';
-import { McpToolRepository, McpToolRepositoryEventPayload } from '../../repository/mcp-tool-repository';
+import {
+  McpToolRepository,
+  McpToolRepositoryEventPayload,
+} from '../../repository/mcp-tool-repository';
 import { McpToolMetadata, McpConnectionStatus } from '../../mcp-types';
 import { McpConfig } from '../../mcp-config';
-import { CursorPagination, CursorPaginationResult } from '../../../../common/pagination/cursor-pagination';
+import {
+  CursorPagination,
+  CursorPaginationResult,
+} from '../../../../common/pagination/cursor-pagination';
 
 // Mock Repository 구현
 class MockMcpToolRepository implements McpToolRepository {
@@ -37,12 +43,12 @@ class MockMcpToolRepository implements McpToolRepository {
       status: 'disconnected',
       usageCount: 0,
       permissions: [],
-      config: {}
+      config: {},
     };
 
     this.tools.set(tool.id, tool);
     this.emit('changed', { id: tool.id, metadata: tool });
-    
+
     return tool;
   }
 
@@ -65,7 +71,7 @@ class MockMcpToolRepository implements McpToolRepository {
       ...existing,
       ...patch,
       id, // ID는 변경 불가
-      version: `v${Date.now()}` // 새 버전 할당
+      version: `v${Date.now()}`, // 새 버전 할당
     };
 
     this.tools.set(id, updated);
@@ -87,13 +93,16 @@ class MockMcpToolRepository implements McpToolRepository {
     this.emit('deleted', { id });
   }
 
-  on(event: 'changed' | 'deleted' | 'statusChanged', handler: (payload: McpToolRepositoryEventPayload) => void): () => void {
+  on(
+    event: 'changed' | 'deleted' | 'statusChanged',
+    handler: (payload: McpToolRepositoryEventPayload) => void
+  ): () => void {
     if (!this.eventHandlers.has(event)) {
       this.eventHandlers.set(event, []);
     }
-    
+
     this.eventHandlers.get(event)!.push(handler);
-    
+
     return () => {
       const handlers = this.eventHandlers.get(event)!;
       const index = handlers.indexOf(handler);
@@ -105,7 +114,7 @@ class MockMcpToolRepository implements McpToolRepository {
 
   private emit(event: string, payload: McpToolRepositoryEventPayload): void {
     const handlers = this.eventHandlers.get(event) || [];
-    handlers.forEach(handler => handler(payload));
+    handlers.forEach((handler) => handler(payload));
   }
 }
 
@@ -120,7 +129,7 @@ jest.mock('../mcp-metadata-registry', () => {
         super(repository);
         // 실제 MCP 연결을 모킹하기 위해 mcpRegistry를 mock으로 교체할 수 있음
       }
-    }
+    },
   };
 });
 
@@ -146,7 +155,7 @@ describe('McpMetadataRegistry', () => {
         type: 'stdio',
         name: 'existing-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
       await mockRepository.create(config);
 
@@ -164,15 +173,15 @@ describe('McpMetadataRegistry', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
 
       // MCP 연결 실패를 시뮬레이션 (실제 MCP 서버가 없으므로)
       await expect(registry.registerTool(config)).rejects.toThrow();
-      
+
       // 그래도 메타데이터는 저장되어야 함
       expect(registry.totalToolsCount).toBe(1);
-      
+
       const tools = registry.getAllTools().items;
       expect(tools[0].name).toBe('test-tool');
       expect(tools[0].status).toBe('error'); // 연결 실패로 error 상태
@@ -183,7 +192,7 @@ describe('McpMetadataRegistry', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
 
       const eventPromise = new Promise((resolve) => {
@@ -209,15 +218,15 @@ describe('McpMetadataRegistry', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
-      
+
       try {
         await registry.registerTool(config);
       } catch {
         // MCP 연결 실패는 무시
       }
-      
+
       const tools = registry.getAllTools().items;
       toolId = tools[0].id;
     });
@@ -238,7 +247,7 @@ describe('McpMetadataRegistry', () => {
 
     it('should update connection status', async () => {
       const updated = await registry.updateConnectionStatus(toolId, 'connected');
-      
+
       expect(updated.status).toBe('connected');
       expect(registry.getTool(toolId)?.status).toBe('connected');
     });
@@ -253,7 +262,7 @@ describe('McpMetadataRegistry', () => {
 
       expect(event).toMatchObject({
         toolId,
-        status: 'connected'
+        status: 'connected',
       });
     });
 
@@ -278,15 +287,15 @@ describe('McpMetadataRegistry', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
-      
+
       try {
         await registry.registerTool(config);
       } catch {
         // MCP 연결 실패는 무시
       }
-      
+
       const tools = registry.getAllTools().items;
       toolId = tools[0].id;
     });
@@ -319,7 +328,7 @@ describe('McpMetadataRegistry', () => {
       const configs: McpConfig[] = [
         { type: 'stdio', name: 'tool1', version: '1.0.0', command: 'node' },
         { type: 'stdio', name: 'tool2', version: '1.0.0', command: 'python' },
-        { type: 'stdio', name: 'tool3', version: '1.0.0', command: 'java' }
+        { type: 'stdio', name: 'tool3', version: '1.0.0', command: 'java' },
       ];
 
       for (const config of configs) {
@@ -359,8 +368,7 @@ describe('McpMetadataRegistry', () => {
     });
 
     it('should throw error for non-existent tool execution', async () => {
-      await expect(registry.executeTool('non-existent.tool', {}))
-        .rejects.toThrow(/not found/);
+      await expect(registry.executeTool('non-existent.tool', {})).rejects.toThrow(/not found/);
     });
   });
 });

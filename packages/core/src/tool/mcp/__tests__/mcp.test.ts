@@ -219,7 +219,7 @@ describe('Mcp', () => {
         undefined,
         expect.objectContaining({
           timeout: 5000,
-          maxTotalTimeout: 10000
+          maxTotalTimeout: 10000,
         })
       );
     });
