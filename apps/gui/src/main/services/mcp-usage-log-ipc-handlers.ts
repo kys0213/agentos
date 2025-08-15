@@ -3,7 +3,7 @@ import { BrowserWindow } from 'electron';
 /**
  * @deprecated 이 파일은 deprecated 됩니다.
  * 새로운 MCP Service 구조에서는 mcp-ipc-handlers.ts를 사용하세요.
- * 
+ *
  * 모든 MCP 관련 IPC 핸들러는 mcp-ipc-handlers.ts에서 통합 관리됩니다.
  */
 

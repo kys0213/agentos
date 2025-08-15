@@ -1,10 +1,10 @@
 import { ipcMain, IpcMainInvokeEvent, BrowserWindow } from 'electron';
-import { 
-  McpService, 
-  FileMcpToolRepository, 
+import {
+  McpService,
+  FileMcpToolRepository,
   McpMetadataRegistry,
   type McpConfig,
-  type McpToolMetadata 
+  type McpToolMetadata,
 } from '@agentos/core';
 
 let mcpService: McpService | null = null;
@@ -14,13 +14,13 @@ async function initializeMcpService(): Promise<McpService> {
 
   // MCP Service 의존성 설정
   const repository = new FileMcpToolRepository(
-    process.platform === 'win32' 
+    process.platform === 'win32'
       ? `${process.env.APPDATA}/.agentos/mcp/mcp-tools.json`
       : `${process.env.HOME}/.agentos/mcp/mcp-tools.json`
   );
   const registry = new McpMetadataRegistry(repository);
   mcpService = new McpService(repository, registry);
-  
+
   // 서비스 초기화
   await mcpService.initialize();
 
@@ -39,12 +39,15 @@ export function setupMcpIpcHandlers(window?: BrowserWindow) {
       const service = await initializeMcpService();
       const result = service.getAllTools();
       // GUI가 기대하는 McpConfig[] 형식으로 변환
-      return result.items.map((tool: McpToolMetadata) => ({
-        type: tool.config?.type || 'stdio',
-        name: tool.name,
-        version: tool.version,
-        ...(tool.config || {}),
-      } as McpConfig));
+      return result.items.map(
+        (tool: McpToolMetadata) =>
+          ({
+            type: tool.config?.type || 'stdio',
+            name: tool.name,
+            version: tool.version,
+            ...(tool.config || {}),
+          }) as McpConfig
+      );
     } catch (error) {
       console.error('Failed to get MCP tools:', error);
       throw error;
@@ -68,11 +71,13 @@ export function setupMcpIpcHandlers(window?: BrowserWindow) {
     try {
       const service = await initializeMcpService();
       // 이름으로 도구 찾기
-      const tools = service.getAllTools().items.filter((tool: McpToolMetadata) => tool.name === name);
+      const tools = service
+        .getAllTools()
+        .items.filter((tool: McpToolMetadata) => tool.name === name);
       if (tools.length === 0) {
         throw new Error(`MCP tool not found: ${name}`);
       }
-      
+
       await service.unregisterTool(tools[0].id);
       return { success: true };
     } catch (error) {
@@ -141,14 +146,16 @@ export function setupMcpIpcHandlers(window?: BrowserWindow) {
   ipcMain.handle('mcp:get-status', async (_event: IpcMainInvokeEvent, clientName: string) => {
     try {
       const service = await initializeMcpService();
-      const tools = service.getAllTools().items.filter((tool: McpToolMetadata) => tool.name === clientName);
+      const tools = service
+        .getAllTools()
+        .items.filter((tool: McpToolMetadata) => tool.name === clientName);
       if (tools.length === 0) {
         return {
           connected: false,
           error: `MCP tool not found: ${clientName}`,
         };
       }
-      
+
       const tool = tools[0];
       return {
         connected: tool.status === 'connected',
@@ -171,11 +178,13 @@ export function setupMcpIpcHandlers(window?: BrowserWindow) {
     async (_event: IpcMainInvokeEvent, clientName: string) => {
       try {
         const service = await initializeMcpService();
-        const tools = service.getAllTools().items.filter((tool: McpToolMetadata) => tool.name === clientName);
+        const tools = service
+          .getAllTools()
+          .items.filter((tool: McpToolMetadata) => tool.name === clientName);
         if (tools.length === 0) {
           throw new Error(`MCP tool not found: ${clientName}`);
         }
-        
+
         return tools[0];
       } catch (error) {
         console.error('Failed to get tool metadata:', error);
@@ -201,14 +210,16 @@ export function setupMcpIpcHandlers(window?: BrowserWindow) {
     try {
       const service = await initializeMcpService();
       const stats = service.getStatistics();
-      
+
       if (clientName) {
         // 특정 도구의 통계 반환 (현재는 전체 통계만 지원)
-        const tools = service.getAllTools().items.filter((tool: McpToolMetadata) => tool.name === clientName);
+        const tools = service
+          .getAllTools()
+          .items.filter((tool: McpToolMetadata) => tool.name === clientName);
         if (tools.length === 0) {
           throw new Error(`MCP tool not found: ${clientName}`);
         }
-        
+
         const tool = tools[0];
         return {
           totalUsage: tool.usageCount,
@@ -258,7 +269,7 @@ export function setupMcpIpcHandlers(window?: BrowserWindow) {
       for (let hour = 0; hour < 24; hour++) {
         hourlyData.push([hour, 0]);
       }
-      
+
       console.log(`Getting hourly stats for date ${date}, client: ${clientName}`);
       return { hourlyData }; // TODO: McpService에 시간별 통계 기능이 추가되면 구현
     }
@@ -276,7 +287,7 @@ export function setupMcpIpcHandlers(window?: BrowserWindow) {
   // 사용량 로그 정리 (현재 지원하지 않음)
   ipcMain.handle('mcp:clear-usage-logs', async (_event: IpcMainInvokeEvent, olderThan?: string) => {
     console.log(`Clearing usage logs${olderThan ? ` older than ${olderThan}` : ''}`);
-    
+
     return {
       success: true,
       clearedCount: 0,
@@ -288,7 +299,7 @@ export function setupMcpIpcHandlers(window?: BrowserWindow) {
     'mcp:set-usage-tracking',
     async (_event: IpcMainInvokeEvent, clientName: string, enabled: boolean) => {
       console.log(`Setting usage tracking for ${clientName} to ${enabled}`);
-      
+
       return { success: true }; // TODO: McpService에 사용량 추적 설정 기능이 추가되면 구현
     }
   );
@@ -296,7 +307,7 @@ export function setupMcpIpcHandlers(window?: BrowserWindow) {
   // 사용량 업데이트 구독 (현재 지원하지 않음)
   ipcMain.handle('mcp:subscribe-usage-updates', async (_event: IpcMainInvokeEvent) => {
     console.log('Subscribing to usage updates');
-    
+
     // TODO: McpService 이벤트 시스템을 사용한 사용량 업데이트 구독 구현
     // const service = await initializeMcpService();
     // service.on('toolUsageIncremented', (event) => {
@@ -309,7 +320,7 @@ export function setupMcpIpcHandlers(window?: BrowserWindow) {
     //     });
     //   }
     // });
-    
+
     return { success: true };
   });
 }
