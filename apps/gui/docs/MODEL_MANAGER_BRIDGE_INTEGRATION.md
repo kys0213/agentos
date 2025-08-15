@@ -1,6 +1,6 @@
 # Model Manager ↔ Main Bridge Integration
 
-This change refactors the GUI Model Manager to display installed LLM bridges from the Electron main process using the llm-bridge-spec manifest as the source of truth.
+This change refactors the GUI Model Manager to display installed LLM bridges from the Electron main process using the llm-bridge-spec manifest as the source of truth. It also consolidates the previous plan documents under `apps/gui/plan/` into this single source of truth.
 
 ## What Changed
 
@@ -34,6 +34,29 @@ This change refactors the GUI Model Manager to display installed LLM bridges fro
 
 This enables ModelManager and settings screens to refresh consistently without manual wiring.
 
+## Acceptance Criteria
+
+- LLM components under `apps/gui/src/renderer/components/llm/*` use React Query for data flow.
+- No direct `ServiceContainer` calls in presentational components; shared hooks provide data/actions.
+- Bridge list/current/activation state refresh using query keys + invalidation rules.
+- Clear UX for loading, error, and empty states across consumers.
+- Type safety preserved (no `any`; spec-aligned types such as `LlmManifest`).
+
+## Usage Scenarios
+
+- ModelManager composes installed bridges via `useInstalledBridges` and `useCurrentBridge`.
+- Switching with `useSwitchBridge` updates current and list via invalidation.
+- Settings screens (e.g., LlmBridgeManager, LLMSettings) reuse the same hooks and invalidation strategy.
+
+## Utilities
+
+- `toCapabilityLabels(manifest: LlmManifest) => string[]` maps `modalities` and `supports*` from capabilities into badge-friendly labels.
+
+## Testing Notes
+
+- Favor hook-level tests for `useInstalledBridges` and mutation invalidation behavior.
+- For IPC boundaries, use `MockIpcChannel` per the GUI testing guide to simulate bridge state.
+
 ## Electron IPC Contract
 
 - `bridge.registerBridge(config: LlmManifest)`
@@ -51,5 +74,4 @@ This enables ModelManager and settings screens to refresh consistently without m
 ## Dev Notes
 
 - UI code: `apps/gui/src/renderer/components/llm/ModelManager.tsx`
-- Plan: `apps/gui/plan/model-manager-bridge-integration.md`
 - Main IPC handlers: `apps/gui/src/main/services/bridge-ipc-handlers.ts`
