@@ -17,15 +17,15 @@ import {
   WifiOff,
   Zap,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import type { LlmManifest } from 'llm-bridge-spec';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { ServiceContainer } from '../../../shared/ipc/service-container';
-import type { BridgeService } from '../../services/bridge.service';
+import { toCapabilityLabels } from '../../hooks/queries/normalize';
+import { BRIDGE_QK, useCurrentBridge, useInstalledBridges, useSwitchBridge } from '../../hooks/queries/use-bridge';
 
 // Model data types based on BridgeService
 interface ModelInstance {
@@ -53,101 +53,15 @@ interface ModelInstance {
 export function ModelManager() {
   const [activeTab, setActiveTab] = useState('instances');
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [modelInstances, setModelInstances] = useState<ModelInstance[]>([]);
-  const [bridgeIds, setBridgeIds] = useState<string[]>([]);
-
-  // Get BridgeService from ServiceContainer
-  const bridgeService = ServiceContainer.getOrThrow('bridge');
-
-  // Convert manifest capabilities to simple string labels used by UI
-  const toCapabilityLabels = (manifest: LlmManifest): string[] => {
-    const labels: string[] = [];
-    const caps: any = manifest.capabilities as any;
-    if (Array.isArray(caps?.modalities)) labels.push(...caps.modalities);
-    if (caps?.supportsToolCall) labels.push('tool-call');
-    if (caps?.supportsFunctionCall) labels.push('function-call');
-    if (caps?.supportsMultiTurn) labels.push('multi-turn');
-    if (caps?.supportsStreaming) labels.push('streaming');
-    if (caps?.supportsVision) labels.push('vision');
-    return Array.from(new Set(labels));
-  };
-
-  // Load bridge data on mount
-  useEffect(() => {
-    const loadBridges = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Get available bridge IDs and current active bridge
-        const ids = await bridgeService.getBridgeIds();
-        setBridgeIds(ids);
-        const current = await bridgeService.getCurrentBridge();
-
-        // Build instances from manifests
-        const instances: ModelInstance[] = [];
-        for (const id of ids) {
-          const manifest = await bridgeService.getBridgeConfig(id);
-          if (!manifest) continue;
-          instances.push({
-            id,
-            name: manifest.name,
-            provider: manifest.language ?? id,
-            status: current?.id === id ? 'online' : 'offline',
-            endpoint: '',
-            apiKey: '',
-            capabilities: toCapabilityLabels(manifest),
-            usage: { requests: 0, tokens: 0, cost: 0 },
-            performance: { latency: 0, uptime: 0 },
-            lastUsed: new Date(),
-          });
-        }
-        setModelInstances(instances);
-      } catch (err) {
-        console.error('Failed to load bridge data:', err);
-        setError('Failed to load model information');
-        setModelInstances([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadBridges();
-  }, []);
-
-  // const availableModels = [] as const; // placeholder
-
-  const handleRefresh = async () => {
-    setLoading(true);
-    try {
-      const ids = await bridgeService.getBridgeIds();
-      setBridgeIds(ids);
-      const current = await bridgeService.getCurrentBridge();
-      const instances: ModelInstance[] = [];
-      for (const id of ids) {
-        const manifest = await bridgeService.getBridgeConfig(id);
-        if (!manifest) continue;
-        instances.push({
-          id,
-          name: manifest.name,
-          provider: manifest.language ?? id,
-          status: current?.id === id ? 'online' : 'offline',
-          endpoint: '',
-          apiKey: '',
-          capabilities: toCapabilityLabels(manifest),
-          usage: { requests: 0, tokens: 0, cost: 0 },
-          performance: { latency: 0, uptime: 0 },
-          lastUsed: new Date(),
-        });
-      }
-      setModelInstances(instances);
-    } catch (err) {
-      setError('Failed to refresh model data');
-    } finally {
-      setLoading(false);
-    }
+  const queryClient = useQueryClient();
+  const { data: installed = [], isLoading } = useInstalledBridges();
+  const { data: currentBridge } = useCurrentBridge();
+  const switchBridge = useSwitchBridge();
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: BRIDGE_QK.bridgeIds });
+    queryClient.invalidateQueries({ queryKey: BRIDGE_QK.bridgeList });
+    queryClient.invalidateQueries({ queryKey: BRIDGE_QK.currentBridge });
   };
 
   const handleInstallModel = async (modelId: string) => {
@@ -155,7 +69,7 @@ export function ModelManager() {
       // In real implementation, this would register a new bridge
       console.log('Installing model:', modelId);
       // await bridgeService.registerBridge(modelId, config);
-      await handleRefresh();
+      handleRefresh();
     } catch (err) {
       console.error('Failed to install model:', err);
     }
@@ -163,8 +77,7 @@ export function ModelManager() {
 
   const handleSwitchModel = async (bridgeId: string) => {
     try {
-      await bridgeService.switchBridge(bridgeId);
-      await handleRefresh();
+      await switchBridge.mutateAsync(bridgeId);
     } catch (err) {
       console.error('Failed to switch model:', err);
     }
@@ -207,7 +120,7 @@ export function ModelManager() {
     return new Intl.NumberFormat('en-US').format(num);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
@@ -295,7 +208,18 @@ export function ModelManager() {
         <TabsContent value="instances" className="space-y-6">
           {/* Model Instances */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {modelInstances.map((model) => (
+            {installed
+              .map(({ id, manifest }) => ({
+                id,
+                name: manifest.name,
+                provider: manifest.language ?? id,
+                status: currentBridge?.id === id ? 'online' : 'offline',
+                capabilities: toCapabilityLabels(manifest),
+              }))
+              .filter((m) =>
+                [m.id, m.name, m.provider].join(' ').toLowerCase().includes(searchQuery.toLowerCase())
+              )
+              .map((model) => (
               <Card key={model.id} className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
@@ -325,27 +249,27 @@ export function ModelManager() {
 
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Requests</span>
-                    <span className="font-semibold">{formatNumber(model.usage.requests)}</span>
+                    <span className="font-semibold">—</span>
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Tokens</span>
-                    <span className="font-semibold">{formatNumber(model.usage.tokens)}</span>
+                    <span className="font-semibold">—</span>
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Cost</span>
-                    <span className="font-semibold">{formatCurrency(model.usage.cost)}</span>
+                    <span className="font-semibold">—</span>
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Latency</span>
-                    <span className="font-semibold">{model.performance.latency}s</span>
+                    <span className="font-semibold">—</span>
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Uptime</span>
-                    <span className="font-semibold">{model.performance.uptime}%</span>
+                    <span className="font-semibold">—</span>
                   </div>
 
                   <div>
