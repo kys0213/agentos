@@ -243,3 +243,34 @@ EOF
 - 모든 Preset UI가 실제 Core 서비스와 연동됨
 - 사용자 경험은 기존과 100% 동일하게 유지됨
 - 다른 영역(Chat, MCP)의 실제 데이터 연동을 위한 검증된 패턴 제공
+
+## Create/Detail Flow Integration (Consolidated)
+
+다음 항목은 `PLAN_preset-manager-create-detail-integration.md`의 UI 통합 계획을 본 문서로 흡수한 것입니다.
+
+### Acceptance
+
+- [ ] Preset 생성은 `PresetCreate` 모달로 처리되며 완료 시 목록 갱신/모달 닫힘
+- [ ] 카드 클릭으로 `PresetDetail` 진입, 저장/삭제 후 목록으로 복귀
+- [ ] 컨테이너는 `onCreatePresetAsync`(mutateAsync) 등 비동기 콜백을 주입
+- [ ] `any` 금지, `CreatePreset`/`Preset` 시그니처 준수
+
+### Sketch
+
+```ts
+// PresetManager(P)
+<PresetManager
+  onCreatePresetAsync={(data) => createMutation.mutateAsync(data)}
+/>
+
+// 상세 전환
+const [viewMode, setViewMode] = useState<'list'|'detail'|'edit'>('list');
+const [detailPreset, setDetailPreset] = useState<Preset|null>(null);
+
+<PresetDetail
+  preset={detailPreset}
+  onBack={() => setViewMode('list')}
+  onUpdate={(p) => onUpdatePreset?.(p.id, p)}
+  onDelete={(id) => { onDeletePreset?.(id); setViewMode('list'); }}
+/>
+```
