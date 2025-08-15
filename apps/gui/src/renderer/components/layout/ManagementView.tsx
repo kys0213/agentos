@@ -2,7 +2,6 @@ import { ArrowLeft, MessageSquare } from 'lucide-react';
 import React from 'react';
 import { Dashboard } from '../dashboard/Dashboard';
 import ModelManagerContainer from '../llm/ModelManagerContainer';
-import LlmBridgeManagerContainer from '../llm/LlmBridgeManagerContainer';
 import LLMSettingsContainer from '../llm/LLMSettingsContainer';
 import { MCPToolsManager } from '../mcp/McpToolManager';
 import SubAgentManagerContainer from '../sub-agent/SubAgentManagerContainer';
@@ -183,7 +182,6 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
         return (
           <div className="space-y-6">
             <ModelManagerContainer reloadAgents={reloadAgents} />
-            <LlmBridgeManagerContainer />
             <LLMSettingsContainer />
           </div>
         );
