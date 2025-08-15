@@ -1,9 +1,8 @@
 import { ArrowLeft, MessageSquare } from 'lucide-react';
 import React from 'react';
 import { Dashboard } from '../dashboard/Dashboard';
-import { ModelManager } from '../llm/ModelManager';
+import ModelManagerContainer from '../llm/ModelManagerContainer';
 import { MCPToolsManager } from '../mcp/McpToolManager';
-import { PresetManager } from '../preset/PresetManager';
 import SubAgentManagerContainer from '../sub-agent/SubAgentManagerContainer';
 import { ToolBuilder } from '../tool/ToolBuilder';
 import { Button } from '../ui/button';
@@ -18,12 +17,11 @@ import { getPageTitle } from '../../utils/appUtils';
 import { MCPToolCreate } from '../mcp/MCPToolCreate';
 import { PresetCreate } from '../preset/PresetCreate';
 import PresetDetailContainer from '../preset/PresetDetailContainer';
+import PresetManagerContainer from '../preset/PresetManagerContainer';
 import { RACPManager } from '../racp/RACPManager';
 import { SettingsManager } from '../settings/SettingManager';
-import { SubAgentCreate } from '../sub-agent/SubAgentCreate';
 import SubAgentCreateContainer from '../sub-agent/SubAgentCreateContainer';
 import { ToolBuilderCreate } from '../tool/ToolBuilderCreate';
-import PresetManagerContainer from '../preset/PresetManagerContainer';
 
 interface ManagementViewProps {
   navigation: UseAppNavigationReturn;
@@ -179,7 +177,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
         // Always render the React Query–backed container; it handles loading/empty states
         return <SubAgentManagerContainer onCreateAgent={handleStartCreateAgent} />;
       case 'models':
-        return <ModelManager />;
+        return <ModelManagerContainer />;
       case 'tools':
         return <MCPToolsManager />;
       case 'toolbuilder':
