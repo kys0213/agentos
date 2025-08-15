@@ -1,9 +1,15 @@
 import { McpService } from '../mcp-service';
-import { McpToolRepository, McpToolRepositoryEventPayload } from '../../repository/mcp-tool-repository';
+import {
+  McpToolRepository,
+  McpToolRepositoryEventPayload,
+} from '../../repository/mcp-tool-repository';
 import { McpMetadataRegistry } from '../../registry/mcp-metadata-registry';
 import { McpToolMetadata, McpConnectionStatus } from '../../mcp-types';
 import { McpConfig } from '../../mcp-config';
-import { CursorPagination, CursorPaginationResult } from '../../../../common/pagination/cursor-pagination';
+import {
+  CursorPagination,
+  CursorPaginationResult,
+} from '../../../../common/pagination/cursor-pagination';
 
 // Mock Repository
 class MockMcpToolRepository implements McpToolRepository {
@@ -18,7 +24,7 @@ class MockMcpToolRepository implements McpToolRepository {
     return {
       items: Array.from(this.tools.values()),
       nextCursor: '',
-      hasMore: false
+      hasMore: false,
     };
   }
 
@@ -37,7 +43,7 @@ class MockMcpToolRepository implements McpToolRepository {
       status: 'disconnected',
       usageCount: 0,
       permissions: [],
-      config: {}
+      config: {},
     };
 
     this.tools.set(tool.id, tool);
@@ -45,10 +51,7 @@ class MockMcpToolRepository implements McpToolRepository {
     return tool;
   }
 
-  async update(
-    id: string,
-    patch: Partial<McpToolMetadata>
-  ): Promise<McpToolMetadata> {
+  async update(id: string, patch: Partial<McpToolMetadata>): Promise<McpToolMetadata> {
     const existing = this.tools.get(id);
     if (!existing) {
       throw new Error(`Tool not found: ${id}`);
@@ -58,7 +61,7 @@ class MockMcpToolRepository implements McpToolRepository {
       ...existing,
       ...patch,
       id,
-      version: `v${Date.now()}`
+      version: `v${Date.now()}`,
     };
 
     this.tools.set(id, updated);
@@ -88,7 +91,7 @@ class MockMcpToolRepository implements McpToolRepository {
 
   private emit(event: string, payload: McpToolRepositoryEventPayload): void {
     const handlers = this.eventHandlers.get(event) || [];
-    handlers.forEach(handler => handler(payload));
+    handlers.forEach((handler) => handler(payload));
   }
 }
 
@@ -128,13 +131,13 @@ describe('McpService', () => {
 
       expect(events).toEqual([
         { type: 'started', operation: 'initialize' },
-        { type: 'completed', operation: 'initialize', success: true }
+        { type: 'completed', operation: 'initialize', success: true },
       ]);
     });
 
     it('should not initialize twice', async () => {
       await service.initialize();
-      
+
       // 두 번째 호출은 아무것도 하지 않아야 함
       await expect(service.initialize()).resolves.toBeUndefined();
     });
@@ -154,7 +157,7 @@ describe('McpService', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
 
       const tool = await service.registerTool(config);
@@ -187,14 +190,14 @@ describe('McpService', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
 
       const tool = await service.registerTool(config);
 
       expect(events).toEqual([
         { type: 'started', operation: 'registerTool' },
-        { type: 'completed', operation: 'registerTool', toolId: tool.id, success: true }
+        { type: 'completed', operation: 'registerTool', toolId: tool.id, success: true },
       ]);
     });
 
@@ -207,7 +210,7 @@ describe('McpService', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
 
       const tool = await service.registerTool(config);
@@ -226,7 +229,7 @@ describe('McpService', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
       const tool = await service.registerTool(config);
       toolId = tool.id;
@@ -250,7 +253,7 @@ describe('McpService', () => {
 
       expect(events).toEqual([
         { type: 'started', operation: 'unregisterTool', toolId },
-        { type: 'completed', operation: 'unregisterTool', toolId, success: true }
+        { type: 'completed', operation: 'unregisterTool', toolId, success: true },
       ]);
     });
   });
@@ -264,7 +267,7 @@ describe('McpService', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
       const tool = await service.registerTool(config);
       toolId = tool.id;
@@ -304,7 +307,7 @@ describe('McpService', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
       const tool = await service.registerTool(config);
       toolId = tool.id;
@@ -318,9 +321,9 @@ describe('McpService', () => {
     });
 
     it('should throw error for non-existent tool', async () => {
-      await expect(
-        service.updateConnectionStatus('non-existent', 'connected')
-      ).rejects.toThrow(/not found/);
+      await expect(service.updateConnectionStatus('non-existent', 'connected')).rejects.toThrow(
+        /not found/
+      );
     });
   });
 
@@ -333,7 +336,7 @@ describe('McpService', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
       const tool = await service.registerTool(config);
       toolId = tool.id;
@@ -358,8 +361,13 @@ describe('McpService', () => {
       // 테스트용 도구들 생성
       const configs: McpConfig[] = [
         { type: 'stdio', name: 'search-tool', version: '1.0.0', command: 'node' },
-        { type: 'streamableHttp', name: 'api-tool', version: '1.0.0', url: 'https://api.example.com' },
-        { type: 'stdio', name: 'dev-tool', version: '1.0.0', command: 'python' }
+        {
+          type: 'streamableHttp',
+          name: 'api-tool',
+          version: '1.0.0',
+          url: 'https://api.example.com',
+        },
+        { type: 'stdio', name: 'dev-tool', version: '1.0.0', command: 'python' },
       ];
 
       for (const config of configs) {
@@ -402,7 +410,7 @@ describe('McpService', () => {
         disconnected: 2,
         pending: 0,
         error: 0,
-        byCategory: { general: 3 }
+        byCategory: { general: 3 },
       });
     });
 
@@ -425,7 +433,7 @@ describe('McpService', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
 
       await expect(service.registerTool(config)).rejects.toThrow(/Failed to register MCP tool/);
@@ -441,7 +449,7 @@ describe('McpService', () => {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
-        command: 'node'
+        command: 'node',
       };
 
       try {
@@ -452,7 +460,7 @@ describe('McpService', () => {
 
       expect(events).toContainEqual({
         operation: 'registerTool',
-        success: false
+        success: false,
       });
     });
   });

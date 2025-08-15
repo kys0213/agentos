@@ -2,7 +2,10 @@ import { SimpleEventEmitter } from '../../../common/event/simple-event-emitter';
 import type { McpToolMetadata, McpConnectionStatus } from '../mcp-types';
 import type { McpConfig } from '../mcp-config';
 import type { McpToolRepository, McpToolSearchQuery } from '../repository/mcp-tool-repository';
-import type { McpMetadataRegistry, McpMetadataRegistryEvents } from '../registry/mcp-metadata-registry';
+import type {
+  McpMetadataRegistry,
+  McpMetadataRegistryEvents,
+} from '../registry/mcp-metadata-registry';
 import type {
   CursorPagination,
   CursorPaginationResult,
