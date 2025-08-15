@@ -49,11 +49,11 @@ export interface LlmBridgeUsageTracker { /* in-memory usage aggregation */ }
 
 ## Todo
 
-- [ ] 타입 정의(`types.ts`) 설계 및 가드 구현
-- [ ] 파일 기반 레지스트리(`registry.ts`) 기본 CRUD 구현
-- [ ] 활성 브릿지 상태 저장/로드 구현
-- [ ] 사용량 트래커(`usage.ts`) 선택 제공(후속 GUI 분석 탭 지원)
-- [ ] `packages/core/src/index.ts`에 export 추가
+- [x] 타입 정의(`types.ts`) 설계 및 가드 구현
+- [x] 파일 기반 레지스트리(`registry.ts`) 기본 CRUD 구현
+- [x] 활성 브릿지 상태 저장/로드 구현
+- [x] 사용량 트래커(`usage.ts`) 선택 제공(후속 GUI 분석 탭 지원)
+- [x] `packages/core/src/index.ts`에 export 추가
 - [ ] 단위 테스트 작성(파일 I/O with temp dir)
 - [ ] 문서화(`docs/`에 개요 및 예시 코드)
 
@@ -64,4 +64,3 @@ export interface LlmBridgeUsageTracker { /* in-memory usage aggregation */ }
 3. 사용량 트래커(선택) 초안 추가 및 테스트
 4. 패키지 export 및 문서화
 5. GUI/Electron에서 사용하는 IPC와의 연결 포인트 제안 문서화
-
