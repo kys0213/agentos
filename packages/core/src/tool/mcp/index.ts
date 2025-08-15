@@ -18,9 +18,13 @@ export type {
 } from './repository/mcp-tool-repository';
 export { FileMcpToolRepository } from './repository/file-mcp-tool-repository';
 
-// Registry Layer (SSOT)
-export type { McpRegistryEvents } from './registry/mcp-registry';
-export { McpRegistry } from './registry/mcp-registry';
+// Registry Layer (SSOT + MCP Integration)
+export type { McpMetadataRegistryEvents } from './registry/mcp-metadata-registry';
+export { McpMetadataRegistry } from './registry/mcp-metadata-registry';
+
+// Legacy MCP Implementation (Protocol-compliant)
+export { Mcp } from './mcp';
+export { McpRegistry as LegacyMcpRegistry } from './mcp.registery';
 
 // Service Layer (Facade)
 export type { McpServiceEvents } from './service/mcp-service';

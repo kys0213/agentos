@@ -2,7 +2,7 @@ import { SimpleEventEmitter } from '../../../common/event/simple-event-emitter';
 import type { McpToolMetadata, McpConnectionStatus } from '../mcp-types';
 import type { McpConfig } from '../mcp-config';
 import type { McpToolRepository, McpToolSearchQuery } from '../repository/mcp-tool-repository';
-import type { McpRegistry, McpRegistryEvents } from '../registry/mcp-registry';
+import type { McpMetadataRegistry, McpMetadataRegistryEvents } from '../registry/mcp-metadata-registry';
 import type {
   CursorPagination,
   CursorPaginationResult,
@@ -11,7 +11,7 @@ import type {
 /**
  * MCP 서비스 이벤트 타입
  */
-export type McpServiceEvents = McpRegistryEvents & {
+export type McpServiceEvents = McpMetadataRegistryEvents & {
   /** 서비스가 초기화되었을 때 */
   serviceInitialized: { totalTools: number };
   /** 도구 작업이 시작되었을 때 */
@@ -38,7 +38,7 @@ export class McpService {
 
   constructor(
     private readonly repository: McpToolRepository,
-    private readonly registry: McpRegistry
+    private readonly registry: McpMetadataRegistry
   ) {
     // Registry 이벤트를 서비스 이벤트로 전파
     this.setupEventForwarding();

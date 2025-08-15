@@ -1,6 +1,6 @@
 import { McpService } from '../mcp-service';
 import { McpToolRepository, McpToolRepositoryEventPayload } from '../../repository/mcp-tool-repository';
-import { McpRegistry } from '../../registry/mcp-registry';
+import { McpMetadataRegistry } from '../../registry/mcp-metadata-registry';
 import { McpToolMetadata, McpConnectionStatus } from '../../mcp-types';
 import { McpConfig } from '../../mcp-config';
 import { CursorPagination, CursorPaginationResult } from '../../../../common/pagination/cursor-pagination';
@@ -95,11 +95,11 @@ class MockMcpToolRepository implements McpToolRepository {
 describe('McpService', () => {
   let service: McpService;
   let mockRepository: MockMcpToolRepository;
-  let mockRegistry: McpRegistry;
+  let mockRegistry: McpMetadataRegistry;
 
   beforeEach(async () => {
     mockRepository = new MockMcpToolRepository();
-    mockRegistry = new McpRegistry(mockRepository);
+    mockRegistry = new McpMetadataRegistry(mockRepository);
     service = new McpService(mockRepository, mockRegistry);
   });
 
