@@ -23,26 +23,29 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { toCapabilityLabels } from '../../hooks/queries/normalize';
-import { useCurrentBridge, useInstalledBridges, useSwitchBridge } from '../../hooks/queries/use-bridge';
+// Presentational component: data/actions injected via container
 
-export interface ModelManagerProps {
-  // Called after a successful bridge switch so outer containers can react
-  onBridgeSwitch?: (bridgeId: string) => void | Promise<void>;
-  // Trigger refresh (invalidation) provided by container
-  onRefresh?: () => void;
+export interface ModelManagerItem {
+  id: string;
+  name: string;
+  provider: string;
+  isActive: boolean;
+  capabilities: string[];
 }
 
-export function ModelManager(props: ModelManagerProps = {}) {
+export interface ModelManagerProps {
+  items: ModelManagerItem[];
+  isLoading: boolean;
+  onSwitch: (bridgeId: string) => Promise<void> | void;
+  onRefresh: () => void;
+}
+
+export function ModelManager(props: ModelManagerProps) {
   const [activeTab, setActiveTab] = useState('instances');
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const { data: installed = [], isLoading } = useInstalledBridges();
-  const { data: currentBridge } = useCurrentBridge();
-  const switchBridge = useSwitchBridge();
-  const handleRefresh = () => {
-    props.onRefresh && props.onRefresh();
-  };
+  const { items, isLoading, onRefresh, onSwitch } = props;
+  const handleRefresh = () => onRefresh();
 
   const handleInstallModel = async (modelId: string) => {
     try {
@@ -57,10 +60,7 @@ export function ModelManager(props: ModelManagerProps = {}) {
 
   const handleSwitchModel = async (bridgeId: string) => {
     try {
-      await switchBridge.mutateAsync(bridgeId);
-      if (props.onBridgeSwitch) {
-        await props.onBridgeSwitch(bridgeId);
-      }
+      await onSwitch(bridgeId);
     } catch (err) {
       console.error('Failed to switch model:', err);
     }
@@ -190,7 +190,7 @@ export function ModelManager(props: ModelManagerProps = {}) {
 
         <TabsContent value="instances" className="space-y-6">
           {/* Model Instances */}
-          {installed.length === 0 ? (
+          {items.length === 0 ? (
             <Card className="p-6">
               <div className="flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-gray-500" />
@@ -202,14 +202,7 @@ export function ModelManager(props: ModelManagerProps = {}) {
             </Card>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {installed
-                .map(({ id, manifest }) => ({
-                  id,
-                  name: manifest.name,
-                  provider: manifest.language ?? id,
-                  status: currentBridge?.id === id ? 'online' : 'offline',
-                  capabilities: toCapabilityLabels(manifest),
-                }))
+              {items
                 .filter((m) =>
                   [m.id, m.name, m.provider]
                     .join(' ')
@@ -229,7 +222,7 @@ export function ModelManager(props: ModelManagerProps = {}) {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {getStatusIcon(model.status)}
+                        {getStatusIcon(model.isActive ? 'online' : 'offline')}
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                           <Settings className="w-4 h-4" />
                         </Button>
@@ -240,9 +233,9 @@ export function ModelManager(props: ModelManagerProps = {}) {
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">Status</span>
                         <span
-                          className={`font-semibold capitalize ${getStatusColor(model.status)}`}
+                          className={`font-semibold capitalize ${getStatusColor(model.isActive ? 'online' : 'offline')}`}
                         >
-                          {model.status}
+                          {model.isActive ? 'online' : 'offline'}
                         </span>
                       </div>
 
@@ -287,11 +280,11 @@ export function ModelManager(props: ModelManagerProps = {}) {
                       <Button
                         size="sm"
                         className="flex-1"
-                        variant={model.status === 'online' ? 'default' : 'outline'}
+                        variant={model.isActive ? 'default' : 'outline'}
                         onClick={() => handleSwitchModel(model.id)}
                       >
                         <MessageSquare className="w-3 h-3 mr-1" />
-                        {model.status === 'online' ? 'Active' : 'Switch'}
+                        {model.isActive ? 'Active' : 'Switch'}
                       </Button>
                       <Button variant="outline" size="sm">
                         <Settings className="w-3 h-3" />

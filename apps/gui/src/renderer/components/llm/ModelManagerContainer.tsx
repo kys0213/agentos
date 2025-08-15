@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { ModelManager } from './ModelManager';
-import { BRIDGE_QK } from '../../hooks/queries/use-bridge';
+import { ModelManager, ModelManagerItem } from './ModelManager';
+import { BRIDGE_QK, useCurrentBridge, useInstalledBridges, useSwitchBridge } from '../../hooks/queries/use-bridge';
+import { toCapabilityLabels } from '../../hooks/queries/normalize';
 
 export interface ModelManagerContainerProps {
   reloadAgents: () => Promise<void>;
@@ -14,6 +15,9 @@ export interface ModelManagerContainerProps {
  */
 export const ModelManagerContainer: React.FC<ModelManagerContainerProps> = ({ reloadAgents }) => {
   const queryClient = useQueryClient();
+  const { data: installed = [], isLoading } = useInstalledBridges();
+  const { data: current } = useCurrentBridge();
+  const switchBridge = useSwitchBridge();
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: BRIDGE_QK.bridgeIds });
@@ -24,7 +28,32 @@ export const ModelManagerContainer: React.FC<ModelManagerContainerProps> = ({ re
   const handleBridgeSwitch = async (_bridgeId: string) => {
     await reloadAgents();
   };
-  return <ModelManager onBridgeSwitch={handleBridgeSwitch} onRefresh={handleRefresh} />;
+  const items: ModelManagerItem[] = useMemo(
+    () =>
+      installed.map(({ id, manifest }) => ({
+        id,
+        name: manifest.name,
+        provider: manifest.language ?? id,
+        isActive: current?.id === id,
+        capabilities: toCapabilityLabels(manifest),
+      })),
+    [installed, current?.id]
+  );
+
+  const onSwitch = async (bridgeId: string) => {
+    await switchBridge.mutateAsync(bridgeId);
+    await handleBridgeSwitch(bridgeId);
+    handleRefresh();
+  };
+
+  return (
+    <ModelManager
+      items={items}
+      isLoading={isLoading}
+      onRefresh={handleRefresh}
+      onSwitch={onSwitch}
+    />
+  );
 };
 
 export default ModelManagerContainer;
