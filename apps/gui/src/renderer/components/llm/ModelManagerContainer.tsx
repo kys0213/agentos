@@ -8,13 +8,15 @@ import { ModelManager } from './ModelManager';
  * future cross-feature reactions (e.g., agent/preset invalidation on bridge switch).
  */
 export const ModelManagerContainer: React.FC = () => {
-  const appData = useAppData();
-  // Currently, ModelManager manages its own React Query hooks for bridges.
-  // We keep this container to align with preset containers and to enable
-  // future interactions with appData (e.g., reload agents after switch).
-  void appData; // placeholder usage to acknowledge the binding
-  return <ModelManager />;
+  const { reloadAgents } = useAppData();
+
+  // Bridge change may influence agents/presets behavior; perform minimal sync.
+  const handleBridgeSwitch = async (_bridgeId: string) => {
+    // Reload agents so dependent views reflect the new bridge if necessary
+    await reloadAgents();
+  };
+
+  return <ModelManager onBridgeSwitch={handleBridgeSwitch} />;
 };
 
 export default ModelManagerContainer;
-

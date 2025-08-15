@@ -25,32 +25,19 @@ import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { toCapabilityLabels } from '../../hooks/queries/normalize';
-import { BRIDGE_QK, useCurrentBridge, useInstalledBridges, useSwitchBridge } from '../../hooks/queries/use-bridge';
+import {
+  BRIDGE_QK,
+  useCurrentBridge,
+  useInstalledBridges,
+  useSwitchBridge,
+} from '../../hooks/queries/use-bridge';
 
-// Model data types based on BridgeService
-interface ModelInstance {
-  id: string;
-  name: string;
-  provider: string;
-  status: 'online' | 'offline' | 'error';
-  endpoint: string;
-  apiKey: string;
-  capabilities: string[];
-  usage: {
-    requests: number;
-    tokens: number;
-    cost: number;
-  };
-  performance: {
-    latency: number;
-    uptime: number;
-  };
-  lastUsed: Date;
+export interface ModelManagerProps {
+  // Called after a successful bridge switch so outer containers can react
+  onBridgeSwitch?: (bridgeId: string) => void | Promise<void>;
 }
 
-// Marketplace is deferred until a catalog is available
-
-export function ModelManager() {
+export function ModelManager(props: ModelManagerProps = {}) {
   const [activeTab, setActiveTab] = useState('instances');
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +65,9 @@ export function ModelManager() {
   const handleSwitchModel = async (bridgeId: string) => {
     try {
       await switchBridge.mutateAsync(bridgeId);
+      if (props.onBridgeSwitch) {
+        await props.onBridgeSwitch(bridgeId);
+      }
     } catch (err) {
       console.error('Failed to switch model:', err);
     }
@@ -218,100 +208,105 @@ export function ModelManager() {
               </div>
             </Card>
           ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {installed
-              .map(({ id, manifest }) => ({
-                id,
-                name: manifest.name,
-                provider: manifest.language ?? id,
-                status: currentBridge?.id === id ? 'online' : 'offline',
-                capabilities: toCapabilityLabels(manifest),
-              }))
-              .filter((m) =>
-                [m.id, m.name, m.provider].join(' ').toLowerCase().includes(searchQuery.toLowerCase())
-              )
-              .map((model) => (
-              <Card key={model.id} className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Cpu className="w-6 h-6 text-blue-600" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {installed
+                .map(({ id, manifest }) => ({
+                  id,
+                  name: manifest.name,
+                  provider: manifest.language ?? id,
+                  status: currentBridge?.id === id ? 'online' : 'offline',
+                  capabilities: toCapabilityLabels(manifest),
+                }))
+                .filter((m) =>
+                  [m.id, m.name, m.provider]
+                    .join(' ')
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase())
+                )
+                .map((model) => (
+                  <Card key={model.id} className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <Cpu className="w-6 h-6 text-blue-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{model.name}</h3>
+                          <p className="text-sm text-muted-foreground">{model.provider}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(model.status)}
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Settings className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold">{model.name}</h3>
-                      <p className="text-sm text-muted-foreground">{model.provider}</p>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Status</span>
+                        <span
+                          className={`font-semibold capitalize ${getStatusColor(model.status)}`}
+                        >
+                          {model.status}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Requests</span>
+                        <span className="font-semibold">—</span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Tokens</span>
+                        <span className="font-semibold">—</span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Cost</span>
+                        <span className="font-semibold">—</span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Latency</span>
+                        <span className="font-semibold">—</span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Uptime</span>
+                        <span className="font-semibold">—</span>
+                      </div>
+
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-2">Capabilities</p>
+                        <div className="flex flex-wrap gap-1">
+                          {model.capabilities.map((capability) => (
+                            <Badge key={capability} variant="secondary" className="text-xs">
+                              {capability}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(model.status)}
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <Settings className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Status</span>
-                    <span className={`font-semibold capitalize ${getStatusColor(model.status)}`}>
-                      {model.status}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Requests</span>
-                    <span className="font-semibold">—</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Tokens</span>
-                    <span className="font-semibold">—</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Cost</span>
-                    <span className="font-semibold">—</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Latency</span>
-                    <span className="font-semibold">—</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Uptime</span>
-                    <span className="font-semibold">—</span>
-                  </div>
-
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-2">Capabilities</p>
-                    <div className="flex flex-wrap gap-1">
-                      {model.capabilities.map((capability) => (
-                        <Badge key={capability} variant="secondary" className="text-xs">
-                          {capability}
-                        </Badge>
-                      ))}
+                    <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+                      <Button
+                        size="sm"
+                        className="flex-1"
+                        variant={model.status === 'online' ? 'default' : 'outline'}
+                        onClick={() => handleSwitchModel(model.id)}
+                      >
+                        <MessageSquare className="w-3 h-3 mr-1" />
+                        {model.status === 'online' ? 'Active' : 'Switch'}
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Settings className="w-3 h-3" />
+                      </Button>
                     </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                  <Button
-                    size="sm"
-                    className="flex-1"
-                    variant={model.status === 'online' ? 'default' : 'outline'}
-                    onClick={() => handleSwitchModel(model.id)}
-                  >
-                    <MessageSquare className="w-3 h-3 mr-1" />
-                    {model.status === 'online' ? 'Active' : 'Switch'}
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Settings className="w-3 h-3" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
+                  </Card>
+                ))}
+            </div>
           )}
         </TabsContent>
 
