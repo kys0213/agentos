@@ -7,6 +7,7 @@ import {
   CursorPaginationResult,
   ChatSessionDescription,
   MessageHistory,
+  Preset,
 } from '@agentos/core';
 import * as path from 'path';
 import { NoopCompressor } from '../NoopCompressor';
@@ -40,7 +41,7 @@ export function setupChatIpcHandlers() {
   // createChatSession
   ipcMain.handle(
     'chat:create-session',
-    async (_event: IpcMainInvokeEvent, options?: { preset?: any }) => {
+    async (_event: IpcMainInvokeEvent, options?: { preset?: Preset }) => {
       try {
         const session = await manager.create(options || {});
         return session;
@@ -57,7 +58,7 @@ export function setupChatIpcHandlers() {
     async (_event: IpcMainInvokeEvent, pagination?: CursorPagination) => {
       try {
         const result = await manager.list(pagination);
-        return result as CursorPaginationResult<ChatSessionDescription>;
+        return result.items;
       } catch (error) {
         console.error('Failed to list chat sessions:', error);
         throw error;
@@ -132,7 +133,7 @@ export function setupChatIpcHandlers() {
       try {
         const session = await manager.getSession(sessionId);
         const histories = await session.getHistories(pagination);
-        return histories as CursorPaginationResult<Readonly<MessageHistory>>;
+        return histories;
       } catch (error) {
         console.error('Failed to get chat messages:', error);
         throw error;
