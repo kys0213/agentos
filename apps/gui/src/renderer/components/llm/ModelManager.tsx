@@ -207,6 +207,17 @@ export function ModelManager() {
 
         <TabsContent value="instances" className="space-y-6">
           {/* Model Instances */}
+          {installed.length === 0 ? (
+            <Card className="p-6">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-gray-500" />
+                <div>
+                  <h3 className="font-semibold">No installed bridges</h3>
+                  <p className="text-sm text-muted-foreground">Register a bridge and refresh.</p>
+                </div>
+              </div>
+            </Card>
+          ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {installed
               .map(({ id, manifest }) => ({
@@ -301,6 +312,7 @@ export function ModelManager() {
               </Card>
             ))}
           </div>
+          )}
         </TabsContent>
 
         <TabsContent value="marketplace" className="space-y-6">
@@ -326,11 +338,7 @@ export function ModelManager() {
                   <MessageSquare className="w-4 h-4 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold">
-                    {formatNumber(
-                      modelInstances.reduce((sum, model) => sum + model.usage.requests, 0)
-                    )}
-                  </p>
+                  <p className="text-sm font-semibold">—</p>
                   <p className="text-xs text-muted-foreground">Total Requests</p>
                 </div>
               </div>
@@ -342,11 +350,7 @@ export function ModelManager() {
                   <Zap className="w-4 h-4 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold">
-                    {formatNumber(
-                      modelInstances.reduce((sum, model) => sum + model.usage.tokens, 0)
-                    )}
-                  </p>
+                  <p className="text-sm font-semibold">—</p>
                   <p className="text-xs text-muted-foreground">Total Tokens</p>
                 </div>
               </div>
@@ -358,11 +362,7 @@ export function ModelManager() {
                   <DollarSign className="w-4 h-4 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold">
-                    {formatCurrency(
-                      modelInstances.reduce((sum, model) => sum + model.usage.cost, 0)
-                    )}
-                  </p>
+                  <p className="text-sm font-semibold">—</p>
                   <p className="text-xs text-muted-foreground">Total Cost</p>
                 </div>
               </div>
@@ -374,13 +374,7 @@ export function ModelManager() {
                   <Activity className="w-4 h-4 text-orange-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold">
-                    {(
-                      modelInstances.reduce((sum, model) => sum + model.performance.uptime, 0) /
-                      modelInstances.length
-                    ).toFixed(1)}
-                    %
-                  </p>
+                  <p className="text-sm font-semibold">—</p>
                   <p className="text-xs text-muted-foreground">Avg Uptime</p>
                 </div>
               </div>
