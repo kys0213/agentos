@@ -43,14 +43,14 @@ type InstalledBridgeVM = {
 
 ## Todo
 
-- [ ] ModelManager에서 mock 타입/데이터 제거
-- [ ] `getBridgeIds`+`getBridgeConfig`로 목록 로딩 구현
-- [ ] `getCurrentBridge`로 활성 상태 계산 로직 구현
-- [ ] Capabilities 표시 변환 유틸 구현(modalities/supports\* → 배지)
-- [ ] Switch 버튼 → `switchBridge(id)` 연결 및 재로딩 처리
-- [ ] 마켓플레이스 탭 임시 단순화 또는 숨김(카탈로그 도입 전)
-- [ ] 경계 케이스 처리(브릿지 0개, 오류 메시지 UX)
-- [ ] 문서 업데이트(사용자 관점: 무엇이 바뀌었나)
+- [x] ModelManager에서 mock 타입/데이터 제거
+- [x] `getBridgeIds`+`getBridgeConfig`로 목록 로딩 구현
+- [x] `getCurrentBridge`로 활성 상태 계산 로직 구현
+- [x] Capabilities 표시 변환 유틸 구현(modalities/supports\* → 배지)
+- [x] Switch 버튼 → `switchBridge(id)` 연결 및 재로딩 처리
+- [x] 마켓플레이스 탭 임시 단순화 또는 숨김(카탈로그 도입 전)
+- [x] 경계 케이스 처리(브릿지 0개, 오류 메시지 UX)
+- [x] 문서 업데이트(사용자 관점: 무엇이 바뀌었나)
 
 ## 작업 순서
 
