@@ -2,39 +2,21 @@ import { Box, Button, HStack, Input, Select, Text, VStack } from '@chakra-ui/rea
 import type { LlmManifest } from 'llm-bridge-spec';
 import React, { useEffect, useState } from 'react';
 
-import { ServiceContainer } from '../../../shared/ipc/service-container';
+import { useBridgeIds, useCurrentBridge, useRegisterBridge, useUnregisterBridge } from '../../hooks/queries/use-bridge';
 
 export interface LlmBridgeManagerProps {
   onChange?(): void;
 }
 
 const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ onChange }) => {
-  const [bridgeIds, setBridgeIds] = useState<string[]>([]);
-  const [currentBridge, setCurrentBridge] = useState<{
-    id: string;
-    config: LlmManifest;
-  } | null>(null);
+  const { data: bridgeIds = [] } = useBridgeIds();
+  const { data: currentBridge } = useCurrentBridge();
   const [id, setId] = useState('');
   const [type, setType] = useState<'openai' | 'anthropic' | 'local' | 'custom'>('custom');
+  const registerBridge = useRegisterBridge();
+  const unregisterBridge = useUnregisterBridge();
 
-  const bridgeService = ServiceContainer.getOrThrow('bridge');
-
-  useEffect(() => {
-    const loadBridges = async () => {
-      try {
-        const [ids, current] = await Promise.all([
-          bridgeService.getBridgeIds(),
-          bridgeService.getCurrentBridge(),
-        ]);
-        setBridgeIds(ids);
-        setCurrentBridge(current);
-      } catch (error) {
-        console.error('Failed to load bridges:', error);
-      }
-    };
-
-    void loadBridges();
-  }, [bridgeService]);
+  useEffect(() => {}, []);
 
   const handleAdd = async () => {
     if (!id) return;
@@ -60,15 +42,7 @@ const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ onChange }) => {
         description: '',
       };
 
-      await bridgeService.registerBridge(config);
-
-      // Refresh bridge list
-      const [ids, current] = await Promise.all([
-        bridgeService.getBridgeIds(),
-        bridgeService.getCurrentBridge(),
-      ]);
-      setBridgeIds(ids);
-      setCurrentBridge(current);
+      await registerBridge.mutateAsync(config);
       setId('');
 
       onChange && onChange();
@@ -79,16 +53,7 @@ const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ onChange }) => {
 
   const handleDelete = async (bridgeId: string) => {
     try {
-      // Note: unregisterBridge method needs to be implemented in BridgeService
-      // await bridgeService.unregisterBridge(bridgeId);
-
-      // For now, just refresh the list
-      const [ids, current] = await Promise.all([
-        bridgeService.getBridgeIds(),
-        bridgeService.getCurrentBridge(),
-      ]);
-      setBridgeIds(ids);
-      setCurrentBridge(current);
+      await unregisterBridge.mutateAsync(bridgeId);
 
       onChange && onChange();
     } catch (error) {
