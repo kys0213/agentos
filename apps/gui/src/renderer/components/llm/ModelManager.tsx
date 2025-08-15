@@ -18,37 +18,30 @@ import {
   Zap,
 } from 'lucide-react';
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { toCapabilityLabels } from '../../hooks/queries/normalize';
-import {
-  BRIDGE_QK,
-  useCurrentBridge,
-  useInstalledBridges,
-  useSwitchBridge,
-} from '../../hooks/queries/use-bridge';
+import { useCurrentBridge, useInstalledBridges, useSwitchBridge } from '../../hooks/queries/use-bridge';
 
 export interface ModelManagerProps {
   // Called after a successful bridge switch so outer containers can react
   onBridgeSwitch?: (bridgeId: string) => void | Promise<void>;
+  // Trigger refresh (invalidation) provided by container
+  onRefresh?: () => void;
 }
 
 export function ModelManager(props: ModelManagerProps = {}) {
   const [activeTab, setActiveTab] = useState('instances');
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const queryClient = useQueryClient();
   const { data: installed = [], isLoading } = useInstalledBridges();
   const { data: currentBridge } = useCurrentBridge();
   const switchBridge = useSwitchBridge();
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: BRIDGE_QK.bridgeIds });
-    queryClient.invalidateQueries({ queryKey: BRIDGE_QK.bridgeList });
-    queryClient.invalidateQueries({ queryKey: BRIDGE_QK.currentBridge });
+    props.onRefresh && props.onRefresh();
   };
 
   const handleInstallModel = async (modelId: string) => {
