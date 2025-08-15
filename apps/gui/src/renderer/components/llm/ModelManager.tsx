@@ -48,19 +48,7 @@ interface ModelInstance {
   lastUsed: Date;
 }
 
-interface AvailableModel {
-  id: string;
-  name: string;
-  provider: string;
-  description: string;
-  capabilities: string[];
-  pricing: {
-    input: number;
-    output: number;
-    unit: string;
-  };
-  isInstalled: boolean;
-}
+// Marketplace is deferred until a catalog is available
 
 export function ModelManager() {
   const [activeTab, setActiveTab] = useState('instances');
@@ -129,47 +117,7 @@ export function ModelManager() {
     loadBridges();
   }, []);
 
-  const availableModels: AvailableModel[] = [
-    {
-      id: 'gpt-4o',
-      name: 'GPT-4o',
-      provider: 'OpenAI',
-      description: 'Latest multimodal flagship model with improved performance',
-      capabilities: ['text', 'vision', 'audio', 'function-calling'],
-      pricing: {
-        input: 5.0,
-        output: 15.0,
-        unit: '1M tokens',
-      },
-      isInstalled: bridgeIds.includes('openai-gpt4o'),
-    },
-    {
-      id: 'claude-3-haiku',
-      name: 'Claude 3 Haiku',
-      provider: 'Anthropic',
-      description: 'Fast and efficient model for everyday tasks',
-      capabilities: ['text', 'vision'],
-      pricing: {
-        input: 0.25,
-        output: 1.25,
-        unit: '1M tokens',
-      },
-      isInstalled: bridgeIds.includes('anthropic-haiku'),
-    },
-    {
-      id: 'gemini-pro',
-      name: 'Gemini Pro',
-      provider: 'Google',
-      description: 'Powerful model with multimodal capabilities',
-      capabilities: ['text', 'vision', 'code'],
-      pricing: {
-        input: 3.5,
-        output: 10.5,
-        unit: '1M tokens',
-      },
-      isInstalled: bridgeIds.includes('google-gemini'),
-    },
-  ];
+  // const availableModels = [] as const; // placeholder
 
   const handleRefresh = async () => {
     setLoading(true);
@@ -432,73 +380,17 @@ export function ModelManager() {
         </TabsContent>
 
         <TabsContent value="marketplace" className="space-y-6">
-          {/* Available Models */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {availableModels.map((model) => (
-              <Card key={model.id} className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <Package className="w-6 h-6 text-purple-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">{model.name}</h3>
-                      <p className="text-sm text-muted-foreground">{model.provider}</p>
-                    </div>
-                  </div>
-                  {model.isInstalled && (
-                    <Badge variant="default" className="text-xs">
-                      Installed
-                    </Badge>
-                  )}
-                </div>
-
-                <p className="text-sm text-muted-foreground mb-4">{model.description}</p>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Input</span>
-                    <span className="font-semibold">
-                      ${model.pricing.input}/{model.pricing.unit}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Output</span>
-                    <span className="font-semibold">
-                      ${model.pricing.output}/{model.pricing.unit}
-                    </span>
-                  </div>
-
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-2">Capabilities</p>
-                    <div className="flex flex-wrap gap-1">
-                      {model.capabilities.map((capability) => (
-                        <Badge key={capability} variant="secondary" className="text-xs">
-                          {capability}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                  <Button
-                    size="sm"
-                    className="flex-1"
-                    disabled={model.isInstalled}
-                    onClick={() => !model.isInstalled && handleInstallModel(model.id)}
-                  >
-                    <Download className="w-3 h-3 mr-1" />
-                    {model.isInstalled ? 'Installed' : 'Install'}
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <ExternalLink className="w-3 h-3" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
+          <Card className="p-6">
+            <div className="flex items-center gap-3">
+              <Package className="w-6 h-6 text-gray-600" />
+              <div>
+                <h3 className="font-semibold">Model Marketplace</h3>
+                <p className="text-sm text-muted-foreground">
+                  Catalog integration coming soon. Installed bridges are shown in the Instances tab.
+                </p>
+              </div>
+            </div>
+          </Card>
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
