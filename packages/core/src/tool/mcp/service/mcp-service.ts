@@ -3,7 +3,10 @@ import type { McpToolMetadata, McpConnectionStatus } from '../mcp-types';
 import type { McpConfig } from '../mcp-config';
 import type { McpToolRepository, McpToolSearchQuery } from '../repository/mcp-tool-repository';
 import type { McpRegistry, McpRegistryEvents } from '../registry/mcp-registry';
-import type { CursorPagination, CursorPaginationResult } from '../../../common/pagination/cursor-pagination';
+import type {
+  CursorPagination,
+  CursorPaginationResult,
+} from '../../../common/pagination/cursor-pagination';
 
 /**
  * MCP 서비스 이벤트 타입
@@ -13,16 +16,16 @@ export type McpServiceEvents = McpRegistryEvents & {
   serviceInitialized: { totalTools: number };
   /** 도구 작업이 시작되었을 때 */
   operationStarted: { operation: string; toolId?: string };
-  /** 도구 작업이 완료되었을 때 */  
+  /** 도구 작업이 완료되었을 때 */
   operationCompleted: { operation: string; toolId?: string; success: boolean };
 } & Record<string, unknown>;
 
 /**
  * MCP 도구 관리를 위한 통합 서비스 Facade
- * 
+ *
  * 이 클래스는 Repository와 Registry를 조합하여 MCP 도구 관리를 위한
  * 고수준 API를 제공합니다. GUI와 다른 컴포넌트들이 사용할 주요 진입점입니다.
- * 
+ *
  * 주요 책임:
  * - Repository와 Registry의 기능을 통합된 API로 노출
  * - 비즈니스 로직 처리 (검증, 트랜잭션 등)
@@ -248,7 +251,7 @@ export class McpService {
     total: number;
     connected: number;
     disconnected: number;
-    connecting: number;
+    pending: number;
     error: number;
     byCategory: Record<string, number>;
   } {
@@ -258,8 +261,8 @@ export class McpService {
     const byStatus = {
       connected: 0,
       disconnected: 0,
-      connecting: 0,
-      error: 0
+      pending: 0,
+      error: 0,
     };
     const byCategory: Record<string, number> = {};
 
@@ -272,7 +275,7 @@ export class McpService {
     return {
       total: allTools.length,
       ...byStatus,
-      byCategory
+      byCategory,
     };
   }
 

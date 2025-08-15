@@ -2,7 +2,10 @@ import { SimpleEventEmitter } from '../../../common/event/simple-event-emitter';
 import type { McpToolMetadata, McpConnectionStatus } from '../mcp-types';
 import type { McpConfig } from '../mcp-config';
 import type { McpToolRepository } from '../repository/mcp-tool-repository';
-import type { CursorPagination, CursorPaginationResult } from '../../../common/pagination/cursor-pagination';
+import type {
+  CursorPagination,
+  CursorPaginationResult,
+} from '../../../common/pagination/cursor-pagination';
 
 /**
  * MCP 도구 레지스트리 이벤트 타입
@@ -13,17 +16,21 @@ export type McpRegistryEvents = {
   /** 도구가 제거되었을 때 */
   toolRemoved: { toolId: string };
   /** 도구 연결 상태가 변경되었을 때 */
-  connectionStatusChanged: { toolId: string; status: McpConnectionStatus; previousStatus?: McpConnectionStatus };
+  connectionStatusChanged: {
+    toolId: string;
+    status: McpConnectionStatus;
+    previousStatus?: McpConnectionStatus;
+  };
   /** 도구 메타데이터가 업데이트되었을 때 */
   toolUpdated: { tool: McpToolMetadata; previousVersion?: string };
 } & Record<string, unknown>;
 
 /**
  * MCP 도구 레지스트리 - AgentOS SSOT 아키텍처의 핵심 컴포넌트
- * 
+ *
  * 이 클래스는 MCP 도구들의 단일 정보원(Single Source of Truth)역할을 하며,
  * 런타임 상태 관리와 이벤트 기반 반응성을 제공합니다.
- * 
+ *
  * 주요 책임:
  * - 도구 메타데이터의 런타임 캐싱 및 관리
  * - 연결 상태 추적 및 관리
@@ -36,9 +43,7 @@ export class McpRegistry {
   private readonly connectionStatuses = new Map<string, McpConnectionStatus>();
   private initialized = false;
 
-  constructor(
-    private readonly repository: McpToolRepository
-  ) {
+  constructor(private readonly repository: McpToolRepository) {
     // Repository 이벤트 구독하여 캐시 동기화
     this.repository.on?.('changed', (payload) => {
       if (payload.metadata) {
@@ -66,7 +71,7 @@ export class McpRegistry {
     if (this.initialized) return;
 
     const allTools = await this.repository.list();
-    
+
     // 런타임 캐시 구성
     for (const tool of allTools.items) {
       this.runtimeCache.set(tool.id, tool);
@@ -83,14 +88,14 @@ export class McpRegistry {
    */
   async registerTool(config: McpConfig): Promise<McpToolMetadata> {
     const tool = await this.repository.create(config);
-    
+
     // Repository 이벤트를 통해 자동으로 캐시에 추가되지만,
     // 즉시 반영을 위해 수동으로도 추가
     this.runtimeCache.set(tool.id, tool);
     this.connectionStatuses.set(tool.id, tool.status);
 
     this.eventEmitter.emit('toolAdded', { tool });
-    
+
     return tool;
   }
 
@@ -100,7 +105,7 @@ export class McpRegistry {
    */
   async unregisterTool(toolId: string): Promise<void> {
     await this.repository.delete(toolId);
-    
+
     // Repository 이벤트를 통해 자동으로 캐시에서 제거되지만,
     // 즉시 반영을 위해 수동으로도 제거
     this.removeFromCache(toolId);
@@ -120,13 +125,13 @@ export class McpRegistry {
   ): Promise<McpToolMetadata> {
     const previousVersion = this.runtimeCache.get(toolId)?.version;
     const updated = await this.repository.update(toolId, patch, options);
-    
+
     // Repository 이벤트를 통해 자동으로 캐시가 업데이트되지만,
     // 즉시 반영을 위해 수동으로도 업데이트
     this.syncFromRepository(updated);
 
     this.eventEmitter.emit('toolUpdated', { tool: updated, previousVersion });
-    
+
     return updated;
   }
 
@@ -141,7 +146,7 @@ export class McpRegistry {
     previousStatus?: McpConnectionStatus
   ): Promise<void> {
     const currentStatus = this.connectionStatuses.get(toolId);
-    
+
     if (currentStatus === status) return; // 변경사항 없음
 
     // 런타임 상태 즉시 업데이트
@@ -161,7 +166,7 @@ export class McpRegistry {
     this.eventEmitter.emit('connectionStatusChanged', {
       toolId,
       status,
-      previousStatus: previousStatus || currentStatus
+      previousStatus: previousStatus || currentStatus,
     });
   }
 
@@ -176,9 +181,9 @@ export class McpRegistry {
     }
 
     const newUsageCount = tool.usageCount + 1;
-    await this.updateTool(toolId, { 
+    await this.updateTool(toolId, {
       usageCount: newUsageCount,
-      lastUsedAt: new Date()
+      lastUsedAt: new Date(),
     });
   }
 
@@ -198,7 +203,7 @@ export class McpRegistry {
    */
   getAllTools(pagination?: CursorPagination): CursorPaginationResult<McpToolMetadata> {
     const tools = Array.from(this.runtimeCache.values());
-    
+
     // 기본 정렬: 최근 사용순
     tools.sort((a, b) => {
       const aLastUsed = a.lastUsedAt?.getTime() || 0;
@@ -211,7 +216,7 @@ export class McpRegistry {
       return {
         items: tools,
         nextCursor: '',
-        hasMore: false
+        hasMore: false,
       };
     }
 
@@ -219,7 +224,7 @@ export class McpRegistry {
     let startIndex = 0;
 
     if (cursor) {
-      const cursorIndex = tools.findIndex(tool => tool.id === cursor);
+      const cursorIndex = tools.findIndex((tool) => tool.id === cursor);
       if (cursorIndex >= 0) {
         startIndex = direction === 'forward' ? cursorIndex + 1 : Math.max(0, cursorIndex - limit);
       }
@@ -233,7 +238,7 @@ export class McpRegistry {
     return {
       items: page,
       nextCursor,
-      hasMore
+      hasMore,
     };
   }
 
@@ -243,8 +248,7 @@ export class McpRegistry {
    * @returns 해당 상태의 도구들
    */
   getToolsByStatus(status: McpConnectionStatus): McpToolMetadata[] {
-    return Array.from(this.runtimeCache.values())
-      .filter(tool => tool.status === status);
+    return Array.from(this.runtimeCache.values()).filter((tool) => tool.status === status);
   }
 
   /**
@@ -253,16 +257,15 @@ export class McpRegistry {
    * @returns 해당 카테고리의 도구들
    */
   getToolsByCategory(category: string): McpToolMetadata[] {
-    return Array.from(this.runtimeCache.values())
-      .filter(tool => tool.category === category);
+    return Array.from(this.runtimeCache.values()).filter((tool) => tool.category === category);
   }
 
   /**
    * 현재 연결된 도구들의 개수
    */
   get connectedToolsCount(): number {
-    return Array.from(this.connectionStatuses.values())
-      .filter(status => status === 'connected').length;
+    return Array.from(this.connectionStatuses.values()).filter((status) => status === 'connected')
+      .length;
   }
 
   /**
@@ -296,7 +299,7 @@ export class McpRegistry {
   private removeFromCache(toolId: string): void {
     this.runtimeCache.delete(toolId);
     this.connectionStatuses.delete(toolId);
-    
+
     this.eventEmitter.emit('toolRemoved', { toolId });
   }
 }
