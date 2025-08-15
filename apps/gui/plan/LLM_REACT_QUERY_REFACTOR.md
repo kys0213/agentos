@@ -49,12 +49,12 @@ toCapabilityLabels(manifest: LlmManifest): string[]
 ```
 
 ## Todo
-- [ ] 공용 Query Keys 정리 및 `useInstalledBridges` 훅 추가 (hooks/queries/use-bridge.ts 또는 새 파일)
-- [ ] ModelManager: ServiceContainer 직접 호출 제거 → hooks 사용 + 상태/UX 갱신
-- [ ] LlmBridgeManager: 등록/목록/현재 상태 로딩을 hooks로 전환, 불필요 상태 제거
-- [ ] LLMSettings: 현 hooks 유지하되 invalidate 전략 점검(전환 시 list/current 무효화)
-- [ ] 에러/빈 상태/로딩 skeleton 통일 스타일 적용
-- [ ] 문서 업데이트 (apps/gui/docs/MODEL_MANAGER_BRIDGE_INTEGRATION.md 보강: hooks/키/무효화 규칙)
+- [x] 공용 Query Keys 정리 및 `useInstalledBridges` 훅 추가 (hooks/queries/use-bridge.ts 또는 새 파일)
+- [x] ModelManager: ServiceContainer 직접 호출 제거 → hooks 사용 + 상태/UX 갱신
+- [x] LlmBridgeManager: 등록/목록/현재 상태 로딩을 hooks로 전환, 불필요 상태 제거
+- [x] LLMSettings: 현 hooks 유지하되 invalidate 전략 점검(전환 시 list/current 무효화)
+- [x] 에러/빈 상태/로딩 skeleton 통일 스타일 적용
+- [x] 문서 업데이트 (apps/gui/docs/MODEL_MANAGER_BRIDGE_INTEGRATION.md 보강: hooks/키/무효화 규칙)
 - [ ] 간단 스냅샷 테스트 or 로직 단위 테스트(훅 레벨) 초안 (선택)
 
 ## 작업 순서
