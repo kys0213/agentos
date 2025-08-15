@@ -6,14 +6,16 @@ import { LlmBridge, LlmManifest } from 'llm-bridge-spec';
  * Renderer의 BridgeManager 기능을 Main으로 이동
  */
 class MainBridgeManager {
-  private bridges = new Map<string, { bridge: LlmBridge; config: any }>();
+  private bridges = new Map<string, { bridge: LlmBridge; config: LlmManifest }>();
   private currentId?: string;
 
-  register(id: string, bridge: LlmBridge, config: any): void {
+  register(id: string, bridge: LlmBridge, config: LlmManifest): void {
     this.bridges.set(id, { bridge, config });
+
     if (!this.currentId) {
       this.currentId = id;
     }
+
     console.log(`Bridge ${id} registered in main process`);
   }
 
@@ -36,7 +38,7 @@ class MainBridgeManager {
     console.log(`Switched to bridge ${id}`);
   }
 
-  getCurrentBridge(): { id: string; bridge: LlmBridge; config: any } | null {
+  getCurrentBridge(): { id: string; bridge: LlmBridge; config: LlmManifest } | null {
     if (!this.currentId) {
       return null;
     }
@@ -84,15 +86,7 @@ export function setupBridgeIpcHandlers() {
     'bridge:register-bridge',
     async (_event: IpcMainInvokeEvent, config: LlmManifest) => {
       try {
-        // TODO: config를 바탕으로 실제 LlmBridge 인스턴스 생성
-        const id = (config as any).name ?? 'default';
-        const mockBridge: LlmBridge = {
-          // LlmBridge 인터페이스 구현 필요
-          name: id,
-          version: '1.0.0',
-        } as any;
-
-        manager.register(id, mockBridge, config);
+        // TODO: 실제 브릿지 등록 로직 구현
         return { success: true };
       } catch (error) {
         console.error('Failed to register bridge:', error);

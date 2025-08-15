@@ -1,5 +1,5 @@
 import { ipcMain, IpcMainInvokeEvent, BrowserWindow } from 'electron';
-import { McpRegistry } from '@agentos/core';
+import { McpRegistry, McpUsageLog } from '@agentos/core';
 import type { McpUsageUpdateEvent } from '../../shared/types/mcp-usage-types';
 
 let mcpRegistry: McpRegistry | null = null;
@@ -230,7 +230,7 @@ export function setupMcpIpcHandlers(window?: BrowserWindow) {
   ipcMain.handle('mcp:get-all-usage-logs', async (_event: IpcMainInvokeEvent, options?: any) => {
     try {
       const clients = await registry.getAll();
-      let allLogs: any[] = [];
+      let allLogs: McpUsageLog[] = [];
 
       for (const client of clients) {
         try {

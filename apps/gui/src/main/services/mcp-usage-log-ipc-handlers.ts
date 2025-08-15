@@ -1,5 +1,5 @@
 import { ipcMain, IpcMainInvokeEvent, BrowserWindow } from 'electron';
-import { McpRegistry } from '@agentos/core';
+import { McpRegistry, McpUsageLog } from '@agentos/core';
 import type { McpUsageUpdateEvent } from '../../shared/types/mcp-usage-types';
 
 let mcpRegistry: McpRegistry | null = null;
@@ -34,6 +34,7 @@ export function setupMcpUsageLogIpcHandlers(window?: BrowserWindow) {
       if (options?.sortOrder === 'asc')
         logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
       else logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
       if (options?.offset !== undefined || options?.limit !== undefined) {
         const offset = options.offset || 0;
         const limit = options.limit || 50;
@@ -47,7 +48,9 @@ export function setupMcpUsageLogIpcHandlers(window?: BrowserWindow) {
     'mcpUsageLog:get-all-usage-logs',
     async (_e: IpcMainInvokeEvent, options?: any) => {
       const clients = await registry.getAll();
-      let allLogs: any[] = [];
+
+      let allLogs: McpUsageLog[] = [];
+
       for (const client of clients) {
         try {
           allLogs = allLogs.concat(client.getUsageLogs());
@@ -55,6 +58,7 @@ export function setupMcpUsageLogIpcHandlers(window?: BrowserWindow) {
           console.error(`Failed to get logs for ${client.name}:`, err);
         }
       }
+
       if (options?.status) allLogs = allLogs.filter((l) => l.status === options.status);
       if (options?.agentId) allLogs = allLogs.filter((l) => l.agentId === options.agentId);
       if (options?.sortOrder === 'asc')
@@ -102,7 +106,7 @@ export function setupMcpUsageLogIpcHandlers(window?: BrowserWindow) {
       const targetDate = new Date(date);
       const hourlyData: Array<[number, number]> = Array.from({ length: 24 }, (_, h) => [h, 0]);
 
-      const addLogs = (logs: any[]) => {
+      const addLogs = (logs: McpUsageLog[]) => {
         logs
           .filter((log) => {
             const d = log.timestamp;
@@ -141,7 +145,7 @@ export function setupMcpUsageLogIpcHandlers(window?: BrowserWindow) {
     async (_e: IpcMainInvokeEvent, startDate: string, endDate: string, clientName?: string) => {
       const start = new Date(startDate);
       const end = new Date(endDate);
-      let allLogs: any[] = [];
+      let allLogs: McpUsageLog[] = [];
       if (clientName) {
         const client = await registry.get(clientName);
         if (!client) throw new Error(`MCP client not found: ${clientName}`);

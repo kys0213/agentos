@@ -25,7 +25,7 @@ export function setupPresetIpcHandlers() {
   ipcMain.handle('preset:get-all', async (_event: IpcMainInvokeEvent) => {
     try {
       const presets = await repository.list();
-      return presets;
+      return presets.items;
     } catch (error) {
       console.error('Failed to get presets:', error);
       throw error;
