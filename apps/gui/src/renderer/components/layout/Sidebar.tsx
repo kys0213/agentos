@@ -55,7 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => 
           {!isCollapsed && (
             <div>
               <h1 className="font-semibold text-sidebar-foreground">AgentOS</h1>
-              <p className="text-xs text-sidebar-foreground/60">MCP Host Platform</p>
+              <p className="text-xs text-sidebar-foreground/60">Agent Platform</p>
             </div>
           )}
         </div>
