@@ -15,16 +15,17 @@ export * from './common/event/function-publisher';
 export * from './common/event/event-subscriber';
 export * from './common/event/ipc-payload-guards';
 export * from './common/event/ipc-renderer-helpers';
+export * from './common/event/simple-event-emitter';
 export * from './agent/agent-manager';
 export * from './agent/simple-agent-manager';
 export * from './agent/agent-metadata';
 export * from './agent/agent-session';
 export * from './agent/agent-search';
 export * from './agent/agent-metadata.repository';
+export * from './agent/repository/file-agent-metadata.repository';
 export * from './agent/agent.service';
 export * from './agent/session.service';
 export * from './agent/simple-agent.service';
-export * from './agent/repository/file-agent-metadata.repository';
 
 export * from './tool/mcp/mcp';
 export * from './tool/mcp/mcp-config';

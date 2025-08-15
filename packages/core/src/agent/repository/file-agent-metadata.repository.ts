@@ -1,22 +1,22 @@
 import path from 'path';
 import { fs as langFs } from '@agentos/lang';
-import type {
-  AgentMetadata,
-  CreateAgentMetadata,
-  ReadonlyAgentMetadata,
-} from '../../agent/agent-metadata';
+import type { AgentStatus } from '../agent';
+import type { AgentMetadata, CreateAgentMetadata, ReadonlyAgentMetadata } from '../agent-metadata';
+import type { AgentMetadataRepository } from '../agent-metadata.repository';
+import type { AgentSearchQuery } from '../agent-search';
 import type {
   CursorPagination,
   CursorPaginationResult,
 } from '../../common/pagination/cursor-pagination';
 import { paginateByCursor } from '../../common/pagination/paginate';
-import type { AgentStatus } from '../../agent/agent';
-import type { AgentMetadataRepository } from '../../agent/agent-metadata.repository';
-import type { Unsubscribe } from '../../common/event/event-subscriber';
-import type { AgentSearchQuery } from '../agent-search';
 import { Errors } from '../../common/error/core-error';
+import { SimpleEventEmitter } from '../../common/event/simple-event-emitter';
+import type { Unsubscribe } from '../../common/event/event-subscriber';
 
-type ChangeHandler = (p: { id: string; version?: string }) => void;
+type RepoEvents = {
+  changed: { id: string; version?: string };
+  deleted: { id: string; version?: string };
+};
 
 /**
  * File-based AgentMetadataRepository implementation.
@@ -25,8 +25,7 @@ type ChangeHandler = (p: { id: string; version?: string }) => void;
  * File name: <root>/<id>.json
  */
 export class FileAgentMetadataRepository implements AgentMetadataRepository {
-  private readonly changedHandlers = new Set<ChangeHandler>();
-  private readonly deletedHandlers = new Set<ChangeHandler>();
+  private readonly events = new SimpleEventEmitter<RepoEvents>();
 
   constructor(private readonly rootDir: string) {}
 
@@ -71,7 +70,7 @@ export class FileAgentMetadataRepository implements AgentMetadataRepository {
 
     const handler = langFs.JsonFileHandler.create<AgentMetadata>(this.filePath(id));
     await handler.writeOrThrow(record, { prettyPrint: true });
-    this.emitChanged({ id: record.id, version: record.version });
+    this.events.emit('changed', { id: record.id, version: record.version });
     return record;
   }
 
@@ -102,27 +101,32 @@ export class FileAgentMetadataRepository implements AgentMetadataRepository {
 
     const handler = langFs.JsonFileHandler.create<AgentMetadata>(this.filePath(id));
     await handler.writeOrThrow(next, { prettyPrint: true });
-    this.emitChanged({ id: next.id, version: next.version });
+    this.events.emit('changed', { id: next.id, version: next.version });
     return next;
   }
 
   async delete(id: string): Promise<void> {
     const res = await langFs.FileUtils.remove(this.filePath(id));
     if (!res.success) {
-      const msg = String((res.reason as any)?.message ?? res.reason ?? 'unknown');
+      const reason = res.reason;
+      const msg =
+        typeof reason === 'object' && reason && 'message' in reason
+          ? String((reason as { message?: unknown }).message)
+          : String(reason ?? 'unknown');
       if (msg.includes('ENOENT')) return;
       throw Errors.internal('agent_metadata_repository', 'Failed to delete metadata file', {
         id,
         cause: msg,
       });
     }
-    this.emitDeleted({ id });
+    this.events.emit('deleted', { id });
   }
 
-  on?(event: 'changed' | 'deleted', handler: ChangeHandler): Unsubscribe {
-    const set = event === 'changed' ? this.changedHandlers : this.deletedHandlers;
-    set.add(handler);
-    return () => set.delete(handler);
+  on?(
+    event: 'changed' | 'deleted',
+    handler: (p: { id: string; version?: string }) => void
+  ): Unsubscribe {
+    return this.events.on(event, handler);
   }
 
   // helpers
@@ -185,11 +189,5 @@ export class FileAgentMetadataRepository implements AgentMetadataRepository {
     return m;
   }
 
-  private emitChanged(p: { id: string; version?: string }) {
-    for (const h of this.changedHandlers) h(p);
-  }
-
-  private emitDeleted(p: { id: string; version?: string }) {
-    for (const h of this.deletedHandlers) h(p);
-  }
+  // events emitted via SimpleEventEmitter
 }
