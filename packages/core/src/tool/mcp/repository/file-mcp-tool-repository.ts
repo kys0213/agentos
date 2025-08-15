@@ -14,7 +14,7 @@ import {
   McpToolRepositoryEvent,
   McpToolRepositoryEventHandler,
   McpToolRepositoryEventPayload,
-  Unsubscribe,
+  McpUnsubscribe,
 } from './mcp-tool-repository';
 
 /**
@@ -216,7 +216,7 @@ export class FileMcpToolRepository implements McpToolRepository {
     this.eventEmitter.emit('deleted', { id });
   }
 
-  on(event: McpToolRepositoryEvent, handler: McpToolRepositoryEventHandler): Unsubscribe {
+  on(event: McpToolRepositoryEvent, handler: McpToolRepositoryEventHandler): McpUnsubscribe {
     return this.eventEmitter.on(event, handler);
   }
 
