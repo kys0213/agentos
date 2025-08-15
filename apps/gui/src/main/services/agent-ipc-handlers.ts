@@ -6,16 +6,21 @@ import type {
   CreateAgentMetadata,
   ChatManager,
 } from '@agentos/core';
-import { FileBasedSessionStorage, FileBasedChatManager } from '@agentos/core';
-import { McpRegistry, SimpleAgent } from '@agentos/core';
+import {
+  FileBasedSessionStorage,
+  FileBasedChatManager,
+  McpRegistry,
+  SimpleAgent,
+  FileAgentMetadataRepository,
+} from '@agentos/core';
 import { app } from 'electron';
 import * as path from 'path';
 import { NoopCompressor } from '../NoopCompressor';
 import { getBridgeManager } from './bridge-ipc-handlers';
 import type { Message, UserMessage } from 'llm-bridge-spec';
 
-// 간단한 인메모리 저장소 (임시 구현)
-const agents = new Map<string, AgentMetadata>();
+// File-based metadata repository for agents
+let agentRepo: FileAgentMetadataRepository | null = null;
 const sessions = new Map<
   string,
   { agentId: string; messages: Message[]; createdAt: Date; updatedAt: Date }
@@ -45,8 +50,10 @@ function createSimpleAgent(llmAgentId: string, metadata: AgentMetadata | null): 
   const bridgeManager = getBridgeManager();
   const current = bridgeManager?.getCurrentBridge();
   if (!current) return null;
+
   const cm = getOrInitChatManager();
   const mr = getOrInitMcpRegistry();
+
   const baseMetadata: AgentMetadata =
     metadata ??
     ({
@@ -78,7 +85,15 @@ function createSimpleAgent(llmAgentId: string, metadata: AgentMetadata | null): 
       sessionCount: 0,
       usageCount: 0,
     } as AgentMetadata);
-  return new SimpleAgent(current.bridge as any, mr, cm, baseMetadata);
+  return new SimpleAgent(current.bridge, mr, cm, baseMetadata);
+}
+
+function getOrInitAgentRepo(): FileAgentMetadataRepository {
+  if (agentRepo) return agentRepo;
+  const userDataPath = app.getPath('userData');
+  const agentsPath = path.join(userDataPath, 'agents');
+  agentRepo = new FileAgentMetadataRepository(agentsPath);
+  return agentRepo;
 }
 
 export function setupAgentIpcHandlers() {
@@ -91,7 +106,8 @@ export function setupAgentIpcHandlers() {
       options?: AgentExecuteOptions
     ): Promise<AgentChatResult> => {
       // 활성 브릿지가 있으면 SimpleAgent로 실행, 없으면 폴백 에코
-      const agentMetadata = agents.get(agentId) ?? null;
+      const repo = getOrInitAgentRepo();
+      const agentMetadata = (await repo.get(agentId)) ?? null;
       const simpleAgent = createSimpleAgent(agentId, agentMetadata);
 
       if (simpleAgent) {
@@ -108,6 +124,7 @@ export function setupAgentIpcHandlers() {
       const s = sessions.get(sessionId)!;
       const userMessages: Message[] = messages.map((m) => ({ role: 'user', content: m.content }));
       s.messages.push(...userMessages);
+
       const userText = messages
         .map((m) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content)))
         .join('\n');
@@ -115,6 +132,7 @@ export function setupAgentIpcHandlers() {
         role: 'assistant',
         content: { type: 'text', text: `Echo: ${userText}` } as any,
       };
+
       s.messages.push(assistantReply);
       s.updatedAt = new Date();
       return { messages: [assistantReply], sessionId };
@@ -125,7 +143,8 @@ export function setupAgentIpcHandlers() {
     'agent:end-session',
     async (_e: IpcMainInvokeEvent, agentId: string, sessionId: string) => {
       try {
-        const agentMeta = agents.get(agentId) ?? null;
+        const repo = getOrInitAgentRepo();
+        const agentMeta = (await repo.get(agentId)) ?? null;
         const simpleAgent = createSimpleAgent(agentId, agentMeta);
         if (simpleAgent) {
           await simpleAgent.endSession(sessionId);
@@ -138,43 +157,38 @@ export function setupAgentIpcHandlers() {
   );
 
   ipcMain.handle('agent:get-metadata', async (_e: IpcMainInvokeEvent, id: string) => {
-    return agents.get(id) ?? null;
+    const repo = getOrInitAgentRepo();
+    return (await repo.get(id)) ?? null;
   });
 
   ipcMain.handle('agent:get-all-metadatas', async () => {
-    return Array.from(agents.values());
+    const repo = getOrInitAgentRepo();
+    const res = await repo.list({ limit: 1000, cursor: '', direction: 'forward' });
+    return res.items;
   });
 
   ipcMain.handle(
     'agent:update',
     async (_e: IpcMainInvokeEvent, agentId: string, patch: Partial<Omit<AgentMetadata, 'id'>>) => {
-      const current = agents.get(agentId);
-      if (!current) throw new Error(`Agent not found: ${agentId}`);
-      const updated: AgentMetadata = { ...current, ...patch, id: current.id } as AgentMetadata;
-      agents.set(agentId, updated);
+      const repo = getOrInitAgentRepo();
+      // optimistic update: pass through to repo
+      const updated = await repo.update(agentId, patch as Partial<AgentMetadata>);
       return updated;
     }
   );
 
   ipcMain.handle('agent:create', async (_e: IpcMainInvokeEvent, data: CreateAgentMetadata) => {
-    // TODO: id 생성 로직 개선(UUID 등)
-    const id = `agent_${Date.now()}`;
-    const created: AgentMetadata = {
-      id,
-      lastUsed: undefined,
-      sessionCount: 0,
-      usageCount: 0,
-      ...data,
-    } as AgentMetadata;
-    agents.set(id, created);
+    const repo = getOrInitAgentRepo();
+    const created = await repo.create(data);
     return created;
   });
 
   ipcMain.handle('agent:delete', async (_e: IpcMainInvokeEvent, id: string) => {
-    const data = agents.get(id);
-    if (!data) throw new Error(`Agent not found: ${id}`);
-    agents.delete(id);
-    return data;
+    const repo = getOrInitAgentRepo();
+    const existing = await repo.get(id);
+    if (!existing) throw new Error(`Agent not found: ${id}`);
+    await repo.delete(id);
+    return existing;
   });
 
   console.log('Agent IPC handlers registered');

@@ -28,7 +28,7 @@ export default defineConfig(({ mode }) => {
         // 모든 의존성이 번들에 포함되어야 함
       },
       // 브라우저 환경을 타겟으로 설정
-      target: 'es2018',
+      target: 'es2020',
       minify: process.env.NODE_ENV === 'production',
     },
 
