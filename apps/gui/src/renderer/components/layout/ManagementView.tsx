@@ -79,6 +79,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     handleDeletePreset,
     getMentionableAgents,
     getActiveAgents,
+    reloadAgents,
   } = appData;
 
   // Create handlers that combine navigation and data operations (like design/App.tsx)
@@ -177,7 +178,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
         // Always render the React Query–backed container; it handles loading/empty states
         return <SubAgentManagerContainer onCreateAgent={handleStartCreateAgent} />;
       case 'models':
-        return <ModelManagerContainer />;
+        return <ModelManagerContainer reloadAgents={reloadAgents} />;
       case 'tools':
         return <MCPToolsManager />;
       case 'toolbuilder':
