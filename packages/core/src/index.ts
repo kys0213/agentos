@@ -50,3 +50,8 @@ export * from './common/pagination/paginate';
 export * from './tool/builtin/builtin-tool';
 export * from './tool/builtin/builtin-tool.manager';
 export * from './common/error/core-error';
+
+// LLM Bridge Registry (shared spec)
+export * from './llm/bridge/types';
+export * from './llm/bridge/registry';
+export * from './llm/bridge/usage';
