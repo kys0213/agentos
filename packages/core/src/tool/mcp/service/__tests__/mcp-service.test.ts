@@ -400,7 +400,7 @@ describe('McpService', () => {
         total: 3,
         connected: 1,
         disconnected: 2,
-        connecting: 0,
+        pending: 0,
         error: 0,
         byCategory: { general: 3 }
       });
