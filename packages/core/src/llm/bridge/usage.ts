@@ -87,7 +87,9 @@ export class InMemoryLlmUsageTracker implements LlmBridgeUsageTracker {
 
 export class NoOpLlmUsageTracker implements LlmBridgeUsageTracker {
   trackUsage(_log: Omit<LlmBridgeUsageLog, 'id' | 'timestamp'>): void {}
-  getUsageLogs(_bridgeId?: string): LlmBridgeUsageLog[] { return []; }
+  getUsageLogs(_bridgeId?: string): LlmBridgeUsageLog[] {
+    return [];
+  }
   getUsageStats(_bridgeId?: string): LlmBridgeUsageStats {
     return {
       totalRequests: 0,
@@ -100,4 +102,3 @@ export class NoOpLlmUsageTracker implements LlmBridgeUsageTracker {
   }
   clearLogs(_olderThan?: Date): void {}
 }
-

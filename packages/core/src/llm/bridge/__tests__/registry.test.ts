@@ -135,4 +135,3 @@ describe('FileBasedLlmBridgeRegistry (mocked FS)', () => {
     expect(await reg.getActiveId()).toBeNull();
   });
 });
-

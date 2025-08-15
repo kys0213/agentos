@@ -27,9 +27,21 @@
 ```typescript
 // packages/core/src/llm/bridge/types.ts
 export type BridgeId = string;
-export interface InstalledBridgeRecord { id: BridgeId; manifest: LlmManifest; installedAt: Date }
-export interface InstalledBridgeSummary { id: BridgeId; name: string; description: string; language: string }
-export interface ActiveBridgeState { activeId: BridgeId | null; updatedAt: Date }
+export interface InstalledBridgeRecord {
+  id: BridgeId;
+  manifest: LlmManifest;
+  installedAt: Date;
+}
+export interface InstalledBridgeSummary {
+  id: BridgeId;
+  name: string;
+  description: string;
+  language: string;
+}
+export interface ActiveBridgeState {
+  activeId: BridgeId | null;
+  updatedAt: Date;
+}
 
 // packages/core/src/llm/bridge/registry.ts
 export interface LlmBridgeRegistry {
@@ -41,10 +53,14 @@ export interface LlmBridgeRegistry {
   getActiveId(): Promise<BridgeId | null>;
   setActiveId(id: BridgeId | null): Promise<void>;
 }
-export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry { /* file I/O */ }
+export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
+  /* file I/O */
+}
 
 // packages/core/src/llm/bridge/usage.ts (선택)
-export interface LlmBridgeUsageTracker { /* in-memory usage aggregation */ }
+export interface LlmBridgeUsageTracker {
+  /* in-memory usage aggregation */
+}
 ```
 
 ## Todo

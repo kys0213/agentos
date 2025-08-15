@@ -43,4 +43,3 @@ const active = await reg.getActiveId();
 - The registry does not manage runtime `LlmBridge` instances; it only stores manifests and active id.
 - Pricing/providers/endpoints/API keys are out of scope; integrate via separate catalog or settings.
 - Pair with GUI Model Manager via IPC to display installed bridges and switch the active one.
-
