@@ -2,8 +2,8 @@ import { Button, HStack } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { PresetManager } from '../preset/PresetManager';
 import ColorModeToggle from '../common/ColorModeToggle';
-import LlmBridgeManager from '../llm/LlmBridgeManager';
 import { MCPToolsManager } from '../mcp/McpToolManager';
+import LlmBridgeManagerContainer from '../llm/LlmBridgeManagerContainer';
 
 /**
  * TODO: 상태 변경시 저장하는 기능 추가
@@ -29,7 +29,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onBridgesChange }) => {
       </Button>
       <ColorModeToggle />
       {showPresets && <PresetManager />}
-      {showBridges && <LlmBridgeManager onChange={onBridgesChange} />}
+      {showBridges && <LlmBridgeManagerContainer />}
       {showMcpTools && <MCPToolsManager />}
     </HStack>
   );

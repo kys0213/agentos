@@ -1,5 +1,4 @@
 import { Box, Button, HStack, Input, Select, Text, VStack } from '@chakra-ui/react';
-import type { LlmManifest } from 'llm-bridge-spec';
 import React, { useState } from 'react';
 import type { LlmManifest } from 'llm-bridge-spec';
 

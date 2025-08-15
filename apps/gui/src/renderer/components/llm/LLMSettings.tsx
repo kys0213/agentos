@@ -15,6 +15,7 @@ export interface LLMSettingsProps {
   bridgeIds: string[];
   isLoading?: boolean;
   onSwitch: (bridgeId: string) => Promise<void> | void;
+  switchError?: boolean;
 }
 
 /**
@@ -28,6 +29,7 @@ const LLMSettings: React.FC<LLMSettingsProps> = ({
   bridgeIds,
   isLoading,
   onSwitch,
+  switchError,
 }) => {
   const handleBridgeChange = async (bridgeId: string) => {
     if (bridgeId === currentBridge?.id) return;
@@ -84,7 +86,7 @@ const LLMSettings: React.FC<LLMSettingsProps> = ({
       </Box>
 
       {/* 에러 표시 */}
-      {switchBridgeMutation.isError && (
+      {switchError && (
         <Text color="red.500" fontSize="sm">
           Failed to switch bridge. Please try again.
         </Text>

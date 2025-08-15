@@ -24,6 +24,7 @@ const LLMSettingsContainer: React.FC = () => {
       bridgeIds={bridgeIds}
       isLoading={isLoadingCurrent || isLoadingIds}
       onSwitch={onSwitch}
+      switchError={Boolean(switchBridge.isError)}
     />
   );
 };

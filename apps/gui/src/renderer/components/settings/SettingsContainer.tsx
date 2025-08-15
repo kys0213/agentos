@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Button, VStack, HStack, Text } from '@chakra-ui/react';
 import { useSettingsState, useSettingsActions, useUIActions } from '../../stores/app-store';
 import { useMcpConfigs, useConnectMcp } from '../../hooks/queries/use-mcp';
-import LLMSettings from '../llm/LLMSettings';
+import LLMSettingsContainer from '../llm/LLMSettingsContainer';
 import PresetSettings from '../preset/PresetSettings';
 import type { McpConfig } from '@agentos/core';
 
@@ -49,7 +49,7 @@ const SettingsContainer: React.FC = () => {
           <Text fontSize="lg" fontWeight="semibold" mb={3}>
             LLM Bridge Configuration
           </Text>
-          <LLMSettings />
+          <LLMSettingsContainer />
         </Box>
 
         {/* 프리셋 설정 */}

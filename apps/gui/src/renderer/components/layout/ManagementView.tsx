@@ -2,6 +2,8 @@ import { ArrowLeft, MessageSquare } from 'lucide-react';
 import React from 'react';
 import { Dashboard } from '../dashboard/Dashboard';
 import ModelManagerContainer from '../llm/ModelManagerContainer';
+import LlmBridgeManagerContainer from '../llm/LlmBridgeManagerContainer';
+import LLMSettingsContainer from '../llm/LLMSettingsContainer';
 import { MCPToolsManager } from '../mcp/McpToolManager';
 import SubAgentManagerContainer from '../sub-agent/SubAgentManagerContainer';
 import { ToolBuilder } from '../tool/ToolBuilder';
@@ -178,7 +180,13 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
         // Always render the React Query–backed container; it handles loading/empty states
         return <SubAgentManagerContainer onCreateAgent={handleStartCreateAgent} />;
       case 'models':
-        return <ModelManagerContainer reloadAgents={reloadAgents} />;
+        return (
+          <div className="space-y-6">
+            <ModelManagerContainer reloadAgents={reloadAgents} />
+            <LlmBridgeManagerContainer />
+            <LLMSettingsContainer />
+          </div>
+        );
       case 'tools':
         return <MCPToolsManager />;
       case 'toolbuilder':
