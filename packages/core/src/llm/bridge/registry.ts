@@ -108,7 +108,7 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
   async getActiveId(): Promise<BridgeId | null> {
     const handler = fs.JsonFileHandler.create<ActiveBridgeState>(
       this.activePath,
-      isActiveBridgeState as any,
+      isActiveBridgeState,
       { activeId: null, updatedAt: new Date() }
     );
     const res = await handler.read({ useDefaultOnError: true, reviveDates: true });
@@ -118,7 +118,7 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
   async setActiveId(id: BridgeId | null): Promise<void> {
     const handler = fs.JsonFileHandler.create<ActiveBridgeState>(
       this.activePath,
-      isActiveBridgeState as any,
+      isActiveBridgeState,
       { activeId: null, updatedAt: new Date() }
     );
     const data: ActiveBridgeState = { activeId: id, updatedAt: new Date() };
@@ -134,7 +134,7 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
   private async readRecord(id: BridgeId): Promise<InstalledBridgeRecord | null> {
     const handler = fs.JsonFileHandler.create<InstalledBridgeRecord>(
       this.recordPath(id),
-      isInstalledBridgeRecord as any
+      isInstalledBridgeRecord
     );
     const res = await handler.read({ useDefaultOnError: false, reviveDates: true });
     if (!res.success) return null;
@@ -146,10 +146,9 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
   private async writeRecord(record: InstalledBridgeRecord): Promise<void> {
     const handler = fs.JsonFileHandler.create<InstalledBridgeRecord>(
       this.recordPath(record.id),
-      isInstalledBridgeRecord as any
+      isInstalledBridgeRecord
     );
     const res = await handler.write(record, { prettyPrint: true, indent: 2, ensureDir: true });
     if (!res.success) throw new Error(`Failed to save bridge record: ${String(res.reason)}`);
   }
 }
-

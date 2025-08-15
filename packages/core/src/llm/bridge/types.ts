@@ -38,25 +38,34 @@ export interface ActiveBridgeState {
 }
 
 /** Type guards (runtime safety for JSON I/O) */
+const isObject = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object';
+
 export const isInstalledBridgeRecord = (v: unknown): v is InstalledBridgeRecord => {
-  if (!v || typeof v !== 'object') return false;
-  const o = v as any;
-  return (
-    typeof o.id === 'string' &&
-    o.manifest &&
-    typeof o.manifest === 'object' &&
-    typeof o.manifest.name === 'string' &&
-    typeof o.manifest.schemaVersion === 'string' &&
-    typeof o.manifest.language === 'string' &&
-    typeof o.manifest.entry === 'string' &&
-    typeof o.manifest.description === 'string' &&
-    !!o.installedAt
-  );
+  if (!isObject(v)) return false;
+  const o = v as Record<string, unknown>;
+  const idOk = typeof o.id === 'string';
+  const installedAt = o.installedAt as unknown;
+  const installedAtOk =
+    typeof installedAt === 'string' || installedAt instanceof Date || installedAt === undefined;
+
+  const manifest = o.manifest as unknown;
+  if (!isObject(manifest)) return false;
+  const m = manifest as Record<string, unknown>;
+  const manifestOk =
+    typeof m.name === 'string' &&
+    typeof m.schemaVersion === 'string' &&
+    typeof m.language === 'string' &&
+    typeof m.entry === 'string' &&
+    typeof m.description === 'string';
+  return idOk && installedAtOk && manifestOk;
 };
 
 export const isActiveBridgeState = (v: unknown): v is ActiveBridgeState => {
-  if (!v || typeof v !== 'object') return false;
-  const o = v as any;
-  return ('activeId' in o && 'updatedAt' in o);
+  if (!isObject(v)) return false;
+  const o = v as Record<string, unknown>;
+  const activeId = o.activeId as unknown;
+  const updatedAt = o.updatedAt as unknown;
+  const activeIdOk = activeId === null || typeof activeId === 'string';
+  const updatedAtOk = typeof updatedAt === 'string' || updatedAt instanceof Date;
+  return activeIdOk && updatedAtOk;
 };
-
