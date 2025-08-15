@@ -27,12 +27,11 @@ export * from './agent/agent.service';
 export * from './agent/session.service';
 export * from './agent/simple-agent.service';
 
-export * from './tool/mcp/mcp';
-export * from './tool/mcp/mcp-config';
-export * from './tool/mcp/mcp-event';
-export * from './tool/mcp/mcp-types';
+// MCP (Model Context Protocol) - 새로운 4-레이어 아키텍처
+export * from './tool/mcp';
+
+// Legacy MCP exports (하위 호환성)
 export * from './tool/mcp/mcp-usage-tracker';
-export * from './tool/mcp/mcp.registery';
 
 export * from './preset/preset';
 export * from './preset/preset.repository';

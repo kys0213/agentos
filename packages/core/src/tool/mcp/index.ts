@@ -1,10 +1,18 @@
 // MCP Core Types and Interfaces
-export type { McpConfig } from './mcp-config';
+export type {
+  McpConfig,
+  StdioMcpConfig,
+  StreamableHttpMcpConfig,
+  WebSocketMcpConfig,
+  SseMcpConfig,
+} from './mcp-config';
 export type {
   McpToolMetadata,
   McpConnectionStatus,
   McpUsageLog,
   McpUsageStatus,
+  McpToolDescription,
+  McpUsageStats,
 } from './mcp-types';
 
 // Repository Layer
@@ -14,7 +22,7 @@ export type {
   McpToolRepositoryEvent,
   McpToolRepositoryEventHandler,
   McpToolRepositoryEventPayload,
-  Unsubscribe,
+  McpUnsubscribe,
 } from './repository/mcp-tool-repository';
 export { FileMcpToolRepository } from './repository/file-mcp-tool-repository';
 

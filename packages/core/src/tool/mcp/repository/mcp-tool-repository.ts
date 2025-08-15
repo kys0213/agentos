@@ -123,4 +123,4 @@ export type McpToolRepositoryEventHandler = (payload: McpToolRepositoryEventPayl
 /**
  * 구독 해제 함수 타입
  */
-export type Unsubscribe = () => void;
+export type McpUnsubscribe = () => void;

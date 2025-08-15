@@ -261,14 +261,14 @@ export class MockIpcChannel implements IpcChannel {
     const startIndex =
       idx >= 0 ? (pagination?.direction === 'backward' ? Math.max(0, idx - limit) : idx + 1) : 0;
     const paged = items.slice(startIndex, startIndex + limit);
-    return { items: paged, nextCursor: paged.at(-1)?.id ?? '' };
+    return { items: paged, nextCursor: paged.at(-1)?.id ?? '', hasMore: false };
   }
   async getMessages(
     sessionId: string,
     _pagination?: CursorPagination
   ): Promise<CursorPaginationResult<Readonly<MessageHistory>>> {
     const s = this.sessions.get(sessionId);
-    return { items: (s?.messages ?? []) as Readonly<MessageHistory>[], nextCursor: '' };
+    return { items: (s?.messages ?? []) as Readonly<MessageHistory>[], nextCursor: '', hasMore: false };
   }
   async deleteSession(sessionId: string): Promise<{ success: boolean; error?: string }> {
     this.sessions.delete(sessionId);
