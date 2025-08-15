@@ -55,7 +55,7 @@ export interface LlmBridgeUsageTracker { /* in-memory usage aggregation */ }
 - [x] 사용량 트래커(`usage.ts`) 선택 제공(후속 GUI 분석 탭 지원)
 - [x] `packages/core/src/index.ts`에 export 추가
 - [x] 단위 테스트 작성(파일 I/O with temp dir)
-- [ ] 문서화(`docs/`에 개요 및 예시 코드)
+- [x] 문서화(`docs/`에 개요 및 예시 코드)
 
 ## 작업 순서
 
