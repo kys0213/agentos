@@ -1,6 +1,10 @@
-import { Box, Button, HStack, Input, Select, Text, VStack } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import type { LlmManifest } from 'llm-bridge-spec';
+import { Card } from '../ui/card';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 export interface LlmBridgeManagerProps {
   bridgeIds: string[];
@@ -57,47 +61,60 @@ const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({
   };
 
   return (
-    <Box p={2}>
-      <Text fontWeight="bold" mb={2}>
-        LLM Bridges
-      </Text>
-      <VStack align="start" spacing={2} as="ul" listStyleType="disc" pl={4}>
-        {Array.isArray(bridgeIds)
-          ? bridgeIds.map((bridgeId) => (
-              <HStack as="li" key={bridgeId} spacing={2}>
-                <Text>
-                  {bridgeId} {currentBridge?.id === bridgeId ? '(current)' : ''}
-                </Text>
-                <Button size="xs" onClick={() => handleDelete(bridgeId)}>
-                  Delete
-                </Button>
-              </HStack>
-            ))
-          : []}
-      </VStack>
-      <HStack mt={2} spacing={2}>
-        <Input
-          value={id}
-          onChange={(e) => setId(e.target.value)}
-          placeholder="Bridge id"
-          size="sm"
-        />
-        <Select
-          value={type}
-          onChange={(e) => setType(e.target.value as 'openai' | 'anthropic' | 'local' | 'custom')}
-          size="sm"
-          w="auto"
-        >
-          <option value="openai">OpenAI</option>
-          <option value="anthropic">Anthropic</option>
-          <option value="local">Local</option>
-          <option value="custom">Custom</option>
-        </Select>
-        <Button size="sm" onClick={handleAdd} colorScheme="brand">
+    <div className="space-y-3">
+      <div className="text-base font-semibold">LLM Bridges</div>
+      <Card className="p-4 space-y-2">
+        <div className="space-y-1">
+          {Array.isArray(bridgeIds) && bridgeIds.length > 0 ? (
+            <ul className="list-disc pl-5 text-sm">
+              {bridgeIds.map((bridgeId) => (
+                <li key={bridgeId} className="flex items-center gap-2">
+                  <span>
+                    {bridgeId} {currentBridge?.id === bridgeId ? '(current)' : ''}
+                  </span>
+                  <Button size="sm" variant="outline" onClick={() => handleDelete(bridgeId)}>
+                    Delete
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-sm text-muted-foreground">No bridges installed</div>
+          )}
+        </div>
+      </Card>
+
+      <Card className="p-4 flex items-end gap-2">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="bridge-id" className="text-sm">
+            Bridge id
+          </Label>
+          <Input
+            id="bridge-id"
+            value={id}
+            onChange={(e) => setId(e.target.value)}
+            placeholder="Bridge id"
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label className="text-sm">Type</Label>
+          <Select value={type} onValueChange={(v) => setType(v as any)}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="openai">OpenAI</SelectItem>
+              <SelectItem value="anthropic">Anthropic</SelectItem>
+              <SelectItem value="local">Local</SelectItem>
+              <SelectItem value="custom">Custom</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Button onClick={handleAdd} className="ml-auto">
           Add
         </Button>
-      </HStack>
-    </Box>
+      </Card>
+    </div>
   );
 };
 
