@@ -268,7 +268,11 @@ export class MockIpcChannel implements IpcChannel {
     _pagination?: CursorPagination
   ): Promise<CursorPaginationResult<Readonly<MessageHistory>>> {
     const s = this.sessions.get(sessionId);
-    return { items: (s?.messages ?? []) as Readonly<MessageHistory>[], nextCursor: '', hasMore: false };
+    return {
+      items: (s?.messages ?? []) as Readonly<MessageHistory>[],
+      nextCursor: '',
+      hasMore: false,
+    };
   }
   async deleteSession(sessionId: string): Promise<{ success: boolean; error?: string }> {
     this.sessions.delete(sessionId);
