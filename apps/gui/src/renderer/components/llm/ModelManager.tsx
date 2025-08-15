@@ -18,6 +18,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import type { LlmManifest } from 'llm-bridge-spec';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -72,6 +73,19 @@ export function ModelManager() {
   // Get BridgeService from ServiceContainer
   const bridgeService = ServiceContainer.getOrThrow('bridge');
 
+  // Convert manifest capabilities to simple string labels used by UI
+  const toCapabilityLabels = (manifest: LlmManifest): string[] => {
+    const labels: string[] = [];
+    const caps: any = manifest.capabilities as any;
+    if (Array.isArray(caps?.modalities)) labels.push(...caps.modalities);
+    if (caps?.supportsToolCall) labels.push('tool-call');
+    if (caps?.supportsFunctionCall) labels.push('function-call');
+    if (caps?.supportsMultiTurn) labels.push('multi-turn');
+    if (caps?.supportsStreaming) labels.push('streaming');
+    if (caps?.supportsVision) labels.push('vision');
+    return Array.from(new Set(labels));
+  };
+
   // Load bridge data on mount
   useEffect(() => {
     const loadBridges = async () => {
@@ -79,76 +93,34 @@ export function ModelManager() {
         setLoading(true);
         setError(null);
 
-        // Get available bridge IDs
+        // Get available bridge IDs and current active bridge
         const ids = await bridgeService.getBridgeIds();
         setBridgeIds(ids);
+        const current = await bridgeService.getCurrentBridge();
 
-        // Get current bridge info
-        const currentBridge = await bridgeService.getCurrentBridge();
-
-        // Mock some model instances based on available bridges
-        // In real implementation, this would come from bridge configurations
-        const mockInstances: ModelInstance[] = [
-          {
-            id: '1',
-            name: 'GPT-4 Turbo',
-            provider: 'OpenAI',
-            status: currentBridge?.id === 'openai-gpt4' ? 'online' : 'offline',
-            endpoint: 'https://api.openai.com/v1',
-            apiKey: 'sk-****...****',
-            capabilities: ['text', 'vision', 'function-calling'],
-            usage: {
-              requests: 1247,
-              tokens: 425678,
-              cost: 45.23,
-            },
-            performance: {
-              latency: 1.2,
-              uptime: 99.8,
-            },
-            lastUsed: new Date('2024-01-22T14:30:00'),
-          },
-          {
-            id: '2',
-            name: 'Claude 3 Opus',
-            provider: 'Anthropic',
-            status: currentBridge?.id === 'anthropic-claude' ? 'online' : 'offline',
-            endpoint: 'https://api.anthropic.com/v1',
-            apiKey: 'sk-ant-****...****',
-            capabilities: ['text', 'vision', 'analysis'],
-            usage: {
-              requests: 892,
-              tokens: 324156,
-              cost: 32.1,
-            },
-            performance: {
-              latency: 0.9,
-              uptime: 99.9,
-            },
-            lastUsed: new Date('2024-01-22T13:45:00'),
-          },
-        ];
-
-        setModelInstances(mockInstances);
-      } catch (err) {
-        console.error('Failed to load bridge data:', err);
-        setError('Failed to load model information');
-
-        // Fallback to mock data on error
-        setModelInstances([
-          {
-            id: '1',
-            name: 'GPT-4 Turbo (Mock)',
-            provider: 'OpenAI',
-            status: 'offline',
-            endpoint: 'https://api.openai.com/v1',
-            apiKey: 'Not configured',
-            capabilities: ['text', 'vision', 'function-calling'],
+        // Build instances from manifests
+        const instances: ModelInstance[] = [];
+        for (const id of ids) {
+          const manifest = await bridgeService.getBridgeConfig(id);
+          if (!manifest) continue;
+          instances.push({
+            id,
+            name: manifest.name,
+            provider: manifest.language ?? id,
+            status: current?.id === id ? 'online' : 'offline',
+            endpoint: '',
+            apiKey: '',
+            capabilities: toCapabilityLabels(manifest),
             usage: { requests: 0, tokens: 0, cost: 0 },
             performance: { latency: 0, uptime: 0 },
             lastUsed: new Date(),
-          },
-        ]);
+          });
+        }
+        setModelInstances(instances);
+      } catch (err) {
+        console.error('Failed to load bridge data:', err);
+        setError('Failed to load model information');
+        setModelInstances([]);
       } finally {
         setLoading(false);
       }
@@ -204,14 +176,25 @@ export function ModelManager() {
     try {
       const ids = await bridgeService.getBridgeIds();
       setBridgeIds(ids);
-      const currentBridge = await bridgeService.getCurrentBridge();
-      // Update model statuses based on current bridge
-      setModelInstances((prev) =>
-        prev.map((model) => ({
-          ...model,
-          status: currentBridge?.id.includes(model.provider.toLowerCase()) ? 'online' : 'offline',
-        }))
-      );
+      const current = await bridgeService.getCurrentBridge();
+      const instances: ModelInstance[] = [];
+      for (const id of ids) {
+        const manifest = await bridgeService.getBridgeConfig(id);
+        if (!manifest) continue;
+        instances.push({
+          id,
+          name: manifest.name,
+          provider: manifest.language ?? id,
+          status: current?.id === id ? 'online' : 'offline',
+          endpoint: '',
+          apiKey: '',
+          capabilities: toCapabilityLabels(manifest),
+          usage: { requests: 0, tokens: 0, cost: 0 },
+          performance: { latency: 0, uptime: 0 },
+          lastUsed: new Date(),
+        });
+      }
+      setModelInstances(instances);
     } catch (err) {
       setError('Failed to refresh model data');
     } finally {
