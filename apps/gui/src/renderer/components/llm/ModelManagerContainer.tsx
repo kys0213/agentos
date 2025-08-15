@@ -1,7 +1,12 @@
 import React, { useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ModelManager, ModelManagerItem } from './ModelManager';
-import { BRIDGE_QK, useCurrentBridge, useInstalledBridges, useSwitchBridge } from '../../hooks/queries/use-bridge';
+import {
+  BRIDGE_QK,
+  useCurrentBridge,
+  useInstalledBridges,
+  useSwitchBridge,
+} from '../../hooks/queries/use-bridge';
 import { toCapabilityLabels } from '../../hooks/queries/normalize';
 
 export interface ModelManagerContainerProps {

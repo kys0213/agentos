@@ -2,7 +2,12 @@ import { Box, Button, HStack, Input, Select, Text, VStack } from '@chakra-ui/rea
 import type { LlmManifest } from 'llm-bridge-spec';
 import React, { useEffect, useState } from 'react';
 
-import { useBridgeIds, useCurrentBridge, useRegisterBridge, useUnregisterBridge } from '../../hooks/queries/use-bridge';
+import {
+  useBridgeIds,
+  useCurrentBridge,
+  useRegisterBridge,
+  useUnregisterBridge,
+} from '../../hooks/queries/use-bridge';
 
 export interface LlmBridgeManagerProps {
   onChange?(): void;

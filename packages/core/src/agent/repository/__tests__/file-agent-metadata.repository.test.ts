@@ -106,11 +106,7 @@ describe('FileAgentMetadataRepository', () => {
     );
 
     await expect(
-      repo.update(
-        a1.id,
-        { description: 'second' },
-        { expectedVersion: a1.version }
-      )
+      repo.update(a1.id, { description: 'second' }, { expectedVersion: a1.version })
     ).rejects.toBeInstanceOf(CoreError);
 
     const final = await repo.get(a1.id);
