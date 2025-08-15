@@ -178,7 +178,11 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
         // Always render the React Query–backed container; it handles loading/empty states
         return <SubAgentManagerContainer onCreateAgent={handleStartCreateAgent} />;
       case 'models':
-        return <ModelManagerContainer reloadAgents={reloadAgents} />;
+        return (
+          <div className="space-y-6">
+            <ModelManagerContainer reloadAgents={reloadAgents} />
+          </div>
+        );
       case 'tools':
         return <MCPToolsManager />;
       case 'toolbuilder':

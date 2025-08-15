@@ -2,27 +2,20 @@ import {
   Activity,
   AlertCircle,
   BarChart3,
-  CheckCircle,
-  Cpu,
   DollarSign,
-  Download,
-  ExternalLink,
   MessageSquare,
   Package,
   Plus,
   RefreshCw,
   Search,
-  Settings,
-  Wifi,
-  WifiOff,
   Zap,
 } from 'lucide-react';
 import { useState } from 'react';
-import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { ModelCard } from './ModelCard';
 // Presentational component: data/actions injected via container
 
 export interface ModelManagerItem {
@@ -66,42 +59,7 @@ export function ModelManager(props: ModelManagerProps) {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'online':
-        return 'text-green-600';
-      case 'offline':
-        return 'text-gray-600';
-      case 'error':
-        return 'text-red-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'online':
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'offline':
-        return <WifiOff className="w-4 h-4 text-gray-600" />;
-      case 'error':
-        return <AlertCircle className="w-4 h-4 text-red-600" />;
-      default:
-        return <Wifi className="w-4 h-4 text-gray-600" />;
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-US').format(num);
-  };
+  // presentation helpers moved to ModelCard/modelManagerUtils
 
   if (isLoading) {
     return (
@@ -210,87 +168,7 @@ export function ModelManager(props: ModelManagerProps) {
                     .includes(searchQuery.toLowerCase())
                 )
                 .map((model) => (
-                  <Card key={model.id} className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <Cpu className="w-6 h-6 text-blue-600" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold">{model.name}</h3>
-                          <p className="text-sm text-muted-foreground">{model.provider}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(model.isActive ? 'online' : 'offline')}
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <Settings className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Status</span>
-                        <span
-                          className={`font-semibold capitalize ${getStatusColor(model.isActive ? 'online' : 'offline')}`}
-                        >
-                          {model.isActive ? 'online' : 'offline'}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Requests</span>
-                        <span className="font-semibold">—</span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Tokens</span>
-                        <span className="font-semibold">—</span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Cost</span>
-                        <span className="font-semibold">—</span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Latency</span>
-                        <span className="font-semibold">—</span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Uptime</span>
-                        <span className="font-semibold">—</span>
-                      </div>
-
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-2">Capabilities</p>
-                        <div className="flex flex-wrap gap-1">
-                          {model.capabilities.map((capability) => (
-                            <Badge key={capability} variant="secondary" className="text-xs">
-                              {capability}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                      <Button
-                        size="sm"
-                        className="flex-1"
-                        variant={model.isActive ? 'default' : 'outline'}
-                        onClick={() => handleSwitchModel(model.id)}
-                      >
-                        <MessageSquare className="w-3 h-3 mr-1" />
-                        {model.isActive ? 'Active' : 'Switch'}
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Settings className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </Card>
+                  <ModelCard key={model.id} model={model} onSwitch={handleSwitchModel} />
                 ))}
             </div>
           )}

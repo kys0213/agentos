@@ -1,16 +1,16 @@
 import React from 'react';
-import {
-  Select,
-  FormControl,
-  FormLabel,
-  VStack,
-  HStack,
-  Button,
-  Text,
-  Box,
-  Badge,
-} from '@chakra-ui/react';
-import { useCurrentBridge, useBridgeIds, useSwitchBridge } from '../../hooks/queries/use-bridge';
+import { Card } from '../ui/card';
+import { Button } from '../ui/button';
+import { Label } from '../ui/label';
+import { Badge } from '../ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+export interface LLMSettingsProps {
+  currentBridge?: { id: string } | null;
+  bridgeIds: string[];
+  isLoading?: boolean;
+  onSwitch: (bridgeId: string) => Promise<void> | void;
+  switchError?: boolean;
+}
 
 /**
  * LLM 브릿지 설정 컴포넌트
@@ -18,80 +18,69 @@ import { useCurrentBridge, useBridgeIds, useSwitchBridge } from '../../hooks/que
  * - 브릿지 상태 확인
  * - 테스트 기능 (향후 구현)
  */
-const LLMSettings: React.FC = () => {
-  const { data: currentBridge, isLoading: isLoadingCurrent } = useCurrentBridge();
-  const { data: bridgeIds = [], isLoading: isLoadingIds } = useBridgeIds();
-  const switchBridgeMutation = useSwitchBridge();
-
+const LLMSettings: React.FC<LLMSettingsProps> = ({
+  currentBridge,
+  bridgeIds,
+  isLoading,
+  onSwitch,
+  switchError,
+}) => {
   const handleBridgeChange = async (bridgeId: string) => {
     if (bridgeId === currentBridge?.id) return;
-
-    try {
-      await switchBridgeMutation.mutateAsync(bridgeId);
-    } catch (error) {
-      console.error('Failed to switch bridge:', error);
-    }
+    await onSwitch(bridgeId);
   };
 
-  if (isLoadingCurrent || isLoadingIds) {
-    return <Text>Loading bridge information...</Text>;
+  if (isLoading) {
+    return <div className="p-4 text-sm text-muted-foreground">Loading bridge information...</div>;
   }
 
   return (
-    <VStack align="stretch" spacing={4}>
+    <div className="space-y-4">
       {/* 현재 브릿지 정보 */}
-      <Box p={4} bg="gray.50" borderRadius="md">
-        <HStack justify="space-between" align="center">
-          <VStack align="start" spacing={1}>
-            <Text fontWeight="semibold">Current Bridge</Text>
-            <HStack>
-              <Text>{currentBridge?.id || 'None'}</Text>
-              <Badge colorScheme="green" size="sm">
-                Active
-              </Badge>
-            </HStack>
-          </VStack>
-        </HStack>
-      </Box>
+      <Card className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="text-sm font-semibold">Current Bridge</div>
+            <div className="flex items-center gap-2 text-sm">
+              <span>{currentBridge?.id || 'None'}</span>
+              <Badge>Active</Badge>
+            </div>
+          </div>
+        </div>
+      </Card>
 
       {/* 브릿지 선택 */}
-      <FormControl>
-        <FormLabel>Switch Bridge</FormLabel>
-        <HStack>
-          <Select
-            value={currentBridge?.id || ''}
-            onChange={(e) => handleBridgeChange(e.target.value)}
-            isDisabled={switchBridgeMutation.isPending}
-            placeholder="Select a bridge"
-          >
-            {bridgeIds.map((id) => (
-              <option key={id} value={id}>
-                {id}
-              </option>
-            ))}
+      <Card className="p-4 space-y-2">
+        <Label className="text-sm">Switch Bridge</Label>
+        <div className="flex items-center gap-2">
+          <Select onValueChange={(val) => handleBridgeChange(val)} value={currentBridge?.id || ''}>
+            <SelectTrigger className="w-64">
+              <SelectValue placeholder="Select a bridge" />
+            </SelectTrigger>
+            <SelectContent>
+              {bridgeIds.map((id) => (
+                <SelectItem key={id} value={id}>
+                  {id}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
-
-          {switchBridgeMutation.isPending && <Badge colorScheme="blue">Switching...</Badge>}
-        </HStack>
-      </FormControl>
+        </div>
+      </Card>
 
       {/* 브릿지 테스트 (향후 구현) */}
-      <Box p={3} bg="gray.50" borderRadius="md">
-        <Text fontSize="sm" color="gray.600" mb={2}>
-          Quick Test (Coming Soon)
-        </Text>
-        <Button size="sm" isDisabled colorScheme="blue" variant="outline">
+      <Card className="p-4">
+        <div className="text-sm text-muted-foreground mb-2">Quick Test (Coming Soon)</div>
+        <Button size="sm" variant="outline" disabled>
           Test Current Bridge
         </Button>
-      </Box>
+      </Card>
 
       {/* 에러 표시 */}
-      {switchBridgeMutation.isError && (
-        <Text color="red.500" fontSize="sm">
-          Failed to switch bridge. Please try again.
-        </Text>
+      {switchError && (
+        <div className="text-sm text-red-600">Failed to switch bridge. Please try again.</div>
       )}
-    </VStack>
+    </div>
   );
 };
 
