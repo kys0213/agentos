@@ -118,6 +118,7 @@ export class FileBasedChatSession implements ChatSession {
     return {
       items: buffer,
       nextCursor: buffer[buffer.length - 1].messageId,
+      hasMore: false, // 임시로 false 설정
     };
   }
 
@@ -127,6 +128,7 @@ export class FileBasedChatSession implements ChatSession {
     return {
       items: checkpoint ? [checkpoint] : [],
       nextCursor: '',
+      hasMore: false,
     };
   }
 }

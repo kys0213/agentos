@@ -44,6 +44,7 @@ export class FileBasedChatManager implements ChatManager {
     return {
       items: filtered,
       nextCursor: filtered.at(-1)?.id ?? '',
+      hasMore: false,
     };
   }
 

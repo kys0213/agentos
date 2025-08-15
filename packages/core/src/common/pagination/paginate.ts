@@ -19,7 +19,7 @@ export function paginateByCursor<T extends { id: string }>(
     const start = Math.max(0, list.length - limit);
     const page = list.slice(start);
     const nextCursor = page.length === limit ? page[0].id : '';
-    return { items: page, nextCursor };
+    return { items: page, nextCursor, hasMore: !!nextCursor };
   } else {
     let list = items;
 
@@ -31,6 +31,6 @@ export function paginateByCursor<T extends { id: string }>(
     const page = list.slice(0, limit);
     const nextCursor = page.length === limit ? page[page.length - 1].id : '';
 
-    return { items: page, nextCursor };
+    return { items: page, nextCursor, hasMore: !!nextCursor };
   }
 }
