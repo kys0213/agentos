@@ -22,9 +22,9 @@ export { FileMcpToolRepository } from './repository/file-mcp-tool-repository';
 export type { McpMetadataRegistryEvents } from './registry/mcp-metadata-registry';
 export { McpMetadataRegistry } from './registry/mcp-metadata-registry';
 
-// Legacy MCP Implementation (Protocol-compliant)
+// Core MCP Implementation (Protocol-compliant)
 export { Mcp } from './mcp';
-export { McpRegistry as LegacyMcpRegistry } from './mcp.registery';
+export { McpRegistry } from './mcp.registery';
 
 // Service Layer (Facade)
 export type { McpServiceEvents } from './service/mcp-service';

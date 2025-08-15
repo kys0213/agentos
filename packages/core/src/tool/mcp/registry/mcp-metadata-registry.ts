@@ -1,9 +1,9 @@
 import { SimpleEventEmitter } from '../../../common/event/simple-event-emitter';
 import type { McpToolMetadata, McpConnectionStatus } from '../mcp-types';
-import type { McpConfig, StdioMcpConfig } from '../mcp-config';
+import type { McpConfig } from '../mcp-config';
 import type { McpToolRepository } from '../repository/mcp-tool-repository';
 import { Mcp } from '../mcp';
-import { McpRegistry as LegacyMcpRegistry } from '../mcp.registery';
+import { McpRegistry } from '../mcp.registery';
 import type {
   CursorPagination,
   CursorPaginationResult,
@@ -29,10 +29,10 @@ export type McpMetadataRegistryEvents = {
 
 /**
  * MCP 메타데이터 레지스트리 - 실제 MCP 구현과 메타데이터를 통합 관리
- * 
+ *
  * 이 클래스는 기존 MCP 구현(mcp.ts, mcp.registery.ts)을 래핑하여
  * 메타데이터 영속화와 AgentOS SSOT 아키텍처를 지원합니다.
- * 
+ *
  * 주요 책임:
  * - 실제 MCP 연결과 메타데이터 동기화
  * - Repository와의 데이터 동기화
@@ -41,13 +41,13 @@ export type McpMetadataRegistryEvents = {
  */
 export class McpMetadataRegistry {
   private readonly eventEmitter = new SimpleEventEmitter<McpMetadataRegistryEvents>();
-  private readonly mcpRegistry: LegacyMcpRegistry;
+  private readonly mcpRegistry: McpRegistry;
   private readonly metadataCache = new Map<string, McpToolMetadata>();
   private initialized = false;
 
   constructor(private readonly repository: McpToolRepository) {
-    this.mcpRegistry = new LegacyMcpRegistry();
-    
+    this.mcpRegistry = new McpRegistry();
+
     // 기존 MCP Registry 이벤트 구독
     this.mcpRegistry.onRegister((mcp) => {
       this.syncMcpToMetadata(mcp);
@@ -79,7 +79,7 @@ export class McpMetadataRegistry {
     const allTools = await this.repository.list();
     for (const tool of allTools.items) {
       this.metadataCache.set(tool.id, tool);
-      
+
       // 메타데이터에 연결 정보가 있으면 MCP 재연결 시도
       if (tool.config && tool.status !== 'error') {
         try {
@@ -103,27 +103,18 @@ export class McpMetadataRegistry {
     this.metadataCache.set(metadata.id, metadata);
 
     try {
-      // 2. 실제 MCP 연결 (현재는 stdio만 지원)
-      if (config.type === 'stdio') {
-        await this.mcpRegistry.register(config as StdioMcpConfig);
-        
-        // 3. 연결 성공 시 상태 업데이트
-        const updatedMetadata = await this.updateConnectionStatus(metadata.id, 'connected');
-        
-        this.eventEmitter.emit('toolAdded', { tool: updatedMetadata });
-        return updatedMetadata;
-      } else {
-        // stdio가 아닌 타입은 아직 지원하지 않으므로 pending 상태로 설정
-        const pendingMetadata = await this.updateConnectionStatus(metadata.id, 'pending');
-        
-        this.eventEmitter.emit('toolAdded', { tool: pendingMetadata });
-        return pendingMetadata;
-      }
+      // 2. 실제 MCP 연결 (모든 타입 지원)
+      await this.mcpRegistry.register(config);
 
+      // 3. 연결 성공 시 상태 업데이트
+      const updatedMetadata = await this.updateConnectionStatus(metadata.id, 'connected');
+
+      this.eventEmitter.emit('toolAdded', { tool: updatedMetadata });
+      return updatedMetadata;
     } catch (error) {
       // 4. 연결 실패 시 에러 상태로 업데이트
       const errorMetadata = await this.updateConnectionStatus(metadata.id, 'error');
-      
+
       this.eventEmitter.emit('toolAdded', { tool: errorMetadata });
       throw new Error(`Failed to register MCP tool: ${error}`);
     }
@@ -234,15 +225,18 @@ export class McpMetadataRegistry {
     }
 
     // 사용량 증가
-    const metadata = Array.from(this.metadataCache.values())
-      .find(m => m.name === mcpTool.mcp.name);
-    
+    const metadata = Array.from(this.metadataCache.values()).find(
+      (m) => m.name === mcpTool.mcp.name
+    );
+
     if (metadata) {
       await this.incrementUsage(metadata.id);
     }
 
     // 실제 도구 실행
-    const result = await mcpTool.mcp.invokeTool(mcpTool.tool, { input: args as Record<string, unknown> });
+    const result = await mcpTool.mcp.invokeTool(mcpTool.tool, {
+      input: args as Record<string, unknown>,
+    });
     return result;
   }
 
@@ -251,7 +245,7 @@ export class McpMetadataRegistry {
    */
   getAllTools(pagination?: CursorPagination): CursorPaginationResult<McpToolMetadata> {
     const tools = Array.from(this.metadataCache.values());
-    
+
     // 기본 정렬: 최근 사용순
     tools.sort((a, b) => {
       const aLastUsed = a.lastUsedAt?.getTime() || 0;
@@ -294,16 +288,14 @@ export class McpMetadataRegistry {
    * 연결 상태별 도구 필터링
    */
   getToolsByStatus(status: McpConnectionStatus): McpToolMetadata[] {
-    return Array.from(this.metadataCache.values())
-      .filter((tool) => tool.status === status);
+    return Array.from(this.metadataCache.values()).filter((tool) => tool.status === status);
   }
 
   /**
    * 카테고리별 도구 필터링
    */
   getToolsByCategory(category: string): McpToolMetadata[] {
-    return Array.from(this.metadataCache.values())
-      .filter((tool) => tool.category === category);
+    return Array.from(this.metadataCache.values()).filter((tool) => tool.category === category);
   }
 
   /**
@@ -334,8 +326,7 @@ export class McpMetadataRegistry {
    * MCP에서 메타데이터로 동기화
    */
   private async syncMcpToMetadata(mcp: Mcp): Promise<void> {
-    const metadata = Array.from(this.metadataCache.values())
-      .find(m => m.name === mcp.name);
+    const metadata = Array.from(this.metadataCache.values()).find((m) => m.name === mcp.name);
 
     if (metadata) {
       await this.updateConnectionStatus(metadata.id, 'connected');
@@ -346,8 +337,7 @@ export class McpMetadataRegistry {
    * MCP 등록 해제 처리
    */
   private async handleMcpUnregister(mcp: Mcp): Promise<void> {
-    const metadata = Array.from(this.metadataCache.values())
-      .find(m => m.name === mcp.name);
+    const metadata = Array.from(this.metadataCache.values()).find((m) => m.name === mcp.name);
 
     if (metadata) {
       await this.updateConnectionStatus(metadata.id, 'disconnected');
@@ -361,13 +351,8 @@ export class McpMetadataRegistry {
     if (!metadata.config) return;
 
     const config = metadata.config as McpConfig;
-    
-    // 현재는 stdio 타입만 재연결 가능
-    if (config.type === 'stdio') {
-      await this.mcpRegistry.register(config as StdioMcpConfig);
-    } else {
-      // stdio가 아닌 타입은 pending 상태로 유지
-      await this.updateConnectionStatus(metadata.id, 'pending');
-    }
+
+    // 모든 MCP 타입 지원
+    await this.mcpRegistry.register(config);
   }
 }
