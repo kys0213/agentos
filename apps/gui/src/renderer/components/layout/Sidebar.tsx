@@ -8,7 +8,6 @@ import {
   Plus,
   Settings,
   Shield,
-  Users,
   Wrench,
   Zap,
 } from 'lucide-react';
