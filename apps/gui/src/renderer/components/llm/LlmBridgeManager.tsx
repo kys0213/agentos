@@ -1,27 +1,23 @@
 import { Box, Button, HStack, Input, Select, Text, VStack } from '@chakra-ui/react';
 import type { LlmManifest } from 'llm-bridge-spec';
-import React, { useEffect, useState } from 'react';
-
-import {
-  useBridgeIds,
-  useCurrentBridge,
-  useRegisterBridge,
-  useUnregisterBridge,
-} from '../../hooks/queries/use-bridge';
+import React, { useState } from 'react';
+import type { LlmManifest } from 'llm-bridge-spec';
 
 export interface LlmBridgeManagerProps {
-  onChange?(): void;
+  bridgeIds: string[];
+  currentBridge?: { id: string } | null;
+  onRegister: (manifest: LlmManifest) => Promise<void> | void;
+  onUnregister: (id: string) => Promise<void> | void;
 }
 
-const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ onChange }) => {
-  const { data: bridgeIds = [] } = useBridgeIds();
-  const { data: currentBridge } = useCurrentBridge();
+const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({
+  bridgeIds,
+  currentBridge,
+  onRegister,
+  onUnregister,
+}) => {
   const [id, setId] = useState('');
   const [type, setType] = useState<'openai' | 'anthropic' | 'local' | 'custom'>('custom');
-  const registerBridge = useRegisterBridge();
-  const unregisterBridge = useUnregisterBridge();
-
-  useEffect(() => {}, []);
 
   const handleAdd = async () => {
     if (!id) return;
@@ -46,11 +42,8 @@ const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ onChange }) => {
         },
         description: '',
       };
-
-      await registerBridge.mutateAsync(config);
+      await onRegister(config);
       setId('');
-
-      onChange && onChange();
     } catch (error) {
       console.error('Failed to add bridge:', error);
     }
@@ -58,9 +51,7 @@ const LlmBridgeManager: React.FC<LlmBridgeManagerProps> = ({ onChange }) => {
 
   const handleDelete = async (bridgeId: string) => {
     try {
-      await unregisterBridge.mutateAsync(bridgeId);
-
-      onChange && onChange();
+      await onUnregister(bridgeId);
     } catch (error) {
       console.error('Failed to delete bridge:', error);
     }

@@ -10,7 +10,12 @@ import {
   Box,
   Badge,
 } from '@chakra-ui/react';
-import { useCurrentBridge, useBridgeIds, useSwitchBridge } from '../../hooks/queries/use-bridge';
+export interface LLMSettingsProps {
+  currentBridge?: { id: string } | null;
+  bridgeIds: string[];
+  isLoading?: boolean;
+  onSwitch: (bridgeId: string) => Promise<void> | void;
+}
 
 /**
  * LLM 브릿지 설정 컴포넌트
@@ -18,22 +23,18 @@ import { useCurrentBridge, useBridgeIds, useSwitchBridge } from '../../hooks/que
  * - 브릿지 상태 확인
  * - 테스트 기능 (향후 구현)
  */
-const LLMSettings: React.FC = () => {
-  const { data: currentBridge, isLoading: isLoadingCurrent } = useCurrentBridge();
-  const { data: bridgeIds = [], isLoading: isLoadingIds } = useBridgeIds();
-  const switchBridgeMutation = useSwitchBridge();
-
+const LLMSettings: React.FC<LLMSettingsProps> = ({
+  currentBridge,
+  bridgeIds,
+  isLoading,
+  onSwitch,
+}) => {
   const handleBridgeChange = async (bridgeId: string) => {
     if (bridgeId === currentBridge?.id) return;
-
-    try {
-      await switchBridgeMutation.mutateAsync(bridgeId);
-    } catch (error) {
-      console.error('Failed to switch bridge:', error);
-    }
+    await onSwitch(bridgeId);
   };
 
-  if (isLoadingCurrent || isLoadingIds) {
+  if (isLoading) {
     return <Text>Loading bridge information...</Text>;
   }
 
@@ -61,7 +62,6 @@ const LLMSettings: React.FC = () => {
           <Select
             value={currentBridge?.id || ''}
             onChange={(e) => handleBridgeChange(e.target.value)}
-            isDisabled={switchBridgeMutation.isPending}
             placeholder="Select a bridge"
           >
             {bridgeIds.map((id) => (
@@ -70,8 +70,6 @@ const LLMSettings: React.FC = () => {
               </option>
             ))}
           </Select>
-
-          {switchBridgeMutation.isPending && <Badge colorScheme="blue">Switching...</Badge>}
         </HStack>
       </FormControl>
 
