@@ -54,6 +54,30 @@ interface ToolUsageLog {
 }
 ```
 
+## 🔧 Electron MCP IPC Implementation (Consolidated)
+
+아래 구현 계획은 `ELECTRON_MCP_IPC_IMPLEMENTATION_PLAN.md`의 TODO와 상세 단계를 본 문서로 통합한 것입니다. 세부 IPC 시그니처는 `ELECTRON_MCP_IPC_SPEC.md`를 기준으로 합니다.
+
+### TODO (Phases)
+
+- Phase 2 — 타입/인터페이스 확장
+  - [ ] Shared Types: `mcp-usage-types.ts` 정의 (GUI 전용 확장 포함)
+  - [ ] Electron API 타입 확장 (`electron-api.ts`)
+  - [ ] IpcChannel 인터페이스 확장 (사용량 추적 메서드 추가)
+- Phase 3 — Main 구현
+  - [ ] `mcp:*` 사용량 조회/통계/정리 핸들러 구현
+  - [ ] 사용량 업데이트 브로드캐스트(폴링 기반 임시) 구현
+- Phase 4 — Renderer 구현
+  - [ ] ElectronIpcChannel 확장 (새 메서드 연결)
+  - [ ] McpService 사용량 추적 기능 + 구독 추가
+- Phase 5 — 통합 검증
+  - [ ] 타입체크/빌드/테스트/린트 통과
+
+### 테스트 전략 요약
+
+- 시나리오: 연결 후 사용량 조회, 도구 실행 시 실시간 업데이트, 대용량 페이지네이션, 구독/해제 누수 점검
+- 품질 기준: 타입/빌드/테스트/린트 통과, IPC 타입 안전성 보장
+
 ### Core의 현재 구조 (확장 필요)
 
 ```typescript

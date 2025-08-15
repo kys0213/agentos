@@ -39,6 +39,14 @@ export async function sendMessage(
 export async function fetchChatHistory(sessionId: string): Promise<MessageHistory[]>;
 ```
 
+## 🔗 Consolidated Decisions
+
+본 문서는 다음 계획서의 핵심 결정을 통합 반영합니다.
+
+- Chat AgentId = SessionId 전략: 별도 세션 스토어 없이 `agentId`를 세션 식별자로 사용하여 플로우 단순화.
+- ChatService 제거: 채팅 흐름은 `AgentService.chat` 또는 얇은 어댑터를 통해 수행하며, React Query 훅으로 캡슐화.
+- IPC 확장 필요 시 Agent API 정합화 문서(AGENT_API_ALIGNMENT_PLAN.md)에 따라 대화 목록/히스토리 조회용 메서드를 정의하고 구현.
+
 ### **Container Components (새로 생성)**
 
 ```typescript
