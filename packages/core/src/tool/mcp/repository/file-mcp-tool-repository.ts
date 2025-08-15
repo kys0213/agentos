@@ -1,9 +1,12 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { CursorPagination, CursorPaginationResult } from '../../../common/pagination/cursor-pagination';
+import {
+  CursorPagination,
+  CursorPaginationResult,
+} from '../../../common/pagination/cursor-pagination';
 import { paginateByCursor } from '../../../common/pagination/paginate';
 import { SimpleEventEmitter } from '../../../common/event/simple-event-emitter';
-import { McpToolMetadata, McpConnectionStatus } from '../mcp-types';
+import { McpToolMetadata } from '../mcp-types';
 import { McpConfig } from '../mcp-config';
 import {
   McpToolRepository,
@@ -11,12 +14,12 @@ import {
   McpToolRepositoryEvent,
   McpToolRepositoryEventHandler,
   McpToolRepositoryEventPayload,
-  Unsubscribe
+  Unsubscribe,
 } from './mcp-tool-repository';
 
 /**
  * 파일 기반 MCP 도구 Repository 구현
- * 
+ *
  * JSON 파일을 사용하여 도구 메타데이터를 영속화합니다.
  * 이벤트 기반 반응성을 위해 SimpleEventEmitter를 사용합니다.
  */
@@ -42,7 +45,7 @@ export class FileMcpToolRepository implements McpToolRepository {
     this.options = {
       enableWatching: true,
       enableCaching: true,
-      ...options
+      ...options,
     };
   }
 
@@ -54,7 +57,7 @@ export class FileMcpToolRepository implements McpToolRepository {
     }
 
     const tools = await this.loadAll();
-    const tool = tools.find(t => t.id === id);
+    const tool = tools.find((t) => t.id === id);
 
     if (tool && this.options.enableCaching) {
       this.cache.set(id, tool);
@@ -77,7 +80,7 @@ export class FileMcpToolRepository implements McpToolRepository {
     await this.ensureInitialized();
     const tools = await this.loadAll();
 
-    const filtered = tools.filter(tool => {
+    const filtered = tools.filter((tool) => {
       // 카테고리 필터
       if (query.category && tool.category !== query.category) {
         return false;
@@ -96,7 +99,7 @@ export class FileMcpToolRepository implements McpToolRepository {
       // 키워드 검색
       if (query.keywords && query.keywords.length > 0) {
         const searchText = `${tool.name} ${tool.description}`.toLowerCase();
-        const hasMatchingKeyword = query.keywords.some(keyword =>
+        const hasMatchingKeyword = query.keywords.some((keyword) =>
           searchText.includes(keyword.toLowerCase())
         );
         if (!hasMatchingKeyword) {
@@ -148,7 +151,7 @@ export class FileMcpToolRepository implements McpToolRepository {
     await this.ensureInitialized();
 
     const tools = await this.loadAll();
-    const index = tools.findIndex(t => t.id === id);
+    const index = tools.findIndex((t) => t.id === id);
 
     if (index === -1) {
       throw new Error(`MCP tool not found: ${id}`);
@@ -181,12 +184,12 @@ export class FileMcpToolRepository implements McpToolRepository {
 
     // 이벤트 발행
     this.eventEmitter.emit('changed', { id, metadata: updated });
-    
+
     if (previousStatus !== updated.status) {
       this.eventEmitter.emit('statusChanged', {
         id,
         metadata: updated,
-        previousStatus
+        previousStatus,
       });
     }
 
@@ -197,7 +200,7 @@ export class FileMcpToolRepository implements McpToolRepository {
     await this.ensureInitialized();
 
     const tools = await this.loadAll();
-    const index = tools.findIndex(t => t.id === id);
+    const index = tools.findIndex((t) => t.id === id);
 
     if (index === -1) {
       throw new Error(`MCP tool not found: ${id}`);
@@ -213,10 +216,7 @@ export class FileMcpToolRepository implements McpToolRepository {
     this.eventEmitter.emit('deleted', { id });
   }
 
-  on(
-    event: McpToolRepositoryEvent,
-    handler: McpToolRepositoryEventHandler
-  ): Unsubscribe {
+  on(event: McpToolRepositoryEvent, handler: McpToolRepositoryEventHandler): Unsubscribe {
     return this.eventEmitter.on(event, handler);
   }
 
@@ -338,16 +338,54 @@ export class FileMcpToolRepository implements McpToolRepository {
   /**
    * 민감한 정보 제거한 설정 저장
    */
-  private sanitizeConfig(config: McpConfig): Record<string, any> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { env, headers, ...sanitized } = config as any;
-    
-    return {
-      ...sanitized,
-      // 환경변수나 헤더에서 민감한 정보 제거
-      ...(env && { env: this.sanitizeEnv(env) }),
-      ...(headers && { headers: this.sanitizeHeaders(headers) }),
+  private sanitizeConfig(config: McpConfig): Record<string, unknown> {
+    const result: Record<string, unknown> = {
+      type: config.type,
+      name: config.name,
+      version: config.version,
     };
+
+    // 네트워크 설정 (모든 타입에 공통)
+    if (config.network) {
+      result.network = config.network;
+    }
+
+    // 타입별 전용 필드들
+    switch (config.type) {
+      case 'stdio':
+        result.command = config.command;
+        if (config.args) result.args = config.args;
+        if (config.cwd) result.cwd = config.cwd;
+        if (config.env) {
+          result.env = this.sanitizeEnv(config.env);
+        }
+        break;
+
+      case 'streamableHttp':
+        result.url = config.url;
+        if (config.headers) {
+          result.headers = this.sanitizeHeaders(config.headers);
+        }
+        if (config.reconnectionOptions) {
+          result.reconnectionOptions = config.reconnectionOptions;
+        }
+        // authProvider는 민감한 정보이므로 저장하지 않음
+        break;
+
+      case 'websocket':
+        result.url = config.url;
+        break;
+
+      case 'sse':
+        result.url = config.url;
+        if (config.headers) {
+          result.headers = this.sanitizeHeaders(config.headers);
+        }
+        // authProvider는 민감한 정보이므로 저장하지 않음
+        break;
+    }
+
+    return result;
   }
 
   /**
@@ -358,9 +396,7 @@ export class FileMcpToolRepository implements McpToolRepository {
     const sanitized: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(env)) {
-      const isSensitive = sensitiveKeys.some(sensitive =>
-        key.toLowerCase().includes(sensitive)
-      );
+      const isSensitive = sensitiveKeys.some((sensitive) => key.toLowerCase().includes(sensitive));
 
       sanitized[key] = isSensitive ? '***masked***' : value;
     }
@@ -376,7 +412,7 @@ export class FileMcpToolRepository implements McpToolRepository {
     const sanitized: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(headers)) {
-      const isSensitive = sensitiveHeaders.some(sensitive =>
+      const isSensitive = sensitiveHeaders.some((sensitive) =>
         key.toLowerCase().includes(sensitive)
       );
 

@@ -118,7 +118,7 @@ describe('FileMcpToolRepository', () => {
       
       expect(result.items).toHaveLength(0);
       expect(result.hasMore).toBe(false);
-      expect(result.nextCursor).toBeUndefined();
+      expect(result.nextCursor).toBe('');
     });
 
     it('should return all tools', async () => {
@@ -150,7 +150,7 @@ describe('FileMcpToolRepository', () => {
       }
 
       // 첫 페이지 (limit: 2)
-      const firstPage = await repository.list({ limit: 2 });
+      const firstPage = await repository.list({ limit: 2, cursor: '', direction: 'forward' });
       expect(firstPage.items).toHaveLength(2);
       expect(firstPage.hasMore).toBe(true);
       expect(firstPage.nextCursor).toBeDefined();
@@ -158,7 +158,8 @@ describe('FileMcpToolRepository', () => {
       // 두 번째 페이지
       const secondPage = await repository.list({
         limit: 2,
-        cursor: firstPage.nextCursor
+        cursor: firstPage.nextCursor,
+        direction: 'forward'
       });
       expect(secondPage.items).toHaveLength(1);
       expect(secondPage.hasMore).toBe(false);
@@ -270,7 +271,6 @@ describe('FileMcpToolRepository', () => {
     });
 
     it('should handle version conflicts', async () => {
-      const tool = await repository.get(toolId);
       const wrongVersion = 'wrong-version';
 
       await expect(
