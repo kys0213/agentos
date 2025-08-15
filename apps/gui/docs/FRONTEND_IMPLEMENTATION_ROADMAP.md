@@ -13,9 +13,9 @@ This roadmap tracks the design alignment work for the GUI against the Figma mock
 - [x] Composer polish: mention button size, disabled state
 - [x] Devtools gating via `VITE_DEVTOOLS=true`
 - [x] UI tests: ChatHistory (Archived + empty), ChatView header chips
-- [ ] Spacing/radius/elevation audit and polish across components
-- [ ] Accessibility pass (roles, labels for controls)
-- [ ] Visual QA sweep vs mock (spacing, radii, shadows)
+- Spacing/radius/elevation audit and polish across components (planned)
+- Accessibility pass (roles, labels for controls) (planned)
+- Visual QA sweep vs mock (spacing, radii, shadows) (planned)
 
 ## Notes
 
