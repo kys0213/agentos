@@ -2,9 +2,9 @@ import fs from 'fs/promises';
 import os from 'os';
 import path from 'path';
 import { FileAgentMetadataRepository } from '../file-agent-metadata.repository';
+import { CoreError } from '../../../common/error/core-error';
 import type { CreateAgentMetadata } from '../../agent-metadata';
 import type { Preset } from '../../../preset/preset';
-import { CoreError } from '../../../common/error/core-error';
 
 function preset(id: string): Preset {
   const now = new Date();
@@ -36,7 +36,7 @@ function createMeta(id: string): CreateAgentMetadata {
     keywords: ['k1', 'k2'],
     preset: preset(`p-${id}`),
     status: 'active',
-  } as any;
+  };
 }
 
 describe('FileAgentMetadataRepository', () => {
@@ -52,8 +52,14 @@ describe('FileAgentMetadataRepository', () => {
 
   test('create, get, list, search, update version, delete', async () => {
     const repo = new FileAgentMetadataRepository(dir);
+    const changes: { id: string; version?: string }[] = [];
+    const deletes: { id: string; version?: string }[] = [];
+    repo.on?.('changed', (p) => changes.push(p));
+    repo.on?.('deleted', (p) => deletes.push(p));
+
     const a1 = await repo.create(createMeta('1'));
     const a2 = await repo.create(createMeta('2'));
+    expect(changes.map((c) => c.id)).toEqual([a1.id, a2.id]);
 
     const got = await repo.get(a1.id);
     expect(got?.id).toBe(a1.id);
@@ -76,6 +82,7 @@ describe('FileAgentMetadataRepository', () => {
       { expectedVersion: a1.version }
     );
     expect(upd.version && Number(upd.version) > Number(a1.version)).toBe(true);
+    expect(changes.map((c) => c.id)).toEqual([a1.id, a2.id, a1.id]);
 
     // version conflict
     await expect(
@@ -85,5 +92,29 @@ describe('FileAgentMetadataRepository', () => {
     await repo.delete(a2.id);
     const afterDel = await repo.get(a2.id);
     expect(afterDel).toBeNull();
+    expect(deletes.map((d) => d.id)).toEqual([a2.id]);
+  });
+
+  test('rejects update when expectedVersion is stale', async () => {
+    const repo = new FileAgentMetadataRepository(dir);
+    const a1 = await repo.create(createMeta('1'));
+
+    const updated = await repo.update(
+      a1.id,
+      { description: 'first' },
+      { expectedVersion: a1.version }
+    );
+
+    await expect(
+      repo.update(
+        a1.id,
+        { description: 'second' },
+        { expectedVersion: a1.version }
+      )
+    ).rejects.toBeInstanceOf(CoreError);
+
+    const final = await repo.get(a1.id);
+    expect(final?.description).toBe('first');
+    expect(final?.version).toBe(updated.version);
   });
 });
