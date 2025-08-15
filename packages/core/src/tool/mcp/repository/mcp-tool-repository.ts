@@ -1,4 +1,7 @@
-import type { CursorPagination, CursorPaginationResult } from '../../../common/pagination/cursor-pagination';
+import type {
+  CursorPagination,
+  CursorPaginationResult,
+} from '../../../common/pagination/cursor-pagination';
 import type { McpToolMetadata, McpConnectionStatus } from '../mcp-types';
 import type { McpConfig } from '../mcp-config';
 
@@ -18,7 +21,7 @@ export interface McpToolSearchQuery {
 
 /**
  * MCP 도구 메타데이터의 영속화와 검색을 담당하는 Repository 인터페이스
- * 
+ *
  * 이 인터페이스는 AgentOS의 SSOT 아키텍처에 따라 설계되었으며,
  * 다양한 저장소 구현체(파일, SQLite, HTTP 등)를 지원합니다.
  */
@@ -80,7 +83,7 @@ export interface McpToolRepository {
   /**
    * 도구 메타데이터 변경 이벤트 구독 (선택적)
    * GUI나 다른 컴포넌트가 실시간으로 변경사항을 반영할 수 있도록 지원
-   * 
+   *
    * @param event 구독할 이벤트 타입
    * @param handler 이벤트 핸들러
    * @returns 구독 해제 함수
