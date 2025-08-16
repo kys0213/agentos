@@ -11,7 +11,7 @@ export class FileBasedPresetRepository implements PresetRepository {
     await fs.FileUtils.ensureDir(this.baseDir);
     const entriesResult = await fs.FileUtils.readDir(this.baseDir);
     if (!entriesResult.success) {
-      return { items: [], nextCursor: '' };
+      return { items: [], nextCursor: '', hasMore: false };
     }
     const entries = entriesResult.result;
     const items: PresetSummary[] = [];
@@ -28,7 +28,7 @@ export class FileBasedPresetRepository implements PresetRepository {
       }
     }
     items.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
-    return { items, nextCursor: '' };
+    return { items, nextCursor: '', hasMore: false };
   }
 
   async get(id: string): Promise<Preset | null> {

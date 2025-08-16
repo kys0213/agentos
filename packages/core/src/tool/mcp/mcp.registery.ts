@@ -1,6 +1,6 @@
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { Mcp } from './mcp';
-import { StdioMcpConfig } from './mcp-config';
+import { McpConfig } from './mcp-config';
 
 export class McpRegistry {
   private storage: Map<McpName, Mcp> = new Map();
@@ -55,7 +55,7 @@ export class McpRegistry {
     return result;
   }
 
-  async register(config: StdioMcpConfig) {
+  async register(config: McpConfig) {
     const mcp = Mcp.create(config);
 
     await mcp.connect();

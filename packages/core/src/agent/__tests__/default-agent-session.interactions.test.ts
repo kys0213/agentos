@@ -3,6 +3,7 @@ import type { LlmBridge, LlmBridgeResponse, UserMessage } from 'llm-bridge-spec'
 import { DefaultAgentSession } from '../default-agent-session';
 import type { ChatSession, MessageHistory } from '../../chat/chat-session';
 import type { AgentMetadata } from '../agent-metadata';
+import { ChatSessionMetadata } from '../../chat/chat-session-metata';
 
 function createChatSession(sessionId = 's-t1'): ChatSession {
   const messages: MessageHistory[] = [];
@@ -21,23 +22,25 @@ function createChatSession(sessionId = 's-t1'): ChatSession {
       // no-op for tests
     },
     async getHistories() {
-      return { items: messages, nextCursor: '' };
+      return { items: messages, nextCursor: '', hasMore: false };
     },
     async getCheckpoints() {
-      return { items: [], nextCursor: '' } as any;
+      return { items: [], nextCursor: '', hasMore: false };
     },
-    async getMetadata() {
+    async getMetadata(): Promise<ChatSessionMetadata> {
       return {
         sessionId,
         createdAt: new Date(),
         updatedAt: new Date(),
-        messageCount: messages.length,
         title: '',
-        llmUsage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
-      } as any;
+        totalMessages: messages.length,
+        totalUsage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+        recentMessages: messages,
+        joinedAgents: [],
+      };
     },
     async commit() {},
-  } as ChatSession;
+  };
 }
 
 function createMeta(): AgentMetadata {

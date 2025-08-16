@@ -39,7 +39,7 @@ export class SimpleAgentService implements AgentService {
         const agent = await this.manager.getAgent(meta.id);
         if (agent) agents.push(agent);
       }
-      return { items: agents, nextCursor: res.nextCursor };
+      return { items: agents, nextCursor: res.nextCursor, hasMore: res.hasMore };
     }
 
     // Fallback: load a page (or all if no pagination) then filter in-memory.
@@ -98,6 +98,6 @@ export class SimpleAgentService implements AgentService {
     }
     const page = list.slice(0, limit);
     const nextCursor = page.length === limit ? page[page.length - 1].id : '';
-    return { items: page, nextCursor };
+    return { items: page, nextCursor, hasMore: !!nextCursor };
   }
 }

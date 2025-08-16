@@ -7,4 +7,5 @@ export interface CursorPagination {
 export interface CursorPaginationResult<T> {
   items: T[];
   nextCursor: string;
+  hasMore: boolean;
 }
