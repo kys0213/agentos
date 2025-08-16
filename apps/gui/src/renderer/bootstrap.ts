@@ -1,14 +1,15 @@
 import { AgentOsServiceNames } from '../shared/types/agentos-api';
 import type { IpcChannel } from '../shared/types/ipc-channel';
-import { AgentService } from './services/agent.service';
+import { AgentRpcService as AgentService } from './rpc/services/agent.service';
 import { ConversationService } from './services/conversation.service';
-import { BridgeService } from './services/bridge.service';
+import { BridgeRpcService as BridgeService } from './rpc/services/bridge.service';
 import { BuiltinToolService } from './services/builtin-tool.service';
-import { createIpcChannel } from '../shared/ipc/ipc-channel.factory';
+import { createIpcChannel } from './ipc/ipc-channel.factory';
 import { McpService } from './services/mcp-service';
 import { McpUsageLogService } from './services/mcp-usage.service';
-import { PresetService } from './services/preset-service';
-import { ServiceContainer } from '../shared/ipc/service-container';
+import { PresetRpcService as PresetService } from './rpc/services/preset.service';
+import { ServiceContainer } from './ipc/service-container';
+import { ElectronIpcTransport } from './rpc/transports/electronIpc';
 
 /**
  * Bootstrap 결과 타입
@@ -29,15 +30,19 @@ export interface BootstrapResult {
 export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
   console.log('🚀 Starting application bootstrap...');
 
-  // IpcChannel 생성 또는 주입받은 것 사용
+  // IpcChannel 생성 또는 주입받은 것 사용 (기존 경로 유지)
   const channel = ipcChannel || createIpcChannel();
   console.log('📡 IpcChannel created/injected');
 
+  // Channel-based RpcTransport (권장 경로)
+  const rpcTransport = new ElectronIpcTransport();
+
   // 모든 서비스에 동일한 IpcChannel 주입하여 생성
-  const bridgeService = new BridgeService(channel);
+  // 새 RPC 서비스(Bridge/Preset/Agent)는 채널 기반 Transport를 사용
+  const bridgeService = new BridgeService(rpcTransport);
   const mcpService = new McpService(channel);
-  const presetService = new PresetService(channel);
-  const agentService = new AgentService(channel);
+  const presetService = new PresetService(rpcTransport);
+  const agentService = new AgentService(rpcTransport);
   const builtinToolService = new BuiltinToolService(channel);
   const conversationService = new ConversationService(channel);
   const mcpUsageLogService = new McpUsageLogService(channel);
