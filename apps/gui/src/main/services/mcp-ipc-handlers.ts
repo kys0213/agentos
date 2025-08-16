@@ -5,6 +5,7 @@ import {
   McpMetadataRegistry,
   type McpConfig,
   type McpToolMetadata,
+  McpRegistry,
 } from '@agentos/core';
 
 let mcpService: McpService | null = null;
@@ -18,7 +19,7 @@ async function initializeMcpService(): Promise<McpService> {
       ? `${process.env.APPDATA}/.agentos/mcp/mcp-tools.json`
       : `${process.env.HOME}/.agentos/mcp/mcp-tools.json`
   );
-  const registry = new McpMetadataRegistry(repository);
+  const registry = new McpMetadataRegistry(repository, new McpRegistry());
   mcpService = new McpService(repository, registry);
 
   // 서비스 초기화
