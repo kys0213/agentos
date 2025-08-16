@@ -69,9 +69,9 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 
 ## Todo
 
-- [x] Preload에 이벤트 구독 API 추가: `electronBridge.on(channel, handler): () => void`
-- [x] Preload에 generic invoke 추가: `rpc.request(channel, payload)`
-- [x] Renderer에 채널 기반 `ElectronIpcTransport` 구현(순수 전송)
+- [ ] Preload에 이벤트 구독 API 추가: `electronBridge.on(channel, handler): () => void`
+- [ ] Preload에 generic invoke 추가: `rpc.request(channel, payload)`
+- [x] Renderer에 프레임 기반 `ElectronIpcTransport` 구현(순수 전송)
 - [x] Agent 서비스 스캐폴드(`AgentRpcService`) 추가 및 타입 import 정리
 - [x] Bridge/Preset 서비스 추가: `BridgeRpcService`, `PresetRpcService`
 - [x] MCP/MCPUsage 서비스 추가: `McpRpcService`, `McpUsageRpcService`
@@ -80,14 +80,14 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 - [x] 문서 업데이트: 스펙/가이드 최신화
 - [x] 폴백 경로에서 세션 메시지 이벤트 브로드캐스트(초기)
 - [ ] 기존 renderer 훅/컨테이너 호출부를 RPC 서비스로 점진 이관 및 정리
-- [ ] Main에 프레임 기반 `ElectronEventTransport` 프로토타입 연결(취소/에러 매핑 포함)
+- [x] Main에 프레임 기반 `ElectronEventTransport` 연결(Nest Microservice)
 - [x] ElectronEventTransport에 cancel 처리(subscriptions by cid) 기본 구현
 - [ ] `AgentEventBridge` 도입: core 이벤트 `agentos:` 접두사 브로드캐스트
 - [ ] MCP 사용량 업데이트 경로 이벤트화 점검(샘플링/취소 포함)
 - [ ] 메서드별 zod 스키마 초안(최소 입력 검증) 추가
 - [ ] 계약 테스트: mock Transport로 `req/res/err/nxt/end/can` 스냅샷
 - [ ] E2E: snapshot+watch 시나리오, 취소/타임아웃, CoreError 전파 확인
- - [x] 데모 스트림 경로 연결: `demo.streamTicks` (Frame-level prototype)
+- [x] 데모 스트림 경로 연결: `demo.streamTicks` (Frame-level prototype)
 
 ## 작업 순서
 
@@ -95,9 +95,9 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 2. [완료] **Renderer 전송**: 채널 기반 `ElectronIpcTransport` 구현
 3. [완료] **서비스 추가 1차**: Agent/Bridge/Preset/MCP/MCPUsage/Conversation RPC 서비스 추가 및 등록
 4. [진행] **호출부 이관**: 기존 훅/컨테이너를 RPC 서비스로 점진 이관
-5. **Main 트랜스포트**: `ElectronEventTransport` 연결 및 cancel 처리(프로토타입)
+5. [완료] **Main 트랜스포트**: `ElectronEventTransport` 연결 및 cancel 처리
    - [완료] cancel 처리 구현
-   - [진행] 실제 라우팅 연결 및 스트림 경로 시범 적용
+   - [완료] Nest Microservice 전략으로 실제 라우팅 연결
 6. **코어 이벤트 연동**: `AgentEventBridge` 브로드캐스트, 렌더러 `subscribeJson` 수신
 7. **검증/테스트**: 계약/통합/E2E 추가, 회귀 방지
 8. **문서/정리**: 스펙 반영 최종 점검, 로드맵 체크박스 갱신
@@ -106,3 +106,9 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 
 - 안전한 점진 도입을 위해 기존 `ipcMain.handle` 경로는 유지하면서 내부를 `RpcEndpoint` 호출로 이행하는 호환 레이어를 추천합니다.
 - MessagePort 최적화는 2차(퍼포먼스) 작업으로 분리합니다.
+
+## 현 상태 요약 (8/16 기준)
+
+- Preload는 현재 `start/post`만 노출되어 있으며, `electronBridge.on`/`rpc.request`는 미노출 상태입니다.
+- Main은 `ElectronEventTransport`로 Nest Microservice가 구동되며, `can` 취소 프레임과 `CoreError` 매핑이 반영되어 있습니다.
+- Renderer는 프레임 기반 `RpcEndpoint` + `ElectronIpcTransport`로 스트림/단발을 처리할 수 있는 구조가 준비되어 있습니다.

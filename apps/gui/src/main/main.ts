@@ -31,9 +31,9 @@ function createWindow() {
 
 app.whenReady().then(async () => {
   try {
-    const mainWindow = createWindow();
+    const mainApp = await bootstrapIpcMainProcess(ipcMain);
 
-    const mainApp = await bootstrapIpcMainProcess(ipcMain, mainWindow);
+    createWindow();
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {

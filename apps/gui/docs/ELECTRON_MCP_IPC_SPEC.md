@@ -35,31 +35,22 @@
 
 ```
 apps/
-  main/
+  gui/
     src/
-      electron/
-        bootstrap.ts
-        bridge.ipc.ts
-      nest/
-        main.micro.ts
-        transport/electron.transport.ts
-        hub/hub.state.ts
-        hub/hub.handlers.ts
-      index.ts
-  renderer/
-    src/
-      rpc/
-        types.ts
-        engine.ts
-        transports/
-          electronRenderer.ts
-          serviceWorker.ts
-          extensionPort.ts
-      state/
-        hub.stream.ts
-      app/App.tsx
-  preload/
-    src/bridge.expose.ts
+      main/
+        app.module.ts
+        bootstrapIpcMainProcess.ts
+        transport/electron-event-transport.ts
+      renderer/
+        rpc/
+          types.ts
+          rpc-endpoint.ts
+          transports/
+            electron-renderer-transport.ts
+        state/
+          hub.stream.ts
+        app/App.tsx
+      preload.ts
 ```
 
 ---
@@ -182,32 +173,32 @@ export class RpcEndpoint {
 ### 6.1 Electron (Renderer 측)
 
 ```ts
-// preload/src/bridge.expose.ts (발췌)
+// preload.ts (현재 구현)
 contextBridge.exposeInMainWorld('electronBridge', {
-  // 프레임 기반 RPC
-  start: (onFrame: (f: any) => void) => {
+  start: (onFrame) => {
     ipcRenderer.on('bridge:frame', (_e, f) => onFrame(f));
   },
-  post: (frame: any) => {
+  post: (frame) => {
     ipcRenderer.send('bridge:post', frame);
-  },
-  // 이벤트 구독 통로(코어 IPC 이벤트 연동)
-  on: (channel: string, handler: (payload: unknown) => void) => {
-    const wrapped = (_e: unknown, payload: unknown) => handler(payload);
-    ipcRenderer.on(channel, wrapped);
-    return () => ipcRenderer.off(channel, wrapped);
   },
 });
 
-// 채널 기반 invoke (권장)
-contextBridge.exposeInMainWorld('rpc', {
-  request: (channel: string, payload?: unknown) => ipcRenderer.invoke(channel, payload),
-});
+// 권장 확장(차기): 안전 구독 + 채널 기반 invoke
+// contextBridge.exposeInMainWorld('electronBridge', {
+//   on: (channel: string, handler: (payload: unknown) => void) => {
+//     const wrapped = (_e: unknown, payload: unknown) => handler(payload);
+//     ipcRenderer.on(channel, wrapped);
+//     return () => ipcRenderer.off(channel, wrapped);
+//   },
+// });
+// contextBridge.exposeInMainWorld('rpc', {
+//   request: (channel: string, payload?: unknown) => ipcRenderer.invoke(channel, payload),
+// });
 ```
 
 ```ts
-// renderer/src/rpc/transports/electronRenderer.ts
-export class ElectronRendererTransport implements RpcTransport {
+// renderer/src/rpc/transports/electron-renderer-transport.ts
+export class ElectronIpcTransport implements RpcTransport {
   constructor(private bridge = (window as any).electronBridge) {}
   start(onFrame) {
     this.bridge.start(onFrame);
@@ -257,15 +248,16 @@ export class ChromeExtensionPortTransport implements RpcTransport {
 
 ## 7. Main: NestJS 커스텀 트랜스포트
 
-### 7.1 IPC 브리지(Electron Main)
+### 7.1 Nest Microservice 부팅 + 프레임 브리지(현재)
 
 ```ts
-// apps/main/src/electron/bridge.ipc.ts
-ipcMain.on('bridge:post', (e, frame) => {
-  onIncomingFrame?.(frame, e.sender.id);
-});
-export function sendTo(wcId: number, frame: any) {
-  BrowserWindow.fromWebContentsId(wcId)?.webContents.send('bridge:frame', frame);
+// apps/gui/src/main/bootstrapIpcMainProcess.ts
+export async function bootstrapIpcMainProcess(ipcMain: IpcMain, mainWindow: BrowserWindow) {
+  const appFrame = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+    strategy: new ElectronEventTransport(ipcMain, mainWindow),
+  });
+  await appFrame.listen();
+  return { close: async () => appFrame.close() };
 }
 ```
 
@@ -274,11 +266,12 @@ export function sendTo(wcId: number, frame: any) {
 ```ts
 export class ElectronEventTransport extends Server implements CustomTransportStrategy {
   listen(cb: () => void) {
-    setIncomingFrameHandler(async (frame, senderId) => {
+    this.ipcMain.on('bridge:post', async (e, frame) => {
+      const senderId = e.sender.id;
       if (frame?.kind !== 'req') return;
       const handler = this.messageHandlers.get(frame.method);
       if (!handler)
-        return sendTo(senderId, {
+        return this.sendTo(senderId, {
           kind: 'err',
           cid: frame.cid,
           ok: false,
@@ -291,12 +284,12 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
         const out = await handler(frame.payload, { senderId }); // Promise | Observable | AsyncGen | any
         if (isObservable(out)) {
           const sub = (out as Observable<any>).subscribe({
-            next: (v) => sendTo(senderId, { kind: 'nxt', cid: frame.cid, data: v }),
+            next: (v) => this.sendTo(senderId, { kind: 'nxt', cid: frame.cid, data: v }),
             error: (e) =>
-              sendTo(senderId, { kind: 'err', cid: frame.cid, ok: false, message: String(e) }),
-            complete: () => sendTo(senderId, { kind: 'end', cid: frame.cid }),
+              this.sendTo(senderId, { kind: 'err', cid: frame.cid, ok: false, message: String(e) }),
+            complete: () => this.sendTo(senderId, { kind: 'end', cid: frame.cid }),
           });
-          // TODO: cancel 프레임 수신 시 sub.unsubscribe()
+          // cancel 프레임 수신 시 sub.unsubscribe() 처리 (구현됨)
           return;
         }
         if (out && typeof out[Symbol.asyncIterator] === 'function') {
@@ -304,11 +297,11 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
             sendTo(senderId, { kind: 'nxt', cid: frame.cid, data: chunk });
           return sendTo(senderId, { kind: 'end', cid: frame.cid });
         }
-        return sendTo(senderId, { kind: 'res', cid: frame.cid, ok: true, result: out });
+        return this.sendTo(senderId, { kind: 'res', cid: frame.cid, ok: true, result: out });
       } catch (e: any) {
         // CoreError 매핑 시도
         const asCore = e as import('@agentos/core').CoreError;
-        return sendTo(senderId, {
+        return this.sendTo(senderId, {
           kind: 'err',
           cid: frame.cid,
           ok: false,
@@ -443,7 +436,7 @@ export const mergedGlobal$ = merge(snap$, global$);
 - 메서드: `domain.action` (`hub.getSnapshot`, `hub.watchGlobal`, `ai.streamChat`)
 - 프레임 속성: `kind/cid/method/payload/meta` 고정
 - 에러코드: `NO_HANDLER`, `INVALID_PAYLOAD`, `UNAUTHORIZED`, `RPC_TIMEOUT` 등 합의
-- 버전: `rpcSpecVersion: 0.1`를 `meta`에 포함해 호환성 체크 가능
+- 버전: `rpcSpecVersion: 0.2`를 `meta`에 포함해 호환성 체크 가능
 
 ---
 
@@ -457,7 +450,7 @@ export const mergedGlobal$ = merge(snap$, global$);
 
 ## 15. 로드맵
 
-- [ ] `cancel` 프레임 처리(서버 측 구독 관리) 기본 구현
+- [x] `cancel` 프레임 처리(서버 측 구독 관리) 기본 구현
 - [ ] MessagePort transport 추가(고빈도 최적화)
 - [ ] zod 기반 메서드별 payload 스키마
 - [ ] 추적(Tracing): `cid` 기반 latency/bytes 메트릭
@@ -467,8 +460,8 @@ export const mergedGlobal$ = merge(snap$, global$);
 
 ## 16. 빠른 스타터(권장 초기 작업 순서)
 
-1. **preload**에 API 노출 → `electronBridge.on`, `rpc.request` 추가
-2. **Main**에서 `ElectronEventTransport` 프로토타입 준비(선택) + 기존 `ipcMain.handle` 유지
+1. **preload**에 API 노출 → (현재 `start/post`만) 차기: `electronBridge.on`, `rpc.request` 추가
+2. **Main**에서 `ElectronEventTransport` 연결 (완료) + 기존 `ipcMain.handle` 경로 단계적 유지
 3. **HubHandlers**에 `getSnapshot/watchGlobal/updateGlobal` 등록(예시)
 4. **Renderer**에서 채널 기반 `ElectronIpcTransport` 생성 + 도메인 서비스(예: AgentRpcService) 연결
 5. 스트림이 필요한 경로는 프레임 기반으로 도입 후 `snapshot + stream` 병합
@@ -480,7 +473,7 @@ export const mergedGlobal$ = merge(snap$, global$);
 packages/core/docs/IPC_EVENT_SPEC.md의 채널/가드를 그대로 사용합니다.
 
 - 메인: `AgentEventBridge` + `FunctionPublisher`로 `agentos:<channel>` 브로드캐스트
-- 프리로드: `electronBridge.on(channel, handler)`로 구독 통로 노출
+- 프리로드: (차기) `electronBridge.on(channel, handler)`로 구독 통로 노출
 - 렌더러: `FunctionSubscriber` + `subscribeJson(sub, channel, guard, handler)`로 타입 안전 수신
 
 예시(렌더러):
@@ -493,6 +486,14 @@ const sub = new FunctionSubscriber((ch, handler) =>
 subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => {
   /* update UI */
 });
+
+---
+
+## 18. 현 상태 vs 스펙 정합성(8/16 기준)
+
+- Preload: `start/post`만 노출됨. `electronBridge.on`/`rpc.request`는 미노출(권장 확장 대상).
+- Main: `ElectronEventTransport`가 Nest Microservice로 연결되고 `can`(취소) 및 `CoreError` 매핑 동작.
+- Renderer: 프레임 기반 `RpcEndpoint` + `ElectronIpcTransport` 사용 가능. 채널 기반 `invoke` 경로는 미도입.
 ```
 
 ### 18. 현재 브랜치 작업 메모(Phase 1)

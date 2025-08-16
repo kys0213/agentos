@@ -33,7 +33,11 @@ ipcMain.handle('agent:get-all-metadatas', async () => {
 ipcMain.handle('agent:get-metadata', async (_, id) => repo.get(id));
 ipcMain.handle('agent:create', async (_, data: CreateAgentMetadata) => repo.create(data));
 ipcMain.handle('agent:update', async (_, id, patch) => repo.update(id, patch));
-ipcMain.handle('agent:delete', async (_, id) => { const m = await repo.get(id); await repo.delete(id); return m; });
+ipcMain.handle('agent:delete', async (_, id) => {
+  const m = await repo.get(id);
+  await repo.delete(id);
+  return m;
+});
 
 ipcMain.handle('agent:chat', async (_, agentId, messages, options) => {
   const meta = await repo.get(agentId);
@@ -58,4 +62,3 @@ ipcMain.handle('agent:chat', async (_, agentId, messages, options) => {
 2. 채팅/세션 종료 경로를 core SimpleAgent로 정리 (완료 조건: 브릿지 있을 때 정상 동작)
 3. 렌더러 훅 방어 로직 점검 (완료 조건: map/filter 예외 미발생)
 4. 타입체크/로컬 검증 및 문서화 (완료 조건: tsc 0, 간단 시나리오 통과)
-

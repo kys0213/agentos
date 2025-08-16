@@ -2,11 +2,11 @@ import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 import { ElectronEventTransport } from './transport/electron-event-transport';
-import { BrowserWindow, IpcMain } from 'electron';
+import { IpcMain } from 'electron';
 
-export async function bootstrapIpcMainProcess(ipcMain: IpcMain, mainWindow: BrowserWindow) {
+export async function bootstrapIpcMainProcess(ipcMain: IpcMain) {
   const appFrame = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
-    strategy: new ElectronEventTransport(ipcMain, mainWindow),
+    strategy: new ElectronEventTransport(ipcMain),
   });
 
   await appFrame.listen();

@@ -15,10 +15,7 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
 
   private readonly subscriptions = new Map<string, Subscription>();
 
-  constructor(
-    private readonly ipcMain: IpcMain,
-    private readonly mainWindow: BrowserWindow
-  ) {
+  constructor(private readonly ipcMain: IpcMain) {
     super();
     this.onIncomingFrame = this.createIncomingFrameHandler();
   }
@@ -81,7 +78,7 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
           return;
         } else if (out && typeof out[Symbol.asyncIterator] === 'function') {
           for await (const chunk of out) {
-            send({ kind: 'nxt', cid: frame.cid, data: chunk });
+            send({ kind: 'nxt', cid: frame.cid, data: chunk, method: frame.method });
           }
 
           return send({ kind: 'end', cid: frame.cid });
@@ -127,7 +124,7 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
     send: (frame: RpcFrame) => void
   ) {
     const sub = out.subscribe({
-      next: (v) => send({ kind: 'nxt', cid: frame.cid, data: v }),
+      next: (v) => send({ kind: 'nxt', cid: frame.cid, data: v, method: frame.method }),
       error: (e) =>
         send({
           kind: 'err',

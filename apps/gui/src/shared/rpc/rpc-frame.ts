@@ -19,7 +19,7 @@ export type RpcFrame =
       code: string;
       details?: Record<string, unknown>;
     }
-  | { kind: 'nxt'; cid: Cid; data: unknown; seq?: number }
+  | { kind: 'nxt'; cid: Cid; data: unknown; seq?: number; method?: string }
   | { kind: 'end'; cid: Cid }
   | { kind: 'can'; cid: Cid };
 
