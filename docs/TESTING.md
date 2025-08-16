@@ -74,6 +74,262 @@ apps/
 - **데이터베이스 연결**
 - **환경 변수**
 
+## 🏗️ 테스트 구조 설계 원칙
+
+### 1. Fixture와 Mock 분리 원칙
+
+**✅ 권장: Fixture 파일 활용**
+```typescript
+// src/tool/mcp/registry/__tests__/fixture.ts
+export class MockMcpToolRepository implements McpToolRepository {
+  private tools = new Map<string, McpToolMetadata>();
+  private eventHandlers = new Map<string, EventHandler[]>();
+  
+  async create(config: McpConfig): Promise<McpToolMetadata> {
+    const tool = { /* 실제 객체 생성 */ };
+    this.tools.set(tool.id, tool);
+    this.emit('changed', { id: tool.id, metadata: tool });
+    return tool;
+  }
+  // ... 완전한 구현
+}
+```
+
+**❌ 지양: 테스트 파일 내 인라인 Mock**
+```typescript
+// 테스트 파일 내에서 복잡한 Mock 구현하지 말 것
+const mockRepo = {
+  get: jest.fn(),
+  // ... 복잡한 구현들 (권장하지 않음)
+};
+```
+
+### 2. 의존성 주입 패턴
+
+**✅ 생성자 수정으로 의존성 주입 지원**
+```typescript
+// 프로덕션 코드에서 의존성 주입 가능하도록 설계
+export class McpMetadataRegistry {
+  constructor(
+    private readonly repository: McpToolRepository,
+    private readonly mcpRegistry: McpRegistry // 의존성 주입
+  ) {
+    // ...
+  }
+}
+
+// 테스트에서 활용
+describe('McpMetadataRegistry', () => {
+  let mockMcpRegistry: ReturnType<typeof mock<McpRegistry>>;
+  
+  beforeEach(() => {
+    mockMcpRegistry = mock<McpRegistry>();
+    registry = new McpMetadataRegistry(mockRepository, mockMcpRegistry);
+  });
+});
+```
+
+**❌ 지양: Reflection을 통한 내부 속성 교체**
+```typescript
+// 이런 방식은 지양
+(registry as any).mcpRegistry = mockMcpRegistry;
+```
+
+## 🔧 Mock 패턴 가이드라인
+
+### 1. jest-mock-extended 활용
+
+**인터페이스 Mock 생성**
+```typescript
+import { mock } from 'jest-mock-extended';
+
+const mockMcpRegistry: ReturnType<typeof mock<McpRegistry>> = mock<McpRegistry>();
+```
+
+### 2. 계층별 Mock 전략
+
+#### Repository Layer
+- **Complete Mock Implementation**: 실제 동작을 시뮬레이션하는 완전한 구현체 제공
+- **상태 관리**: 내부 Map을 사용한 데이터 저장
+- **이벤트 시스템**: 실제 이벤트 발생 및 구독 시뮬레이션
+
+```typescript
+export class MockMcpToolRepository implements McpToolRepository {
+  private tools = new Map<string, McpToolMetadata>();
+  private eventHandlers = new Map<string, EventHandler[]>();
+  
+  async create(config: McpConfig): Promise<McpToolMetadata> {
+    const tool = { /* 실제 객체 생성 */ };
+    this.tools.set(tool.id, tool);
+    this.emit('changed', { id: tool.id, metadata: tool });
+    return tool;
+  }
+  
+  on(event: string, handler: EventHandler): () => void {
+    if (!this.eventHandlers.has(event)) {
+      this.eventHandlers.set(event, []);
+    }
+    this.eventHandlers.get(event)!.push(handler);
+    
+    return () => {
+      const handlers = this.eventHandlers.get(event)!;
+      const index = handlers.indexOf(handler);
+      if (index >= 0) handlers.splice(index, 1);
+    };
+  }
+}
+```
+
+#### Service Layer  
+- **Jest Function Mock**: 단순한 jest.fn() Mock 활용
+- **기본 동작 설정**: 필요한 경우에만 mockResolvedValue 등으로 설정
+
+```typescript
+const createMockMcpRegistry = () => ({
+  register: jest.fn(),
+  unregister: jest.fn(),
+  get: jest.fn().mockResolvedValue(null),
+  getAll: jest.fn().mockResolvedValue([]),
+  isRegistered: jest.fn().mockReturnValue(false),
+  // ...
+});
+```
+
+#### Protocol Layer
+- **External Library Mock**: 외부 라이브러리는 jest-mock-extended 활용
+- **최소 구현**: 테스트에 필요한 메서드만 Mock
+
+## 📝 테스트 작성 패턴
+
+### 1. 테스트 파일 구조
+
+```typescript
+// 1. Import 섹션
+import { mock } from 'jest-mock-extended';
+import { Subject } from './subject-to-test';
+import { Dependency } from './dependency';
+import { MockRepository } from './fixture'; // Fixture 활용
+
+// 2. Mock 팩토리 함수들
+const createMockDependency = (): jest.Mocked<Dependency> => {
+  return {
+    method: jest.fn(),
+    asyncMethod: jest.fn().mockResolvedValue(defaultValue),
+    // ... 모든 메서드 구현
+  };
+};
+
+// 3. 테스트 Suite
+describe('Subject', () => {
+  let subject: Subject;
+  let mockDependency: jest.Mocked<Dependency>;
+  
+  beforeEach(async () => {
+    mockDependency = createMockDependency();
+    subject = new Subject(mockDependency);
+    await subject.initialize();
+  });
+  
+  describe('feature group', () => {
+    it('should describe specific behavior', async () => {
+      // Given - 설정
+      mockDependency.method.mockResolvedValue(expectedResult);
+      
+      // When - 실행
+      const result = await subject.performAction();
+      
+      // Then - 검증
+      expect(result).toBe(expectedResult);
+      expect(mockDependency.method).toHaveBeenCalledWith(expectedParams);
+    });
+  });
+});
+```
+
+### 2. 비동기 테스트 패턴
+
+**✅ async/await 활용**
+```typescript
+it('should handle async operations', async () => {
+  const result = await service.asyncMethod();
+  expect(result).toBeDefined();
+});
+
+it('should reject with error', async () => {
+  mockDependency.method.mockRejectedValue(new Error('Test error'));
+  await expect(service.methodThatFails()).rejects.toThrow('Test error');
+});
+```
+
+### 3. 이벤트 테스트 패턴
+
+**Promise 기반 이벤트 검증**
+```typescript
+it('should emit events correctly', async () => {
+  const eventPromise = new Promise((resolve) => {
+    service.on('eventName', resolve);
+  });
+  
+  await service.triggerEvent();
+  const event = await eventPromise;
+  
+  expect(event).toEqual(expectedEventPayload);
+});
+```
+
+## 🎯 테스트 검증 원칙
+
+### 1. 정확한 Assertion
+
+**✅ 구체적인 검증**
+```typescript
+// 객체 구조 검증
+expect(result).toEqual({
+  items: expect.any(Array),
+  nextCursor: '',
+  hasMore: false,
+});
+
+// 함수 호출 검증
+expect(mockMethod).toHaveBeenCalledWith(
+  expectedParam1,
+  expect.objectContaining({
+    property: expectedValue,
+  }),
+  undefined
+);
+
+// 날짜나 복잡한 객체 검증
+expect(mockRepository.update).toHaveBeenCalledWith(
+  toolId,
+  expect.objectContaining({
+    usageCount: 1,
+    lastUsedAt: expect.any(Date)
+  }),
+  undefined
+);
+```
+
+**❌ 모호한 검증**
+```typescript
+expect(result).toBeTruthy(); // 너무 모호함
+expect(mockMethod).toHaveBeenCalled(); // 파라미터 검증 누락
+```
+
+### 2. 오류 시나리오 테스트
+
+```typescript
+it('should handle connection failure gracefully', async () => {
+  mockMcpRegistry.register.mockRejectedValue(new Error('Connection failed'));
+  
+  await expect(registry.registerTool(config)).rejects.toThrow('Failed to register MCP tool');
+  
+  // 부분적 성공 검증
+  expect(registry.totalToolsCount).toBe(1); // 메타데이터는 저장됨
+  expect(registry.getTool(toolId)?.status).toBe('error'); // 상태는 오류
+});
+```
+
 ## Unit Test Guidelines
 
 ### 1. 기본 규칙
@@ -258,6 +514,19 @@ describe('McpTransport', () => {
 });
 ```
 
+## 📁 파일 조직 구조
+
+```
+src/
+├── feature/
+│   ├── __tests__/
+│   │   ├── fixture.ts          # Mock 구현체들
+│   │   ├── feature.test.ts     # 메인 테스트
+│   │   └── integration.test.ts # 통합 테스트
+│   ├── feature.ts
+│   └── feature-service.ts
+```
+
 ### 4. 테스트 작성 체크리스트
 
 #### 코어 모듈 체크리스트
@@ -274,6 +543,8 @@ describe('McpTransport', () => {
 - [ ] 비즈니스 로직이 정확히 테스트됨
 - [ ] 에러 전파가 올바르게 처리됨
 - [ ] 코어 모듈 내부는 테스트하지 않음
+- [ ] 의존성 주입을 통한 테스트 구조 설계
+- [ ] Fixture 파일로 복잡한 Mock 분리
 
 #### 일반 테스트 체크리스트
 
@@ -281,6 +552,51 @@ describe('McpTransport', () => {
 - [ ] 테스트 간 격리가 보장됨
 - [ ] 의미 있는 테스트 이름 사용
 - [ ] Given-When-Then 패턴 적용
+- [ ] jest-mock-extended 활용한 타입 안전 Mock
+
+## ✨ 베스트 프랙티스
+
+### 1. 테스트 독립성
+- 각 테스트는 다른 테스트에 의존하지 않아야 함
+- `beforeEach`에서 깨끗한 상태로 초기화
+- 공유 상태 사용 금지
+
+### 2. 테스트 명명 규칙
+```typescript
+describe('ComponentName', () => {
+  describe('when condition', () => {
+    it('should expected behavior', () => {
+      // 테스트 구현
+    });
+  });
+});
+```
+
+### 3. 테스트 데이터 관리
+- 테스트별로 명확한 데이터 설정
+- 하드코딩된 값보다는 의미있는 상수 사용
+- 테스트 간 데이터 공유 최소화
+
+### 4. 커버리지 목표
+- 핵심 비즈니스 로직: 90% 이상
+- 유틸리티 함수: 100%
+- 통합 테스트: 주요 시나리오 커버
+
+## 🚨 주의사항
+
+### 금지사항
+1. **실제 외부 서비스 호출**: 모든 외부 의존성은 Mock 처리
+2. **과도한 Private 메서드 테스트**: Public API를 통한 간접 테스트 우선
+3. **테스트를 위한 프로덕션 코드 수정**: 테스트를 위해 설계 변경 금지
+4. **복잡한 Setup**: 테스트 setup이 테스트 자체보다 복잡하면 안됨
+5. **Reflection 기반 Mock 주입**: `(obj as any).prop = mock` 패턴 지양
+
+### 권장사항
+1. **Fail Fast**: 오류 상황을 빠르게 감지할 수 있는 테스트 작성
+2. **명확한 의도**: 테스트 이름과 구현에서 의도가 명확히 드러나야 함
+3. **지속적 리팩토링**: 테스트 코드도 프로덕션 코드만큼 품질 관리
+4. **문서화**: 복잡한 테스트 케이스는 주석으로 설명 추가
+5. **의존성 주입 설계**: 테스트하기 쉬운 구조로 프로덕션 코드 설계
 
 ## E2E Test Guidelines
 
