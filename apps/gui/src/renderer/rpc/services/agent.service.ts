@@ -1,4 +1,4 @@
-import type { RpcTransport } from '../transport';
+import type { RpcTransport } from '../../../shared/rpc/transport';
 import type {
   AgentChatResult,
   AgentExecuteOptions,

@@ -1,7 +1,7 @@
-import type { IpcChannel } from '../types/ipc-channel';
+import type { IpcChannel } from '../../shared/types/ipc-channel';
 
-import { ElectronIpcChannel } from './impl/electron-ipc-channel';
-import { MockIpcChannel } from './impl/mock-ipc-channel';
+import { ElectronIpcChannel } from './electron-ipc-channel';
+import { MockIpcChannel } from './mock-ipc-channel';
 
 /**
  * 환경별 IpcChannel 구현체를 생성하는 팩토리 클래스

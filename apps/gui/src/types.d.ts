@@ -27,10 +27,9 @@ declare global {
       channel: any;
       services: any;
     };
-    // Preload 이벤트 브리지 (안전한 IPC 구독 인터페이스)
-    electronBridge?: {
-      on: (channel: string, handler: (payload: unknown) => void) => () => void;
-    };
+
+    electronAPI: AgentOsAPI;
+    electronBridge?: RpcTransport;
   }
 
   // process 객체 부분 polyfill (브라우저 환경용)

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { FrameController } from './frame/frame.controller';
+import { AgentController } from './agent/agent.controller';
 
 @Module({
   imports: [],
-  controllers: [FrameController],
+  controllers: [AgentController],
   providers: [],
 })
 export class AppModule {}

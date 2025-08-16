@@ -12,35 +12,9 @@ import type {
   McpUsageStats,
   AgentStatus,
   McpConnectionStatus,
-  ErrorCode,
-  ErrorDomain,
   CreateAgentMetadata,
 } from '@agentos/core';
 import type { LlmManifest, UserMessage } from 'llm-bridge-spec';
-
-export type Cid = string;
-
-export type RpcFrame =
-  | {
-      kind: 'req';
-      cid: Cid;
-      method: string;
-      payload?: unknown;
-      meta?: { senderId?: number; rpcSpecVersion?: string; ts?: number };
-    }
-  | { kind: 'res'; cid: Cid; ok: true; result?: unknown }
-  | {
-      kind: 'err';
-      cid: Cid;
-      ok: false;
-      message: string;
-      code: ErrorCode;
-      domain: ErrorDomain;
-      details?: Record<string, unknown>;
-    }
-  | { kind: 'nxt'; cid: Cid; data: unknown; seq?: number }
-  | { kind: 'end'; cid: Cid }
-  | { kind: 'can'; cid: Cid };
 
 export type RpcMethodMap = {
   'hub.getSnapshot': {

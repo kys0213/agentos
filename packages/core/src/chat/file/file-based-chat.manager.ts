@@ -1,18 +1,17 @@
-import {
-  CursorPagination,
-  CursorPaginationResult,
-} from '../../common/pagination/cursor-pagination';
+import { CursorPaginationResult } from '../../common/pagination/cursor-pagination';
 import { uuid } from '../../common/utils/uuid';
 import { ChatSession, CompressStrategy } from '../chat-session';
 import {
+  ChatBaseOptions,
   ChatCreateOptions,
+  ChatListOption,
   ChatManager,
   ChatSessionDescription,
-  ChatLoadOptions,
 } from '../chat.manager';
 
 import { FileBasedChatSession } from './file-based-chat-session';
 import { FileBasedSessionStorage } from './file-based-session-storage';
+import { FileBasedSessionMetadata } from './file-based-session.metadata';
 
 export class FileBasedChatManager implements ChatManager {
   private readonly sessionCache = new Map<string, ChatSession>();
@@ -30,12 +29,12 @@ export class FileBasedChatManager implements ChatManager {
     this.maxCachedSessions = options?.maxCachedSessions || 50;
   }
 
-  async list(options?: CursorPagination): Promise<CursorPaginationResult<ChatSessionDescription>> {
-    const sessionList = await this.storage.getSessionList();
+  async list(options: ChatListOption): Promise<CursorPaginationResult<ChatSessionDescription>> {
+    const sessionList = await this.storage.getSessionList(options.agentId);
 
     const filtered = sessionList.filter((session) => {
-      if (options?.cursor) {
-        return session.id > options.cursor;
+      if (options.pagination?.cursor) {
+        return session.id > options.pagination.cursor;
       }
 
       return true;
@@ -48,11 +47,13 @@ export class FileBasedChatManager implements ChatManager {
     };
   }
 
-  async create(options?: ChatCreateOptions): Promise<ChatSession> {
-    const sessionId = options?.sessionId || uuid();
+  async create(options: ChatCreateOptions): Promise<ChatSession> {
+    const sessionId = options.sessionId || uuid();
+    const agentId = options.agentId;
 
-    const metadata = {
+    const metadata: FileBasedSessionMetadata = {
       sessionId: sessionId,
+      agentId,
       createdAt: new Date(),
       updatedAt: new Date(),
       latestMessageId: 0,
@@ -77,8 +78,8 @@ export class FileBasedChatManager implements ChatManager {
     );
   }
 
-  async load(options: ChatLoadOptions): Promise<ChatSession> {
-    const metadata = await this.storage.getSessionMetadata(options.sessionId);
+  async load(options: ChatBaseOptions): Promise<ChatSession> {
+    const metadata = await this.storage.getSessionMetadata(options.agentId, options.sessionId);
 
     const chatSession = new FileBasedChatSession(
       metadata.sessionId,
@@ -91,55 +92,55 @@ export class FileBasedChatManager implements ChatManager {
     return chatSession;
   }
 
-  async getSession(sessionId: string): Promise<ChatSession> {
+  async getSession(option: ChatBaseOptions): Promise<ChatSession> {
     // 캐시에 있으면 활동 시간 업데이트하고 반환
-    if (this.sessionCache.has(sessionId)) {
-      this.sessionActivity.set(sessionId, new Date());
-      return this.sessionCache.get(sessionId)!;
+    if (this.sessionCache.has(option.sessionId)) {
+      this.sessionActivity.set(option.sessionId, new Date());
+      return this.sessionCache.get(option.sessionId)!;
     }
 
     // 스토리지에서 기존 세션 로드 시도
     try {
-      const session = await this.load({ sessionId });
+      const session = await this.load(option);
       // 캐시에 추가
-      await this.addToCache(sessionId, session);
+      await this.addToCache(option.sessionId, session);
       return session;
     } catch (error) {
       // 세션이 없으면 새로 생성
-      const session = await this.create({ sessionId });
-      await this.addToCache(sessionId, session);
+      const session = await this.create({ sessionId: option.sessionId, agentId: option.agentId });
+      await this.addToCache(option.sessionId, session);
       return session;
     }
   }
 
-  async hasSession(sessionId: string): Promise<boolean> {
+  async hasSession(option: ChatBaseOptions): Promise<boolean> {
     // 캐시에 있으면 true
-    if (this.sessionCache.has(sessionId)) {
+    if (this.sessionCache.has(option.sessionId)) {
       return true;
     }
 
     // 스토리지에서 확인
     try {
-      await this.storage.getSessionMetadata(sessionId);
+      await this.storage.getSessionMetadata(option.agentId, option.sessionId);
       return true;
     } catch (error) {
       return false;
     }
   }
 
-  async removeSession(sessionId: string): Promise<void> {
-    const session = this.sessionCache.get(sessionId);
+  async removeSession(option: ChatBaseOptions): Promise<void> {
+    const session = this.sessionCache.get(option.sessionId);
     if (session) {
       // 세션 정리 (커밋 등)
       try {
         await session.commit();
       } catch (error) {
-        console.warn(`Failed to commit session ${sessionId}:`, error);
+        console.warn(`Failed to commit session ${option.sessionId}:`, error);
       }
 
       // 캐시에서 제거
-      this.sessionCache.delete(sessionId);
-      this.sessionActivity.delete(sessionId);
+      this.sessionCache.delete(option.sessionId);
+      this.sessionActivity.delete(option.sessionId);
     }
   }
 
@@ -148,11 +149,9 @@ export class FileBasedChatManager implements ChatManager {
   }
 
   async clearSessionCache(): Promise<void> {
-    const sessionIds = await this.getActiveSessions();
-
     // 모든 세션 커밋 및 정리
-    for (const sessionId of sessionIds) {
-      await this.removeSession(sessionId);
+    for (const [sessionId, session] of this.sessionCache.entries()) {
+      await this.removeSession({ sessionId, agentId: session.agentId });
     }
   }
 
@@ -180,8 +179,10 @@ export class FileBasedChatManager implements ChatManager {
     }
 
     // 가장 오래된 세션 제거
-    if (oldestSessionId) {
-      await this.removeSession(oldestSessionId);
+    if (oldestSessionId && this.sessionCache.has(oldestSessionId)) {
+      const agentId = this.sessionCache.get(oldestSessionId)!.agentId;
+
+      await this.removeSession({ sessionId: oldestSessionId, agentId: agentId });
     }
   }
 }

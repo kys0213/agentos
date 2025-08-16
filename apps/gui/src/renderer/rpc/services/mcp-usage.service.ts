@@ -1,4 +1,4 @@
-import type { RpcTransport } from '../transport';
+import type { RpcTransport } from '../../../shared/rpc/transport';
 import type { McpUsageLog, McpUsageStats } from '@agentos/core';
 import type {
   UsageLogQueryOptions,
@@ -24,7 +24,11 @@ export class McpUsageRpcService {
     return this.transport.request('mcpUsageLog:get-hourly-stats', { date, clientName });
   }
   getUsageLogsInRange(startDate: Date, endDate: Date, clientName?: string): Promise<McpUsageLog[]> {
-    return this.transport.request('mcpUsageLog:get-usage-logs-in-range', { startDate, endDate, clientName });
+    return this.transport.request('mcpUsageLog:get-usage-logs-in-range', {
+      startDate,
+      endDate,
+      clientName,
+    });
   }
   clearUsageLogs(olderThan?: Date): Promise<ClearUsageLogsResponse> {
     return this.transport.request('mcpUsageLog:clear-usage-logs', olderThan);
@@ -32,11 +36,12 @@ export class McpUsageRpcService {
   setUsageTracking(clientName: string, enabled: boolean): Promise<SetUsageTrackingResponse> {
     return this.transport.request('mcpUsageLog:set-usage-tracking', { clientName, enabled });
   }
-  async subscribeToUsageUpdates(callback: (event: McpUsageUpdateEvent) => void): Promise<() => void> {
+  async subscribeToUsageUpdates(
+    callback: (event: McpUsageUpdateEvent) => void
+  ): Promise<() => void> {
     await this.transport.request('mcpUsageLog:subscribe-usage-updates');
     // Events are published on 'mcp:usage-update'
     if (!this.transport.stream) throw new Error('Transport does not support event streams');
     return this.transport.stream('mcp:usage-update', callback as any);
   }
 }
-

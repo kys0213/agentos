@@ -9,7 +9,7 @@ import { McpRpcService as McpService } from './rpc/services/mcp.service';
 import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usage.service';
 import { PresetRpcService as PresetService } from './rpc/services/preset.service';
 import { ServiceContainer } from './ipc/service-container';
-import { ElectronIpcTransport } from './rpc/transports/electronIpc';
+import { ElectronIpcTransport } from './rpc/transports/electron-renderer-transport';
 
 /**
  * Bootstrap 결과 타입
@@ -35,7 +35,7 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
   console.log('📡 IpcChannel created/injected');
 
   // Channel-based RpcTransport (권장 경로)
-  const rpcTransport = new ElectronIpcTransport();
+  const rpcTransport = new ElectronIpcTransport(window.electronBridge);
 
   // 모든 서비스에 동일한 IpcChannel 주입하여 생성
   // 새 RPC 서비스(Bridge/Preset/Agent)는 채널 기반 Transport를 사용

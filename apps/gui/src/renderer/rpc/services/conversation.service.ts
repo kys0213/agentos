@@ -1,4 +1,4 @@
-import type { RpcTransport } from '../transport';
+import type { RpcTransport } from '../../../shared/rpc/transport';
 import type {
   CursorPagination,
   CursorPaginationResult,
@@ -26,4 +26,3 @@ export class ConversationRpcService {
     return this.transport.request('chat:delete-session', sessionId);
   }
 }
-

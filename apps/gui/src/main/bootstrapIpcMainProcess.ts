@@ -1,25 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions } from '@nestjs/microservices';
-import { IpcMain } from 'electron';
 import { AppModule } from './app.module';
-import { ElectronTransport } from './transport/electron-transport';
 import { ElectronEventTransport } from './transport/electron-event-transport';
+import { BrowserWindow, IpcMain } from 'electron';
 
-export async function bootstrapIpcMainProcess(ipcMain: IpcMain) {
-  const appInvoke = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
-    strategy: new ElectronTransport(ipcMain),
-  });
-
+export async function bootstrapIpcMainProcess(ipcMain: IpcMain, mainWindow: BrowserWindow) {
   const appFrame = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
-    strategy: new ElectronEventTransport(),
+    strategy: new ElectronEventTransport(ipcMain, mainWindow),
   });
 
-  await Promise.all([appInvoke.listen(), appFrame.listen()]);
+  await appFrame.listen();
 
   // return a composite closer compatible with main.ts
   return {
     close: async () => {
-      await Promise.all([appFrame.close(), appInvoke.close()]);
+      await appFrame.close();
     },
-  } as unknown as { close: () => Promise<void> };
+  };
 }

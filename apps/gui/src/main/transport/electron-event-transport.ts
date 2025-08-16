@@ -1,6 +1,8 @@
+import { CoreError } from '@agentos/core';
 import { CustomTransportStrategy, Server } from '@nestjs/microservices';
-import { setIncomingFrameHandler, sendTo } from '../bridge.ipc';
-import { Observable, isObservable, Subscription } from 'rxjs';
+import { BrowserWindow, IpcMain } from 'electron';
+import { isObservable, Observable, Subscription } from 'rxjs';
+import { Cid, RpcFrame, RpcMetadata } from '../../shared/rpc/rpc-frame';
 
 /**
  * Prototype: frame-based transport to support req/res/err/nxt/end/can
@@ -8,86 +10,153 @@ import { Observable, isObservable, Subscription } from 'rxjs';
  */
 export class ElectronEventTransport extends Server implements CustomTransportStrategy {
   transportId = Symbol('ElectronTransport');
+
+  private onIncomingFrame: (frame: RpcFrame, senderId: number) => void;
+
   private readonly subscriptions = new Map<string, Subscription>();
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  on<EventKey extends string = string, EventCallback extends Function = Function>(
-    event: EventKey,
-    callback: EventCallback
+  constructor(
+    private readonly ipcMain: IpcMain,
+    private readonly mainWindow: BrowserWindow
   ) {
+    super();
+    this.onIncomingFrame = this.createIncomingFrameHandler();
+  }
+
+  listen(cb: () => void) {
+    this.ipcMain.on('bridge:post', (e, frame) => {
+      // 이 이벤트를 Nest Transport로 넘김
+      this.onIncomingFrame(frame, e.sender.id);
+    });
+
+    cb();
+  }
+
+  close() {}
+
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  on<EventKey extends string = string, EventCallback extends Function = Function>() {
     throw new Error('Method not implemented.');
   }
   unwrap<T>(): T {
     throw new Error('Method not implemented.');
   }
-  listen(cb: () => void) {
-    setIncomingFrameHandler(async (frame: unknown, senderId: number) => {
+
+  private createIncomingFrameHandler() {
+    return async (frame: RpcFrame, senderId: number) => {
       try {
-        const f = frame as any;
-        if (f?.kind === 'can') {
-          const sub = this.subscriptions.get(f.cid);
+        if (frame?.kind === 'can') {
+          const sub = this.subscriptions.get(frame.cid);
           sub?.unsubscribe();
-          this.subscriptions.delete(f.cid);
+          this.subscriptions.delete(frame.cid);
           return;
         }
-        if (f?.kind !== 'req') return;
-        const handler = this.messageHandlers.get(f.method);
+
+        if (frame?.kind !== 'req') {
+          return;
+        }
+
+        const handler = this.messageHandlers.get(frame.method);
+
         if (!handler) {
-          return sendTo(senderId, {
+          return this.sendTo(senderId, {
             kind: 'err',
-            cid: f.cid,
+            cid: frame.cid,
             ok: false,
             message: 'NO_HANDLER',
             code: 'NOT_FOUND',
-            domain: 'common',
           });
         }
 
-        const out = await handler(f.payload, { senderId });
+        const { broadcast } = handler.extras ?? {};
+
+        const out = await handler(frame.payload, { senderId });
+
+        const send = broadcast
+          ? (frame: RpcFrame) => this.sendToAll(frame)
+          : (frame: RpcFrame) => this.sendTo(senderId, frame);
+
         if (isObservable(out)) {
-          const sub = (out as Observable<any>).subscribe({
-            next: (v) => sendTo(senderId, { kind: 'nxt', cid: f.cid, data: v }),
-            error: (e) =>
-              sendTo(senderId, {
-                kind: 'err',
-                cid: f.cid,
-                ok: false,
-                message: String(e),
-                code: 'OPERATION_FAILED',
-                domain: 'common',
-              }),
-            complete: () => {
-              sendTo(senderId, { kind: 'end', cid: f.cid });
-              this.subscriptions.delete(f.cid);
-            },
-          });
-          this.subscriptions.set(f.cid, sub);
+          this.handleByObservable(out, frame, send);
           return;
-        }
-
-        if (out && typeof (out as any)[Symbol.asyncIterator] === 'function') {
-          for await (const chunk of out as AsyncIterable<any>) {
-            sendTo(senderId, { kind: 'nxt', cid: f.cid, data: chunk });
+        } else if (out && typeof out[Symbol.asyncIterator] === 'function') {
+          for await (const chunk of out) {
+            send({ kind: 'nxt', cid: frame.cid, data: chunk });
           }
-          return sendTo(senderId, { kind: 'end', cid: f.cid });
+
+          return send({ kind: 'end', cid: frame.cid });
         }
 
-        return sendTo(senderId, { kind: 'res', cid: f.cid, ok: true, result: out });
-      } catch (e: any) {
-        const asCore = e as { code?: string; domain?: string; message?: string; details?: unknown };
-        return sendTo(senderId, {
-          kind: 'err',
-          cid: (frame as any)?.cid,
-          ok: false,
-          message: String(e?.message ?? e),
-          code: (asCore as any)?.code ?? 'INTERNAL',
-          domain: (asCore as any)?.domain ?? 'common',
-          details: (asCore as any)?.details,
-        });
+        return send({ kind: 'res', cid: frame.cid, ok: true, result: out });
+      } catch (e: unknown) {
+        if (e instanceof CoreError) {
+          return this.sendTo(senderId, {
+            kind: 'err',
+            cid: frame.cid,
+            ok: false,
+            message: e.message,
+            code: e.code,
+            details: e.details,
+          });
+        } else if (e instanceof Error) {
+          return this.sendTo(senderId, {
+            kind: 'err',
+            cid: frame.cid,
+            ok: false,
+            message: e.message,
+            code: 'INTERNAL',
+            details: undefined,
+          });
+        } else {
+          return this.sendTo(senderId, {
+            kind: 'err',
+            cid: frame.cid,
+            ok: false,
+            message: String(e),
+            code: 'INTERNAL',
+            details: undefined,
+          });
+        }
       }
-    });
-    cb();
+    };
   }
 
-  close() {}
+  private handleByObservable(
+    out: Observable<unknown>,
+    frame: { kind: 'req'; cid: Cid; method: string; payload?: unknown; meta?: RpcMetadata },
+    send: (frame: RpcFrame) => void
+  ) {
+    const sub = out.subscribe({
+      next: (v) => send({ kind: 'nxt', cid: frame.cid, data: v }),
+      error: (e) =>
+        send({
+          kind: 'err',
+          cid: frame.cid,
+          ok: false,
+          message: String(e),
+          code: 'OPERATION_FAILED',
+        }),
+      complete: () => {
+        send({ kind: 'end', cid: frame.cid });
+        this.subscriptions.delete(frame.cid);
+      },
+    });
+
+    this.subscriptions.set(frame.cid, sub);
+  }
+
+  private sendToAll(frame: RpcFrame) {
+    for (const w of BrowserWindow.getAllWindows()) {
+      if (!w.isDestroyed()) w.webContents.send('bridge:frame', frame);
+    }
+  }
+
+  // 외부(Transport)에서 호출하도록 export
+  private sendTo(wcId: number, frame: RpcFrame) {
+    const win = BrowserWindow.fromId(wcId);
+
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('bridge:frame', frame);
+    }
+  }
 }

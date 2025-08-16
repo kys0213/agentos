@@ -5,7 +5,7 @@ import type {
   CursorPaginationResult,
   MessageHistory,
 } from '@agentos/core';
-import { ServiceContainer } from '../../../shared/ipc/service-container';
+import { ServiceContainer } from '../../ipc/service-container';
 
 export const CONVERSATION_QUERY_KEYS = {
   sessions: ['conversation', 'sessions'] as const,

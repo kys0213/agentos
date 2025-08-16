@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { MessageHistory, ReadonlyAgentMetadata } from '@agentos/core';
 import type { Message, MultiModalContent } from 'llm-bridge-spec';
 import { normalizeToArrayContent } from './normalize';
-import { ServiceContainer } from '../../../shared/ipc/service-container';
+import { ServiceContainer } from '../../ipc/service-container';
 
 export const CHAT_QUERY_KEYS = {
   mentionableAgents: ['chat', 'mentionableAgents'] as const,

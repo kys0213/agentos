@@ -1,4 +1,4 @@
-import type { RpcTransport } from '../transport';
+import type { RpcTransport } from '../../../shared/rpc/transport';
 import type { McpConfig, McpToolMetadata } from '@agentos/core';
 import type {
   ResourceListResponse,
@@ -41,4 +41,3 @@ export class McpRpcService {
     return this.transport.request('mcp:get-all-tool-metadata');
   }
 }
-

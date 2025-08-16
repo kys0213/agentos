@@ -16,7 +16,7 @@ import {
 import { app } from 'electron';
 import * as path from 'path';
 import { NoopCompressor } from '../NoopCompressor';
-import { broadcast } from '../utils/broadcast';
+
 import { getBridgeManager } from './bridge-ipc-handlers';
 import type { Message, UserMessage } from 'llm-bridge-spec';
 
@@ -136,18 +136,7 @@ export function setupAgentIpcHandlers() {
 
       s.messages.push(assistantReply);
       s.updatedAt = new Date();
-      // Broadcast minimal session message event (spec-compatible shape)
-      try {
-        broadcast(`agentos:agent/session/${sessionId}/message`, {
-          agentId,
-          sessionId,
-          message: {
-            ...(assistantReply as any),
-            messageId: `msg_${Date.now()}`,
-            createdAt: new Date(),
-          },
-        });
-      } catch {}
+
       return { messages: [assistantReply], sessionId };
     }
   );

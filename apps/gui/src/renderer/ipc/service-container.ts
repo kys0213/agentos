@@ -1,4 +1,4 @@
-import { AgentOsAPI, AgentOsService, AgentOsServiceName } from '../types/agentos-api';
+import { AgentOsAPI, AgentOsService, AgentOsServiceName } from '../../shared/types/agentos-api';
 
 /**
  * 간단한 의존성 주입 컨테이너

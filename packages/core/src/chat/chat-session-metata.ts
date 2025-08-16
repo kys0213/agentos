@@ -10,6 +10,11 @@ export interface ChatSessionMetadata {
   sessionId: string;
 
   /**
+   * The agent id of the session
+   */
+  agentId: string;
+
+  /**
    * The created at of the session
    */
   createdAt: Date;

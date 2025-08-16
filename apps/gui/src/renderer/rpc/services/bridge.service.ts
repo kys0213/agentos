@@ -1,4 +1,4 @@
-import type { RpcTransport } from '../transport';
+import type { RpcTransport } from '../../../shared/rpc/transport';
 import type { LlmManifest } from 'llm-bridge-spec';
 
 export class BridgeRpcService {
@@ -23,4 +23,3 @@ export class BridgeRpcService {
     return this.transport.request('bridge:get-config', id);
   }
 }
-

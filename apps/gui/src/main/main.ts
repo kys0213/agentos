@@ -1,7 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
 import { bootstrapIpcMainProcess } from './bootstrapIpcMainProcess';
-import { setIncomingFrameHandler, sendTo } from './bridge.ipc';
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -26,26 +25,15 @@ function createWindow() {
   if (isDevelopment) {
     mainWindow.webContents.openDevTools();
   }
+
+  return mainWindow;
 }
 
 app.whenReady().then(async () => {
   try {
-    const mainApp = await bootstrapIpcMainProcess(ipcMain);
+    const mainWindow = createWindow();
 
-    // Frame-level demo stream handler (prototype): demo.streamTicks
-    // Sends 5 incremental ticks then completes. Supports basic cancel.
-    setIncomingFrameHandler(async (frame: unknown, senderId: number) => {
-      const f = frame as any;
-      if (!f || typeof f !== 'object') return;
-      if (f.kind !== 'req') return;
-      if (f.method !== 'demo.streamTicks') return;
-      const count = Math.max(1, Math.min(20, Number(f?.payload?.count ?? 5)));
-      for (let i = 1; i <= count; i++) {
-        await new Promise((r) => setTimeout(r, 200));
-        sendTo(senderId, { kind: 'nxt', cid: f.cid, data: { tick: i } });
-      }
-      sendTo(senderId, { kind: 'end', cid: f.cid });
-    });
+    const mainApp = await bootstrapIpcMainProcess(ipcMain, mainWindow);
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {

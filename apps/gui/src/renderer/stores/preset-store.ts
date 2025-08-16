@@ -1,6 +1,6 @@
 import type { Preset } from '@agentos/core';
 import type { PresetProtocol } from '../../shared/types/proset-protocol';
-import { ServiceContainer } from '../../shared/ipc/service-container';
+import { ServiceContainer } from '../ipc/service-container';
 
 // IPC 기반 프리셋 스토어 (브라우저 호환)
 export class PresetStore {

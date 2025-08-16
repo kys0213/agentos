@@ -13,6 +13,11 @@ export interface ChatSession {
   sessionId: string;
 
   /**
+   * The agent id of the chat session
+   */
+  agentId: string;
+
+  /**
    * The title of the chat session
    */
   title?: string;

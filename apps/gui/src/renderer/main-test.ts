@@ -3,7 +3,7 @@
  * MockIpcChannel을 사용하여 bootstrap 실행
  */
 import { bootstrap } from './bootstrap';
-import { MockIpcChannel } from '../shared/ipc/impl/mock-ipc-channel';
+import { MockIpcChannel } from './ipc/mock-ipc-channel';
 
 console.log('🧪 Starting test environment...');
 

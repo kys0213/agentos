@@ -1,4 +1,4 @@
-import type { RpcTransport } from '../transport';
+import type { RpcTransport } from '../../../shared/rpc/transport';
 import type { CreatePreset, Preset } from '@agentos/core';
 
 export class PresetRpcService {
@@ -20,4 +20,3 @@ export class PresetRpcService {
     return this.transport.request('preset:get', id);
   }
 }
-
