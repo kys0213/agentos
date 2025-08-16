@@ -1,7 +1,7 @@
 import { AgentOsServiceNames } from '../shared/types/agentos-api';
 import type { IpcChannel } from '../shared/types/ipc-channel';
 import { AgentRpcService as AgentService } from './rpc/services/agent.service';
-import { ConversationService } from './services/conversation.service';
+import { ConversationRpcService as ConversationService } from './rpc/services/conversation.service';
 import { BridgeRpcService as BridgeService } from './rpc/services/bridge.service';
 import { BuiltinToolService } from './services/builtin-tool.service';
 import { createIpcChannel } from './ipc/ipc-channel.factory';
@@ -44,7 +44,7 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
   const presetService = new PresetService(rpcTransport);
   const agentService = new AgentService(rpcTransport);
   const builtinToolService = new BuiltinToolService(channel);
-  const conversationService = new ConversationService(channel);
+  const conversationService = new ConversationService(rpcTransport);
   const mcpUsageLogService = new McpUsageLogService(rpcTransport);
 
   console.log('⚙️ All services created with IpcChannel dependency injection');
