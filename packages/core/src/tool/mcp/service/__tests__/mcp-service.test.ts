@@ -52,7 +52,7 @@ describe('McpService', () => {
   beforeEach(async () => {
     mockRepository = createMockRepository();
     mockMcpRegistry = createMockMcpRegistry();
-    
+
     // 사용자 제안 패턴: 의존성 주입 사용
     registry = new McpMetadataRegistry(mockRepository, mockMcpRegistry);
     service = new McpService(mockRepository, registry);
@@ -89,7 +89,7 @@ describe('McpService', () => {
 
     it('should not initialize twice', async () => {
       await service.initialize();
-      
+
       // 두 번째 호출은 아무것도 하지 않아야 함
       await expect(service.initialize()).resolves.toBeUndefined();
     });
@@ -128,7 +128,7 @@ describe('McpService', () => {
       // Repository mock 설정
       mockRepository.create.mockResolvedValue(mockTool);
       mockRepository.update.mockResolvedValue(mockTool);
-      
+
       // McpRegistry mock 설정 - 성공적인 등록
       mockMcpRegistry.register.mockResolvedValue(undefined);
 
@@ -257,11 +257,8 @@ describe('McpService', () => {
       mockMcpRegistry.register.mockRejectedValue(new Error('Connection failed'));
 
       await expect(service.registerTool(config)).rejects.toThrow(/Failed to register MCP tool/);
-      
-      expect(mockRepository.update).toHaveBeenCalledWith(
-        mockTool.id,
-        { status: 'error' }
-      );
+
+      expect(mockRepository.update).toHaveBeenCalledWith(mockTool.id, { status: 'error' });
     });
   });
 
@@ -271,7 +268,7 @@ describe('McpService', () => {
 
     beforeEach(async () => {
       await service.initialize();
-      
+
       const config: McpConfig = {
         type: 'stdio',
         name: 'test-tool',
@@ -304,7 +301,7 @@ describe('McpService', () => {
       mockRepository.delete.mockResolvedValue(undefined);
 
       await service.unregisterTool(toolId);
-      
+
       expect(mockMcpRegistry.unregister).toHaveBeenCalledWith(mockTool.name);
       expect(mockRepository.delete).toHaveBeenCalledWith(toolId);
     });
@@ -337,7 +334,7 @@ describe('McpService', () => {
 
     beforeEach(async () => {
       await service.initialize();
-      
+
       mockTool = {
         id: 'test-id',
         name: 'test-tool',
@@ -375,7 +372,7 @@ describe('McpService', () => {
     it('should validate update patch', async () => {
       const invalidPatches = [
         { id: 'new-id' }, // ID cannot be changed
-        { name: '' }, // name cannot be empty  
+        { name: '' }, // name cannot be empty
         { usageCount: -1 }, // usage count cannot be negative
       ];
 
@@ -395,7 +392,7 @@ describe('McpService', () => {
 
     beforeEach(async () => {
       await service.initialize();
-      
+
       mockTool = {
         id: 'test-id',
         name: 'test-tool',
@@ -424,10 +421,7 @@ describe('McpService', () => {
 
       await service.updateConnectionStatus(toolId, 'connected');
 
-      expect(mockRepository.update).toHaveBeenCalledWith(
-        toolId,
-        { status: 'connected' }
-      );
+      expect(mockRepository.update).toHaveBeenCalledWith(toolId, { status: 'connected' });
     });
 
     it('should throw error for non-existent tool', async () => {
@@ -443,7 +437,7 @@ describe('McpService', () => {
 
     beforeEach(async () => {
       await service.initialize();
-      
+
       mockTool = {
         id: 'test-id',
         name: 'test-tool',
@@ -476,7 +470,7 @@ describe('McpService', () => {
         toolId,
         expect.objectContaining({
           usageCount: 1,
-          lastUsedAt: expect.any(Date)
+          lastUsedAt: expect.any(Date),
         }),
         undefined
       );
@@ -537,7 +531,7 @@ describe('McpService', () => {
       ];
 
       const cache = (registry as any).metadataCache;
-      tools.forEach(tool => cache.set(tool.id, tool));
+      tools.forEach((tool) => cache.set(tool.id, tool));
     });
 
     it('should get all tools', () => {
@@ -551,7 +545,7 @@ describe('McpService', () => {
         nextCursor: '',
         hasMore: false,
       };
-      
+
       mockRepository.search.mockResolvedValue(searchResult);
 
       const result = await service.searchTools({ keywords: ['search'] });
