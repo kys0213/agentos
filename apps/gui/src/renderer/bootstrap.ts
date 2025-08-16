@@ -5,8 +5,8 @@ import { ConversationService } from './services/conversation.service';
 import { BridgeRpcService as BridgeService } from './rpc/services/bridge.service';
 import { BuiltinToolService } from './services/builtin-tool.service';
 import { createIpcChannel } from './ipc/ipc-channel.factory';
-import { McpService } from './services/mcp-service';
-import { McpUsageLogService } from './services/mcp-usage.service';
+import { McpRpcService as McpService } from './rpc/services/mcp.service';
+import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usage.service';
 import { PresetRpcService as PresetService } from './rpc/services/preset.service';
 import { ServiceContainer } from './ipc/service-container';
 import { ElectronIpcTransport } from './rpc/transports/electronIpc';
@@ -40,12 +40,12 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
   // 모든 서비스에 동일한 IpcChannel 주입하여 생성
   // 새 RPC 서비스(Bridge/Preset/Agent)는 채널 기반 Transport를 사용
   const bridgeService = new BridgeService(rpcTransport);
-  const mcpService = new McpService(channel);
+  const mcpService = new McpService(rpcTransport);
   const presetService = new PresetService(rpcTransport);
   const agentService = new AgentService(rpcTransport);
   const builtinToolService = new BuiltinToolService(channel);
   const conversationService = new ConversationService(channel);
-  const mcpUsageLogService = new McpUsageLogService(channel);
+  const mcpUsageLogService = new McpUsageLogService(rpcTransport);
 
   console.log('⚙️ All services created with IpcChannel dependency injection');
 
