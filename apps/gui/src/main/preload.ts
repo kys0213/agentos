@@ -75,3 +75,19 @@ const electronAPI: AgentOsAPI = {
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);
+
+// 최소 이벤트 브리지: 코어 IPC 이벤트 및 기타 채널 구독용
+// 사용 예: window.electronBridge.on('mcp:usage-update', (ev) => { ... })
+contextBridge.exposeInMainWorld('electronBridge', {
+  on: (channel: string, handler: (payload: unknown) => void) => {
+    const wrapped = (_e: unknown, payload: unknown) => handler(payload);
+    ipcRenderer.on(channel, wrapped);
+    return () => ipcRenderer.off(channel, wrapped);
+  },
+});
+
+// Generic RPC invoke for channel-based requests
+// Usage: window.rpc.request('agent:chat', { ... })
+contextBridge.exposeInMainWorld('rpc', {
+  request: (channel: string, payload?: unknown) => ipcRenderer.invoke(channel, payload),
+});
