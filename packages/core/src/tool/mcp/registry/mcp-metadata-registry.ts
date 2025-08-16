@@ -45,8 +45,11 @@ export class McpMetadataRegistry {
   private readonly metadataCache = new Map<string, McpToolMetadata>();
   private initialized = false;
 
-  constructor(private readonly repository: McpToolRepository) {
-    this.mcpRegistry = new McpRegistry();
+  constructor(
+    private readonly repository: McpToolRepository,
+    mcpRegistry?: McpRegistry
+  ) {
+    this.mcpRegistry = mcpRegistry || new McpRegistry();
 
     // 기존 MCP Registry 이벤트 구독
     this.mcpRegistry.onRegister((mcp) => {

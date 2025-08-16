@@ -1,109 +1,61 @@
-import { McpService } from '../mcp-service';
-import {
-  McpToolRepository,
-  McpToolRepositoryEventPayload,
-} from '../../repository/mcp-tool-repository';
-import { McpMetadataRegistry } from '../../registry/mcp-metadata-registry';
-import { McpToolMetadata, McpConnectionStatus } from '../../mcp-types';
 import { McpConfig } from '../../mcp-config';
-import {
-  CursorPagination,
-  CursorPaginationResult,
-} from '../../../../common/pagination/cursor-pagination';
+import { McpToolMetadata } from '../../mcp-types';
+import { McpMetadataRegistry } from '../../registry/mcp-metadata-registry';
+import { McpToolRepository } from '../../repository/mcp-tool-repository';
+import { McpService } from '../mcp-service';
 
-// Mock Repository
-class MockMcpToolRepository implements McpToolRepository {
-  private tools = new Map<string, McpToolMetadata>();
-  private eventHandlers = new Map<string, ((payload: McpToolRepositoryEventPayload) => void)[]>();
+// Mock 함수들
+const createMockRepository = (): jest.Mocked<McpToolRepository> => {
+  const mockRepo: jest.Mocked<McpToolRepository> = {
+    get: jest.fn(),
+    list: jest.fn(),
+    search: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    on: jest.fn(),
+  };
 
-  async get(id: string): Promise<McpToolMetadata | null> {
-    return this.tools.get(id) || null;
-  }
+  // 기본 동작 설정
+  mockRepo.list.mockResolvedValue({
+    items: [],
+    nextCursor: '',
+    hasMore: false,
+  });
 
-  async list(): Promise<CursorPaginationResult<McpToolMetadata>> {
-    return {
-      items: Array.from(this.tools.values()),
-      nextCursor: '',
-      hasMore: false,
-    };
-  }
+  return mockRepo;
+};
 
-  async search(): Promise<CursorPaginationResult<McpToolMetadata>> {
-    return this.list();
-  }
-
-  async create(config: McpConfig): Promise<McpToolMetadata> {
-    const tool: McpToolMetadata = {
-      id: `tool_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name: config.name,
-      description: `MCP Tool: ${config.name}`,
-      version: config.version,
-      category: 'general',
-      provider: 'Test Provider',
-      status: 'disconnected',
-      usageCount: 0,
-      permissions: [],
-      config: {},
-    };
-
-    this.tools.set(tool.id, tool);
-    this.emit('changed', { id: tool.id, metadata: tool });
-    return tool;
-  }
-
-  async update(id: string, patch: Partial<McpToolMetadata>): Promise<McpToolMetadata> {
-    const existing = this.tools.get(id);
-    if (!existing) {
-      throw new Error(`Tool not found: ${id}`);
-    }
-
-    const updated: McpToolMetadata = {
-      ...existing,
-      ...patch,
-      id,
-      version: `v${Date.now()}`,
-    };
-
-    this.tools.set(id, updated);
-    this.emit('changed', { id, metadata: updated });
-    return updated;
-  }
-
-  async delete(id: string): Promise<void> {
-    if (!this.tools.has(id)) {
-      throw new Error(`Tool not found: ${id}`);
-    }
-    this.tools.delete(id);
-    this.emit('deleted', { id });
-  }
-
-  on(event: string, handler: (payload: McpToolRepositoryEventPayload) => void): () => void {
-    if (!this.eventHandlers.has(event)) {
-      this.eventHandlers.set(event, []);
-    }
-    this.eventHandlers.get(event)!.push(handler);
-    return () => {
-      const handlers = this.eventHandlers.get(event)!;
-      const index = handlers.indexOf(handler);
-      if (index >= 0) handlers.splice(index, 1);
-    };
-  }
-
-  private emit(event: string, payload: McpToolRepositoryEventPayload): void {
-    const handlers = this.eventHandlers.get(event) || [];
-    handlers.forEach((handler) => handler(payload));
-  }
-}
+const createMockMcpRegistry = () => {
+  return {
+    register: jest.fn(),
+    unregister: jest.fn(),
+    get: jest.fn().mockResolvedValue(null),
+    getAll: jest.fn().mockResolvedValue([]),
+    getTool: jest.fn().mockResolvedValue(null),
+    getToolOrThrow: jest.fn(),
+    getOrThrow: jest.fn(),
+    onRegister: jest.fn(),
+    onUnregister: jest.fn(),
+    isRegistered: jest.fn().mockReturnValue(false),
+    unregisterAll: jest.fn(),
+    parseMcpAndToolName: jest.fn().mockReturnValue({ mcpName: 'test', toolName: null }),
+  };
+};
 
 describe('McpService', () => {
   let service: McpService;
-  let mockRepository: MockMcpToolRepository;
-  let mockRegistry: McpMetadataRegistry;
+  let mockRepository: jest.Mocked<McpToolRepository>;
+  let mockMcpRegistry: any;
+  let registry: McpMetadataRegistry;
 
   beforeEach(async () => {
-    mockRepository = new MockMcpToolRepository();
-    mockRegistry = new McpMetadataRegistry(mockRepository);
-    service = new McpService(mockRepository, mockRegistry);
+    mockRepository = createMockRepository();
+    mockMcpRegistry = createMockMcpRegistry();
+    
+    // 사용자 제안 패턴: 의존성 주입 사용
+    registry = new McpMetadataRegistry(mockRepository, mockMcpRegistry);
+    service = new McpService(mockRepository, registry);
   });
 
   describe('initialization', () => {
@@ -137,7 +89,7 @@ describe('McpService', () => {
 
     it('should not initialize twice', async () => {
       await service.initialize();
-
+      
       // 두 번째 호출은 아무것도 하지 않아야 함
       await expect(service.initialize()).resolves.toBeUndefined();
     });
@@ -160,11 +112,32 @@ describe('McpService', () => {
         command: 'node',
       };
 
+      const mockTool: McpToolMetadata = {
+        id: 'test-id',
+        name: config.name,
+        description: `MCP Tool: ${config.name}`,
+        version: config.version,
+        category: 'general',
+        provider: 'Test Provider',
+        status: 'connected',
+        usageCount: 0,
+        permissions: [],
+        config,
+      };
+
+      // Repository mock 설정
+      mockRepository.create.mockResolvedValue(mockTool);
+      mockRepository.update.mockResolvedValue(mockTool);
+      
+      // McpRegistry mock 설정 - 성공적인 등록
+      mockMcpRegistry.register.mockResolvedValue(undefined);
+
       const tool = await service.registerTool(config);
 
       expect(tool.name).toBe('test-tool');
-      expect(tool.status).toBe('disconnected');
-      expect(service.getTool(tool.id)).toEqual(tool);
+      expect(tool.status).toBe('connected');
+      expect(mockMcpRegistry.register).toHaveBeenCalledWith(config);
+      expect(mockRepository.create).toHaveBeenCalledWith(config);
     });
 
     it('should validate tool configuration', async () => {
@@ -193,6 +166,23 @@ describe('McpService', () => {
         command: 'node',
       };
 
+      const mockTool: McpToolMetadata = {
+        id: 'test-id',
+        name: config.name,
+        description: `MCP Tool: ${config.name}`,
+        version: config.version,
+        category: 'general',
+        provider: 'Test Provider',
+        status: 'connected',
+        usageCount: 0,
+        permissions: [],
+        config,
+      };
+
+      mockRepository.create.mockResolvedValue(mockTool);
+      mockRepository.update.mockResolvedValue(mockTool);
+      mockMcpRegistry.register.mockResolvedValue(undefined);
+
       const tool = await service.registerTool(config);
 
       expect(events).toEqual([
@@ -202,42 +192,121 @@ describe('McpService', () => {
     });
 
     it('should forward registry events', async () => {
-      const toolAddedEvent = new Promise((resolve) => {
-        service.on('toolAdded', resolve);
-      });
-
       const config: McpConfig = {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
         command: 'node',
       };
+
+      const mockTool: McpToolMetadata = {
+        id: 'test-id',
+        name: config.name,
+        description: `MCP Tool: ${config.name}`,
+        version: config.version,
+        category: 'general',
+        provider: 'Test Provider',
+        status: 'connected',
+        usageCount: 0,
+        permissions: [],
+        config,
+      };
+
+      mockRepository.create.mockResolvedValue(mockTool);
+      mockRepository.update.mockResolvedValue(mockTool);
+      mockMcpRegistry.register.mockResolvedValue(undefined);
+
+      const toolAddedEvent = new Promise((resolve) => {
+        service.on('toolAdded', resolve);
+      });
 
       const tool = await service.registerTool(config);
       const event = await toolAddedEvent;
 
       expect(event).toEqual({ tool });
     });
-  });
 
-  describe('tool unregistration', () => {
-    let toolId: string;
-
-    beforeEach(async () => {
-      await service.initialize();
+    it('should handle registration failure', async () => {
       const config: McpConfig = {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
         command: 'node',
       };
-      const tool = await service.registerTool(config);
-      toolId = tool.id;
+
+      const mockTool: McpToolMetadata = {
+        id: 'test-id',
+        name: config.name,
+        description: `MCP Tool: ${config.name}`,
+        version: config.version,
+        category: 'general',
+        provider: 'Test Provider',
+        status: 'disconnected',
+        usageCount: 0,
+        permissions: [],
+        config,
+      };
+
+      const errorTool: McpToolMetadata = {
+        ...mockTool,
+        status: 'error',
+      };
+
+      mockRepository.create.mockResolvedValue(mockTool);
+      mockRepository.update.mockResolvedValue(errorTool);
+      mockMcpRegistry.register.mockRejectedValue(new Error('Connection failed'));
+
+      await expect(service.registerTool(config)).rejects.toThrow(/Failed to register MCP tool/);
+      
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        mockTool.id,
+        { status: 'error' }
+      );
+    });
+  });
+
+  describe('tool unregistration', () => {
+    let toolId: string;
+    let mockTool: McpToolMetadata;
+
+    beforeEach(async () => {
+      await service.initialize();
+      
+      const config: McpConfig = {
+        type: 'stdio',
+        name: 'test-tool',
+        version: '1.0.0',
+        command: 'node',
+      };
+
+      mockTool = {
+        id: 'test-id',
+        name: config.name,
+        description: `MCP Tool: ${config.name}`,
+        version: config.version,
+        category: 'general',
+        provider: 'Test Provider',
+        status: 'connected',
+        usageCount: 0,
+        permissions: [],
+        config,
+      };
+
+      toolId = mockTool.id;
+
+      // Registry cache 설정
+      (registry as any).metadataCache.set(toolId, mockTool);
     });
 
     it('should unregister existing tool', async () => {
+      mockMcpRegistry.isRegistered.mockReturnValue(true);
+      mockMcpRegistry.unregister.mockResolvedValue(undefined);
+      mockRepository.delete.mockResolvedValue(undefined);
+
       await service.unregisterTool(toolId);
-      expect(service.getTool(toolId)).toBeNull();
+      
+      expect(mockMcpRegistry.unregister).toHaveBeenCalledWith(mockTool.name);
+      expect(mockRepository.delete).toHaveBeenCalledWith(toolId);
     });
 
     it('should throw error for non-existent tool', async () => {
@@ -248,6 +317,10 @@ describe('McpService', () => {
       const events: any[] = [];
       service.on('operationStarted', (e) => events.push({ type: 'started', ...e }));
       service.on('operationCompleted', (e) => events.push({ type: 'completed', ...e }));
+
+      mockMcpRegistry.isRegistered.mockReturnValue(true);
+      mockMcpRegistry.unregister.mockResolvedValue(undefined);
+      mockRepository.delete.mockResolvedValue(undefined);
 
       await service.unregisterTool(toolId);
 
@@ -260,31 +333,49 @@ describe('McpService', () => {
 
   describe('tool updates', () => {
     let toolId: string;
+    let mockTool: McpToolMetadata;
 
     beforeEach(async () => {
       await service.initialize();
-      const config: McpConfig = {
-        type: 'stdio',
+      
+      mockTool = {
+        id: 'test-id',
         name: 'test-tool',
+        description: 'Test tool',
         version: '1.0.0',
-        command: 'node',
+        category: 'general',
+        provider: 'Test Provider',
+        status: 'connected',
+        usageCount: 0,
+        permissions: [],
+        config: {
+          type: 'stdio',
+          name: 'test-tool',
+          version: '1.0.0',
+          command: 'node',
+        },
       };
-      const tool = await service.registerTool(config);
-      toolId = tool.id;
+
+      toolId = mockTool.id;
+      (registry as any).metadataCache.set(toolId, mockTool);
     });
 
     it('should update tool metadata', async () => {
       const patch = { description: 'Updated description' };
-      const updated = await service.updateTool(toolId, patch);
+      const updatedTool = { ...mockTool, ...patch };
 
-      expect(updated.description).toBe('Updated description');
-      expect(service.getTool(toolId)?.description).toBe('Updated description');
+      mockRepository.update.mockResolvedValue(updatedTool);
+
+      const result = await service.updateTool(toolId, patch);
+
+      expect(result.description).toBe('Updated description');
+      expect(mockRepository.update).toHaveBeenCalledWith(toolId, patch, undefined);
     });
 
     it('should validate update patch', async () => {
       const invalidPatches = [
         { id: 'new-id' }, // ID cannot be changed
-        { name: '' }, // name cannot be empty
+        { name: '' }, // name cannot be empty  
         { usageCount: -1 }, // usage count cannot be negative
       ];
 
@@ -300,24 +391,43 @@ describe('McpService', () => {
 
   describe('connection status management', () => {
     let toolId: string;
+    let mockTool: McpToolMetadata;
 
     beforeEach(async () => {
       await service.initialize();
-      const config: McpConfig = {
-        type: 'stdio',
+      
+      mockTool = {
+        id: 'test-id',
         name: 'test-tool',
+        description: 'Test tool',
         version: '1.0.0',
-        command: 'node',
+        category: 'general',
+        provider: 'Test Provider',
+        status: 'disconnected',
+        usageCount: 0,
+        permissions: [],
+        config: {
+          type: 'stdio',
+          name: 'test-tool',
+          version: '1.0.0',
+          command: 'node',
+        },
       };
-      const tool = await service.registerTool(config);
-      toolId = tool.id;
+
+      toolId = mockTool.id;
+      (registry as any).metadataCache.set(toolId, mockTool);
     });
 
     it('should update connection status', async () => {
+      const connectedTool = { ...mockTool, status: 'connected' as const };
+      mockRepository.update.mockResolvedValue(connectedTool);
+
       await service.updateConnectionStatus(toolId, 'connected');
 
-      const tool = service.getTool(toolId);
-      expect(tool?.status).toBe('connected');
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        toolId,
+        { status: 'connected' }
+      );
     });
 
     it('should throw error for non-existent tool', async () => {
@@ -329,24 +439,47 @@ describe('McpService', () => {
 
   describe('usage tracking', () => {
     let toolId: string;
+    let mockTool: McpToolMetadata;
 
     beforeEach(async () => {
       await service.initialize();
-      const config: McpConfig = {
-        type: 'stdio',
+      
+      mockTool = {
+        id: 'test-id',
         name: 'test-tool',
+        description: 'Test tool',
         version: '1.0.0',
-        command: 'node',
+        category: 'general',
+        provider: 'Test Provider',
+        status: 'connected',
+        usageCount: 0,
+        permissions: [],
+        config: {
+          type: 'stdio',
+          name: 'test-tool',
+          version: '1.0.0',
+          command: 'node',
+        },
       };
-      const tool = await service.registerTool(config);
-      toolId = tool.id;
+
+      toolId = mockTool.id;
+      (registry as any).metadataCache.set(toolId, mockTool);
     });
 
     it('should increment usage count', async () => {
+      const updatedTool = { ...mockTool, usageCount: 1 };
+      mockRepository.update.mockResolvedValue(updatedTool);
+
       await service.incrementUsage(toolId);
 
-      const tool = service.getTool(toolId);
-      expect(tool?.usageCount).toBe(1);
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        toolId,
+        expect.objectContaining({
+          usageCount: 1,
+          lastUsedAt: expect.any(Date)
+        }),
+        undefined
+      );
     });
 
     it('should throw error for non-existent tool', async () => {
@@ -358,24 +491,53 @@ describe('McpService', () => {
     beforeEach(async () => {
       await service.initialize();
 
-      // 테스트용 도구들 생성
-      const configs: McpConfig[] = [
-        { type: 'stdio', name: 'search-tool', version: '1.0.0', command: 'node' },
+      // 테스트용 도구들을 cache에 설정
+      const tools: McpToolMetadata[] = [
         {
-          type: 'streamableHttp',
-          name: 'api-tool',
+          id: 'tool-1',
+          name: 'search-tool',
+          description: 'Search tool',
           version: '1.0.0',
-          url: 'https://api.example.com',
+          category: 'general',
+          provider: 'Test Provider',
+          status: 'connected',
+          usageCount: 0,
+          permissions: [],
+          config: { type: 'stdio', name: 'search-tool', version: '1.0.0', command: 'node' },
         },
-        { type: 'stdio', name: 'dev-tool', version: '1.0.0', command: 'python' },
+        {
+          id: 'tool-2',
+          name: 'api-tool',
+          description: 'API tool',
+          version: '1.0.0',
+          category: 'general',
+          provider: 'Test Provider',
+          status: 'disconnected',
+          usageCount: 0,
+          permissions: [],
+          config: {
+            type: 'streamableHttp',
+            name: 'api-tool',
+            version: '1.0.0',
+            url: 'https://api.example.com',
+          },
+        },
+        {
+          id: 'tool-3',
+          name: 'dev-tool',
+          description: 'Development tool',
+          version: '1.0.0',
+          category: 'general',
+          provider: 'Test Provider',
+          status: 'disconnected',
+          usageCount: 0,
+          permissions: [],
+          config: { type: 'stdio', name: 'dev-tool', version: '1.0.0', command: 'python' },
+        },
       ];
 
-      for (const config of configs) {
-        const tool = await service.registerTool(config);
-        if (config.name === 'search-tool') {
-          await service.updateConnectionStatus(tool.id, 'connected');
-        }
-      }
+      const cache = (registry as any).metadataCache;
+      tools.forEach(tool => cache.set(tool.id, tool));
     });
 
     it('should get all tools', () => {
@@ -384,8 +546,17 @@ describe('McpService', () => {
     });
 
     it('should search tools', async () => {
+      const searchResult = {
+        items: [(registry as any).metadataCache.get('tool-1')],
+        nextCursor: '',
+        hasMore: false,
+      };
+      
+      mockRepository.search.mockResolvedValue(searchResult);
+
       const result = await service.searchTools({ keywords: ['search'] });
-      expect(result.items).toHaveLength(3); // Mock repo returns all tools
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].name).toBe('search-tool');
     });
 
     it('should filter tools by status', () => {
@@ -426,15 +597,14 @@ describe('McpService', () => {
     });
 
     it('should handle repository errors during registration', async () => {
-      // Mock repository에서 에러 발생하도록 설정
-      jest.spyOn(mockRepository, 'create').mockRejectedValue(new Error('Repository error'));
-
       const config: McpConfig = {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
         command: 'node',
       };
+
+      mockRepository.create.mockRejectedValue(new Error('Repository error'));
 
       await expect(service.registerTool(config)).rejects.toThrow(/Failed to register MCP tool/);
     });
@@ -443,14 +613,14 @@ describe('McpService', () => {
       const events: any[] = [];
       service.on('operationCompleted', (e) => events.push(e));
 
-      jest.spyOn(mockRepository, 'create').mockRejectedValue(new Error('Repository error'));
-
       const config: McpConfig = {
         type: 'stdio',
         name: 'test-tool',
         version: '1.0.0',
         command: 'node',
       };
+
+      mockRepository.create.mockRejectedValue(new Error('Repository error'));
 
       try {
         await service.registerTool(config);
