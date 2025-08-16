@@ -10,7 +10,7 @@ describe('AgentSession interface', () => {
         return [];
       },
       async getHistory() {
-        return { items: [], nextCursor: '' };
+        return { items: [], nextCursor: '', hasMore: false };
       },
       async terminate() {},
       on() {

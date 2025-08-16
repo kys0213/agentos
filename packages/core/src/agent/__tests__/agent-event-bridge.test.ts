@@ -58,7 +58,7 @@ class FakeSession implements AgentSession {
     this.sessionId = id;
   }
   chat = async () => [] as any;
-  getHistory = async () => ({ items: [], nextCursor: '' });
+  getHistory = async () => ({ items: [], nextCursor: '', hasMore: false });
   terminate = async () => {};
   providePromptResponse = async () => {};
   provideConsentDecision = async () => {};

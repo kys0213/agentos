@@ -14,7 +14,7 @@ class FakeSession implements AgentSession {
     return [];
   }
   async getHistory(): Promise<any> {
-    return { items: [], nextCursor: '' };
+    return { items: [], nextCursor: '', hasMore: false };
   }
   async terminate(): Promise<void> {}
   on(): () => void {
@@ -72,13 +72,13 @@ class FakeManager implements AgentManager {
     return this.map.get(id) ?? null;
   }
   async getAllAgents(): Promise<CursorPaginationResult<Agent>> {
-    return { items: Array.from(this.map.values()), nextCursor: '' };
+    return { items: Array.from(this.map.values()), nextCursor: '', hasMore: false };
   }
   async getAvailableAgents(): Promise<CursorPaginationResult<Agent>> {
-    return { items: Array.from(this.map.values()), nextCursor: '' };
+    return { items: Array.from(this.map.values()), nextCursor: '', hasMore: false };
   }
   async getActiveAgents(): Promise<CursorPaginationResult<Agent>> {
-    return { items: Array.from(this.map.values()), nextCursor: '' };
+    return { items: Array.from(this.map.values()), nextCursor: '', hasMore: false };
   }
   async createAgentSession(agentId: string): Promise<AgentSession> {
     const a = this.map.get(agentId)!;
@@ -97,7 +97,7 @@ class FakeManager implements AgentManager {
     return { totalAgents: this.map.size, agentsByStatus: {} as any, totalActiveSessions: 0 };
   }
   async searchAgents(): Promise<CursorPaginationResult<Agent>> {
-    return { items: Array.from(this.map.values()), nextCursor: '' };
+    return { items: Array.from(this.map.values()), nextCursor: '', hasMore: false };
   }
 }
 

@@ -41,16 +41,14 @@ export type McpMetadataRegistryEvents = {
  */
 export class McpMetadataRegistry {
   private readonly eventEmitter = new SimpleEventEmitter<McpMetadataRegistryEvents>();
-  private readonly mcpRegistry: McpRegistry;
+
   private readonly metadataCache = new Map<string, McpToolMetadata>();
   private initialized = false;
 
   constructor(
     private readonly repository: McpToolRepository,
-    mcpRegistry?: McpRegistry
+    private readonly mcpRegistry: McpRegistry
   ) {
-    this.mcpRegistry = mcpRegistry || new McpRegistry();
-
     // 기존 MCP Registry 이벤트 구독
     this.mcpRegistry.onRegister((mcp) => {
       this.syncMcpToMetadata(mcp);
@@ -215,7 +213,7 @@ export class McpMetadataRegistry {
    * 이름으로 실제 MCP 인스턴스 조회
    */
   async getMcp(toolName: string): Promise<Mcp | null> {
-    return this.mcpRegistry.get(toolName);
+    return this.mcpRegistry.get(toolName) || null;
   }
 
   /**

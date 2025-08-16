@@ -11,7 +11,7 @@ module.exports = {
       tsconfig: '<rootDir>/tsconfig.json',
     },
   },
-  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
+  testMatch: ['**/__tests__/**/*.test.ts'],
   collectCoverage: true,
   collectCoverageFrom: ['<rootDir>/src/**/*.{ts,tsx}', '!<rootDir>/src/**/__tests__/**'],
   coverageReporters: ['text', 'lcov'],
