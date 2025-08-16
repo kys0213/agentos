@@ -81,11 +81,13 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 - [x] 폴백 경로에서 세션 메시지 이벤트 브로드캐스트(초기)
 - [ ] 기존 renderer 훅/컨테이너 호출부를 RPC 서비스로 점진 이관 및 정리
 - [ ] Main에 프레임 기반 `ElectronEventTransport` 프로토타입 연결(취소/에러 매핑 포함)
+- [x] ElectronEventTransport에 cancel 처리(subscriptions by cid) 기본 구현
 - [ ] `AgentEventBridge` 도입: core 이벤트 `agentos:` 접두사 브로드캐스트
 - [ ] MCP 사용량 업데이트 경로 이벤트화 점검(샘플링/취소 포함)
 - [ ] 메서드별 zod 스키마 초안(최소 입력 검증) 추가
 - [ ] 계약 테스트: mock Transport로 `req/res/err/nxt/end/can` 스냅샷
 - [ ] E2E: snapshot+watch 시나리오, 취소/타임아웃, CoreError 전파 확인
+ - [x] 데모 스트림 경로 연결: `demo.streamTicks` (Frame-level prototype)
 
 ## 작업 순서
 
@@ -94,6 +96,8 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 3. [완료] **서비스 추가 1차**: Agent/Bridge/Preset/MCP/MCPUsage/Conversation RPC 서비스 추가 및 등록
 4. [진행] **호출부 이관**: 기존 훅/컨테이너를 RPC 서비스로 점진 이관
 5. **Main 트랜스포트**: `ElectronEventTransport` 연결 및 cancel 처리(프로토타입)
+   - [완료] cancel 처리 구현
+   - [진행] 실제 라우팅 연결 및 스트림 경로 시범 적용
 6. **코어 이벤트 연동**: `AgentEventBridge` 브로드캐스트, 렌더러 `subscribeJson` 수신
 7. **검증/테스트**: 계약/통합/E2E 추가, 회귀 방지
 8. **문서/정리**: 스펙 반영 최종 점검, 로드맵 체크박스 갱신

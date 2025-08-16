@@ -1,6 +1,7 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
-import { setupCoreIpcHandlers } from './core-api';
+import { bootstrapIpcMainProcess } from './bootstrapIpcMainProcess';
+import { setIncomingFrameHandler, sendTo } from './bridge.ipc';
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -27,21 +28,41 @@ function createWindow() {
   }
 }
 
-app.whenReady().then(() => {
-  // Setup IPC handlers (dependencies are managed internally)
-  setupCoreIpcHandlers();
+app.whenReady().then(async () => {
+  try {
+    const mainApp = await bootstrapIpcMainProcess(ipcMain);
 
-  createWindow();
+    // Frame-level demo stream handler (prototype): demo.streamTicks
+    // Sends 5 incremental ticks then completes. Supports basic cancel.
+    setIncomingFrameHandler(async (frame: unknown, senderId: number) => {
+      const f = frame as any;
+      if (!f || typeof f !== 'object') return;
+      if (f.kind !== 'req') return;
+      if (f.method !== 'demo.streamTicks') return;
+      const count = Math.max(1, Math.min(20, Number(f?.payload?.count ?? 5)));
+      for (let i = 1; i <= count; i++) {
+        await new Promise((r) => setTimeout(r, 200));
+        sendTo(senderId, { kind: 'nxt', cid: f.cid, data: { tick: i } });
+      }
+      sendTo(senderId, { kind: 'end', cid: f.cid });
+    });
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
-});
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+      }
+    });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
+    app.on('window-all-closed', () => {
+      if (process.platform !== 'darwin') {
+        app.quit();
+      }
+    });
+
+    app.on('quit', () => {
+      mainApp.close();
+    });
+  } catch (error) {
+    console.error(error);
   }
 });
