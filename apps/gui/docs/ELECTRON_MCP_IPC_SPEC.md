@@ -489,7 +489,33 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 
 ---
 
-## 18. 현 상태 vs 스펙 정합성(8/16 기준)
+## 18. OutboundChannel 패턴 (권장)
+
+- Main은 단일 `OutboundChannel`(Subject 기반)을 통해 도메인 이벤트를 방출합니다.
+- 서비스는 생성자 주입으로 `OutboundChannel`을 받아 `emit({ type, payload, ts })`를 호출합니다.
+- 컨트롤러는 `@EventPattern('agent.events')` 같은 스트림 엔드포인트로 `OutboundChannel.ofType('agent.')`를 그대로 반환합니다.
+- Transport는 스트림 nxt 프레임에 `method`를 포함해 전송하므로, 렌더러는 단일 `frames$`에서 `method`로 demux 가능합니다.
+
+타입 안전 예시:
+
+```ts
+// main/common/event/events.ts
+export const AgentOutboundEvent = z.union([
+  z.object({ type: z.literal('agent.session.message'), payload: z.object({ sessionId: z.string(), data: z.unknown() }) }),
+  z.object({ type: z.literal('agent.session.ended'), payload: z.object({ sessionId: z.string() }) }),
+]);
+
+// renderer
+const frames$ = fromBridge$(electronBridge);
+wireAgentEvents(frames$, {
+  onMessage: (p) => {/* update UI */},
+  onEnded: (p) => {/* cleanup */},
+});
+```
+
+---
+
+## 19. 현 상태 vs 스펙 정합성(8/16 기준)
 
 - Preload: `start/post`만 노출됨. `electronBridge.on`/`rpc.request`는 미노출(권장 확장 대상).
 - Main: `ElectronEventTransport`가 Nest Microservice로 연결되고 `can`(취소) 및 `CoreError` 매핑 동작.

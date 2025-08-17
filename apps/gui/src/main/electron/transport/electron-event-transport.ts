@@ -1,4 +1,4 @@
-import { CoreError } from '@agentos/core';
+import { CoreError, isObject } from '@agentos/core';
 import { CustomTransportStrategy, Server } from '@nestjs/microservices';
 import { BrowserWindow, IpcMain } from 'electron';
 import { isObservable, Observable, Subscription } from 'rxjs';
@@ -95,6 +95,16 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
             code: e.code,
             details: e.details,
           });
+        } else if (isObject(e) && 'code' in (e as any)) {
+          const anyErr = e as any;
+          return this.sendTo(senderId, {
+            kind: 'err',
+            cid: frame.cid,
+            ok: false,
+            message: String(anyErr.message ?? '[error]'),
+            code: anyErr.code ?? 'INTERNAL',
+            details: anyErr.details,
+          });
         } else if (e instanceof Error) {
           return this.sendTo(senderId, {
             kind: 'err',
@@ -130,8 +140,8 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
           kind: 'err',
           cid: frame.cid,
           ok: false,
-          message: String(e),
-          code: 'OPERATION_FAILED',
+          message: String((e as any)?.message ?? e),
+          code: (e as any)?.code ?? 'OPERATION_FAILED',
         }),
       complete: () => {
         send({ kind: 'end', cid: frame.cid });
