@@ -7,17 +7,17 @@ import type {
 } from '@agentos/core';
 import { Inject, Injectable } from '@nestjs/common';
 import type { Message, UserMessage } from 'llm-bridge-spec';
-import { Observable, Subject } from 'rxjs';
+import { OutboundChannel } from '../../common/event/outbound-channel';
+import { AgentOutboundEvent } from '../../common/event/events';
+import { map } from 'rxjs';
 import { AGENT_SERVICE_TOKEN } from '../../common/agent/constants';
 
 @Injectable()
 export class AgentSessionService {
-  constructor(@Inject(AGENT_SERVICE_TOKEN) private readonly agentService: AgentService) {}
-
-  private readonly agentEvents = new Subject<
-    | { type: 'session.message'; sessionId: string; data: Message; ts: number }
-    | { type: 'session.ended'; sessionId: string; ts: number }
-  >();
+  constructor(
+    @Inject(AGENT_SERVICE_TOKEN) private readonly agentService: AgentService,
+    private readonly outbound: OutboundChannel
+  ) {}
 
   async chat(
     agentId: string,
@@ -34,11 +34,9 @@ export class AgentSessionService {
     // 스트림 브로드캐스트: 어시스턴트 메시지 이벤트 발행
     const last = result.messages[result.messages.length - 1];
     if (last) {
-      this.agentEvents.next({
-        type: 'session.message',
-        sessionId: result.sessionId,
-        data: last as unknown as Message,
-        ts: Date.now(),
+      this.outbound.emit({
+        type: 'agent.session.message',
+        payload: { sessionId: result.sessionId, data: last as unknown as Message },
       });
     }
     return result;
@@ -48,7 +46,7 @@ export class AgentSessionService {
     const agent = await this.agentService.getAgent(agentId);
     if (!agent) throw new Error(`Agent not found: ${agentId}`);
     await agent.endSession(sessionId);
-    this.agentEvents.next({ type: 'session.ended', sessionId, ts: Date.now() });
+    this.outbound.emit({ type: 'agent.session.ended', payload: { sessionId } });
   }
 
   async getMetadata(id: string): Promise<AgentMetadata | null> {
@@ -94,10 +92,10 @@ export class AgentSessionService {
     return await agent.getMetadata();
   }
 
-  events$(): Observable<
-    | { type: 'session.message'; sessionId: string; data: Message; ts: number }
-    | { type: 'session.ended'; sessionId: string; ts: number }
-  > {
-    return this.agentEvents.asObservable();
+  events$() {
+    // expose agent.* outbound events only
+    return this.outbound
+      .ofType('agent.')
+      .pipe(map((ev) => ev as AgentOutboundEvent));
   }
 }
