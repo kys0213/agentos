@@ -10,7 +10,8 @@ import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usa
 import { PresetRpcService as PresetService } from './rpc/services/preset.service';
 import { ServiceContainer } from './ipc/service-container';
 import { ElectronIpcTransport } from './rpc/transports/electron-renderer-transport';
-import { startStream, fromBridge$, selectDataByMethod } from './rpc/frame-channel';
+import { startStream, fromBridge$ } from './rpc/frame-channel';
+import { wireAgentEvents } from './rpc/agent-events';
 
 /**
  * Bootstrap 결과 타입
@@ -70,12 +71,12 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
     const bridge = (window as any).electronBridge;
     // Start agent events stream (req → nxt*)
     startStream(bridge, 'agent.events');
-    // Optionally subscribe early; real consumers can attach elsewhere
-    fromBridge$(bridge)
-      .pipe(selectDataByMethod('agent.'))
-      .subscribe(() => {
-        // no-op bootstrap subscription; replace with store update if needed
-      });
+    // Wire parsed events (replace handlers with store updates as needed)
+    const frames$ = fromBridge$(bridge);
+    wireAgentEvents(frames$, {
+      onMessage: () => {},
+      onEnded: () => {},
+    });
   } catch (e) {
     console.warn('Agent events bootstrap skipped:', e);
   }
