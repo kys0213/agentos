@@ -13,40 +13,41 @@ export class AgentSessionController {
     @Payload() data: { agentId: string; messages: UserMessage[]; options?: AgentExecuteOptions }
   ) {
     const { agentId, messages, options } = data;
-    return this.svc.chat(agentId, messages, options);
+    return await this.svc.chat(agentId, messages, options);
   }
 
   @EventPattern('agent:end-session')
   async endSession(@Payload() data: { agentId: string; sessionId: string }) {
     const { agentId, sessionId } = data;
-    return this.svc.endSession(agentId, sessionId);
+    return await this.svc.endSession(agentId, sessionId);
   }
 
   @EventPattern('agent:get-metadata')
   async getMetadata(@Payload() id: string) {
-    return this.svc.getMetadata(id);
+    return await this.svc.getMetadata(id);
   }
 
   @EventPattern('agent:get-all-metadatas')
   async getAllMetadatas() {
-    return this.svc.getAllMetadatas();
+    return await this.svc.getAllMetadatas();
   }
 
   @EventPattern('agent:update')
-  async updateAgent(@Payload() data: { agentId: string; patch: Partial<Omit<AgentMetadata, 'id'>> }) {
+  async updateAgent(
+    @Payload() data: { agentId: string; patch: Partial<Omit<AgentMetadata, 'id'>> }
+  ) {
     const { agentId, patch } = data;
-    return this.svc.updateAgent(agentId, patch);
+    return await this.svc.updateAgent(agentId, patch);
   }
 
   @EventPattern('agent:create')
   async createAgent(@Payload() agent: AgentMetadata) {
     // agent는 id 포함 생성 본문을 그대로 받음
-    return this.svc.createAgent(agent as any);
+    return await this.svc.createAgent(agent as any);
   }
 
   @EventPattern('agent:delete')
   async deleteAgent(@Payload() id: string) {
-    return this.svc.deleteAgent(id);
+    return await this.svc.deleteAgent(id);
   }
 }
-

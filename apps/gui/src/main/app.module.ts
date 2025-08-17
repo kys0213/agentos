@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AgentController } from './agent/agent.controller';
 import { AgentSessionModule } from './agent/session/agent-session.module';
+import { ElectronAppModule } from './electron/electron-app.module';
 
 @Module({
-  imports: [AgentSessionModule],
-  controllers: [AgentController],
+  imports: [AgentSessionModule, ElectronAppModule],
   providers: [],
 })
 export class AppModule {}

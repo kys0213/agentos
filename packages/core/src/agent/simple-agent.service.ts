@@ -4,10 +4,10 @@ import type {
   CursorPaginationResult,
 } from '../common/pagination/cursor-pagination';
 import type { Agent, AgentChatResult, AgentExecuteOptions } from './agent';
+import type { AgentManager } from './agent-manager';
+import type { AgentSearchQuery } from './agent-search';
 import type { AgentSession } from './agent-session';
 import type { AgentService } from './agent.service';
-import type { AgentSearchQuery } from './agent-search';
-import type { AgentManager } from './agent-manager';
 
 /**
  * A minimal AgentService implementation that wraps an existing AgentManager.

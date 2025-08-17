@@ -44,7 +44,6 @@ export class DefaultAgentSession implements AgentSession {
   >();
 
   constructor(
-    private readonly agentId: string,
     private readonly chatSession: ChatSession,
     private readonly llmBridge: LlmBridge,
     private readonly mcpRegistry: McpRegistry,
@@ -58,9 +57,8 @@ export class DefaultAgentSession implements AgentSession {
 
   private status: AgentSessionStatus = 'idle';
 
-  get id(): string {
-    // AgentSession 고유 식별자로 세션 ID를 노출
-    return this.chatSession.sessionId;
+  get agentId(): string {
+    return this.chatSession.agentId;
   }
 
   get sessionId(): string {

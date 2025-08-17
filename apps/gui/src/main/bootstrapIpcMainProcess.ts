@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions } from '@nestjs/microservices';
 import { AppModule } from './app.module';
-import { ElectronEventTransport } from './transport/electron-event-transport';
+import { ElectronEventTransport } from './electron/transport/electron-event-transport';
 import { IpcMain } from 'electron';
 
 export async function bootstrapIpcMainProcess(ipcMain: IpcMain) {

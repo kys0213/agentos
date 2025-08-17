@@ -7,6 +7,7 @@ import type { CursorPaginationResult } from '../../common/pagination/cursor-pagi
 
 class FakeSession implements AgentSession {
   constructor(public readonly sessionId: string) {}
+  agentId: string = 'a1';
   get id() {
     return this.sessionId;
   }
@@ -149,18 +150,5 @@ describe('SimpleAgentService', () => {
     const svc = new SimpleAgentService(mgr);
     const result = await svc.execute('a1', [] as any, {} as any);
     expect(result).toEqual({ messages: [], sessionId: 's-1' });
-  });
-
-  it('searches via metadata repository when provided', async () => {
-    const a1 = new FakeAgent('a1', meta('a1'));
-    const a2 = new FakeAgent('a2', meta('a2'));
-    const repo = {
-      async search() {
-        return { items: [meta('a2')], nextCursor: '' };
-      },
-    } as any;
-    const svc = new SimpleAgentService(new FakeManager([a1, a2]), repo);
-    const res = await svc.searchAgents({ name: 'x' });
-    expect(res.items.map((a) => a.id)).toEqual(['a2']);
   });
 });

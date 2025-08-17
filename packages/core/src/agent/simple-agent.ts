@@ -58,8 +58,8 @@ export class SimpleAgent implements Agent {
 
   async chat(messages: UserMessage[], options?: AgentExecuteOptions): Promise<AgentChatResult> {
     const chatSession = options?.sessionId
-      ? await this.chatManager.getSession(options?.sessionId)
-      : await this.chatManager.create();
+      ? await this.chatManager.getSession({ sessionId: options?.sessionId, agentId: this.id })
+      : await this.chatManager.create({ agentId: this.id });
 
     try {
       const buffer: Message[] = Array.from(messages);
@@ -84,8 +84,8 @@ export class SimpleAgent implements Agent {
 
   async createSession(options?: { sessionId?: string; presetId?: string }) {
     const chatSession = options?.sessionId
-      ? await this.chatManager.getSession(options.sessionId)
-      : await this.chatManager.create();
+      ? await this.chatManager.getSession({ sessionId: options.sessionId, agentId: this.id })
+      : await this.chatManager.create({ agentId: this.id });
 
     this.activeSessions.set(chatSession.sessionId, chatSession);
     this._metadata.sessionCount = (this._metadata.sessionCount ?? 0) + 1;
@@ -96,7 +96,6 @@ export class SimpleAgent implements Agent {
     });
 
     const session = new DefaultAgentSession(
-      this.id,
       chatSession,
       this.llmBridge,
       this.mcpRegistry,

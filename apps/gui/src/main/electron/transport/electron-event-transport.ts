@@ -2,7 +2,7 @@ import { CoreError } from '@agentos/core';
 import { CustomTransportStrategy, Server } from '@nestjs/microservices';
 import { BrowserWindow, IpcMain } from 'electron';
 import { isObservable, Observable, Subscription } from 'rxjs';
-import { Cid, RpcFrame, RpcMetadata } from '../../shared/rpc/rpc-frame';
+import { Cid, RpcFrame, RpcMetadata } from '../../../shared/rpc/rpc-frame';
 
 /**
  * Prototype: frame-based transport to support req/res/err/nxt/end/can
