@@ -10,6 +10,7 @@ import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usa
 import { PresetRpcService as PresetService } from './rpc/services/preset.service';
 import { ServiceContainer } from './ipc/service-container';
 import { ElectronIpcTransport } from './rpc/transports/electron-renderer-transport';
+import { startStream, fromBridge$, selectDataByMethod } from './rpc/frame-channel';
 
 /**
  * Bootstrap 결과 타입
@@ -63,6 +64,21 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
 
   // 등록된 서비스 정보 로깅
   console.log('📋 Container info:', ServiceContainer.getInfo());
+
+  // --- Agent events stream bootstrap (frame-based) ---
+  try {
+    const bridge = (window as any).electronBridge;
+    // Start agent events stream (req → nxt*)
+    startStream(bridge, 'agent.events');
+    // Optionally subscribe early; real consumers can attach elsewhere
+    fromBridge$(bridge)
+      .pipe(selectDataByMethod('agent.'))
+      .subscribe(() => {
+        // no-op bootstrap subscription; replace with store update if needed
+      });
+  } catch (e) {
+    console.warn('Agent events bootstrap skipped:', e);
+  }
 
   return {
     ipcChannel: channel,

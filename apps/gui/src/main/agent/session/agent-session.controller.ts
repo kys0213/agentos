@@ -50,4 +50,10 @@ export class AgentSessionController {
   async deleteAgent(@Payload() id: string) {
     return await this.svc.deleteAgent(id);
   }
+
+  // Reactive events stream (renderer demux by method='agent.events')
+  @EventPattern('agent.events')
+  events() {
+    return this.svc.events$();
+  }
 }
