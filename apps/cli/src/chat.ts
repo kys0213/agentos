@@ -10,7 +10,7 @@ export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge
   const repo = new FileAgentMetadataRepository(path.join(baseDir, 'agents'));
 
   // Construct a single SimpleAgent with provided bridge/manager/repo
-  const agent = new SimpleAgent('cli-agent', llmBridge, new McpRegistry(), manager, repo);
+  const agent = new (SimpleAgent as any)('cli-agent', llmBridge, new McpRegistry(), manager, repo);
 
   const preset: Preset = {
     id: 'cli-preset',
@@ -37,7 +37,6 @@ export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge
 
   // Ensure initial agent metadata exists
   await repo.create({
-    id: 'cli-agent',
     name: 'CLI Agent',
     description: 'Interactive CLI agent',
     icon: '💻',
