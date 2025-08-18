@@ -80,7 +80,7 @@ jest.mock('@agentos/lang', () => {
   return { fs: { FileUtils, JsonFileHandler: MockJsonFileHandler } };
 });
 
-import { FileBasedLlmBridgeRegistry } from '../registry';
+import { FileBasedLlmBridgeRegistry } from '../../registry';
 
 const makeManifest = (name: string): LlmManifest => ({
   schemaVersion: '1.0.0',

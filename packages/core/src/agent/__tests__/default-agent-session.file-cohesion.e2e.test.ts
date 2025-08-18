@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { mock } from 'jest-mock-extended';
 import type { LlmBridge, LlmBridgeResponse, UserMessage } from 'llm-bridge-spec';
-import { DefaultAgentSession } from '../default-agent-session';
+import { DefaultAgentSession } from '../simple-agent-session';
 import type { AgentMetadata } from '../agent-metadata';
 import { FileBasedSessionStorage } from '../../chat/file/file-based-session-storage';
 import { FileBasedChatManager } from '../../chat/file/file-based-chat.manager';

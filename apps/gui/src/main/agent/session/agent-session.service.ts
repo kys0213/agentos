@@ -94,8 +94,6 @@ export class AgentSessionService {
 
   events$() {
     // expose agent.* outbound events only
-    return this.outbound
-      .ofType('agent.')
-      .pipe(map((ev) => ev as AgentOutboundEvent));
+    return this.outbound.ofType('agent.').pipe(map((ev) => ev as AgentOutboundEvent));
   }
 }

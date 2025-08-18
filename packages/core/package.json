@@ -32,7 +32,9 @@
   },
   "dependencies": {
     "@agentos/lang": "workspace:*",
-    "@modelcontextprotocol/sdk": "^1.17.0"
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "llm-bridge-loader": "^0.0.3",
+    "zod": "^4.0.17"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",

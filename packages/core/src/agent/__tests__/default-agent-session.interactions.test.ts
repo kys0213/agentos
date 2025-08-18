@@ -1,6 +1,6 @@
 import { mock } from 'jest-mock-extended';
 import type { LlmBridge, LlmBridgeResponse, UserMessage } from 'llm-bridge-spec';
-import { DefaultAgentSession } from '../default-agent-session';
+import { DefaultAgentSession } from '../simple-agent-session';
 import type { ChatSession, MessageHistory } from '../../chat/chat-session';
 import type { AgentMetadata } from '../agent-metadata';
 import { ChatSessionMetadata } from '../../chat/chat-session-metata';

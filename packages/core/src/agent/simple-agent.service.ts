@@ -8,6 +8,14 @@ import type { AgentManager } from './agent-manager';
 import type { AgentSearchQuery } from './agent-search';
 import type { AgentSession } from './agent-session';
 import type { AgentService } from './agent.service';
+import { Errors } from '../common/error/core-error';
+import { CreateAgentMetadata } from './agent-metadata';
+
+import { LlmBridgeRegistry } from '../llm/bridge/registry';
+import { SimpleAgent } from './simple-agent';
+import { McpRegistry } from '../tool/mcp/mcp.registery';
+import { ChatManager } from '../chat/chat.manager';
+import { AgentMetadataRepository } from './agent-metadata.repository';
 
 /**
  * A minimal AgentService implementation that wraps an existing AgentManager.
@@ -15,10 +23,29 @@ import type { AgentService } from './agent.service';
  * - Provides simple in-memory search using getAllAgents.
  */
 export class SimpleAgentService implements AgentService {
+  private readonly agents = new Map<string, Agent>();
+
   constructor(
     private readonly manager: AgentManager,
-    private readonly metadataRepo?: import('./agent-metadata.repository').AgentMetadataRepository
+    private readonly llmBridgeRegistry: LlmBridgeRegistry,
+    private readonly mcpRegistry: McpRegistry,
+    private readonly chatManager: ChatManager,
+    private readonly agentMetadataRepository: AgentMetadataRepository
   ) {}
+
+  async createAgent(metadata: CreateAgentMetadata): Promise<Agent> {
+    const llmBridge = await this.llmBridgeRegistry.getBridgeOrThrow(metadata.preset.llmBridgeName);
+
+    const createdMetadata = await this.agentMetadataRepository.create(metadata);
+
+    return new SimpleAgent(
+      createdMetadata.id,
+      llmBridge,
+      this.mcpRegistry,
+      this.chatManager,
+      this.agentMetadataRepository
+    );
+  }
 
   async getAgent(agentId: string): Promise<Agent | null> {
     return await this.manager.getAgent(agentId);
@@ -48,10 +75,13 @@ export class SimpleAgentService implements AgentService {
       cursor: pagination?.cursor || '',
       direction: 'forward',
     });
+
     const withMeta = await Promise.all(
       all.items.map(async (a) => ({ a, m: await a.getMetadata() }))
     );
+
     const filtered = withMeta.filter(({ m }) => this.matchesMeta(m, query)).map(({ a }) => a);
+
     return this.paginate(filtered, pagination);
   }
 
@@ -60,7 +90,11 @@ export class SimpleAgentService implements AgentService {
     options?: { sessionId?: string; presetId?: string }
   ): Promise<AgentSession> {
     const agent = await this.manager.getAgent(agentId);
-    if (!agent) throw new Error(`Agent not found: ${agentId}`);
+
+    if (!agent) {
+      throw Errors.notFound('agent', `Agent not found: ${agentId}`, { agentId });
+    }
+
     return await agent.createSession(options);
   }
 
@@ -73,14 +107,25 @@ export class SimpleAgentService implements AgentService {
   }
 
   private matchesMeta(m: Awaited<ReturnType<Agent['getMetadata']>>, q: AgentSearchQuery): boolean {
-    if (q.status && m.status !== q.status) return false;
-    if (q.name && !m.name.toLowerCase().includes(q.name.toLowerCase())) return false;
-    if (q.description && !m.description.toLowerCase().includes(q.description.toLowerCase()))
+    if (q.status && m.status !== q.status) {
       return false;
+    }
+
+    if (q.name && !m.name.toLowerCase().includes(q.name.toLowerCase())) {
+      return false;
+    }
+
+    if (q.description && !m.description.toLowerCase().includes(q.description.toLowerCase())) {
+      return false;
+    }
+
     if (Array.isArray(q.keywords) && q.keywords.length > 0) {
       const kw = new Set(q.keywords.map((k) => k.toLowerCase()));
       const has = m.keywords.some((k) => kw.has(k.toLowerCase()));
-      if (!has) return false;
+
+      if (!has) {
+        return false;
+      }
     }
     return true;
   }

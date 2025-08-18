@@ -67,7 +67,7 @@ export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge
 
   const builder = createUserInputStream({ prompt: 'You: ' })
     .on(/^history$/i, async () => {
-      const session = await manager.getSession('default');
+      const session = await manager.load({ sessionId: 'default', agentId: 'cli-agent' });
       const { items } = await session.getHistories();
       for (const msg of items) {
         const text =
@@ -95,6 +95,6 @@ export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge
   const stream = builder.build();
   await stream.run();
 
-  const session = await manager.getSession('default');
+  const session = await manager.load({ sessionId: 'default', agentId: 'cli-agent' });
   await session.commit();
 }
