@@ -122,6 +122,31 @@ export class FileAgentMetadataRepository implements AgentMetadataRepository {
     this.events.emit('deleted', { id });
   }
 
+  async addActiveSessionCount(id: string): Promise<void> {
+    const current = await this.getOrThrow(id);
+    const next: AgentMetadata = {
+      ...current,
+      sessionCount: (current.sessionCount ?? 0) + 1,
+      version: this.nextVersion(current.version),
+    } as AgentMetadata;
+    const handler = langFs.JsonFileHandler.create<AgentMetadata>(this.filePath(id));
+    await handler.writeOrThrow(next, { prettyPrint: true });
+    this.events.emit('changed', { id: next.id, version: next.version });
+  }
+
+  async minusActiveSessionCount(id: string): Promise<void> {
+    const current = await this.getOrThrow(id);
+    const nextCount = Math.max(0, (current.sessionCount ?? 0) - 1);
+    const next: AgentMetadata = {
+      ...current,
+      sessionCount: nextCount,
+      version: this.nextVersion(current.version),
+    } as AgentMetadata;
+    const handler = langFs.JsonFileHandler.create<AgentMetadata>(this.filePath(id));
+    await handler.writeOrThrow(next, { prettyPrint: true });
+    this.events.emit('changed', { id: next.id, version: next.version });
+  }
+
   on?(
     event: 'changed' | 'deleted',
     handler: (p: { id: string; version?: string }) => void
