@@ -1,12 +1,5 @@
 import { UserMessage, LlmBridge } from 'llm-bridge-spec';
-import {
-  ChatManager,
-  McpRegistry,
-  Preset,
-  SimpleAgentService,
-  FileAgentMetadataRepository,
-  LlmBridgeRegistry,
-} from '@agentos/core';
+import { ChatManager, McpRegistry, Preset, FileAgentMetadataRepository, SimpleAgent } from '@agentos/core';
 import * as path from 'path';
 import * as os from 'os';
 import { createUserInputStream } from './utils/user-input-stream';
@@ -16,42 +9,8 @@ export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge
   const baseDir = path.join(os.homedir(), '.agentos-cli');
   const repo = new FileAgentMetadataRepository(path.join(baseDir, 'agents'));
 
-  // Minimal LlmBridgeRegistry that returns provided llmBridge by name
-  class CliBridgeRegistry implements LlmBridgeRegistry {
-    async listSummaries() {
-      return [];
-    }
-    async getManifest() {
-      return null;
-    }
-    async getBridge() {
-      return null;
-    }
-    async getBridgeOrThrow() {
-      throw new Error('not implemented');
-    }
-    async getBridgeByName(name: string) {
-      // single bridge environment: return provided bridge for any name
-      return llmBridge;
-    }
-    async loadBridge() {
-      throw new Error('not implemented');
-    }
-    async register() {
-      throw new Error('not implemented');
-    }
-    async unregister() {
-      throw new Error('not implemented');
-    }
-    async getActiveId() {
-      return null;
-    }
-    async setActiveId() {
-      /* no-op */
-    }
-  }
-  const llmRegistry = new CliBridgeRegistry();
-  const agentService = new SimpleAgentService(llmRegistry, new McpRegistry(), manager, repo);
+  // Construct a single SimpleAgent with provided bridge/manager/repo
+  const agent = new SimpleAgent('cli-agent', llmBridge, new McpRegistry(), manager, repo);
 
   const preset: Preset = {
     id: 'cli-preset',
@@ -77,7 +36,7 @@ export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge
   };
 
   // Ensure initial agent metadata exists
-  await agentService.createAgent({
+  await repo.create({
     id: 'cli-agent',
     name: 'CLI Agent',
     description: 'Interactive CLI agent',
@@ -85,7 +44,7 @@ export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge
     keywords: ['cli', 'interactive'],
     preset,
     status: 'active',
-  } as any);
+  });
 
   console.log('Type your message. Enter "quit" to exit. Use "history" to view messages.');
 
@@ -107,7 +66,7 @@ export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge
         role: 'user',
         content: { contentType: 'text', value: input },
       };
-      const { messages } = await agentService.execute('cli-agent', [userMessage]);
+      const { messages } = await agent.chat([userMessage]);
       const assistantMessage = messages[messages.length - 1];
       const text =
         !Array.isArray(assistantMessage.content) && assistantMessage.content.contentType === 'text'
