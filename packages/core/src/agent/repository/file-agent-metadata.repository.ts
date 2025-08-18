@@ -206,7 +206,7 @@ export class FileAgentMetadataRepository implements AgentMetadataRepository {
     return Date.now().toString(36);
   }
 
-  private async getOrThrow(id: string): Promise<AgentMetadata> {
+  async getOrThrow(id: string): Promise<AgentMetadata> {
     const m = await this.get(id);
     if (!m) {
       throw Errors.notFound('agent_metadata_repository', `Agent metadata not found: ${id}`, { id });
