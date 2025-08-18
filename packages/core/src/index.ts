@@ -16,8 +16,6 @@ export * from './common/event/event-subscriber';
 export * from './common/event/ipc-payload-guards';
 export * from './common/event/ipc-renderer-helpers';
 export * from './common/event/simple-event-emitter';
-export * from './agent/agent-manager';
-export * from './agent/simple-agent-manager';
 export * from './agent/agent-metadata';
 export * from './agent/agent-session';
 export * from './agent/agent-search';
