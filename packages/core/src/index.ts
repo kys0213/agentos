@@ -24,7 +24,6 @@ export * from './agent/agent-search';
 export * from './agent/agent-metadata.repository';
 export * from './agent/repository/file-agent-metadata.repository';
 export * from './agent/agent.service';
-export * from './agent/session.service';
 export * from './agent/simple-agent.service';
 
 // MCP (Model Context Protocol) - 새로운 4-레이어 아키텍처
