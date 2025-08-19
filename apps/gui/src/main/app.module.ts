@@ -6,10 +6,10 @@ import { ElectronAppModule } from './electron/electron-app.module';
 import { PresetApiModule } from './preset/preset.module';
 import { McpUsageModule } from './common/mcp/mcp-usage.module';
 import { McpRegistryModule } from './common/mcp/mcp-registry.module';
-import { McpUsageController } from './mcp/mcp-usage.controller';
-import { McpController } from './mcp/mcp.controller';
-import { BridgeController } from './bridge/bridge.controller';
 import { McpUsagePublisher } from './mcp/mcp-usage.publisher';
+import { McpApiModule } from './mcp/mcp.api.module';
+import { McpUsageApiModule } from './mcp/mcp-usage.api.module';
+import { BridgeApiModule } from './bridge/bridge.api.module';
 import { OutboundChannelModule } from './common/event/outbound-channel.module';
 
 @Module({
@@ -20,6 +20,9 @@ import { OutboundChannelModule } from './common/event/outbound-channel.module';
     McpRegistryModule,
     McpUsageModule,
     OutboundChannelModule,
+    McpApiModule,
+    McpUsageApiModule,
+    BridgeApiModule,
   ],
   providers: [
     {
@@ -32,6 +35,6 @@ import { OutboundChannelModule } from './common/event/outbound-channel.module';
     },
     McpUsagePublisher,
   ],
-  controllers: [McpUsageController, McpController, BridgeController],
+  controllers: [],
 })
 export class AppModule {}
