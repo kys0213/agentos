@@ -75,8 +75,8 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 
 ## Todo
 
-- [ ] Preload에 이벤트 구독 API 추가: `electronBridge.on(channel, handler): () => void`
-- [ ] Preload에 generic invoke 추가: `rpc.request(channel, payload)`
+- [x] Preload에 이벤트 구독 API 추가: `electronBridge.on(channel, handler): () => void`
+- [x] Preload에 generic invoke 추가: `rpc.request(channel, payload)`
 - [x] Renderer에 프레임 기반 `ElectronIpcTransport` 구현(순수 전송)
 - [x] Agent 서비스 스캐폴드(`AgentRpcService`) 추가 및 타입 import 정리
 - [x] Bridge/Preset 서비스 추가: `BridgeRpcService`, `PresetRpcService`
@@ -97,7 +97,7 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 
 ## 작업 순서
 
-1. **Preload 확장**: `electronBridge.on` + `rpc.request` 추가
+1. [완료] **Preload 확장**: `electronBridge.on` + `rpc.request` 추가
 2. [완료] **Renderer 전송**: 채널 기반 `ElectronIpcTransport` 구현
 3. [완료] **서비스 추가 1차**: Agent/Bridge/Preset/MCP/MCPUsage/Conversation RPC 서비스 추가 및 등록
 4. [진행] **호출부 이관**: 기존 훅/컨테이너를 RPC 서비스로 점진 이관
