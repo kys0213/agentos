@@ -1,0 +1,2 @@
+export const PRESET_REPOSITORY_TOKEN = Symbol('PRESET_REPOSITORY');
+
