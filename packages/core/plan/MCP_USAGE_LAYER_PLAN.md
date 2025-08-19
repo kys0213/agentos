@@ -97,8 +97,8 @@ export class McpUsageService {
 - [x] 파일 기반 저장소 구현(`FileMcpUsageRepository`, append/list/getStats)
 - [x] 서비스 구현(`McpUsageService`, 레코딩/조회/통계)
 - [x] 단위 테스트(레포지토리/서비스)
-- [ ] `index.ts` export 정리 + 문서화
-- [ ] McpService 훅 연결(작업 시작/완료 시 Usage 기록) — 별도 커밋
+- [x] `index.ts` export 정리 + 문서화
+- [x] McpService 훅 연결(작업 시작/완료 시 Usage 기록) — 별도 커밋
 - [ ] GUI 컨트롤러를 UsageService로 전환 — 별도 PR
 
 ## 작업 순서
