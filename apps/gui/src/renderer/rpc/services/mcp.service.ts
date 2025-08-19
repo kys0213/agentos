@@ -40,4 +40,22 @@ export class McpRpcService {
   getAllToolMetadata(): Promise<McpToolMetadata[]> {
     return this.transport.request('mcp:get-all-tool-metadata');
   }
+
+  // New controller-based routes
+  getTool(fullyQualifiedName: string) {
+    return this.transport.request('mcp.getTool', fullyQualifiedName);
+  }
+  invokeTool(
+    fullyQualifiedName: string,
+    input?: Record<string, unknown>,
+    opts?: { agentId?: string; agentName?: string; resumptionToken?: string }
+  ) {
+    return this.transport.request('mcp.invokeTool', {
+      name: fullyQualifiedName,
+      input,
+      agentId: opts?.agentId,
+      agentName: opts?.agentName,
+      resumptionToken: opts?.resumptionToken,
+    });
+  }
 }
