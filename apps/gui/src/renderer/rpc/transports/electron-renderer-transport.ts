@@ -26,11 +26,24 @@ export class ElectronIpcTransport implements RpcTransport {
     this.bridge = b as BridgeLike;
   }
 
+  private resolveBridge(): BridgeLike {
+    if (this.bridge) return this.bridge;
+    const b =
+      typeof window !== 'undefined' && (window as any).electronBridge
+        ? ((window as any).electronBridge as BridgeLike)
+        : null;
+    if (!b || typeof b.start !== 'function' || typeof b.post !== 'function') {
+      throw new Error('ElectronIpcTransport: electronBridge not available when needed');
+    }
+    this.bridge = b;
+    return this.bridge;
+  }
+
   start(onFrame: (f: RpcFrame) => void): void {
-    this.bridge.start(onFrame);
+    this.resolveBridge().start(onFrame);
   }
   post(frame: RpcFrame): void {
-    this.bridge.post(frame);
+    this.resolveBridge().post(frame);
   }
   stop?(): void {
     if (this.bridge.stop) {
