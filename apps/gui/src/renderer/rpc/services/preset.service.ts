@@ -1,8 +1,26 @@
 import type { RpcTransport } from '../../../shared/rpc/transport';
-import type { CreatePreset, Preset } from '@agentos/core';
+import type { CreatePreset, Preset, PresetSummary } from '@agentos/core';
+import type { CursorPaginationResult } from '@agentos/core';
 
 export class PresetRpcService {
   constructor(private readonly transport: RpcTransport) {}
+
+  // New API (Nest controller channels)
+  listSummaries(): Promise<CursorPaginationResult<PresetSummary>> {
+    return this.transport.request('preset.list');
+  }
+  get(id: string): Promise<Preset | null> {
+    return this.transport.request('preset.get', id);
+  }
+  create(preset: Preset): Promise<{ success: boolean; error?: string }> {
+    return this.transport.request('preset.create', preset);
+  }
+  update(id: string, preset: Preset): Promise<{ success: boolean; error?: string }> {
+    return this.transport.request('preset.update', { id, preset });
+  }
+  remove(id: string): Promise<{ success: boolean; error?: string }> {
+    return this.transport.request('preset.delete', id);
+  }
 
   getAllPresets(): Promise<Preset[]> {
     return this.transport.request('preset:get-all');
