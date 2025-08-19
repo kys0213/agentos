@@ -38,3 +38,27 @@ const unsubscribe = await transport.stream('mcp.usage.events', (e) => {
 unsubscribe();
 ```
 
+## 렌더러 부트스트랩 패턴 (권장)
+
+- Transport/Endpoint 분리: 프레임 브리지(electronBridge.start/post)를 얇게 감싼 전송층과, 이를 사용하는 `RpcEndpoint`를 분리합니다.
+- 의존성 주입: 앱 부트스트랩은 `RpcTransport`를 인자로 받아 서비스 컨테이너를 구성합니다. 전송 구현을 내부에서 숨기지 않습니다.
+- 준비 대기: 부트스트랩 전에 `waitForRpcReady()`를 호출해 preload 주입(`electronBridge`, `rpc.request`) 준비를 명시적으로 보장합니다.
+- 순환 참조 회피: 전송 구현이 `RpcEndpoint`를 생성하거나 참조하지 않도록 합니다. 필요 시 별도 클라이언트(EndpointClient)로 `request/stream`만 노출해 사용합니다.
+
+예시(요지):
+
+```ts
+// wait
+await waitForRpcReady();
+
+// frame bridge (electronBridge wrapper)
+const frameBridge = new ElectronFrameBridge();
+
+// endpoint and client
+const endpoint = new RpcEndpoint(frameBridge);
+endpoint.start();
+const transport: RpcTransport = new EndpointClient(endpoint);
+
+// inject transport to services
+await bootstrap(transport);
+```

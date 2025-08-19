@@ -16,3 +16,6 @@ export async function waitForRpcReady(timeoutMs = 5000): Promise<void> {
 
   throw new Error('RPC not ready');
 }
+
+// Alias for readability in bootstrap code
+export const waitForRendererReady = waitForRpcReady;
