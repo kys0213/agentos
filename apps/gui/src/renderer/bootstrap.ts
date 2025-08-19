@@ -37,7 +37,7 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
   console.log('📡 IpcChannel created/injected');
 
   // Channel-based RpcTransport (권장 경로)
-  const rpcTransport = new ElectronIpcTransport(window.electronBridge);
+  const rpcTransport = new ElectronIpcTransport();
 
   // 모든 서비스에 동일한 IpcChannel 주입하여 생성
   // 새 RPC 서비스(Bridge/Preset/Agent)는 채널 기반 Transport를 사용

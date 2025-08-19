@@ -2,10 +2,29 @@ import { RpcFrame } from '../../../shared/rpc/rpc-frame';
 import type { RpcTransport } from '../../../shared/rpc/transport';
 import { RpcEndpoint } from '../rpc-endpoint';
 
+type BridgeLike = {
+  start: (onFrame: (f: RpcFrame) => void) => void;
+  post: (frame: RpcFrame) => void;
+  stop?: () => void;
+};
+
 export class ElectronIpcTransport implements RpcTransport {
   private endpoint?: RpcEndpoint;
 
-  constructor(private bridge: RpcTransport) {}
+  private bridge: BridgeLike;
+
+  constructor(bridge?: BridgeLike) {
+    // Allow passing a custom bridge (for tests); default to window.electronBridge
+    const b =
+      bridge ||
+      (typeof window !== 'undefined' && (window as any).electronBridge
+        ? (window as any).electronBridge
+        : null);
+    if (!b || typeof b.start !== 'function' || typeof b.post !== 'function') {
+      throw new Error('ElectronIpcTransport: electronBridge not available or invalid');
+    }
+    this.bridge = b as BridgeLike;
+  }
 
   start(onFrame: (f: RpcFrame) => void): void {
     this.bridge.start(onFrame);

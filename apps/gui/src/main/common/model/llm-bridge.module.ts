@@ -12,14 +12,25 @@ import * as path from 'path';
       provide: LLM_BRIDGE_REGISTRY_TOKEN,
       inject: [ElectronAppEnvironment],
       useFactory: async (env: ElectronAppEnvironment) => {
-        const mod = await import(
-          'llm-bridge-loader/dist/esm/dependency/dependency-bridge.loader.js'
-        );
-        const LoaderCtor = (mod as { DependencyBridgeLoader: new () => unknown })
-          .DependencyBridgeLoader;
+        let loader: unknown;
+        try {
+          const mod = await import(
+            'llm-bridge-loader/dist/esm/dependency/dependency-bridge.loader.js'
+          );
+          loader = new (mod as { DependencyBridgeLoader: new () => unknown })
+            .DependencyBridgeLoader();
+        } catch {
+          class NoopBridgeLoader {
+            async load() {
+              throw new Error('DependencyBridgeLoader not available in this build');
+            }
+          }
+          loader = new NoopBridgeLoader();
+        }
+
         return new FileBasedLlmBridgeRegistry(
           path.join(env.userDataPath, 'bridges'),
-          new LoaderCtor() as any
+          loader as any
         );
       },
     },
