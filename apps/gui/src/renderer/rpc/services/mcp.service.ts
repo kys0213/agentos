@@ -1,4 +1,4 @@
-import type { RpcTransport } from '../../../shared/rpc/transport';
+import type { RpcClient } from '../../../shared/rpc/transport';
 import type { McpConfig, McpToolMetadata } from '@agentos/core';
 import type {
   ResourceListResponse,
@@ -7,7 +7,7 @@ import type {
 } from '../../../shared/types/ipc-channel';
 
 export class McpRpcService {
-  constructor(private readonly transport: RpcTransport) {}
+  constructor(private readonly transport: RpcClient) {}
 
   getAllMcp(): Promise<McpConfig[]> {
     return this.transport.request('mcp:get-all');

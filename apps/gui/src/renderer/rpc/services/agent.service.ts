@@ -1,4 +1,4 @@
-import type { RpcTransport } from '../../../shared/rpc/transport';
+import type { RpcClient } from '../../../shared/rpc/transport';
 import type {
   AgentChatResult,
   AgentExecuteOptions,
@@ -11,7 +11,7 @@ import type {
 import type { UserMessage } from 'llm-bridge-spec';
 
 export class AgentRpcService {
-  constructor(private readonly transport: RpcTransport) {}
+  constructor(private readonly transport: RpcClient) {}
 
   async chat(
     agentId: string,

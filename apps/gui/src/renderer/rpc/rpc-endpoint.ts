@@ -1,5 +1,5 @@
 // rpc/engine.ts
-import { RpcTransport } from '../../shared/rpc/transport';
+import type { FrameTransport, RpcClient } from '../../shared/rpc/transport';
 import { Cid, RpcFrame, RpcMetadata } from '../../shared/rpc/rpc-frame';
 import { isObservable, Observable } from 'rxjs';
 import { utils } from '@agentos/lang';
@@ -32,16 +32,24 @@ type StreamContext<T> = {
   cid: Cid;
 };
 
-export class RpcEndpoint {
+export class RpcEndpoint implements RpcClient {
   private pending = new Map<Cid, RpcObserver>();
   private cancelListeners = new Set<(f: RpcFrame) => void>();
   private handlers: RpcHandlers = {};
   private seq = 0;
 
   constructor(
-    private transport: RpcTransport,
+    private transport: FrameTransport,
     private opts: RpcClientOptions = {}
   ) {}
+
+  start() {
+    this.transport.start(this.onFrame);
+  }
+  stop() {
+    this.transport.stop?.();
+    this.clear();
+  }
 
   clear() {
     this.pending.clear();

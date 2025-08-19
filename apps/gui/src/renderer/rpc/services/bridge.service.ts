@@ -1,8 +1,8 @@
-import type { RpcTransport } from '../../../shared/rpc/transport';
+import type { RpcClient } from '../../../shared/rpc/transport';
 import type { LlmManifest } from 'llm-bridge-spec';
 
 export class BridgeRpcService {
-  constructor(private readonly transport: RpcTransport) {}
+  constructor(private readonly transport: RpcClient) {}
 
   // New API (controller-based)
   registerBridge(

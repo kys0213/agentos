@@ -1,4 +1,4 @@
-import type { RpcTransport } from '../../../shared/rpc/transport';
+import type { RpcClient } from '../../../shared/rpc/transport';
 import type {
   CursorPagination,
   CursorPaginationResult,
@@ -7,7 +7,7 @@ import type {
 } from '@agentos/core';
 
 export class ConversationRpcService {
-  constructor(private readonly transport: RpcTransport) {}
+  constructor(private readonly transport: RpcClient) {}
 
   listSessions(
     pagination?: CursorPagination

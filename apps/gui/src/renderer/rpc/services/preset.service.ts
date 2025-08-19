@@ -1,9 +1,9 @@
-import type { RpcTransport } from '../../../shared/rpc/transport';
+import type { RpcClient } from '../../../shared/rpc/transport';
 import type { CreatePreset, Preset, PresetSummary } from '@agentos/core';
 import type { CursorPaginationResult } from '@agentos/core';
 
 export class PresetRpcService {
-  constructor(private readonly transport: RpcTransport) {}
+  constructor(private readonly transport: RpcClient) {}
 
   // New API (Nest controller channels)
   listSummaries(): Promise<CursorPaginationResult<PresetSummary>> {
