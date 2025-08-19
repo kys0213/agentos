@@ -1,4 +1,3 @@
-import { CreateAgentMetadata } from '@agentos/core';
 import { z } from 'zod';
 
 export const agentMetadataSchema = z.object({

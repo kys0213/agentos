@@ -16,15 +16,12 @@ export * from './common/event/event-subscriber';
 export * from './common/event/ipc-payload-guards';
 export * from './common/event/ipc-renderer-helpers';
 export * from './common/event/simple-event-emitter';
-export * from './agent/agent-manager';
-export * from './agent/simple-agent-manager';
 export * from './agent/agent-metadata';
 export * from './agent/agent-session';
 export * from './agent/agent-search';
 export * from './agent/agent-metadata.repository';
 export * from './agent/repository/file-agent-metadata.repository';
 export * from './agent/agent.service';
-export * from './agent/session.service';
 export * from './agent/simple-agent.service';
 
 // MCP (Model Context Protocol) - 새로운 4-레이어 아키텍처
@@ -54,3 +51,4 @@ export * from './common/error/core-error';
 export * from './llm/bridge/types';
 export * from './llm/bridge/registry';
 export * from './llm/bridge/usage';
+export * from './llm/bridge/file/file-based-llm-bridge-registry';

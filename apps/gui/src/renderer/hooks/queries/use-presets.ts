@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ServiceContainer } from '../../../shared/ipc/service-container';
-import { Preset } from '@agentos/core';
+import { ServiceContainer } from '../../ipc/service-container';
+import type { Preset } from '@agentos/core';
 
 // Query Keys
 const QUERY_KEYS = {

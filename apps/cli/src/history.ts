@@ -8,7 +8,7 @@ export async function browseHistory(manager: ChatManager, sessionId: string): Pr
   const pageSize = 20;
   const cacheSize = parseInt(process.env.AGENTOS_PAGE_CACHE_SIZE ?? '5', 10);
 
-  const session = await manager.load({ sessionId });
+  const session = await manager.load({ sessionId, agentId: 'cli-agent' });
 
   const fetchPage = async (cursor?: string) =>
     session.getHistories({ cursor: cursor ?? '', limit: pageSize, direction: 'forward' });

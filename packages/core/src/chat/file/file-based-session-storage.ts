@@ -8,7 +8,7 @@ import { FileBasedChatSessionMetadataFile } from './file-based-chat-session-meta
 import { FileBasedSessionMetadata } from './file-based-session.metadata';
 import { validation } from '@agentos/lang';
 
-const { isNonEmptyArray, isPlainObject } = validation;
+const { isNonEmptyArray } = validation;
 
 export class FileBasedSessionStorage {
   // TODO LRU Cache 적용
@@ -16,24 +16,28 @@ export class FileBasedSessionStorage {
 
   constructor(private readonly baseDir: string) {}
 
-  async saveMessageHistories(sessionId: string, messageHistories: MessageHistory[]): Promise<void> {
-    const { messageHistory: messageHistoryFile } = await this.resolveSessionDir(sessionId);
+  async saveMessageHistories(
+    agentId: string,
+    sessionId: string,
+    messageHistories: MessageHistory[]
+  ): Promise<void> {
+    const { messageHistory: messageHistoryFile } = await this.resolveSessionDir(agentId, sessionId);
 
     await messageHistoryFile.appendMany(messageHistories);
   }
 
-  async readAll(sessionId: string): Promise<MessageHistory[]> {
+  async readAll(agentId: string, sessionId: string): Promise<MessageHistory[]> {
     const messageHistories: MessageHistory[] = [];
 
-    for await (const messageHistory of this.read(sessionId)) {
+    for await (const messageHistory of this.read(agentId, sessionId)) {
       messageHistories.push(messageHistory);
     }
 
     return messageHistories;
   }
 
-  async *read(sessionId: string): AsyncGenerator<MessageHistory> {
-    const files = await this.resolveSessionDir(sessionId);
+  async *read(agentId: string, sessionId: string): AsyncGenerator<MessageHistory> {
+    const files = await this.resolveSessionDir(agentId, sessionId);
 
     if (!files) {
       throw new Error(`Session not found: ${sessionId}`);
@@ -46,20 +50,24 @@ export class FileBasedSessionStorage {
     }
   }
 
-  async saveCheckpoint(sessionId: string, checkpoint: Checkpoint): Promise<void> {
-    const { checkpoint: checkpointFile } = await this.resolveSessionDir(sessionId);
+  async saveCheckpoint(agentId: string, sessionId: string, checkpoint: Checkpoint): Promise<void> {
+    const { checkpoint: checkpointFile } = await this.resolveSessionDir(agentId, sessionId);
 
     await checkpointFile.update(checkpoint);
   }
 
-  async saveSessionMetadata(sessionId: string, metadata: FileBasedSessionMetadata): Promise<void> {
-    const { metadata: metaFile } = await this.resolveSessionDir(sessionId);
+  async saveSessionMetadata(
+    agentId: string,
+    sessionId: string,
+    metadata: FileBasedSessionMetadata
+  ): Promise<void> {
+    const { metadata: metaFile } = await this.resolveSessionDir(agentId, sessionId);
 
     await metaFile.update(metadata);
   }
 
-  async getCheckpoint(sessionId: string): Promise<Checkpoint | undefined> {
-    const { checkpoint } = await this.resolveSessionDir(sessionId);
+  async getCheckpoint(agentId: string, sessionId: string): Promise<Checkpoint | undefined> {
+    const { checkpoint } = await this.resolveSessionDir(agentId, sessionId);
 
     const data = await checkpoint.read();
 
@@ -78,8 +86,8 @@ export class FileBasedSessionStorage {
     };
   }
 
-  async getCheckpointOrThrow(sessionId: string): Promise<Checkpoint> {
-    const checkpoint = await this.getCheckpoint(sessionId);
+  async getCheckpointOrThrow(agentId: string, sessionId: string): Promise<Checkpoint> {
+    const checkpoint = await this.getCheckpoint(agentId, sessionId);
 
     if (!checkpoint) {
       throw new Error(`Checkpoint not found: ${sessionId}`);
@@ -88,8 +96,8 @@ export class FileBasedSessionStorage {
     return checkpoint;
   }
 
-  async getSessionMetadata(sessionId: string): Promise<FileBasedSessionMetadata> {
-    const { metadata } = await this.resolveSessionDir(sessionId);
+  async getSessionMetadata(agentId: string, sessionId: string): Promise<FileBasedSessionMetadata> {
+    const { metadata } = await this.resolveSessionDir(agentId, sessionId);
 
     const meta = await metadata.read();
 
@@ -115,8 +123,14 @@ export class FileBasedSessionStorage {
   /**
    * 세션 디렉토리 목록을 조회하여 ChatSessionDescription 리스트 반환
    */
-  async getSessionList(): Promise<ChatSessionDescription[]> {
-    const entries = await fs.readdir(this.baseDir, { withFileTypes: true });
+  async getSessionList(agentId: string): Promise<ChatSessionDescription[]> {
+    let entries: import('fs').Dirent[] = [];
+    try {
+      entries = await fs.readdir(path.join(this.baseDir, agentId), { withFileTypes: true });
+    } catch (e) {
+      // 디렉토리가 없으면 빈 목록 반환
+      return [];
+    }
 
     const sessionEntries = entries.filter((entry) => entry.isDirectory());
 
@@ -142,8 +156,11 @@ export class FileBasedSessionStorage {
   /**
    * 특정 세션의 메타 정보 로딩
    */
-  async getSessionDescription(sessionId: string): Promise<ChatSessionDescription | null> {
-    const files = await this.resolveSessionDir(sessionId);
+  async getSessionDescription(
+    agentId: string,
+    sessionId: string
+  ): Promise<ChatSessionDescription | null> {
+    const files = await this.resolveSessionDir(agentId, sessionId);
 
     if (!files) {
       return null;
@@ -158,14 +175,14 @@ export class FileBasedSessionStorage {
     };
   }
 
-  private async resolveSessionDir(sessionId: string): Promise<ChatSessionFiles> {
+  private async resolveSessionDir(agentId: string, sessionId: string): Promise<ChatSessionFiles> {
     const cached = this.dirNameCache.get(sessionId);
 
     if (cached) {
       return cached;
     }
 
-    const directoryPath = path.join(this.baseDir, sessionId);
+    const directoryPath = path.join(this.baseDir, agentId, sessionId);
     const metaFile = new FileBasedChatSessionMetadataFile(directoryPath);
     const messageHistoryFile = new FileBasedChatSessionMessageHistoryFile(directoryPath);
     const checkpointFile = new FileBasedChatSessionCheckpointFile(directoryPath);

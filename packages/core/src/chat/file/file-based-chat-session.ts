@@ -23,6 +23,10 @@ export class FileBasedChatSession implements ChatSession {
     private readonly titleCompressor?: CompressStrategy
   ) {}
 
+  get agentId(): string {
+    return this.metadata.agentId;
+  }
+
   get title(): string | undefined {
     return this.metadata.title;
   }
@@ -53,8 +57,16 @@ export class FileBasedChatSession implements ChatSession {
         coveringUpTo: first.createdAt,
       };
 
-      await this.storage.saveCheckpoint(this.sessionId, this.metadata.latestCheckpoint);
-      await this.storage.saveMessageHistories(this.sessionId, this.metadata.recentMessages);
+      await this.storage.saveCheckpoint(
+        this.agentId,
+        this.sessionId,
+        this.metadata.latestCheckpoint
+      );
+      await this.storage.saveMessageHistories(
+        this.agentId,
+        this.sessionId,
+        this.metadata.recentMessages
+      );
       this.metadata.recentMessages = [];
     }
 
@@ -71,7 +83,7 @@ export class FileBasedChatSession implements ChatSession {
       }
     }
 
-    await this.storage.saveSessionMetadata(this.sessionId, this.metadata);
+    await this.storage.saveSessionMetadata(this.agentId, this.sessionId, this.metadata);
   }
 
   private nextMessageId(): string {
@@ -103,7 +115,7 @@ export class FileBasedChatSession implements ChatSession {
 
     const buffer: MessageHistory[] = [];
 
-    for await (const history of this.storage.read(this.sessionId)) {
+    for await (const history of this.storage.read(this.agentId, this.sessionId)) {
       if (cursor && Number(history.messageId) <= Number(cursor)) {
         continue;
       }
@@ -123,7 +135,7 @@ export class FileBasedChatSession implements ChatSession {
   }
 
   async getCheckpoints(): Promise<CursorPaginationResult<Checkpoint>> {
-    const checkpoint = await this.storage.getCheckpoint(this.sessionId);
+    const checkpoint = await this.storage.getCheckpoint(this.agentId, this.sessionId);
 
     return {
       items: checkpoint ? [checkpoint] : [],

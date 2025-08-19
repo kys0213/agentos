@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { AppSection, UseAppNavigationReturn } from '../stores/store-types';
-import { ReadonlyPreset } from '@agentos/core';
+import type { ReadonlyPreset } from '@agentos/core';
 
 /**
  * App navigation state management hook

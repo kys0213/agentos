@@ -1,12 +1,17 @@
-import type { Agent, AgentExecuteOptions, AgentChatResult } from '../agent';
+import { mock } from 'jest-mock-extended';
+import type { Agent, AgentChatResult } from '../agent';
+import type { AgentMetadata, ReadonlyAgentMetadata } from '../agent-metadata';
 import type { AgentSession } from '../agent-session';
-import type { ReadonlyAgentMetadata } from '../agent-metadata';
-import type { AgentManager } from '../agent-manager';
 import { SimpleAgentService } from '../simple-agent.service';
-import type { CursorPaginationResult } from '../../common/pagination/cursor-pagination';
+import { LlmBridgeRegistry } from '../../llm/bridge/registry';
+import type { LlmBridge } from 'llm-bridge-spec';
+import { McpRegistry } from '../../tool/mcp/mcp.registery';
+import { ChatManager } from '../../chat/chat.manager';
+import { AgentMetadataRepository } from '../agent-metadata.repository';
 
 class FakeSession implements AgentSession {
   constructor(public readonly sessionId: string) {}
+  agentId: string = 'a1';
   get id() {
     return this.sessionId;
   }
@@ -30,6 +35,12 @@ class FakeAgent implements Agent {
     public readonly id: string,
     private readonly meta: ReadonlyAgentMetadata
   ) {}
+  update(patch: Partial<AgentMetadata>): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  delete(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
   async chat(): Promise<AgentChatResult> {
     return { messages: [], sessionId: 's-1' };
   }
@@ -57,50 +68,6 @@ class FakeAgent implements Agent {
   async endSession(): Promise<void> {}
 }
 
-class FakeManager implements AgentManager {
-  private map = new Map<string, Agent>();
-  constructor(agents: Agent[] = []) {
-    agents.forEach((a) => this.map.set(a.id, a));
-  }
-  async register(a: Agent): Promise<void> {
-    this.map.set(a.id, a);
-  }
-  async unregister(id: string): Promise<void> {
-    this.map.delete(id);
-  }
-  async getAgent(id: string): Promise<Agent | null> {
-    return this.map.get(id) ?? null;
-  }
-  async getAllAgents(): Promise<CursorPaginationResult<Agent>> {
-    return { items: Array.from(this.map.values()), nextCursor: '', hasMore: false };
-  }
-  async getAvailableAgents(): Promise<CursorPaginationResult<Agent>> {
-    return { items: Array.from(this.map.values()), nextCursor: '', hasMore: false };
-  }
-  async getActiveAgents(): Promise<CursorPaginationResult<Agent>> {
-    return { items: Array.from(this.map.values()), nextCursor: '', hasMore: false };
-  }
-  async createAgentSession(agentId: string): Promise<AgentSession> {
-    const a = this.map.get(agentId)!;
-    return a.createSession();
-  }
-  async execute(agentId: string): Promise<AgentChatResult> {
-    const a = this.map.get(agentId)!;
-    return a.chat([] as any, {} as AgentExecuteOptions);
-  }
-  async getAgentStatus(): Promise<any> {
-    return 'active';
-  }
-  async endAgentSession(): Promise<void> {}
-  async terminateAgentSession(): Promise<void> {}
-  async getStats(): Promise<any> {
-    return { totalAgents: this.map.size, agentsByStatus: {} as any, totalActiveSessions: 0 };
-  }
-  async searchAgents(): Promise<CursorPaginationResult<Agent>> {
-    return { items: Array.from(this.map.values()), nextCursor: '', hasMore: false };
-  }
-}
-
 describe('SimpleAgentService', () => {
   function meta(id: string, status: any = 'active'): ReadonlyAgentMetadata {
     return {
@@ -119,48 +86,87 @@ describe('SimpleAgentService', () => {
   }
 
   it('lists and gets agents', async () => {
-    const a1 = new FakeAgent('a1', meta('a1'));
-    const a2 = new FakeAgent('a2', meta('a2'));
-    const svc = new SimpleAgentService(new FakeManager([a1, a2]));
+    const repo = mock<AgentMetadataRepository>();
+    const llmReg = mock<LlmBridgeRegistry>();
+    const mcpReg = mock<McpRegistry>();
+    const chatMgr = mock<ChatManager>();
+
+    const manifestName = 'x';
+    const m1 = meta('a1');
+    const m2 = meta('a2');
+    // ensure preset has llm bridge name
+    (m1 as any).preset = { llmBridgeName: manifestName, enabledMcps: [] } as any;
+    (m2 as any).preset = { llmBridgeName: manifestName } as any;
+
+    repo.list.mockResolvedValue({ items: [m1, m2], nextCursor: '', hasMore: false });
+    repo.get.mockImplementation(async (id: string) => (id === 'a1' ? m1 : id === 'a2' ? m2 : null) as any);
+    (repo.getOrThrow as any).mockImplementation(async (id: string) => (id === 'a1' ? m1 : m2));
+    llmReg.getBridgeByName.mockResolvedValue(mock<LlmBridge>() as unknown as LlmBridge);
+
+    const svc = new SimpleAgentService(llmReg, mcpReg, chatMgr, repo);
     const list = await svc.listAgents();
-    expect(list.items.map((a) => a.id)).toEqual(['a1', 'a2']);
+    expect(list.items.map((a) => a.id).sort()).toEqual(['a1', 'a2']);
     const got = await svc.getAgent('a2');
     expect(got?.id).toBe('a2');
   });
 
-  it('searches via fallback metadata filtering', async () => {
-    const a1 = new FakeAgent('a1', meta('a1'));
-    const a2 = new FakeAgent('a2', meta('a2'));
-    const svc = new SimpleAgentService(new FakeManager([a1, a2]));
+  it('searches via repository metadata filtering', async () => {
+    const repo = mock<AgentMetadataRepository>();
+    const llmReg = mock<LlmBridgeRegistry>();
+    const mcpReg = mock<McpRegistry>();
+    const chatMgr = mock<ChatManager>();
+
+    const manifestName = 'x';
+    const m1 = meta('a1');
+    (m1 as any).preset = { llmBridgeName: manifestName } as any;
+    repo.search.mockResolvedValue({ items: [m1], nextCursor: '', hasMore: false });
+    repo.get.mockResolvedValue(m1);
+    (repo.getOrThrow as any).mockResolvedValue(m1);
+    llmReg.getBridgeByName.mockResolvedValue(mock<LlmBridge>() as unknown as LlmBridge);
+
+    const svc = new SimpleAgentService(llmReg, mcpReg, chatMgr, repo);
     const res = await svc.searchAgents({ name: 'Agent a1' });
     expect(res.items.map((a) => a.id)).toEqual(['a1']);
   });
 
-  it('creates session via manager agent', async () => {
-    const a1 = new FakeAgent('a1', meta('a1'));
-    const svc = new SimpleAgentService(new FakeManager([a1]));
+  it('creates session via materialized agent', async () => {
+    const repo = mock<AgentMetadataRepository>();
+    const llmReg = mock<LlmBridgeRegistry>();
+    const mcpReg = mock<McpRegistry>();
+    const chatMgr = mock<ChatManager>();
+    const manifestName = 'x';
+    const m1 = meta('a1');
+    (m1 as any).preset = { llmBridgeName: manifestName, enabledMcps: [] } as any;
+    repo.get.mockResolvedValue(m1);
+    (repo.getOrThrow as any).mockResolvedValue(m1);
+    (repo.getOrThrow as any).mockResolvedValue(m1);
+    llmReg.getBridgeByName.mockResolvedValue(mock<LlmBridge>() as unknown as LlmBridge);
+    chatMgr.create.mockResolvedValue({ sessionId: 's-1', appendMessage: async () => {}, sumUsage: async () => {} } as any);
+
+    const svc = new SimpleAgentService(llmReg, mcpReg, chatMgr, repo);
     const session = await svc.createSession('a1');
     expect(session.sessionId).toBe('s-1');
   });
 
-  it('delegates execute to manager', async () => {
-    const a1 = new FakeAgent('a1', meta('a1'));
-    const mgr = new FakeManager([a1]);
-    const svc = new SimpleAgentService(mgr);
-    const result = await svc.execute('a1', [] as any, {} as any);
-    expect(result).toEqual({ messages: [], sessionId: 's-1' });
-  });
+  it('delegates execute to agent.chat', async () => {
+    const repo = mock<AgentMetadataRepository>();
+    const llmReg = mock<LlmBridgeRegistry>();
+    const mcpReg = mock<McpRegistry>();
+    const chatMgr = mock<ChatManager>();
+    const manifestName = 'x';
+    const m1 = meta('a1');
+    (m1 as any).preset = { llmBridgeName: manifestName, enabledMcps: [] } as any;
+    repo.get.mockResolvedValue(m1);
+    (repo.getOrThrow as any).mockResolvedValue(m1);
+    llmReg.getBridgeByName.mockResolvedValue({ invoke: async () => ({ content: { contentType: 'text', value: 'ok' }, toolCalls: [] }) } as unknown as LlmBridge);
+    chatMgr.create.mockResolvedValue({ sessionId: 's-1', appendMessage: async () => {}, sumUsage: async () => {} } as any);
+    // Ensure agent.getMetadata returns preset with enabledMcps when called during execute
+    const { SimpleAgent } = await import('../simple-agent');
+    jest.spyOn(SimpleAgent.prototype as any, 'getMetadata').mockResolvedValue(m1 as any);
 
-  it('searches via metadata repository when provided', async () => {
-    const a1 = new FakeAgent('a1', meta('a1'));
-    const a2 = new FakeAgent('a2', meta('a2'));
-    const repo = {
-      async search() {
-        return { items: [meta('a2')], nextCursor: '' };
-      },
-    } as any;
-    const svc = new SimpleAgentService(new FakeManager([a1, a2]), repo);
-    const res = await svc.searchAgents({ name: 'x' });
-    expect(res.items.map((a) => a.id)).toEqual(['a2']);
+    const svc = new SimpleAgentService(llmReg, mcpReg, chatMgr, repo);
+    const result = await svc.execute('a1', [], {});
+    expect(result.sessionId).toBe('s-1');
+    expect(Array.isArray(result.messages)).toBe(true);
   });
 });

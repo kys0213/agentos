@@ -24,7 +24,7 @@ export type AgentSessionEventMap = {
 export type AgentSessionEvent = keyof AgentSessionEventMap;
 
 export interface AgentSession {
-  readonly id: string;
+  readonly agentId: string;
   readonly sessionId: string;
 
   chat(

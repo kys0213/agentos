@@ -9,7 +9,11 @@ export async function browseSessions(manager: ChatManager): Promise<void> {
   const cacheSize = parseInt(process.env.AGENTOS_PAGE_CACHE_SIZE ?? '5', 10);
 
   const fetchPage = async (cursor?: string) =>
-    manager.list({ cursor: cursor ?? '', limit: pageSize, direction: 'forward' });
+    manager.list({
+      pagination: { cursor: cursor ?? '', limit: pageSize, direction: 'forward' },
+      agentId: 'cli-agent',
+      sessionId: '',
+    });
 
   const cache = new PageCache<Page<ChatSessionDescription>>(cacheSize);
   const cursors = new Map<number, string | undefined>();
@@ -114,10 +118,14 @@ export async function browseHistory(manager: ChatManager, sessionId: string): Pr
   const pageSize = 5;
   const cacheSize = parseInt(process.env.AGENTOS_PAGE_CACHE_SIZE ?? '5', 10);
 
-  const session = await manager.load({ sessionId });
+  const session = await manager.load({ sessionId, agentId: 'cli-agent' });
 
   const fetchPage = async (cursor?: string) =>
-    session.getHistories({ cursor: cursor ?? '', limit: pageSize, direction: 'forward' });
+    session.getHistories({
+      cursor: cursor ?? '',
+      limit: pageSize,
+      direction: 'forward',
+    });
 
   const cache = new PageCache<Page<Readonly<MessageHistory>>>(cacheSize);
   const cursors = new Map<number, string | undefined>();

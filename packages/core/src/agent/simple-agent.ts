@@ -15,12 +15,13 @@ import { ChatManager } from '../chat/chat.manager';
 import { McpContent } from '../tool/mcp/mcp';
 import { McpRegistry } from '../tool/mcp/mcp.registery';
 import { Agent, AgentChatResult, AgentExecuteOptions } from './agent';
-import { DefaultAgentSession } from './default-agent-session';
+import { DefaultAgentSession } from './simple-agent-session';
 import { AgentMetadata, ReadonlyAgentMetadata } from './agent-metadata';
 import { validation } from '@agentos/lang';
 import { Errors } from '../common/error/core-error';
 import type { AgentEvent } from './agent-events';
 import type { Unsubscribe } from '../common/event/event-subscriber';
+import { AgentMetadataRepository } from './agent-metadata.repository';
 
 const { isNonEmptyArray } = validation;
 
@@ -29,37 +30,49 @@ export class SimpleAgent implements Agent {
   private readonly agentEventHandlers = new Set<(e: AgentEvent) => void>();
 
   constructor(
+    public readonly id: string,
     private readonly llmBridge: LlmBridge,
     private readonly mcpRegistry: McpRegistry,
     private readonly chatManager: ChatManager,
-    private readonly _metadata: AgentMetadata
+    private readonly agentMetadataRepository: AgentMetadataRepository
   ) {}
 
-  get id(): string {
-    return this._metadata.id;
+  async update(patch: Partial<AgentMetadata>): Promise<void> {
+    await this.agentMetadataRepository.update(this.id, patch);
+  }
+
+  async delete(): Promise<void> {
+    this.activeSessions.clear();
+    await this.agentMetadataRepository.delete(this.id);
   }
 
   async isActive(): Promise<boolean> {
-    return this._metadata.status === 'active';
+    const metadata = await this.getMetadata();
+    return metadata.status === 'active';
   }
+
   async isIdle(): Promise<boolean> {
-    return this._metadata.status === 'idle';
+    const metadata = await this.getMetadata();
+    return metadata.status === 'idle';
   }
+
   async isInactive(): Promise<boolean> {
-    return this._metadata.status === 'inactive';
+    const metadata = await this.getMetadata();
+    return metadata.status === 'inactive';
   }
   async isError(): Promise<boolean> {
-    return this._metadata.status === 'error';
+    const metadata = await this.getMetadata();
+    return metadata.status === 'error';
   }
 
   async getMetadata(): Promise<ReadonlyAgentMetadata> {
-    return this._metadata;
+    return await this.agentMetadataRepository.getOrThrow(this.id);
   }
 
   async chat(messages: UserMessage[], options?: AgentExecuteOptions): Promise<AgentChatResult> {
     const chatSession = options?.sessionId
-      ? await this.chatManager.getSession(options?.sessionId)
-      : await this.chatManager.create();
+      ? await this.chatManager.getSession({ sessionId: options?.sessionId, agentId: this.id })
+      : await this.chatManager.create({ agentId: this.id });
 
     try {
       const buffer: Message[] = Array.from(messages);
@@ -78,17 +91,19 @@ export class SimpleAgent implements Agent {
         sessionId: chatSession.sessionId,
       };
     } finally {
-      this._metadata.lastUsed = new Date();
+      await this.update({ lastUsed: new Date() });
     }
   }
 
   async createSession(options?: { sessionId?: string; presetId?: string }) {
     const chatSession = options?.sessionId
-      ? await this.chatManager.getSession(options.sessionId)
-      : await this.chatManager.create();
+      ? await this.chatManager.getSession({ sessionId: options.sessionId, agentId: this.id })
+      : await this.chatManager.create({ agentId: this.id });
 
     this.activeSessions.set(chatSession.sessionId, chatSession);
-    this._metadata.sessionCount = (this._metadata.sessionCount ?? 0) + 1;
+
+    await this.agentMetadataRepository.addActiveSessionCount(this.id);
+
     this.emitAgentEvent({
       type: 'sessionCreated',
       agentId: this.id,
@@ -96,11 +111,10 @@ export class SimpleAgent implements Agent {
     });
 
     const session = new DefaultAgentSession(
-      this.id,
       chatSession,
       this.llmBridge,
       this.mcpRegistry,
-      this._metadata,
+      await this.getMetadata(),
       async (sessionId) => this.endSession(sessionId)
     );
 
@@ -121,37 +135,34 @@ export class SimpleAgent implements Agent {
     if (this.activeSessions.has(sessionId)) {
       this.activeSessions.delete(sessionId);
     }
-    this._metadata.sessionCount = Math.max(0, (this._metadata.sessionCount ?? 0) - 1);
+    await this.agentMetadataRepository.minusActiveSessionCount(this.id);
     this.emitAgentEvent({ type: 'sessionEnded', agentId: this.id, sessionId });
   }
 
   async idle(): Promise<void> {
-    this._metadata.status = 'idle';
+    await this.update({ status: 'idle' });
     this.emitAgentEvent({ type: 'statusChanged', agentId: this.id, status: 'idle' });
-    this.emitAgentEvent({ type: 'metadataUpdated', agentId: this.id, patch: { status: 'idle' } });
   }
 
   async activate(): Promise<void> {
-    this._metadata.status = 'active';
+    await this.update({ status: 'active' });
     this.emitAgentEvent({ type: 'statusChanged', agentId: this.id, status: 'active' });
-    this.emitAgentEvent({ type: 'metadataUpdated', agentId: this.id, patch: { status: 'active' } });
   }
 
   async inactive(): Promise<void> {
-    this._metadata.status = 'inactive';
+    await this.update({ status: 'inactive' });
     this.emitAgentEvent({ type: 'statusChanged', agentId: this.id, status: 'inactive' });
-    this.emitAgentEvent({
-      type: 'metadataUpdated',
-      agentId: this.id,
-      patch: { status: 'inactive' },
-    });
   }
 
   private async getEnabledTools(): Promise<LlmBridgeTool[]> {
     const registry = await this.mcpRegistry.getAll();
     const mcps = Array.isArray(registry) ? registry : [];
 
-    const enabledMcps = this._metadata.preset.enabledMcps;
+    const metadata = await this.getMetadata();
+
+    const enabledMcps = (metadata as any).preset?.enabledMcps as
+      | Array<{ name: string; enabledTools?: Array<{ name: string }> }>
+      | undefined;
 
     if (!isNonEmptyArray(enabledMcps)) {
       const tools = await Promise.all(mcps.map(async (mcp) => await mcp.getTools()));

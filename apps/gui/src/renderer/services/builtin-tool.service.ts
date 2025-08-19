@@ -1,17 +1,18 @@
-import type { IpcChannel } from '../../shared/types/ipc-channel';
-import type { BuiltinToolProtocol } from '../../shared/types/builtin-protocol';
 import type { BuiltinTool } from '@agentos/core';
+import type { BuiltinToolProtocol } from '../../shared/types/builtin-protocol';
+import type { RpcClient } from '../../shared/rpc/transport';
 
+// TODO 내장 도구 서비스 구현
 export class BuiltinToolService implements BuiltinToolProtocol {
-  constructor(private ipcChannel: IpcChannel) {}
+  constructor(private rpcTransport: RpcClient) {}
 
-  getAllBuiltinTools(): Promise<BuiltinTool[]> {
-    return this.ipcChannel.getAllBuiltinTools();
+  async getAllBuiltinTools(): Promise<BuiltinTool[]> {
+    return [];
   }
-  getBuiltinTool(id: string): Promise<BuiltinTool | null> {
-    return this.ipcChannel.getBuiltinTool(id);
+  async getBuiltinTool(id: string): Promise<BuiltinTool | null> {
+    return null;
   }
-  invokeBuiltinTool<R>(toolName: string, args: Record<string, any>): Promise<R> {
-    return this.ipcChannel.invokeBuiltinTool<R>(toolName, args);
+  async invokeBuiltinTool<R>(toolName: string, args: Record<string, any>): Promise<R> {
+    return {} as R;
   }
 }

@@ -1,4 +1,4 @@
-import { AgentMetadata, MessageHistory } from '@agentos/core';
+import type { AgentMetadata, MessageHistory } from '@agentos/core';
 import { Bot, Brain, ChevronRight, Copy, Sparkles, ThumbsDown, ThumbsUp, User } from 'lucide-react';
 import React from 'react';
 import { parseMessageContent, parseMessagePreview } from '../../utils/message-parser';

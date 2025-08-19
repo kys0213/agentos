@@ -122,6 +122,31 @@ export class FileAgentMetadataRepository implements AgentMetadataRepository {
     this.events.emit('deleted', { id });
   }
 
+  async addActiveSessionCount(id: string): Promise<void> {
+    const current = await this.getOrThrow(id);
+    const next: AgentMetadata = {
+      ...current,
+      sessionCount: (current.sessionCount ?? 0) + 1,
+      version: this.nextVersion(current.version),
+    } as AgentMetadata;
+    const handler = langFs.JsonFileHandler.create<AgentMetadata>(this.filePath(id));
+    await handler.writeOrThrow(next, { prettyPrint: true });
+    this.events.emit('changed', { id: next.id, version: next.version });
+  }
+
+  async minusActiveSessionCount(id: string): Promise<void> {
+    const current = await this.getOrThrow(id);
+    const nextCount = Math.max(0, (current.sessionCount ?? 0) - 1);
+    const next: AgentMetadata = {
+      ...current,
+      sessionCount: nextCount,
+      version: this.nextVersion(current.version),
+    } as AgentMetadata;
+    const handler = langFs.JsonFileHandler.create<AgentMetadata>(this.filePath(id));
+    await handler.writeOrThrow(next, { prettyPrint: true });
+    this.events.emit('changed', { id: next.id, version: next.version });
+  }
+
   on?(
     event: 'changed' | 'deleted',
     handler: (p: { id: string; version?: string }) => void
@@ -181,7 +206,7 @@ export class FileAgentMetadataRepository implements AgentMetadataRepository {
     return Date.now().toString(36);
   }
 
-  private async getOrThrow(id: string): Promise<AgentMetadata> {
+  async getOrThrow(id: string): Promise<AgentMetadata> {
     const m = await this.get(id);
     if (!m) {
       throw Errors.notFound('agent_metadata_repository', `Agent metadata not found: ${id}`, { id });

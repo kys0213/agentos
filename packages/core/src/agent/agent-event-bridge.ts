@@ -1,4 +1,4 @@
-import type { AgentManager } from './agent-manager';
+import type { AgentService } from './agent.service';
 import type { Agent } from './agent';
 import type { AgentSession, AgentSessionEvent, AgentSessionEventMap } from './agent-session';
 import type { EventPublisher } from '../common/event/event-publisher';
@@ -10,7 +10,7 @@ export class AgentEventBridge {
   private readonly unsubs = new Map<string, Unsub[]>();
 
   constructor(
-    private readonly manager: AgentManager,
+    private readonly service: AgentService,
     private readonly publisher: EventPublisher
   ) {}
 
@@ -21,7 +21,7 @@ export class AgentEventBridge {
     let hasNext = true;
 
     do {
-      const page = await this.manager.getAllAgents({ limit, cursor, direction: 'forward' });
+      const page = await this.service.listAgents({ limit, cursor, direction: 'forward' });
 
       for (const agent of page.items) {
         await this.attachAgent(agent);
@@ -37,7 +37,7 @@ export class AgentEventBridge {
 
   async attachAgent(agentOrId: Agent | string) {
     const agent =
-      typeof agentOrId === 'string' ? await this.manager.getAgent(agentOrId) : agentOrId;
+      typeof agentOrId === 'string' ? await this.service.getAgent(agentOrId) : agentOrId;
     if (!agent) return;
 
     const supportsEvents = (agent as any as Partial<EventfulAgent>).on;

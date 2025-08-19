@@ -1,6 +1,6 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
-import { setupCoreIpcHandlers } from './core-api';
+import { bootstrapIpcMainProcess } from './bootstrapIpcMainProcess';
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -25,23 +25,32 @@ function createWindow() {
   if (isDevelopment) {
     mainWindow.webContents.openDevTools();
   }
+
+  return mainWindow;
 }
 
-app.whenReady().then(() => {
-  // Setup IPC handlers (dependencies are managed internally)
-  setupCoreIpcHandlers();
+app.whenReady().then(async () => {
+  try {
+    const mainApp = await bootstrapIpcMainProcess(ipcMain);
 
-  createWindow();
+    createWindow();
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
-});
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+      }
+    });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
+    app.on('window-all-closed', () => {
+      if (process.platform !== 'darwin') {
+        app.quit();
+      }
+    });
+
+    app.on('quit', () => {
+      mainApp.close();
+    });
+  } catch (error) {
+    console.error(error);
   }
 });

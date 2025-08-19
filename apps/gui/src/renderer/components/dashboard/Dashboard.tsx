@@ -1,4 +1,4 @@
-import { AgentMetadata, Preset } from '@agentos/core';
+import type { AgentMetadata, Preset } from '@agentos/core';
 import { Activity, Bot, Cpu, Layers, MessageSquare } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';

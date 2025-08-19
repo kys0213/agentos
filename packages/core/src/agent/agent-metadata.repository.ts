@@ -8,6 +8,9 @@ import { Unsubscribe } from '../common/event/event-subscriber';
 
 export interface AgentMetadataRepository {
   get(id: string): Promise<AgentMetadata | null>;
+
+  getOrThrow(id: string): Promise<AgentMetadata>;
+
   list(pagination?: CursorPagination): Promise<CursorPaginationResult<AgentMetadata>>;
   search(
     query: AgentSearchQuery,
@@ -20,6 +23,9 @@ export interface AgentMetadataRepository {
     options?: { etag?: string; expectedVersion?: string }
   ): Promise<AgentMetadata>;
   delete(id: string): Promise<void>;
+
+  addActiveSessionCount(id: string): Promise<void>;
+  minusActiveSessionCount(id: string): Promise<void>;
 
   on?(
     event: 'changed' | 'deleted',

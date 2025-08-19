@@ -12,21 +12,21 @@ export interface ChatManager {
    * @param options - The options for the chat session
    * @returns The created chat session
    */
-  create(options?: Omit<ChatCreateOptions, 'sessionId'>): Promise<ChatSession>;
+  create(options: Omit<ChatCreateOptions, 'sessionId'>): Promise<ChatSession>;
 
   /**
    * Load a chat session
    * @param options - The options for the chat session
    * @returns The loaded chat session
    */
-  load(options: ChatLoadOptions): Promise<ChatSession>;
+  load(options: ChatBaseOptions): Promise<ChatSession>;
 
   /**
    * List all chat sessions
    * @param options - The options for the chat session
    * @returns The list of chat sessions
    */
-  list(options?: CursorPagination): Promise<CursorPaginationResult<ChatSessionDescription>>;
+  list(options: ChatListOption): Promise<CursorPaginationResult<ChatSessionDescription>>;
 
   /**
    * Get a session by ID. Creates new session if not exists, or returns cached session if available.
@@ -36,7 +36,7 @@ export interface ChatManager {
    * @param preset - Optional preset to use for new sessions
    * @returns The chat session (cached or newly created)
    */
-  getSession(sessionId: string): Promise<ChatSession>;
+  getSession(option: ChatBaseOptions): Promise<ChatSession>;
 
   /**
    * Check if a session exists (in cache or storage)
@@ -44,14 +44,14 @@ export interface ChatManager {
    * @param sessionId - The session ID
    * @returns Whether the session exists
    */
-  hasSession(sessionId: string): Promise<boolean>;
+  hasSession(option: ChatBaseOptions): Promise<boolean>;
 
   /**
    * Remove a session from cache
    *
    * @param sessionId - The session ID to remove
    */
-  removeSession(sessionId: string): Promise<void>;
+  removeSession(option: ChatBaseOptions): Promise<void>;
 
   /**
    * Get all active (cached) session IDs
@@ -68,10 +68,12 @@ export interface ChatManager {
 
 export interface ChatCreateOptions {
   sessionId?: string;
+  agentId: string;
 }
 
-export interface ChatLoadOptions {
+export interface ChatBaseOptions {
   sessionId: string;
+  agentId: string;
 }
 
 /**
@@ -82,3 +84,7 @@ export interface ChatSessionDescription {
   title: string;
   updatedAt: Date;
 }
+
+export type ChatListOption = ChatBaseOptions & {
+  pagination?: CursorPagination;
+};

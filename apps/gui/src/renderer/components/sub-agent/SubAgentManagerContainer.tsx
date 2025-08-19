@@ -4,7 +4,7 @@ import { SubAgentManager } from './SubAgentManager';
 import { fetchAgentMetadatas, updateAgentStatus } from '../../services/fetchers/subagents';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
-import { AgentStatus } from '@agentos/core';
+import type { AgentStatus } from '@agentos/core';
 
 export interface SubAgentManagerContainerProps {
   onCreateAgent?: () => void;

@@ -1,5 +1,5 @@
 import { Message, UserMessage } from 'llm-bridge-spec';
-import { ReadonlyAgentMetadata } from './agent-metadata';
+import { AgentMetadata, ReadonlyAgentMetadata } from './agent-metadata';
 import type { AgentSession } from './agent-session';
 
 /**
@@ -83,6 +83,10 @@ export interface Agent {
    * Agent를 비활성 상태로 전환합니다.
    */
   inactive(): Promise<void>;
+
+  update(patch: Partial<AgentMetadata>): Promise<void>;
+
+  delete(): Promise<void>;
 
   /**
    * Agent의 세션을 종료합니다.

@@ -301,3 +301,53 @@ npm run lint
 - **코드 리뷰에서 타입 안전성 확인**
 
 이 지침을 따라 타입 안전한 코드를 작성하고, 런타임 오류를 예방하며, 코드의 가독성과 유지보수성을 향상시킵시다.
+
+---
+
+## 9. Electron/Preload & RPC 엄격 타이핑 지침 (강화)
+
+- `as any` 금지: 이벤트/IPC 경계에서 `unknown` + 타입 가드/구체 타입을 사용합니다.
+- 프레임 타입: `RpcFrame`(discriminated union: `req | res | err | nxt | end | can`)을 공용 타입으로 사용합니다.
+- Preload는 테스트 가능한 팩토리로 분리합니다.
+  - 예: `createElectronBridge(ipc: IpcLike)`, `createRpc(ipc: IpcLike)`
+  - `IpcLike`는 `(event: unknown, payload: unknown)` 시그니처를 가진 `on/off`와 `send`만 포함합니다.
+  - Electron 전역 의존 없이 순수 함수이므로 유닛 테스트 100% 커버리지가 가능합니다.
+- 에러 타입: 서버 측 `CoreError` → 프레임 `err`로 매핑, 프리로드에서는 선택적으로 `toError(frame)` 훅으로 복원합니다.
+- 전역 접근 금지: `window as any` 대신 전역 선언(`types.d.ts`)에 안전 API(`electronBridge`, `rpc`)를 명시합니다.
+
+### 예시 (요지)
+
+```ts
+// factories (테스트 가능)
+export interface IpcLike { on: (ch: string, l: (e: unknown, p: unknown) => void) => void; off: (...);
+  send: (ch: string, payload: unknown) => void }
+export function createElectronBridge(ipc: IpcLike) { /* start/post/on 구현 */ }
+export function createRpc(ipc: IpcLike, opts?: { toError?: (f: RpcFrame) => Error }) { /* req→res/err */ }
+
+// preload.ts
+contextBridge.exposeInMainWorld('electronBridge', createElectronBridge(ipcRendererAdapter));
+contextBridge.exposeInMainWorld('rpc', createRpc(ipcRendererAdapter));
+```
+
+## 10. 테스트 지침(Preload/RPC)
+
+- 팩토리 기반으로 `MockIpc` 구현을 주입해 다음을 검증합니다.
+  - `on()`의 구독/해제 동작과 핸들러 호출
+  - `request()`의 `res` resolve / `err` reject / CID 불일치 프레임 무시
+  - 응답 후 프레임 리스너 해제(메모리 누수 방지)
+- 테스트에서 `any` 금지. 필요한 경우 `unknown`과 타입 가드를 사용합니다.
+
+## 11. 린팅/정책 권고(점진 시행)
+
+- 신규/변경 파일에 `@typescript-eslint/no-explicit-any: error` 적용(패키지별 점진 도입 권장).
+- 테스트도 린트 대상에 포함하되, 과도한 차단을 피하기 위해 단계적 적용(폴더 단위 활성화).
+- PR 체크리스트에 다음 항목 추가:
+  - [ ] `as any`/이중 단언 없음
+  - [ ] 경계(API/IPC/전역)에서 `unknown` + 가드 사용
+  - [ ] 프레임/채널 이름이 공용 문서와 일치(IPC_TERMS_AND_CHANNELS.md)
+
+## 12. 커밋/검토 원칙(타입 안전성)
+
+- 커밋 단위는 기능/문서/테스트로 잘게 분리하여 회귀 지점을 명확히 합니다.
+- 타입 제거/정밀화 커밋은 메시지 접두사로 표시: `types:`, `refactor(types):`, `test(types):`.
+- 리뷰에서 `any`/`as any` 발견 시 변경 요청 필수. 예외는 외부 타입 선언 파일에 한정합니다.

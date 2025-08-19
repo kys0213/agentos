@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { mock } from 'jest-mock-extended';
 import type { LlmBridge, LlmBridgeResponse, UserMessage } from 'llm-bridge-spec';
-import { DefaultAgentSession } from '../default-agent-session';
+import { DefaultAgentSession } from '../simple-agent-session';
 import type { AgentMetadata } from '../agent-metadata';
 import { FileBasedSessionStorage } from '../../chat/file/file-based-session-storage';
 import { FileBasedChatManager } from '../../chat/file/file-based-chat.manager';
@@ -70,7 +70,7 @@ describe('DefaultAgentSession + FileBasedChatManager cohesion', () => {
     const storage = new FileBasedSessionStorage(testDir);
     const mgr = new FileBasedChatManager(storage, noOpCompressor());
 
-    const chatSession = await mgr.create({ sessionId: 's-file-1' });
+    const chatSession = await mgr.create({ sessionId: 's-file-1', agentId: 'a-1' });
 
     const llm = mock<LlmBridge>();
     // 1st call: tool call
@@ -99,7 +99,7 @@ describe('DefaultAgentSession + FileBasedChatManager cohesion', () => {
       }),
     } as any;
 
-    const session = new DefaultAgentSession('a-1', chatSession, llm, mcp, meta());
+    const session = new DefaultAgentSession(chatSession, llm, mcp, meta());
 
     const user: UserMessage = {
       role: 'user',

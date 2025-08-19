@@ -4,7 +4,7 @@ import { browseHistory } from './history';
 import { createUserInputStream } from './utils/user-input-stream';
 
 export async function browseSessions(manager: ChatManager): Promise<void> {
-  const { items } = await manager.list();
+  const { items } = await manager.list({ agentId: 'cli-agent', sessionId: '' });
   const pageSize = 10;
   const pages = Math.ceil(items.length / pageSize);
 

@@ -7,10 +7,15 @@ import type {
 import type { AgentExecuteOptions, AgentChatResult } from './agent';
 import type { UserMessage } from 'llm-bridge-spec';
 import type { AgentSearchQuery } from './agent-search';
+import { CreateAgentMetadata } from './agent-metadata';
 
 export interface AgentService {
+  createAgent(agent: CreateAgentMetadata): Promise<Agent>;
+
   getAgent(agentId: string): Promise<Agent | null>;
+
   listAgents(pagination?: CursorPagination): Promise<CursorPaginationResult<Agent>>;
+
   searchAgents(
     query: AgentSearchQuery,
     pagination?: CursorPagination
@@ -20,6 +25,7 @@ export interface AgentService {
     agentId: string,
     options?: { sessionId?: string; presetId?: string }
   ): Promise<AgentSession>;
+
   execute(
     agentId: string,
     messages: UserMessage[],

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 // Import new design hooks for Chat mode only
 import { useMentionableAgents } from '../hooks/queries/use-chat';
@@ -6,7 +6,6 @@ import { useAppData } from '../hooks/useAppData';
 import { useAppNavigation } from '../hooks/useAppNavigation';
 
 // Chat 컨테이너 적용
-import { bootstrap, isBootstrapped } from '../bootstrap';
 import { ChatViewContainer } from './chat/ChatViewContainer';
 import ManagementView from './layout/ManagementView';
 
@@ -19,17 +18,6 @@ import ManagementView from './layout/ManagementView';
  * - design/App.tsx 구조를 따름
  */
 const NewAppLayout: React.FC = () => {
-  useEffect(() => {
-    // Ensure services are registered when running web dev entry (vite)
-    if (!isBootstrapped()) {
-      try {
-        bootstrap();
-      } catch (e) {
-        console.error('Failed to bootstrap services:', e);
-      }
-    }
-  }, []);
-
   const navigation = useAppNavigation();
 
   const appData = useAppData();

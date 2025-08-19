@@ -42,8 +42,9 @@ git pull origin main
 git checkout -b feature/ux-command-palette
 
 # 3. push 전 검증
-pnpm format
-pnpm test
+pnpm lint        # 자동 수정(--fix) 포함해 실행 권장
+pnpm typecheck   # 타입 오류 없도록 보장
+pnpm test        # 단위 테스트 통과 확인
 
 # 4. 작업 완료 후 Pull Request 생성 - 절대 직접 병합 금지!
 git push origin feature/ux-command-palette
@@ -174,11 +175,16 @@ gh pr create --title "Feature description"
 
 ```bash
 # 자동화된 체크
-pnpm lint      # 코드 스타일 검증
+pnpm lint      # 코드 스타일 검증 (자동 수정 적용 시 변경 파일 반드시 커밋)
 pnpm typecheck # 타입 오류 검증
 pnpm test      # 단위 테스트 실행
 pnpm build     # 빌드 오류 확인
 ```
+
+> Note
+>
+> - `pnpm lint --fix` 실행 후 변경된 파일이 있는지 `git status`로 확인하고, 반드시 커밋에 포함하세요. (자동 포맷팅/정렬만 바뀐 변경도 동일하게 커밋)
+> - 린트 에러/경고로 인한 의미 없는 잡음 방지를 위해, 자동 수정으로 해결 가능한 항목은 즉시 반영하고 커밋합니다.
 
 ### **GUI 테스트 정책 (Playwright MCP)**
 

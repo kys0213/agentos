@@ -82,4 +82,12 @@ export class IpcAgent implements Agent {
   async chat(messages: UserMessage[], options?: AgentExecuteOptions): Promise<AgentChatResult> {
     return await this.agentProtocol.chat(this.agentId, messages, options);
   }
+
+  async update(patch: Partial<ReadonlyAgentMetadata>): Promise<void> {
+    await this.agentProtocol.updateAgent(this.agentId, patch as any);
+  }
+
+  async delete(): Promise<void> {
+    await this.agentProtocol.deleteAgent(this.agentId);
+  }
 }

@@ -1,4 +1,4 @@
-import { MessageHistory } from '@agentos/core';
+import type { MessageHistory } from '@agentos/core';
 
 /**
  * Message content를 텍스트 문자열로 파싱
@@ -24,8 +24,8 @@ export function parseMessageContent(message: MessageHistory): string {
   }
 
   // 단일 콘텐츠(레거시) 호환 처리
-  if (typeof message.content === 'object' && 'contentType' in message.content) {
-    const legacy = message.content as any;
+  if (typeof message.content === 'object' && (message.content as any).contentType) {
+    const legacy = message.content as { contentType: string; value: string };
     return legacy.contentType === 'text' ? legacy.value : '';
   }
 
@@ -73,8 +73,8 @@ export function hasTextContent(message: MessageHistory): boolean {
     return message.content.some((c) => c.contentType === 'text');
   }
 
-  if (typeof message.content === 'object' && 'contentType' in message.content) {
-    return message.content.contentType === 'text';
+  if (typeof message.content === 'object' && (message.content as any).contentType) {
+    return (message.content as any).contentType === 'text';
   }
 
   return false;

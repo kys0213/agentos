@@ -27,7 +27,7 @@ describe('FileBasedSessionStorage E2E', () => {
   describe('세션 메타데이터 저장 및 로드', () => {
     it('세션 메타데이터를 저장하고 로드할 수 있어야 한다', async () => {
       const metadata = await initMetadata(sessionId);
-      const loadedMetadata = await storage.getSessionMetadata(sessionId);
+      const loadedMetadata = await storage.getSessionMetadata(metadata.agentId, sessionId);
 
       expect(loadedMetadata).toEqual(metadata);
     });
@@ -46,8 +46,8 @@ describe('FileBasedSessionStorage E2E', () => {
       };
 
       await initMetadata(sessionId);
-      await storage.saveMessageHistories(sessionId, [messageHistory]);
-      const loadedHistories = await storage.readAll(sessionId);
+      await storage.saveMessageHistories('a-1', sessionId, [messageHistory]);
+      const loadedHistories = await storage.readAll('a-1', sessionId);
 
       expect(loadedHistories).toHaveLength(1);
       expect(loadedHistories[0]).toEqual(messageHistory);
@@ -76,10 +76,10 @@ describe('FileBasedSessionStorage E2E', () => {
       ];
 
       await initMetadata(sessionId);
-      await storage.saveMessageHistories(sessionId, messageHistories);
+      await storage.saveMessageHistories('a-1', sessionId, messageHistories);
       const loadedHistories: MessageHistory[] = [];
 
-      for await (const history of storage.read(sessionId)) {
+      for await (const history of storage.read('a-1', sessionId)) {
         loadedHistories.push(history);
       }
 
@@ -97,13 +97,13 @@ describe('FileBasedSessionStorage E2E', () => {
         name: 'dummy.tool',
         toolCallId: 'tc-1',
         content: [
-          { contentType: 'text', value: 'result text' } as any,
-          { contentType: 'file', value: Buffer.from('file-bytes') } as any,
-        ] as any,
+          { contentType: 'text', value: 'result text' },
+          { contentType: 'file', value: Buffer.from('file-bytes') },
+        ],
       };
 
-      await storage.saveMessageHistories(sessionId, [toolHistory]);
-      const loaded = await storage.readAll(sessionId);
+      await storage.saveMessageHistories('a-1', sessionId, [toolHistory]);
+      const loaded = await storage.readAll('a-1', sessionId);
 
       expect(Array.isArray(loaded[0].content)).toBe(true);
       const arr = loaded[0].content as any[];
@@ -134,8 +134,8 @@ describe('FileBasedSessionStorage E2E', () => {
       };
 
       await initMetadata(sessionId);
-      await storage.saveCheckpoint(sessionId, checkpoint);
-      const loadedCheckpoint = await storage.getCheckpoint(sessionId);
+      await storage.saveCheckpoint('a-1', sessionId, checkpoint);
+      const loadedCheckpoint = await storage.getCheckpoint('a-1', sessionId);
 
       expect(loadedCheckpoint).toEqual(checkpoint);
     });
@@ -143,7 +143,7 @@ describe('FileBasedSessionStorage E2E', () => {
 
   describe('세션 목록 조회', () => {
     it('세션 목록을 조회할 수 있어야 한다', async () => {
-      const sessionList = await storage.getSessionList();
+      const sessionList = await storage.getSessionList('a-1');
       expect(sessionList).toBeInstanceOf(Array);
     });
   });
@@ -151,6 +151,7 @@ describe('FileBasedSessionStorage E2E', () => {
   async function initMetadata(sessionId: string): Promise<FileBasedSessionMetadata> {
     const metadata: FileBasedSessionMetadata = {
       sessionId,
+      agentId: 'a-1',
       createdAt: new Date(),
       updatedAt: new Date(),
       totalMessages: 1,
@@ -184,7 +185,7 @@ describe('FileBasedSessionStorage E2E', () => {
       joinedAgents: [],
     };
 
-    await storage.saveSessionMetadata(sessionId, metadata);
+    await storage.saveSessionMetadata(metadata.agentId, sessionId, metadata);
 
     return metadata;
   }

@@ -1,4 +1,4 @@
-import { ServiceContainer } from '../../../shared/ipc/service-container';
+import { ServiceContainer } from '../../ipc/service-container';
 import type { Preset, CreatePreset } from '@agentos/core';
 
 export async function fetchPresets(): Promise<Preset[]> {

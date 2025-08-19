@@ -1,4 +1,4 @@
-import { McpToolDescription, Preset } from '@agentos/core';
+import type { McpToolDescription, Preset } from '@agentos/core';
 import { ArrowLeft, ArrowRight, CheckCircle, Save } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../ui/button';

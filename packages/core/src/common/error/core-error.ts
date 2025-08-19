@@ -7,7 +7,8 @@ export type ErrorDomain =
   | 'session'
   | 'chat'
   | 'preset'
-  | 'mcp';
+  | 'mcp'
+  | 'llm_bridge';
 
 export type ErrorCode =
   | 'NOT_FOUND'

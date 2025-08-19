@@ -56,78 +56,69 @@ export function isObject(v: unknown): v is Record<string, unknown> {
 }
 
 export function isAgentStatusPayload(v: unknown): v is AgentStatusPayload {
-  const o = v as AgentStatusPayload;
-  return isObject(v) && typeof o.agentId === 'string' && typeof o.status === 'string';
+  return isObject(v) && typeof v.agentId === 'string' && typeof v.status === 'string';
 }
 
 export function isAgentChangePayload(v: unknown): v is AgentChangePayload {
-  const o = v as AgentChangePayload;
-  return isObject(v) && typeof o.agentId === 'string' && isObject(o.patch);
+  return isObject(v) && typeof v.agentId === 'string' && isObject(v.patch);
 }
 
 export function isSessionStatusPayload(v: unknown): v is SessionStatusPayload {
-  const o = v as SessionStatusPayload;
   return (
     isObject(v) &&
-    typeof o.agentId === 'string' &&
-    typeof o.sessionId === 'string' &&
-    typeof o.state === 'string'
+    typeof v.agentId === 'string' &&
+    typeof v.sessionId === 'string' &&
+    typeof v.state === 'string'
   );
 }
 
 export function isSessionMessagePayload(v: unknown): v is SessionMessagePayload {
-  const o = v as SessionMessagePayload;
   return (
     isObject(v) &&
-    typeof o.agentId === 'string' &&
-    typeof o.sessionId === 'string' &&
-    isObject(o.message)
+    typeof v.agentId === 'string' &&
+    typeof v.sessionId === 'string' &&
+    isObject(v.message)
   );
 }
 
 export function isSessionErrorPayload(v: unknown): v is SessionErrorPayload {
-  const o = v as SessionErrorPayload;
   return (
     isObject(v) &&
-    typeof o.agentId === 'string' &&
-    typeof o.sessionId === 'string' &&
-    isObject(o.error) &&
-    typeof o.error.message === 'string'
+    typeof v.agentId === 'string' &&
+    typeof v.sessionId === 'string' &&
+    isObject(v.error) &&
+    typeof v.error.message === 'string'
   );
 }
 
 export function isSessionPromptRequestPayload(v: unknown): v is SessionPromptRequestPayload {
-  const o = v as SessionPromptRequestPayload;
   return (
     isObject(v) &&
-    typeof o.agentId === 'string' &&
-    typeof o.sessionId === 'string' &&
-    typeof o.id === 'string' &&
-    typeof o.message === 'string'
+    typeof v.agentId === 'string' &&
+    typeof v.sessionId === 'string' &&
+    typeof v.id === 'string' &&
+    typeof v.message === 'string'
   );
 }
 
 export function isSessionConsentRequestPayload(v: unknown): v is SessionConsentRequestPayload {
-  const o = v as SessionConsentRequestPayload;
   return (
     isObject(v) &&
-    typeof o.agentId === 'string' &&
-    typeof o.sessionId === 'string' &&
-    typeof o.id === 'string' &&
-    typeof o.reason === 'string'
+    typeof v.agentId === 'string' &&
+    typeof v.sessionId === 'string' &&
+    typeof v.id === 'string' &&
+    typeof v.reason === 'string'
   );
 }
 
 export function isSessionSensitiveInputRequestPayload(
   v: unknown
 ): v is SessionSensitiveInputRequestPayload {
-  const o = v as SessionSensitiveInputRequestPayload;
-  const arr = (o && (o as any).fields) as unknown;
   return (
     isObject(v) &&
-    typeof (o as any).agentId === 'string' &&
-    typeof (o as any).sessionId === 'string' &&
-    typeof (o as any).id === 'string' &&
-    Array.isArray(arr)
+    typeof v.agentId === 'string' &&
+    typeof v.sessionId === 'string' &&
+    typeof v.id === 'string' &&
+    Array.isArray(v.fields)
   );
 }

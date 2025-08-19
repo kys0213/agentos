@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { UseAppDataReturn } from '../stores/store-types';
-import { Preset, McpConfig, ReadonlyAgentMetadata, ReadonlyPreset } from '@agentos/core';
-import { ServiceContainer } from '../../shared/ipc/service-container';
+import type { Preset, McpConfig, ReadonlyAgentMetadata, ReadonlyPreset } from '@agentos/core';
+import { ServiceContainer } from '../ipc/service-container';
 
 /**
  * App data management hook
