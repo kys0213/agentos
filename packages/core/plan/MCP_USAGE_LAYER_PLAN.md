@@ -62,7 +62,10 @@ export interface McpUsageQuery {
 }
 
 // packages/core/src/tool/mcp/usage/repository/mcp-usage-repository.ts
-import type { CursorPagination, CursorPaginationResult } from '../../../common/pagination/cursor-pagination';
+import type {
+  CursorPagination,
+  CursorPaginationResult,
+} from '../../../common/pagination/cursor-pagination';
 export interface McpUsageRepository {
   append(logs: McpUsageLog | McpUsageLog[]): Promise<void>;
   list(query?: McpUsageQuery, pg?: CursorPagination): Promise<CursorPaginationResult<McpUsageLog>>;
@@ -72,8 +75,16 @@ export interface McpUsageRepository {
 // packages/core/src/tool/mcp/usage/service/mcp-usage-service.ts
 export class McpUsageService {
   constructor(private readonly repo: McpUsageRepository) {}
-  async recordStart(meta: { toolId?: string; toolName?: string; agentId?: string; sessionId?: string }): Promise<string> {}
-  async recordEnd(id: string, result: { status: 'success' | 'error'; durationMs: number; errorCode?: string }): Promise<void> {}
+  async recordStart(meta: {
+    toolId?: string;
+    toolName?: string;
+    agentId?: string;
+    sessionId?: string;
+  }): Promise<string> {}
+  async recordEnd(
+    id: string,
+    result: { status: 'success' | 'error'; durationMs: number; errorCode?: string }
+  ): Promise<void> {}
   async list(query?: McpUsageQuery, pg?: CursorPagination) {}
   async getStats(query?: McpUsageQuery) {}
 }
@@ -98,4 +109,3 @@ export class McpUsageService {
 4. index export/문서 업데이트 (완료 조건: 패키지 외부에서 타입/서비스 사용 가능)
 5. McpService 훅 연결 (완료 조건: invokeTool 경로에서 기록) — 본 PR 말미 or 후속
 6. GUI 전환은 후속 PR에서 처리
-
