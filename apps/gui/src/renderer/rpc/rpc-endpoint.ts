@@ -174,8 +174,12 @@ export class RpcEndpoint {
 
           this.onCancel(cancel);
         } else {
-          const result = await out;
-          this.transport.post({ kind: 'res', cid: f.cid, ok: true, result });
+          if (isPromiseLike(out)) {
+            const result = await out;
+            this.transport.post({ kind: 'res', cid: f.cid, ok: true, result });
+          } else {
+            this.transport.post({ kind: 'res', cid: f.cid, ok: true, result: out });
+          }
         }
       } catch (e: unknown) {
         this.transport.post({
@@ -228,4 +232,7 @@ function isAsyncGen(o: unknown): o is AsyncGenerator<unknown, void, unknown> {
 }
 function isObservableLike(o: unknown): o is Observable<unknown> {
   return isObservable(o) && o && typeof (o as any).subscribe === 'function';
+}
+function isPromiseLike(o: unknown): o is PromiseLike<unknown> {
+  return !!o && typeof (o as any).then === 'function';
 }
