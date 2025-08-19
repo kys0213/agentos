@@ -9,7 +9,10 @@ import { McpRpcService as McpService } from './rpc/services/mcp.service';
 import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usage.service';
 import { PresetRpcService as PresetService } from './rpc/services/preset.service';
 import { ServiceContainer } from './ipc/service-container';
-import { ElectronIpcTransport } from './rpc/transports/electron-renderer-transport';
+import { ElectronFrameBridge } from './rpc/transports/electron-frame-bridge';
+import { RpcEndpoint } from './rpc/rpc-endpoint';
+import { EndpointClient } from './rpc/clients/endpoint-client';
+import { waitForRendererReady } from './rpc/waitForReady';
 import { startStream, fromBridge$ } from './rpc/frame-channel';
 import { wireAgentEvents } from './rpc/agent-events';
 
@@ -36,8 +39,21 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
   const channel = ipcChannel || createIpcChannel();
   console.log('📡 IpcChannel created/injected');
 
-  // Channel-based RpcTransport (권장 경로)
-  const rpcTransport = new ElectronIpcTransport();
+  // Wait until preload injected bridge/rpc are ready
+  // (prevents early calls before electronBridge is available)
+  // Note: this call is sync here; caller should await when used in async context
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  waitForRendererReady();
+
+  // Frame-based transport + endpoint client
+  const frameBridge = new ElectronFrameBridge();
+  const endpoint = new RpcEndpoint({
+    start: (onFrame) => frameBridge.start(onFrame),
+    post: (frame) => frameBridge.post(frame),
+    stop: () => frameBridge.stop(),
+  } as any);
+  endpoint.start();
+  const rpcTransport = new EndpointClient(endpoint);
 
   // 모든 서비스에 동일한 IpcChannel 주입하여 생성
   // 새 RPC 서비스(Bridge/Preset/Agent)는 채널 기반 Transport를 사용
