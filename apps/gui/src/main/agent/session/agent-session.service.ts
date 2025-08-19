@@ -34,8 +34,8 @@ export class AgentSessionService {
     const result = await agent.chat(messages, options);
 
     // 스트림 브로드캐스트: 어시스턴트 메시지 이벤트 발행
-    const last = result.messages[result.messages.length - 1];
-    if (last) this.events.publishSessionMessage(result.sessionId, last as unknown as Message);
+    const last: Message | undefined = result.messages[result.messages.length - 1];
+    if (last) this.events.publishSessionMessage(result.sessionId, last);
 
     return result;
   }

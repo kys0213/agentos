@@ -1,10 +1,11 @@
 import { AgentEventBridge } from '../agent-event-bridge';
 import { OutboundChannel } from '../../../common/event/outbound-channel';
+import type { Message } from 'llm-bridge-spec';
 
 describe('AgentEventBridge', () => {
   test('publishes session message and streams via agent.* filter', (done) => {
     const oc = new OutboundChannel();
-    const bridge = new AgentEventBridge(oc as any);
+    const bridge = new AgentEventBridge(oc);
 
     const received: any[] = [];
     const sub = bridge.stream().subscribe((ev) => {
@@ -17,9 +18,7 @@ describe('AgentEventBridge', () => {
       }
     });
 
-    bridge.publishSessionMessage('s1', {
-      role: 'assistant',
-      content: { type: 'text', text: 'hello' },
-    } as any);
+    const msg: Message = { role: 'assistant', content: { type: 'text', text: 'hello' } };
+    bridge.publishSessionMessage('s1', msg);
   });
 });
