@@ -4,4 +4,3 @@ export const frames: RpcFrame[] = [];
 export const clear = () => {
   frames.length = 0;
 };
-

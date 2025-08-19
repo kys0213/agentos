@@ -26,7 +26,7 @@ export class PresetRpcService {
   async getAllPresets(): Promise<Preset[]> {
     const page = await this.listSummaries();
     const items = await Promise.all(page.items.map((s) => this.get(s.id)));
-    return (items.filter(Boolean) as Preset[]);
+    return items.filter(Boolean) as Preset[];
   }
   async createPreset(preset: CreatePreset): Promise<Preset> {
     const now = new Date();
@@ -46,7 +46,6 @@ export class PresetRpcService {
       status: preset.status ?? 'active',
       usageCount: 0,
       knowledgeDocuments: 0,
-      knowledgeStats: preset.knowledgeStats ?? { indexed: 0, vectorized: 0, totalSize: 0 },
       category: preset.category ?? ['general'],
     } as Preset;
     const res = await this.create(full);

@@ -45,7 +45,9 @@ export class PresetController {
   }
 
   @EventPattern('preset.delete')
-  async remove(@Payload() id: string): Promise<{ success: true } | { success: false; error: string }> {
+  async remove(
+    @Payload() id: string
+  ): Promise<{ success: true } | { success: false; error: string }> {
     try {
       await this.repo.delete(id);
       return { success: true };

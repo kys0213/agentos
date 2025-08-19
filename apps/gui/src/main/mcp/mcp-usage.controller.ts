@@ -1,23 +1,35 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { McpRegistry } from '@agentos/core';
-import { ClearDto, GetLogsDto, GetStatsDto, HourlyStatsDto, LogsInRangeDto } from './dto/mcp-usage.dto';
+import {
+  ClearDto,
+  GetLogsDto,
+  GetStatsDto,
+  HourlyStatsDto,
+  LogsInRangeDto,
+} from './dto/mcp-usage.dto';
 import { OutboundChannel } from '../common/event/outbound-channel';
 import { map } from 'rxjs';
 
 @Controller()
 export class McpUsageController {
-  constructor(private readonly registry: McpRegistry, private readonly outbound: OutboundChannel) {}
+  constructor(
+    private readonly registry: McpRegistry,
+    private readonly outbound: OutboundChannel
+  ) {}
 
   @EventPattern('mcp.usage.getLogs')
   async getUsageLogs(@Payload() data: GetLogsDto) {
     const { clientName, options } = data || {};
-    const clients = clientName ? [await this.registry.get(clientName)] : await this.registry.getAll();
+    const clients = clientName
+      ? [await this.registry.get(clientName)]
+      : await this.registry.getAll();
     const usable = (await Promise.all(clients)).filter(Boolean) as any[];
     let logs = usable.flatMap((c) => c.getUsageLogs());
     if (options?.status) logs = logs.filter((l) => l.status === options.status);
     if (options?.agentId) logs = logs.filter((l) => l.agentId === options.agentId);
-    if (options?.sortOrder === 'asc') logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    if (options?.sortOrder === 'asc')
+      logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
     else logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
     if (options?.offset !== undefined || options?.limit !== undefined) {
       const offset = options.offset ?? 0;
@@ -40,7 +52,10 @@ export class McpUsageController {
     const totalUsage = allStats.reduce((sum, s) => sum + s.totalUsage, 0);
     const totalErrors = allStats.reduce((sum, s) => sum + s.errorCount, 0);
     const totalDuration = allStats.reduce((sum, s) => sum + s.averageDuration * s.totalUsage, 0);
-    const lastTimes = allStats.map((s) => s.lastUsedAt).filter(Boolean).map((d) => d!.getTime());
+    const lastTimes = allStats
+      .map((s) => s.lastUsedAt)
+      .filter(Boolean)
+      .map((d) => d!.getTime());
     return {
       totalUsage,
       successRate: totalUsage > 0 ? (totalUsage - totalErrors) / totalUsage : 0,
@@ -84,7 +99,9 @@ export class McpUsageController {
   async getLogsInRange(@Payload() data: LogsInRangeDto) {
     const start = new Date(data.startDate);
     const end = new Date(data.endDate);
-    const clients = data.clientName ? [await this.registry.get(data.clientName)] : await this.registry.getAll();
+    const clients = data.clientName
+      ? [await this.registry.get(data.clientName)]
+      : await this.registry.getAll();
     const usable = (await Promise.all(clients)).filter(Boolean) as any[];
     return usable
       .flatMap((c) => c.getUsageLogs())

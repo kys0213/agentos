@@ -13,4 +13,3 @@ export class KnowledgeStateDto {
   @Min(0)
   totalSize!: number; // bytes
 }
-

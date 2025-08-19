@@ -21,7 +21,7 @@ export class AgentService implements AgentProtocol {
     const metadatas = await this.ipcChannel.getAllAgentMetadatas();
 
     // TODO Lru 적용 고민해보기
-    return metadatas.map((metadata) => new IpcAgent(this.ipcChannel, metadata.id));
+    return metadatas.map((metadata) => new IpcAgent(this as unknown as AgentProtocol, metadata.id));
   }
 
   async createAgent(agent: CreateAgentMetadata): Promise<AgentMetadata> {

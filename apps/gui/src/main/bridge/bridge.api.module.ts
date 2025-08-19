@@ -7,4 +7,3 @@ import { LlmBridgeModule } from '../common/model/llm-bridge.module';
   controllers: [BridgeController],
 })
 export class BridgeApiModule {}
-

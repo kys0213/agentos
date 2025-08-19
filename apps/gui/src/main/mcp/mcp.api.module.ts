@@ -7,4 +7,3 @@ import { McpRegistryModule } from '../common/mcp/mcp-registry.module';
   controllers: [McpController],
 })
 export class McpApiModule {}
-

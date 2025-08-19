@@ -34,7 +34,10 @@ export class McpUsageRpcService {
     });
   }
   clearUsageLogs(olderThan?: Date): Promise<ClearUsageLogsResponse> {
-    return this.transport.request('mcp.usage.clear', olderThan ? { olderThan: olderThan.toISOString() } : {});
+    return this.transport.request(
+      'mcp.usage.clear',
+      olderThan ? { olderThan: olderThan.toISOString() } : {}
+    );
   }
   setUsageTracking(clientName: string, enabled: boolean): Promise<SetUsageTrackingResponse> {
     return this.transport.request('mcpUsageLog:set-usage-tracking', { clientName, enabled });

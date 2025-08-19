@@ -66,7 +66,11 @@ export class RpcEndpoint {
     });
   }
 
-  stream<T>(method: string, payload?: unknown, meta?: RpcMetadata): AsyncGenerator<T, void, unknown> {
+  stream<T>(
+    method: string,
+    payload?: unknown,
+    meta?: RpcMetadata
+  ): AsyncGenerator<T, void, unknown> {
     const cid = this.cid();
     const queue: T[] = [];
     let done = false;

@@ -70,4 +70,3 @@ export class ClearDto {
   @IsISO8601()
   olderThan?: string;
 }
-

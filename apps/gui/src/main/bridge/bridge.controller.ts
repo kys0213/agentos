@@ -47,4 +47,3 @@ export class BridgeController {
     return { success: true };
   }
 }
-

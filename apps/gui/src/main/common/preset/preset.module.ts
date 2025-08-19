@@ -17,4 +17,3 @@ import { PRESET_REPOSITORY_TOKEN } from './constants';
   exports: [PRESET_REPOSITORY_TOKEN],
 })
 export class PresetModule {}
-

@@ -34,6 +34,7 @@ export async function createChatSession(
     // Mock implementation for now
     const mockSession: ChatSessionMetadata = {
       sessionId: `session-${Date.now()}`,
+      agentId: agentIds[0] ?? 'unknown-agent',
       title: title || `Chat with ${agentIds.length} agents`,
       joinedAgents: [], // TODO: Resolve agent IDs to AgentMetadata
       recentMessages: [],

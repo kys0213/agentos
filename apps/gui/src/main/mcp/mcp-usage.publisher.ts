@@ -7,7 +7,10 @@ export class McpUsagePublisher implements OnModuleInit, OnModuleDestroy {
   private timer: any;
   private lastCounts = new Map<string, number>();
 
-  constructor(private readonly registry: McpRegistry, private readonly outbound: OutboundChannel) {}
+  constructor(
+    private readonly registry: McpRegistry,
+    private readonly outbound: OutboundChannel
+  ) {}
 
   async onModuleInit() {
     this.timer = setInterval(() => this.scan(), 2000);
@@ -43,4 +46,3 @@ export class McpUsagePublisher implements OnModuleInit, OnModuleDestroy {
     }
   }
 }
-

@@ -23,7 +23,7 @@ import {
   Wrench,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import type { McpService } from '../../services/mcp-service';
+import type { McpConfig } from '@agentos/core';
 import { ServiceContainer } from '../../ipc/service-container';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -247,7 +247,7 @@ export function MCPToolsManager() {
         const tool = tools.find((t) => t.id === toolId);
         if (tool) {
           // Create a basic MCP config for the tool
-          const mcpConfig: Parameters<McpService['connectMcp']>[0] = {
+          const mcpConfig: McpConfig = {
             type: 'streamableHttp' as const,
             name: tool.name,
             version: tool.version,
