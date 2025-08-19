@@ -17,8 +17,9 @@ import * as path from 'path';
           const mod = await import(
             'llm-bridge-loader/dist/esm/dependency/dependency-bridge.loader.js'
           );
-          loader = new (mod as { DependencyBridgeLoader: new () => unknown })
-            .DependencyBridgeLoader();
+          loader = new (
+            mod as { DependencyBridgeLoader: new () => unknown }
+          ).DependencyBridgeLoader();
         } catch {
           class NoopBridgeLoader {
             async load() {

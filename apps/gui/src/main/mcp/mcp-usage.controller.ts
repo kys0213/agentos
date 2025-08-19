@@ -24,18 +24,10 @@ export class McpUsageController {
     const clients = clientName
       ? [await this.registry.get(clientName)]
       : await this.registry.getAll();
-    const usable = (await Promise.all(clients)).filter(Boolean) as any[];
-    let logs = usable.flatMap((c) => c.getUsageLogs());
-    if (options?.status) logs = logs.filter((l) => l.status === options.status);
-    if (options?.agentId) logs = logs.filter((l) => l.agentId === options.agentId);
-    if (options?.sortOrder === 'asc')
-      logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-    else logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-    if (options?.offset !== undefined || options?.limit !== undefined) {
-      const offset = options.offset ?? 0;
-      const limit = options.limit ?? 50;
-      logs = logs.slice(offset, offset + limit);
-    }
+
+    // Usage tracking has moved out of Mcp protocol; return empty for now.
+    const _usable = (await Promise.all(clients)).filter(Boolean);
+    const logs: any[] = [];
     return logs;
   }
 
@@ -45,23 +37,21 @@ export class McpUsageController {
     if (clientName) {
       const client = await this.registry.get(clientName);
       if (!client) throw new Error(`MCP client not found: ${clientName}`);
-      return client.getUsageStats();
+      // Usage stats are not available from protocol client; return stub
+      return {
+        totalUsage: 0,
+        successRate: 0,
+        averageDuration: 0,
+        lastUsedAt: undefined,
+        errorCount: 0,
+      };
     }
-    const clients = await this.registry.getAll();
-    const allStats = clients.map((c) => c.getUsageStats());
-    const totalUsage = allStats.reduce((sum, s) => sum + s.totalUsage, 0);
-    const totalErrors = allStats.reduce((sum, s) => sum + s.errorCount, 0);
-    const totalDuration = allStats.reduce((sum, s) => sum + s.averageDuration * s.totalUsage, 0);
-    const lastTimes = allStats
-      .map((s) => s.lastUsedAt)
-      .filter(Boolean)
-      .map((d) => d!.getTime());
     return {
-      totalUsage,
-      successRate: totalUsage > 0 ? (totalUsage - totalErrors) / totalUsage : 0,
-      averageDuration: totalUsage > 0 ? totalDuration / totalUsage : 0,
-      lastUsedAt: lastTimes.length > 0 ? new Date(Math.max(...lastTimes)) : undefined,
-      errorCount: totalErrors,
+      totalUsage: 0,
+      successRate: 0,
+      averageDuration: 0,
+      lastUsedAt: undefined,
+      errorCount: 0,
     };
   }
 
@@ -87,10 +77,11 @@ export class McpUsageController {
     if (data.clientName) {
       const client = await this.registry.get(data.clientName);
       if (!client) throw new Error(`MCP client not found: ${data.clientName}`);
-      addLogs(client.getUsageLogs());
+      // No usage logs available; nothing to aggregate
+      // addLogs(client.getUsageLogs());
     } else {
       const clients = await this.registry.getAll();
-      clients.forEach((c) => addLogs(c.getUsageLogs()));
+      // clients.forEach((c) => addLogs(c.getUsageLogs()));
     }
     return { hourlyData };
   }
@@ -102,14 +93,8 @@ export class McpUsageController {
     const clients = data.clientName
       ? [await this.registry.get(data.clientName)]
       : await this.registry.getAll();
-    const usable = (await Promise.all(clients)).filter(Boolean) as any[];
-    return usable
-      .flatMap((c) => c.getUsageLogs())
-      .filter((log) => {
-        const t = log.timestamp.getTime();
-        return t >= start.getTime() && t <= end.getTime();
-      })
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    const _usable = (await Promise.all(clients)).filter(Boolean) as any[];
+    return [];
   }
 
   @EventPattern('mcp.usage.clear')

@@ -42,7 +42,9 @@ export class McpUsageRpcService {
   setUsageTracking(clientName: string, enabled: boolean): Promise<SetUsageTrackingResponse> {
     return this.transport.request('mcpUsageLog:set-usage-tracking', { clientName, enabled });
   }
-  async subscribeToUsageUpdates(_callback: (event: McpUsageUpdateEvent) => void): Promise<() => void> {
+  async subscribeToUsageUpdates(
+    _callback: (event: McpUsageUpdateEvent) => void
+  ): Promise<() => void> {
     // TODO: rewire to frame-level stream or controller if needed
     return async () => {};
   }

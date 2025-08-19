@@ -39,6 +39,7 @@ describe('FileBasedChatSession', () => {
     });
 
     mockPreset = {
+      agentId: 'a-1',
       sessionId: 'test-session',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -274,7 +275,7 @@ describe('FileBasedChatSession', () => {
       await session.commit();
 
       // saveMessageHistories로 전달된 데이터를 기반으로 read() 동작을 흉내냄
-      const flushed = mockStorage.saveMessageHistories.mock.calls[0][1] as any[];
+      const flushed = mockStorage.saveMessageHistories.mock.calls[0][2];
       mockStorage.read.mockImplementation(async function* () {
         for (const h of flushed) yield h;
       });

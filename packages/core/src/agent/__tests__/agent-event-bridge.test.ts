@@ -4,6 +4,7 @@ import type { AgentSession, AgentSessionEvent, AgentSessionEventMap } from '../a
 import { AgentEventBridge } from '../agent-event-bridge';
 import { Unsubscribe } from '../../common/event/event-subscriber';
 import { AgentStatus } from '../agent';
+import { AgentMetadata } from '../agent-metadata';
 
 class TestPublisher {
   calls: Array<{ channel: string; payload: any }> = [];
@@ -15,6 +16,12 @@ class TestPublisher {
 type AgentHandler = (e: any) => void;
 
 class FakeEventfulAgent implements Agent {
+  update(patch: Partial<AgentMetadata>): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  delete(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
   id = 'a-1';
   private handlers = new Set<AgentHandler>();
   getMetadata = async () => ({
@@ -57,6 +64,7 @@ class FakeSession implements AgentSession {
     this.id = id;
     this.sessionId = id;
   }
+  agentId = 'a-1';
   chat = async () => [] as any;
   getHistory = async () => ({ items: [], nextCursor: '', hasMore: false });
   terminate = async () => {};

@@ -5,8 +5,6 @@ import { McpRegistry } from '@agentos/core';
 type InvokePayload = {
   name: string; // fully qualified: <mcp>.<tool>
   input?: Record<string, unknown>;
-  agentId?: string;
-  agentName?: string;
   resumptionToken?: string;
 };
 
@@ -24,8 +22,6 @@ export class McpController {
     const info = await this.registry.getToolOrThrow(data.name);
     return await info.mcp.invokeTool(info.tool, {
       input: data.input,
-      agentId: data.agentId,
-      agentName: data.agentName,
       resumptionToken: data.resumptionToken,
     });
   }

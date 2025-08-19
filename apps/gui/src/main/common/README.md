@@ -22,10 +22,12 @@
 ## 모듈 상세
 
 ### ElectronAppModule
+
 - **제공**: `ELECTRON_APP_TOKEN`, `ElectronAppEnvironment`
 - **역할**: `app.getPath('userData')` 등 환경 정보 접근을 표준화
 
 ### LlmBridgeModule
+
 - **파일**: `common/model/llm-bridge.module.ts`
 - **제공**: `LLM_BRIDGE_REGISTRY_TOKEN`
 - **초기화**:
@@ -34,24 +36,29 @@
 
 ```ts
 @Module({
-  providers: [{
-    provide: LLM_BRIDGE_REGISTRY_TOKEN,
-    inject: [ElectronAppEnvironment],
-    useFactory: (env) => new FileBasedLlmBridgeRegistry(
-      path.join(env.userDataPath, 'bridges'),
-      new DependencyBridgeLoader()
-    ),
-  }],
+  providers: [
+    {
+      provide: LLM_BRIDGE_REGISTRY_TOKEN,
+      inject: [ElectronAppEnvironment],
+      useFactory: (env) =>
+        new FileBasedLlmBridgeRegistry(
+          path.join(env.userDataPath, 'bridges'),
+          new DependencyBridgeLoader()
+        ),
+    },
+  ],
   exports: [LLM_BRIDGE_REGISTRY_TOKEN],
 })
 export class LlmBridgeModule {}
 ```
 
 ### McpRegistryModule
+
 - **제공**: `McpRegistry` 단일 인스턴스
 - **역할**: MCP 연결/툴 조회/호출의 런타임 레지스트리
 
 ### AgentCoreModule
+
 - **의존**: `McpRegistryModule`, `LlmBridgeModule`
 - **제공**:
   - `AGENT_METADATA_REPOSITORY_TOKEN` → `FileAgentMetadataRepository(userData/agents)`
@@ -63,11 +70,33 @@ export class LlmBridgeModule {}
   imports: [McpRegistryModule, LlmBridgeModule],
   providers: [
     // 1) 파일 기반 메타 저장소
-    { provide: AGENT_METADATA_REPOSITORY_TOKEN, useFactory: (env) => new FileAgentMetadataRepository(path.join(env.userDataPath, 'agents')), inject: [ElectronAppEnvironment] },
+    {
+      provide: AGENT_METADATA_REPOSITORY_TOKEN,
+      useFactory: (env) => new FileAgentMetadataRepository(path.join(env.userDataPath, 'agents')),
+      inject: [ElectronAppEnvironment],
+    },
     // 2) 파일 기반 채팅 매니저
-    { provide: CHAT_MANAGER_TOKEN, useFactory: (env) => new FileBasedChatManager(new FileBasedSessionStorage(path.join(env.userDataPath, 'sessions')), new NoopCompressor(), new NoopCompressor()), inject: [ElectronAppEnvironment] },
+    {
+      provide: CHAT_MANAGER_TOKEN,
+      useFactory: (env) =>
+        new FileBasedChatManager(
+          new FileBasedSessionStorage(path.join(env.userDataPath, 'sessions')),
+          new NoopCompressor(),
+          new NoopCompressor()
+        ),
+      inject: [ElectronAppEnvironment],
+    },
     // 3) 에이전트 서비스 (서비스 중심)
-    { provide: AGENT_SERVICE_TOKEN, useFactory: (llm, mcp, chat, repo) => new SimpleAgentService(llm, mcp, chat, repo), inject: [LLM_BRIDGE_REGISTRY_TOKEN, McpRegistry, CHAT_MANAGER_TOKEN, AGENT_METADATA_REPOSITORY_TOKEN] },
+    {
+      provide: AGENT_SERVICE_TOKEN,
+      useFactory: (llm, mcp, chat, repo) => new SimpleAgentService(llm, mcp, chat, repo),
+      inject: [
+        LLM_BRIDGE_REGISTRY_TOKEN,
+        McpRegistry,
+        CHAT_MANAGER_TOKEN,
+        AGENT_METADATA_REPOSITORY_TOKEN,
+      ],
+    },
   ],
   exports: [AGENT_SERVICE_TOKEN, AGENT_METADATA_REPOSITORY_TOKEN],
 })
@@ -75,15 +104,18 @@ export class AgentCoreModule {}
 ```
 
 ### AgentSessionModule
+
 - **의존**: `AgentCoreModule`, `McpRegistryModule`
 - **제공**: `AgentSessionService` + `AgentSessionController`
 - **역할**: Main 마이크로서비스 레이어에서 `@EventPattern('agent:*')` 핸들러 노출
 
 ### PresetModule / McpUsageModule (현행)
+
 - **PresetModule**: 프리셋 CRUD 컨트롤러 제공 (`preset.*` 채널)
 - **McpUsageModule**: 사용량 조회/통계/정리 컨트롤러 제공 (`mcp.usage.*` 채널, 이벤트 `mcp.usage.events`)
 
 ### (예정) McpModule / BridgeModule / ChatModule
+
 - **McpModule**: MCP 레지스트리 조작 및 툴 호출 (`mcp.*`)
 - **BridgeModule**: LLM 브릿지 등록/해제/스위치/조회 (`bridge.*`)
 - **Chat/ConversationModule**: 세션/대화 조회 및 관리 (`chat.*`, `conversation.*`)
@@ -121,6 +153,7 @@ class FooService {
 - **테스트 DI**: 각 토큰(`LLM_BRIDGE_REGISTRY_TOKEN`, `AGENT_SERVICE_TOKEN` 등)을 테스트 모듈에서 오버라이드하여 순수/메모리 구현 주입
 
 ## 검증/DTO 및 참고 커밋
+
 - 컨트롤러는 ValidationPipe와 DTO(class-validator 또는 zod)를 사용하여 입력 검증을 수행합니다.
 - `e959ef03…`: LLM 브릿지 레지스트리 모듈 초기화 로직 정리(DependencyBridgeLoader + userData 기반)
 - 서비스 중심 아키텍처: `SimpleAgentService`가 매니저를 대체하여 `AgentService` 일원화

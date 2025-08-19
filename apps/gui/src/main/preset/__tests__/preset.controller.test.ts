@@ -14,10 +14,18 @@ class InMemoryPresetRepo implements PresetRepository {
     }));
     return { items, nextCursor: '' };
   }
-  async get(id: string): Promise<Preset | null> { return this.store.get(id) ?? null; }
-  async create(preset: Preset): Promise<void> { this.store.set(preset.id, preset); }
-  async update(id: string, preset: Preset): Promise<void> { this.store.set(id, preset); }
-  async delete(id: string): Promise<void> { this.store.delete(id); }
+  async get(id: string): Promise<Preset | null> {
+    return this.store.get(id) ?? null;
+  }
+  async create(preset: Preset): Promise<void> {
+    this.store.set(preset.id, preset);
+  }
+  async update(id: string, preset: Preset): Promise<void> {
+    this.store.set(id, preset);
+  }
+  async delete(id: string): Promise<void> {
+    this.store.delete(id);
+  }
 }
 
 describe('PresetController', () => {
@@ -30,9 +38,22 @@ describe('PresetController', () => {
     const ctrl = moduleRef.get(PresetController);
     const now = new Date();
     const p: Preset = {
-      id: 'p1', name: 'n', description: 'd', author: 'a', createdAt: now, updatedAt: now,
-      version: '1.0.0', systemPrompt: 'sp', enabledMcps: [], llmBridgeName: 'b', llmBridgeConfig: {},
-      status: 'active', usageCount: 0, knowledgeDocuments: 0, knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 }, category: ['general'],
+      id: 'p1',
+      name: 'n',
+      description: 'd',
+      author: 'a',
+      createdAt: now,
+      updatedAt: now,
+      version: '1.0.0',
+      systemPrompt: 'sp',
+      enabledMcps: [],
+      llmBridgeName: 'b',
+      llmBridgeConfig: {},
+      status: 'active',
+      usageCount: 0,
+      knowledgeDocuments: 0,
+      knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 },
+      category: ['general'],
     } as Preset;
 
     const created = await ctrl.create(p as any);
@@ -44,7 +65,10 @@ describe('PresetController', () => {
     const list = await ctrl.list();
     expect(list.items.some((s) => s.id === 'p1')).toBe(true);
 
-    const upd = await ctrl.update({ id: 'p1', preset: { ...p, name: 'n2', updatedAt: new Date() } as any });
+    const upd = await ctrl.update({
+      id: 'p1',
+      preset: { ...p, name: 'n2', updatedAt: new Date() } as any,
+    });
     expect(upd.success).toBe(true);
 
     const fetched = await ctrl.get('p1');
@@ -57,4 +81,3 @@ describe('PresetController', () => {
     expect(gone).toBeNull();
   });
 });
-

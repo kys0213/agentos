@@ -8,6 +8,7 @@ import { ChatSessionMetadata } from '../../chat/chat-session-metata';
 function createChatSession(sessionId = 's-t1'): ChatSession {
   const messages: MessageHistory[] = [];
   return {
+    agentId: 'a-1',
     sessionId,
     async appendMessage(message) {
       const history: MessageHistory = {
@@ -30,6 +31,7 @@ function createChatSession(sessionId = 's-t1'): ChatSession {
     async getMetadata(): Promise<ChatSessionMetadata> {
       return {
         sessionId,
+        agentId: 'a-1',
         createdAt: new Date(),
         updatedAt: new Date(),
         title: '',
@@ -85,7 +87,7 @@ describe('DefaultAgentSession interactions', () => {
 
     const chat = createChatSession('s-abort');
     const mcp = { getAll: jest.fn().mockResolvedValue([]) } as any;
-    const agent = new DefaultAgentSession('a', chat, llm, mcp, createMeta());
+    const agent = new DefaultAgentSession(chat, llm, mcp, createMeta());
 
     const ac = new AbortController();
     const statusEvents: string[] = [];
@@ -112,7 +114,7 @@ describe('DefaultAgentSession interactions', () => {
 
     const chat = createChatSession('s-timeout');
     const mcp = { getAll: jest.fn().mockResolvedValue([]) } as any;
-    const agent = new DefaultAgentSession('a', chat, llm, mcp, createMeta());
+    const agent = new DefaultAgentSession(chat, llm, mcp, createMeta());
 
     const errors: Error[] = [];
     agent.on('error', (e) => errors.push(e.error));
@@ -133,7 +135,7 @@ describe('DefaultAgentSession interactions', () => {
 
     const chat = createChatSession('s-error');
     const mcp = { getAll: jest.fn().mockResolvedValue([]) } as any;
-    const agent = new DefaultAgentSession('a', chat, llm, mcp, createMeta());
+    const agent = new DefaultAgentSession(chat, llm, mcp, createMeta());
 
     const errors: Error[] = [];
     agent.on('error', (e) => errors.push(e.error));

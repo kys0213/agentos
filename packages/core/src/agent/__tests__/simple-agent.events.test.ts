@@ -5,6 +5,7 @@ import type { ChatSession } from '../../chat/chat-session';
 import { McpRegistry } from '../../tool/mcp/mcp.registery';
 import type { AgentMetadata } from '../agent-metadata';
 import { SimpleAgent } from '../simple-agent';
+import { AgentMetadataRepository } from '../agent-metadata.repository';
 
 function meta(): AgentMetadata {
   return {
@@ -55,7 +56,7 @@ describe('SimpleAgent events', () => {
     } as any;
     llm.invoke.mockResolvedValue(resp);
 
-    const agent = new SimpleAgent(llm, mcp as any, chatManager, meta());
+    const agent = new SimpleAgent('a-evt', llm, mcp, chatManager, mock<AgentMetadataRepository>());
 
     const events: any[] = [];
     // @ts-ignore - SimpleAgent provides on() at runtime

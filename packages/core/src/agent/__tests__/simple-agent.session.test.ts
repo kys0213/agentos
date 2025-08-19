@@ -5,6 +5,7 @@ import { McpRegistry } from '../../tool/mcp/mcp.registery';
 import { ChatManager } from '../../chat/chat.manager';
 import type { ChatSession } from '../../chat/chat-session';
 import type { AgentMetadata } from '../agent-metadata';
+import { AgentMetadataRepository } from '../agent-metadata.repository';
 
 describe('SimpleAgent.createSession', () => {
   it('creates a session and supports chat via AgentSession', async () => {
@@ -50,7 +51,7 @@ describe('SimpleAgent.createSession', () => {
     // MCP registry getAll은 빈 배열 반환으로 설정(툴 없는 환경)
     mcp.getAll.mockResolvedValue([] as any);
 
-    const agent = new SimpleAgent(llm, mcp, chatManager, meta);
+    const agent = new SimpleAgent('a-1', llm, mcp, chatManager, mock<AgentMetadataRepository>());
 
     // LLM 응답 목업
     const resp: LlmBridgeResponse = {
@@ -60,7 +61,7 @@ describe('SimpleAgent.createSession', () => {
     llm.invoke.mockResolvedValue(resp);
 
     const session = await agent.createSession();
-    expect(session.id).toBe('s-1');
+    expect(session.sessionId).toBe('s-1');
 
     const messages: UserMessage[] = [
       { role: 'user', content: { contentType: 'text', value: 'hello' } },

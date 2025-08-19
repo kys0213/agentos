@@ -16,13 +16,13 @@
 
 ## 채널 네임스페이스
 
-- preset.*: `preset.list`, `preset.get`, `preset.create`, `preset.update`, `preset.delete`
-- mcp.*: `mcp.register`, `mcp.unregister`, `mcp.getTool`, `mcp.invokeTool`
-- mcp.usage.*: `mcp.usage.getLogs`, `mcp.usage.getStats`, `mcp.usage.getHourlyStats`, `mcp.usage.clear`
-- chat.*: `chat.listSessions`, `chat.getSession`, `chat.removeSession`
-- conversation.*: `conversation.list`, `conversation.get`
-- bridge.*: `bridge.register`, `bridge.unregister`, `bridge.switch`, `bridge.get-current`, `bridge.list`
-- builtin.*: `builtin.install`, `builtin.list`, `builtin.invoke`, `builtin.remove`
+- preset.\*: `preset.list`, `preset.get`, `preset.create`, `preset.update`, `preset.delete`
+- mcp.\*: `mcp.register`, `mcp.unregister`, `mcp.getTool`, `mcp.invokeTool`
+- mcp.usage.\*: `mcp.usage.getLogs`, `mcp.usage.getStats`, `mcp.usage.getHourlyStats`, `mcp.usage.clear`
+- chat.\*: `chat.listSessions`, `chat.getSession`, `chat.removeSession`
+- conversation.\*: `conversation.list`, `conversation.get`
+- bridge.\*: `bridge.register`, `bridge.unregister`, `bridge.switch`, `bridge.get-current`, `bridge.list`
+- builtin.\*: `builtin.install`, `builtin.list`, `builtin.invoke`, `builtin.remove`
 
 ## 이벤트 스트림 채널
 

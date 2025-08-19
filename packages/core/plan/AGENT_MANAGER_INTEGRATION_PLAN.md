@@ -28,13 +28,25 @@ export interface AgentService {
   createAgent(agent: CreateAgentMetadata): Promise<Agent>;
   getAgent(agentId: string): Promise<Agent | null>;
   listAgents(pagination?: CursorPagination): Promise<CursorPaginationResult<Agent>>;
-  searchAgents(query: AgentSearchQuery, pagination?: CursorPagination): Promise<CursorPaginationResult<Agent>>;
-  createSession(agentId: string, options?: { sessionId?: string; presetId?: string }): Promise<AgentSession>;
-  execute(agentId: string, messages: UserMessage[], options?: AgentExecuteOptions): Promise<AgentChatResult>;
+  searchAgents(
+    query: AgentSearchQuery,
+    pagination?: CursorPagination
+  ): Promise<CursorPaginationResult<Agent>>;
+  createSession(
+    agentId: string,
+    options?: { sessionId?: string; presetId?: string }
+  ): Promise<AgentSession>;
+  execute(
+    agentId: string,
+    messages: UserMessage[],
+    options?: AgentExecuteOptions
+  ): Promise<AgentChatResult>;
 }
 
 // 최종 구현: AgentManager 제거 후, 레포/레지스트리/채팅 관리자를 직접 사용
-export class SimpleAgentService implements AgentService { /* 매니저 제거 후 구현 */ }
+export class SimpleAgentService implements AgentService {
+  /* 매니저 제거 후 구현 */
+}
 
 // 에이전트 팩토리(선택): 목록/검색 시 Agent 인스턴스 생성 일관성 보장
 export interface AgentFactory {
@@ -77,4 +89,3 @@ export interface AgentFactory {
 - 에러 정책: CoreError로 통일(도메인/코드 포함)
 - DI 구성: 서비스/레포/레지스트리/ChatManager를 명시 주입하여 순환참조 방지
 - 성능: search 기본은 in-memory 필터이나, 메타데이터 레포에 인덱스/쿼리 추가 여지 남김
-

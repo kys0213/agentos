@@ -1,9 +1,12 @@
-import type { Agent, AgentExecuteOptions, AgentChatResult } from '../agent';
+import { mock } from 'jest-mock-extended';
+import type { Agent, AgentChatResult } from '../agent';
+import type { AgentMetadata, ReadonlyAgentMetadata } from '../agent-metadata';
 import type { AgentSession } from '../agent-session';
-import type { ReadonlyAgentMetadata } from '../agent-metadata';
-import type { AgentManager } from '../agent-manager';
 import { SimpleAgentService } from '../simple-agent.service';
-import type { CursorPaginationResult } from '../../common/pagination/cursor-pagination';
+import { LlmBridgeRegistry } from '../../llm/bridge/registry';
+import { McpRegistry } from '../../tool/mcp/mcp.registery';
+import { ChatManager } from '../../chat/chat.manager';
+import { AgentMetadataRepository } from '../agent-metadata.repository';
 
 class FakeSession implements AgentSession {
   constructor(public readonly sessionId: string) {}
@@ -31,6 +34,12 @@ class FakeAgent implements Agent {
     public readonly id: string,
     private readonly meta: ReadonlyAgentMetadata
   ) {}
+  update(patch: Partial<AgentMetadata>): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  delete(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
   async chat(): Promise<AgentChatResult> {
     return { messages: [], sessionId: 's-1' };
   }
@@ -58,50 +67,6 @@ class FakeAgent implements Agent {
   async endSession(): Promise<void> {}
 }
 
-class FakeManager implements AgentManager {
-  private map = new Map<string, Agent>();
-  constructor(agents: Agent[] = []) {
-    agents.forEach((a) => this.map.set(a.id, a));
-  }
-  async register(a: Agent): Promise<void> {
-    this.map.set(a.id, a);
-  }
-  async unregister(id: string): Promise<void> {
-    this.map.delete(id);
-  }
-  async getAgent(id: string): Promise<Agent | null> {
-    return this.map.get(id) ?? null;
-  }
-  async getAllAgents(): Promise<CursorPaginationResult<Agent>> {
-    return { items: Array.from(this.map.values()), nextCursor: '', hasMore: false };
-  }
-  async getAvailableAgents(): Promise<CursorPaginationResult<Agent>> {
-    return { items: Array.from(this.map.values()), nextCursor: '', hasMore: false };
-  }
-  async getActiveAgents(): Promise<CursorPaginationResult<Agent>> {
-    return { items: Array.from(this.map.values()), nextCursor: '', hasMore: false };
-  }
-  async createAgentSession(agentId: string): Promise<AgentSession> {
-    const a = this.map.get(agentId)!;
-    return a.createSession();
-  }
-  async execute(agentId: string): Promise<AgentChatResult> {
-    const a = this.map.get(agentId)!;
-    return a.chat([] as any, {} as AgentExecuteOptions);
-  }
-  async getAgentStatus(): Promise<any> {
-    return 'active';
-  }
-  async endAgentSession(): Promise<void> {}
-  async terminateAgentSession(): Promise<void> {}
-  async getStats(): Promise<any> {
-    return { totalAgents: this.map.size, agentsByStatus: {} as any, totalActiveSessions: 0 };
-  }
-  async searchAgents(): Promise<CursorPaginationResult<Agent>> {
-    return { items: Array.from(this.map.values()), nextCursor: '', hasMore: false };
-  }
-}
-
 describe('SimpleAgentService', () => {
   function meta(id: string, status: any = 'active'): ReadonlyAgentMetadata {
     return {
@@ -122,7 +87,12 @@ describe('SimpleAgentService', () => {
   it('lists and gets agents', async () => {
     const a1 = new FakeAgent('a1', meta('a1'));
     const a2 = new FakeAgent('a2', meta('a2'));
-    const svc = new SimpleAgentService(new FakeManager([a1, a2]));
+    const svc = new SimpleAgentService(
+      mock<LlmBridgeRegistry>(),
+      mock<McpRegistry>(),
+      mock<ChatManager>(),
+      mock<AgentMetadataRepository>()
+    );
     const list = await svc.listAgents();
     expect(list.items.map((a) => a.id)).toEqual(['a1', 'a2']);
     const got = await svc.getAgent('a2');
@@ -132,23 +102,37 @@ describe('SimpleAgentService', () => {
   it('searches via fallback metadata filtering', async () => {
     const a1 = new FakeAgent('a1', meta('a1'));
     const a2 = new FakeAgent('a2', meta('a2'));
-    const svc = new SimpleAgentService(new FakeManager([a1, a2]));
+    const svc = new SimpleAgentService(
+      mock<LlmBridgeRegistry>(),
+      mock<McpRegistry>(),
+      mock<ChatManager>(),
+      mock<AgentMetadataRepository>()
+    );
     const res = await svc.searchAgents({ name: 'Agent a1' });
     expect(res.items.map((a) => a.id)).toEqual(['a1']);
   });
 
   it('creates session via manager agent', async () => {
     const a1 = new FakeAgent('a1', meta('a1'));
-    const svc = new SimpleAgentService(new FakeManager([a1]));
+    const svc = new SimpleAgentService(
+      mock<LlmBridgeRegistry>(),
+      mock<McpRegistry>(),
+      mock<ChatManager>(),
+      mock<AgentMetadataRepository>()
+    );
     const session = await svc.createSession('a1');
     expect(session.sessionId).toBe('s-1');
   });
 
   it('delegates execute to manager', async () => {
     const a1 = new FakeAgent('a1', meta('a1'));
-    const mgr = new FakeManager([a1]);
-    const svc = new SimpleAgentService(mgr);
-    const result = await svc.execute('a1', [] as any, {} as any);
+    const svc = new SimpleAgentService(
+      mock<LlmBridgeRegistry>(),
+      mock<McpRegistry>(),
+      mock<ChatManager>(),
+      mock<AgentMetadataRepository>()
+    );
+    const result = await svc.execute('a1', [], {});
     expect(result).toEqual({ messages: [], sessionId: 's-1' });
   });
 });

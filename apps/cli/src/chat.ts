@@ -1,5 +1,11 @@
 import { UserMessage, LlmBridge } from 'llm-bridge-spec';
-import { ChatManager, McpRegistry, Preset, FileAgentMetadataRepository, SimpleAgent } from '@agentos/core';
+import {
+  ChatManager,
+  McpRegistry,
+  Preset,
+  FileAgentMetadataRepository,
+  SimpleAgent,
+} from '@agentos/core';
 import * as path from 'path';
 import * as os from 'os';
 import { createUserInputStream } from './utils/user-input-stream';

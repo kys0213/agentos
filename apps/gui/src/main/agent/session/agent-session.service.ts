@@ -60,9 +60,12 @@ export class AgentSessionService {
       direction: 'forward',
     });
 
+    const items = await Promise.all(agents.items.map((a) => a.getMetadata()));
+    const nextCursor = agents.nextCursor;
     return {
-      items: await Promise.all(agents.items.map((a) => a.getMetadata())),
-      nextCursor: agents.nextCursor,
+      items,
+      nextCursor,
+      hasMore: !!nextCursor,
     };
   }
 

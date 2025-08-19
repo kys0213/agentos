@@ -26,4 +26,3 @@ export function createNotifier(): Notifier {
 
   return { wait, notify };
 }
-

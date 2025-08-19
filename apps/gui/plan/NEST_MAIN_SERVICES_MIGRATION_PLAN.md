@@ -37,7 +37,7 @@
 - [x] McpUsageModule: `InMemoryUsageTracker` 제공
 - [x] PresetController, McpUsageController 구현 및 일부 테스트 추가
 - [ ] McpController, Chat/ConversationController, BuiltinToolController, BridgeController 미구현
-- [ ] 기존 services/* 호출부 미이관(점진 제거 예정)
+- [ ] 기존 services/\* 호출부 미이관(점진 제거 예정)
 
 ## Interface Sketch
 
@@ -79,17 +79,17 @@
 - [ ] BridgeModule/Controller 추가, 기존 bridge 이관
 - [ ] 문서 갱신: GUI_IPC_AND_SERVICES.md, ELECTRON_MCP_IPC_SPEC.md 채널/스키마 반영
 - [ ] 테스트: 컨트롤러 단위/통합 + 전송 계층 유닛(프레임 왕복/취소/에러)
-- [ ] services/* 점진 제거 및 호출부 정리
+- [ ] services/\* 점진 제거 및 호출부 정리
 
 ## 작업 순서(Phase)
 
-1) **Preset/MCP Usage (빠른 수확)**
+1. **Preset/MCP Usage (빠른 수확)**
    - PresetController, McpUsageController 구현 → 렌더러 경로 1차 이관
-2) **MCP Registry/Bridge**
+2. **MCP Registry/Bridge**
    - McpController, BridgeController 구현 → 브릿지/툴 경로 준비
-3) **Chat/Conversation**
+3. **Chat/Conversation**
    - Chat/ConversationController 구현 → 세션/대화 경로 이관
-4) **정리/검증**
+4. **정리/검증**
    - 문서/테스트 보강, 기존 services 제거, 채널 네임스페이스 일관화
 
 ## 테스트 전략

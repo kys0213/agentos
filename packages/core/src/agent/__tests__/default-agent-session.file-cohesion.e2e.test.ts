@@ -70,7 +70,7 @@ describe('DefaultAgentSession + FileBasedChatManager cohesion', () => {
     const storage = new FileBasedSessionStorage(testDir);
     const mgr = new FileBasedChatManager(storage, noOpCompressor());
 
-    const chatSession = await mgr.create({ sessionId: 's-file-1' });
+    const chatSession = await mgr.create({ sessionId: 's-file-1', agentId: 'a-1' });
 
     const llm = mock<LlmBridge>();
     // 1st call: tool call
@@ -99,7 +99,7 @@ describe('DefaultAgentSession + FileBasedChatManager cohesion', () => {
       }),
     } as any;
 
-    const session = new DefaultAgentSession('a-1', chatSession, llm, mcp, meta());
+    const session = new DefaultAgentSession(chatSession, llm, mcp, meta());
 
     const user: UserMessage = {
       role: 'user',

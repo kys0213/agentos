@@ -476,7 +476,7 @@ packages/core/docs/IPC_EVENT_SPEC.md의 채널/가드를 그대로 사용합니�
 
 예시(렌더러):
 
-```ts
+````ts
 import { FunctionSubscriber, subscribeJson, isSessionMessagePayload } from '@agentos/core';
 const sub = new FunctionSubscriber((ch, handler) =>
   (window as any).electronBridge.on(`agentos:${ch}`, handler)
@@ -509,7 +509,7 @@ wireAgentEvents(frames$, {
   onMessage: (p) => {/* update UI */},
   onEnded: (p) => {/* cleanup */},
 });
-```
+````
 
 ---
 
@@ -518,6 +518,7 @@ wireAgentEvents(frames$, {
 - Preload: `start/post`만 노출됨. `electronBridge.on`/`rpc.request`는 미노출(권장 확장 대상).
 - Main: `ElectronEventTransport`가 Nest Microservice로 연결되고 `can`(취소) 및 `CoreError` 매핑 동작.
 - Renderer: 프레임 기반 `RpcEndpoint` + `ElectronIpcTransport` 사용 가능. 채널 기반 `invoke` 경로는 미도입.
+
 ```
 
 ### 18. 현재 브랜치 작업 메모(Phase 1)
@@ -529,3 +530,4 @@ wireAgentEvents(frames$, {
   - `apps/gui/src/renderer/rpc/transports/electronInvoke.ts`
 - Preload에 안전 구독 API 추가: `window.electronBridge.on(channel, handler)`
 - 다음 단계: Main 프레임 기반 `ElectronEventTransport` 프로토타입 및 cancel 처리
+```

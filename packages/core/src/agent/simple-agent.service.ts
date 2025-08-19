@@ -89,7 +89,7 @@ export class SimpleAgentService implements AgentService {
       if (maybe) items.push(maybe);
     }
 
-    return { items, nextCursor: metas.nextCursor };
+    return { items, nextCursor: metas.nextCursor, hasMore: metas.hasMore };
   }
 
   async searchAgents(
@@ -106,7 +106,7 @@ export class SimpleAgentService implements AgentService {
       if (maybe) items.push(maybe);
     }
 
-    return { items, nextCursor: metas.nextCursor };
+    return { items, nextCursor: metas.nextCursor, hasMore: metas.hasMore };
   }
 
   async createSession(

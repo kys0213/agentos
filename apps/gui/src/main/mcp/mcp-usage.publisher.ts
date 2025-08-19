@@ -20,29 +20,7 @@ export class McpUsagePublisher implements OnModuleInit, OnModuleDestroy {
   }
 
   private async scan() {
-    try {
-      const clients = await this.registry.getAll();
-      for (const c of clients) {
-        try {
-          const meta = c.getMetadata();
-          const prev = this.lastCounts.get(c.name) ?? 0;
-          const curr = meta.usageCount ?? 0;
-          if (curr > prev) {
-            const logs = c.getUsageLogs().slice(-(curr - prev));
-            logs.forEach((log) =>
-              this.outbound.emit({
-                type: 'mcp.usage.logged',
-                payload: { clientName: c.name, newLog: log },
-              })
-            );
-            this.lastCounts.set(c.name, curr);
-          }
-        } catch {
-          // ignore client errors
-        }
-      }
-    } catch {
-      // ignore scan errors
-    }
+    // Usage tracking removed from protocol client; publisher is a no-op for now.
+    return;
   }
 }

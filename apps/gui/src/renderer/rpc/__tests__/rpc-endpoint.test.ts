@@ -112,4 +112,3 @@ describe('RpcEndpoint', () => {
     expect(res.result).toBe(7);
   });
 });
-
