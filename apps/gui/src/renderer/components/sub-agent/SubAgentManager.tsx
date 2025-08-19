@@ -27,7 +27,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import { AgentMetadata, AgentStatus } from '@agentos/core';
+import type { AgentMetadata, AgentStatus } from '@agentos/core';
 import { SubAgentBadge } from './SubAgentBadge';
 import { CategoryIcon } from '../common/CategoryIcon';
 

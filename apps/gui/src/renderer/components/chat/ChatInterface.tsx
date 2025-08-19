@@ -15,7 +15,7 @@ import {
   X,
   Minimize2,
 } from 'lucide-react';
-import { MessageHistory } from '@agentos/core';
+import type { MessageHistory } from '@agentos/core';
 import MessageRenderer from './MessageRenderer';
 
 interface ChatInterfaceProps {

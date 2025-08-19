@@ -32,7 +32,7 @@ import {
   Wifi,
   Zap,
 } from 'lucide-react';
-import { CreatePreset, McpConfig, Preset } from '@agentos/core';
+import type { CreatePreset, McpConfig, Preset } from '@agentos/core';
 import { MCPToolCreate } from '../mcp/MCPToolCreate';
 
 interface PresetCreateProps {

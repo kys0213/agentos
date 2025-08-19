@@ -1,7 +1,7 @@
 import { Badge } from '../ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { CheckCircle, Clock, MinusCircle } from 'lucide-react';
-import { AgentStatus } from '@agentos/core';
+import type { AgentStatus } from '@agentos/core';
 
 export const SubAgentBadge = ({
   status,

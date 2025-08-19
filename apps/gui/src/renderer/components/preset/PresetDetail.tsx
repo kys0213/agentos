@@ -1,4 +1,4 @@
-import { Preset } from '@agentos/core';
+import type { Preset } from '@agentos/core';
 import {
   ArrowLeft,
   BarChart3,

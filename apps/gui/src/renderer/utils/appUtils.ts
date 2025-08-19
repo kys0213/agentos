@@ -1,4 +1,4 @@
-import { Preset } from '@agentos/core';
+import type { Preset } from '@agentos/core';
 import type { AppSection } from '../stores/store-types';
 
 /**

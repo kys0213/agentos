@@ -1,4 +1,4 @@
-import { McpConfig } from '@agentos/core';
+import type { McpConfig } from '@agentos/core';
 import { McpProtocol } from '../../shared/types/mcp-protocol';
 import { ServiceContainer } from '../ipc/service-container';
 

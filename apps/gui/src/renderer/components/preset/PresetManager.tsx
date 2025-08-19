@@ -1,4 +1,4 @@
-import { CreatePreset, Preset, PresetStatus } from '@agentos/core';
+import type { CreatePreset, Preset, PresetStatus } from '@agentos/core';
 import {
   Archive,
   BarChart3,

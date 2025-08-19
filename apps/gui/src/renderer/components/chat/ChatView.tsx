@@ -1,4 +1,4 @@
-import { AgentMetadata, MessageHistory, ReadonlyAgentMetadata } from '@agentos/core';
+import type { AgentMetadata, MessageHistory, ReadonlyAgentMetadata } from '@agentos/core';
 import {
   Bot,
   CheckCircle,

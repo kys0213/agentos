@@ -2,7 +2,7 @@
 import { RpcTransport } from '../../shared/rpc/transport';
 import { Cid, RpcFrame, RpcMetadata } from '../../shared/rpc/rpc-frame';
 import { isObservable, Observable } from 'rxjs';
-import { isObject } from '@agentos/core';
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 
 export type RpcHandler = (payload: unknown, meta?: unknown) => unknown; // Promise | AsyncGenerator | Observable-like
 export type RpcHandlers = Record<string, RpcHandler>;

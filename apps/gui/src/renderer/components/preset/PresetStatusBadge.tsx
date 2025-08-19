@@ -1,4 +1,4 @@
-import { PresetStatus } from '@agentos/core';
+import type { PresetStatus } from '@agentos/core';
 import { Badge, BadgeProps } from '../ui/badge';
 import { CheckCircle } from 'lucide-react';
 import { Clock, Archive } from 'lucide-react';
