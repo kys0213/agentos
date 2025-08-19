@@ -10,13 +10,13 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { Message, UserMessage } from 'llm-bridge-spec';
 import { map } from 'rxjs';
 import { AGENT_SERVICE_TOKEN } from '../../common/agent/constants';
-import { OutboundChannel } from '../../common/event/outbound-channel';
+import { AgentEventBridge } from '../events/agent-event-bridge';
 
 @Injectable()
 export class AgentSessionService {
   constructor(
     @Inject(AGENT_SERVICE_TOKEN) private readonly agentService: AgentService,
-    private readonly outbound: OutboundChannel
+    private readonly events: AgentEventBridge
   ) {}
 
   async chat(
@@ -35,13 +35,7 @@ export class AgentSessionService {
 
     // 스트림 브로드캐스트: 어시스턴트 메시지 이벤트 발행
     const last = result.messages[result.messages.length - 1];
-
-    if (last) {
-      this.outbound.emit({
-        type: 'agent.session.message',
-        payload: { sessionId: result.sessionId, data: last as unknown as Message },
-      });
-    }
+    if (last) this.events.publishSessionMessage(result.sessionId, last as unknown as Message);
 
     return result;
   }
@@ -50,7 +44,7 @@ export class AgentSessionService {
     const agent = await this.agentService.getAgent(agentId);
     if (!agent) throw new Error(`Agent not found: ${agentId}`);
     await agent.endSession(sessionId);
-    this.outbound.emit({ type: 'agent.session.ended', payload: { sessionId } });
+    this.events.publishSessionEnded(sessionId);
   }
 
   async getMetadata(id: string): Promise<AgentMetadata | null> {
@@ -105,6 +99,6 @@ export class AgentSessionService {
 
   events$() {
     // expose agent.* outbound events only
-    return this.outbound.ofType('agent.').pipe(map((ev) => ev));
+    return this.events.stream();
   }
 }
