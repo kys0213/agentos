@@ -12,7 +12,8 @@ class InMemoryPresetRepo implements PresetRepository {
       description: p.description,
       updatedAt: p.updatedAt,
     }));
-    return { items, nextCursor: '' };
+
+    return { items, nextCursor: '', hasMore: false };
   }
   async get(id: string): Promise<Preset | null> {
     return this.store.get(id) ?? null;
