@@ -11,27 +11,30 @@ import type {
 export class McpUsageRpcService {
   constructor(private readonly transport: RpcTransport) {}
 
-  getUsageLogs(clientName: string, options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
-    return this.transport.request('mcpUsageLog:get-usage-logs', { clientName, options });
+  getUsageLogs(clientName?: string, options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
+    return this.transport.request('mcp.usage.getLogs', { clientName, options });
   }
   getAllUsageLogs(options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
-    return this.transport.request('mcpUsageLog:get-all-usage-logs', options);
+    return this.transport.request('mcp.usage.getLogs', { options });
   }
   getUsageStats(clientName?: string): Promise<McpUsageStats> {
-    return this.transport.request('mcpUsageLog:get-usage-stats', clientName);
+    return this.transport.request('mcp.usage.getStats', { clientName });
   }
   getHourlyStats(date: Date, clientName?: string): Promise<HourlyStatsResponse> {
-    return this.transport.request('mcpUsageLog:get-hourly-stats', { date, clientName });
+    return this.transport.request('mcp.usage.getHourlyStats', {
+      date: date.toISOString(),
+      clientName,
+    });
   }
   getUsageLogsInRange(startDate: Date, endDate: Date, clientName?: string): Promise<McpUsageLog[]> {
-    return this.transport.request('mcpUsageLog:get-usage-logs-in-range', {
-      startDate,
-      endDate,
+    return this.transport.request('mcp.usage.getLogsInRange', {
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
       clientName,
     });
   }
   clearUsageLogs(olderThan?: Date): Promise<ClearUsageLogsResponse> {
-    return this.transport.request('mcpUsageLog:clear-usage-logs', olderThan);
+    return this.transport.request('mcp.usage.clear', olderThan ? { olderThan: olderThan.toISOString() } : {});
   }
   setUsageTracking(clientName: string, enabled: boolean): Promise<SetUsageTrackingResponse> {
     return this.transport.request('mcpUsageLog:set-usage-tracking', { clientName, enabled });
@@ -39,6 +42,7 @@ export class McpUsageRpcService {
   async subscribeToUsageUpdates(
     callback: (event: McpUsageUpdateEvent) => void
   ): Promise<() => void> {
+    // TODO: switch to OutboundChannel-driven event stream when available
     await this.transport.request('mcpUsageLog:subscribe-usage-updates');
     // Events are published on 'mcp:usage-update'
     if (!this.transport.stream) throw new Error('Transport does not support event streams');
