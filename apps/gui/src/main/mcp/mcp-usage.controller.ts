@@ -1,15 +1,14 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { McpRegistry } from '@agentos/core';
+import { ClearDto, GetLogsDto, GetStatsDto, HourlyStatsDto, LogsInRangeDto } from './dto/mcp-usage.dto';
 
 @Controller()
 export class McpUsageController {
   constructor(private readonly registry: McpRegistry) {}
 
   @EventPattern('mcp.usage.getLogs')
-  async getUsageLogs(
-    @Payload() data: { clientName?: string; options?: { status?: string; agentId?: string; offset?: number; limit?: number; sortOrder?: 'asc' | 'desc' } }
-  ) {
+  async getUsageLogs(@Payload() data: GetLogsDto) {
     const { clientName, options } = data || {};
     const clients = clientName ? [await this.registry.get(clientName)] : await this.registry.getAll();
     const usable = (await Promise.all(clients)).filter(Boolean) as any[];
@@ -27,7 +26,8 @@ export class McpUsageController {
   }
 
   @EventPattern('mcp.usage.getStats')
-  async getUsageStats(@Payload() clientName?: string) {
+  async getUsageStats(@Payload() dto?: GetStatsDto) {
+    const clientName = dto?.clientName;
     if (clientName) {
       const client = await this.registry.get(clientName);
       if (!client) throw new Error(`MCP client not found: ${clientName}`);
@@ -49,7 +49,7 @@ export class McpUsageController {
   }
 
   @EventPattern('mcp.usage.getHourlyStats')
-  async getHourlyStats(@Payload() data: { date: string; clientName?: string }) {
+  async getHourlyStats(@Payload() data: HourlyStatsDto) {
     const targetDate = new Date(data.date);
     const hourlyData: Array<[number, number]> = Array.from({ length: 24 }, (_, h) => [h, 0]);
     const addLogs = (logs: any[]) => {
@@ -79,7 +79,7 @@ export class McpUsageController {
   }
 
   @EventPattern('mcp.usage.getLogsInRange')
-  async getLogsInRange(@Payload() data: { startDate: string; endDate: string; clientName?: string }) {
+  async getLogsInRange(@Payload() data: LogsInRangeDto) {
     const start = new Date(data.startDate);
     const end = new Date(data.endDate);
     const clients = data.clientName ? [await this.registry.get(data.clientName)] : await this.registry.getAll();
@@ -94,7 +94,7 @@ export class McpUsageController {
   }
 
   @EventPattern('mcp.usage.clear')
-  async clear(@Payload() olderThan?: string) {
+  async clear(@Payload() dto?: ClearDto) {
     const _clients = await this.registry.getAll();
     // Stub: call client.clearLogs when available
     return { success: true };
