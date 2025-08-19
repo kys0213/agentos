@@ -2,7 +2,7 @@
 import type { FrameTransport, RpcClient } from '../../shared/rpc/transport';
 import { Cid, RpcFrame, RpcMetadata } from '../../shared/rpc/rpc-frame';
 import { isObservable, Observable } from 'rxjs';
-import { createNotifier, type Notifier } from '@agentos/lang/utils';
+import { createNotifier, type Notifier } from './notifier';
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 
