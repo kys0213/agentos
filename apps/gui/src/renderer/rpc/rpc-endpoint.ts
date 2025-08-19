@@ -106,7 +106,7 @@ export class RpcEndpoint {
     const self = this;
     async function* iterator(): AsyncGenerator<T, void, unknown> {
       try {
-        while (!done) {
+        while (!done || queue.length) {
           if (queue.length) {
             yield queue.shift()!;
           } else {
