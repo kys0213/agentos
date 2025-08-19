@@ -1,5 +1,6 @@
-import { RpcTransport } from '../../shared/rpc/transport';
-import { ElectronRendererTransport } from '../rpc/transports/electron-renderer-transport';
+import type { RpcClient } from '../../shared/rpc/transport';
+import type { RpcFrame } from '../../shared/rpc/rpc-frame';
+import { RpcEndpoint } from '../rpc/rpc-endpoint';
 import { MockIpcChannel } from './mock-ipc-channel';
 
 /**
@@ -7,13 +8,13 @@ import { MockIpcChannel } from './mock-ipc-channel';
  * 런타임에 현재 환경을 감지하여 적절한 구현체를 반환
  */
 export class RpcTransportFactory {
-  private static _instance: RpcTransport | null = null;
+  private static _instance: RpcClient | null = null;
 
   /**
    * 현재 환경에 맞는 IpcChannel 구현체를 생성하여 반환
    * 싱글톤 패턴으로 한 번 생성된 인스턴스를 재사용
    */
-  static create(): RpcTransport {
+  static create(): RpcClient {
     if (RpcTransportFactory._instance) {
       return RpcTransportFactory._instance;
     }
@@ -23,8 +24,23 @@ export class RpcTransportFactory {
     console.log(`Detected environment: ${environment}`, envInfo);
 
     switch (environment) {
-      case 'electron':
-        return new ElectronRendererTransport(window.electronBridge);
+      case 'electron': {
+        // Build a FrameTransport over window.electronBridge and create an RpcEndpoint
+        const bridge = (window as any).electronBridge;
+        if (!bridge || typeof bridge.start !== 'function' || typeof bridge.post !== 'function') {
+          throw new Error('electronBridge is not available');
+        }
+        const frameTransport = {
+          start: (onFrame: (f: RpcFrame) => void) => bridge.start(onFrame),
+          post: (frame: RpcFrame) => bridge.post(frame),
+          stop: () => bridge.stop?.(),
+        };
+        const endpoint = new RpcEndpoint(frameTransport as any);
+        endpoint.start();
+        // Use endpoint directly as RpcClient
+        this._instance = endpoint as unknown as RpcClient;
+        return this._instance;
+      }
 
       default:
         throw new Error(`Unsupported environment: ${environment}`);
@@ -34,7 +50,7 @@ export class RpcTransportFactory {
   /**
    * 특정 구현체를 강제로 설정 (주로 테스트용)
    */
-  static setInstance(instance: RpcTransport): void {
+  static setInstance(instance: RpcClient): void {
     this._instance = instance;
   }
 
@@ -162,7 +178,7 @@ export class RpcTransportFactory {
 /**
  * 간편한 IpcChannel 인스턴스 접근을 위한 헬퍼 함수
  */
-export function createRpcTransport(): RpcTransport {
+export function createRpcTransport(): RpcClient {
   return RpcTransportFactory.create();
 }
 
