@@ -47,8 +47,8 @@ apps/
         rpc/
           types.ts
           rpc-endpoint.ts
-          transports/
-            electron-renderer-transport.ts
+        ipc/
+          ipc-channel.factory.ts
         state/
           hub.stream.ts
         app/App.tsx
@@ -98,18 +98,18 @@ export type RpcFrame =
 
 Transport는 채널 문자열과 payload만 다루고, 타입 안전성은 서비스 레이어에서 보장합니다.
 
-권장 패턴(채널 기반 Transport + 타입 안전 서비스):
+권장 패턴(채널 기반 RpcClient + 타입 안전 서비스):
 
 ```ts
 // Transport 인터페이스 (송수신 계층 전용)
-export interface RpcTransport {
+export interface RpcClient {
   request<TRes = unknown, TReq = unknown>(channel: string, payload?: TReq): Promise<TRes>;
-  stream?<T = unknown>(channel: string, handler: (data: T) => void): Promise<() => void>;
+  stream?<T = unknown>(channel: string, payload?: unknown): AsyncGenerator<T, void, unknown>;
 }
 
 // 서비스 예시 (Agent)
 export class AgentRpcService {
-  constructor(private readonly transport: RpcTransport) {}
+  constructor(private readonly transport: RpcClient) {}
   chat(agentId: string, messages: UserMessage[], options?: AgentExecuteOptions) {
     return this.transport.request<AgentChatResult>('agent.chat', { agentId, messages, options });
   }
@@ -122,13 +122,9 @@ export class AgentRpcService {
 참고: 메서드별 타입 매핑(RpcMethodMap)은 서비스 내부 유틸로 유지할 수 있습니다(Transport와 분리).
 
 ```ts
-export interface RpcTransport {
-  // Sends a single-shot request over a channel and resolves with the result
+export interface RpcClient {
   request<TRes = unknown, TReq = unknown>(channel: string, payload?: TReq): Promise<TRes>;
-
-  // Subscribes to a channel as a stream; resolves to an unsubscribe function
-  // The consumer can wrap this into an AsyncGenerator if desired
-  stream?<T = unknown>(channel: string, handler: (data: T) => void): Promise<() => void>;
+  stream?<T = unknown>(channel: string, payload?: unknown): AsyncGenerator<T, void, unknown>;
 }
 ```
 
@@ -148,7 +144,7 @@ export interface RpcTransport {
 ```ts
 // rpc/engine.ts (요약)
 export class RpcEndpoint {
-  constructor(transport: RpcTransport, opts?: { timeoutMs?: number; onLog?: (f: any) => void });
+  constructor(transport: FrameTransport, opts?: { timeoutMs?: number; onLog?: (f: any) => void });
 
   start(): void;
   stop(): void;
@@ -199,16 +195,16 @@ contextBridge.exposeInMainWorld('electronBridge', {
 ```
 
 ```ts
-// renderer/src/rpc/transports/electron-renderer-transport.ts
-export class ElectronIpcTransport implements RpcTransport {
-  constructor(private bridge = (window as any).electronBridge) {}
-  start(onFrame) {
-    this.bridge.start(onFrame);
-  }
-  post(frame) {
-    this.bridge.post(frame);
-  }
-}
+// renderer: frame bridge + endpoint 구성(요약)
+const bridge = (window as any).electronBridge;
+const frameTransport = {
+  start: (onFrame: (f: RpcFrame) => void) => bridge.start(onFrame),
+  post: (frame: RpcFrame) => bridge.post(frame),
+  stop: () => bridge.stop?.(),
+};
+const endpoint = new RpcEndpoint(frameTransport);
+endpoint.start();
+// RpcClient로 endpoint를 그대로 사용
 ```
 
 ### 6.2 Web(Service Worker)

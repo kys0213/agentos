@@ -5,7 +5,8 @@
 ## 용어 정리
 
 - RpcFrame: 프레임 기반 메시지. 종류: `req | res | err | nxt | end | can`.
-- RpcTransport(렌더러): `ElectronIpcTransport` 구현 사용.
+- FrameTransport(렌더러): `electronBridge.start/post/stop` 래퍼.
+- RpcClient(렌더러): `RpcEndpoint`가 구현(프레임 브리지 위에서 동작).
 - Event Transport(메인): `ElectronEventTransport` (Nest Microservice 전략).
 - Preload API: `rpc.request(channel, payload?)`, `electronBridge.on(channel, handler) -> unsubscribe`.
 - Validation: 메인 컨트롤러는 `ValidationPipe + class-validator`; 렌더러 경계는 `zod` 가드 권장.
@@ -41,7 +42,7 @@ unsubscribe();
 ## 렌더러 부트스트랩 패턴 (권장)
 
 - Transport/Endpoint 분리: 프레임 브리지(electronBridge.start/post)를 얇게 감싼 전송층과, 이를 사용하는 `RpcEndpoint`를 분리합니다.
-- 의존성 주입: 앱 부트스트랩은 `RpcTransport`를 인자로 받아 서비스 컨테이너를 구성합니다. 전송 구현을 내부에서 숨기지 않습니다.
+- 의존성 주입: 앱 부트스트랩은 `RpcClient`를 인자로 받아 서비스 컨테이너를 구성합니다. 전송 구현을 내부에서 숨기지 않습니다.
 - 준비 대기: 부트스트랩 전에 `waitForRpcReady()`를 호출해 preload 주입(`electronBridge`, `rpc.request`) 준비를 명시적으로 보장합니다.
 - 순환 참조 회피: 전송 구현이 `RpcEndpoint`를 생성하거나 참조하지 않도록 합니다. 필요 시 별도 클라이언트(EndpointClient)로 `request/stream`만 노출해 사용합니다.
 
@@ -57,7 +58,7 @@ const frameBridge = new ElectronFrameBridge();
 // endpoint and client
 const endpoint = new RpcEndpoint(frameBridge);
 endpoint.start();
-const transport: RpcTransport = new EndpointClient(endpoint);
+const transport /*: RpcClient*/ = endpoint;
 
 // inject transport to services
 await bootstrap(transport);
