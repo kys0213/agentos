@@ -79,11 +79,22 @@ export class AgentCoreModule {}
 - **제공**: `AgentSessionService` + `AgentSessionController`
 - **역할**: Main 마이크로서비스 레이어에서 `@EventPattern('agent:*')` 핸들러 노출
 
+### PresetModule / McpUsageModule (현행)
+- **PresetModule**: 프리셋 CRUD 컨트롤러 제공 (`preset.*` 채널)
+- **McpUsageModule**: 사용량 조회/통계/정리 컨트롤러 제공 (`mcp.usage.*` 채널, 이벤트 `mcp.usage.events`)
+
+### (예정) McpModule / BridgeModule / ChatModule
+- **McpModule**: MCP 레지스트리 조작 및 툴 호출 (`mcp.*`)
+- **BridgeModule**: LLM 브릿지 등록/해제/스위치/조회 (`bridge.*`)
+- **Chat/ConversationModule**: 세션/대화 조회 및 관리 (`chat.*`, `conversation.*`)
+
 ## 앱 부트스트랩과 조합
 
 - `AppModule`은 `ElectronAppModule`(Global), `AgentSessionModule`을 가져와 전체 그래프를 구성합니다.
 - Electron/Nest 마이크로서비스는 `ElectronEventTransport`로 프레임 기반 통신(req/res/err/nxt/end/can)을 사용합니다.
-- Outbound 이벤트는 `common/event/outbound-channel.ts`를 통해 단일 채널로 방출 → 컨트롤러에서 스트림으로 노출(`agent.events`).
+- Outbound 이벤트는 `common/event/outbound-channel.ts`를 통해 단일 채널로 방출 → 컨트롤러에서 스트림으로 노출됩니다.
+  - 지원 채널: `agent.events`, `mcp.usage.events` (확장 시 본 문서 업데이트)
+  - 렌더러 구독 예시: `transport.stream('mcp.usage.events', handler)`
 
 ## 사용 예시 (의존성 주입)
 
@@ -109,7 +120,8 @@ class FooService {
 - **압축 전략 교체**: `FileBasedChatManager`의 컴프레서(NoopCompressor)를 실제 구현으로 대체
 - **테스트 DI**: 각 토큰(`LLM_BRIDGE_REGISTRY_TOKEN`, `AGENT_SERVICE_TOKEN` 등)을 테스트 모듈에서 오버라이드하여 순수/메모리 구현 주입
 
-## 참고 커밋/흐름
+## 검증/DTO 및 참고 커밋
+- 컨트롤러는 ValidationPipe와 DTO(class-validator 또는 zod)를 사용하여 입력 검증을 수행합니다.
 - `e959ef03…`: LLM 브릿지 레지스트리 모듈 초기화 로직 정리(DependencyBridgeLoader + userData 기반)
 - 서비스 중심 아키텍처: `SimpleAgentService`가 매니저를 대체하여 `AgentService` 일원화
 - GUI Main ↔ Renderer: 프레임 기반 스트림 + RxJS demux(`method` 필드를 통한 분기)

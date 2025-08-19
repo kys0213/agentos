@@ -1,5 +1,7 @@
 # GUI Main Services → NestJS 모듈/컨트롤러 이관 계획서 (v1)
 
+> 공용 용어/채널 정의: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`
+
 본 문서는 `apps/gui/src/main/services/*`에 존재하는 IPC 핸들러 로직을 NestJS 모듈/컨트롤러 구조로 점진 이관하기 위한 상세 계획입니다. 커밋 `e959ef03d6d7c5a814d3e43548b6487317701237`에서 정리된 LLM 브릿지 레지스트리 초기화와, 현재 추가된 모듈(PresetModule, McpUsageModule, AgentCoreModule 등)을 기반으로 진행합니다.
 
 ## Requirements
@@ -21,8 +23,8 @@
 
 ### 제약 조건
 
-- [ ] any 금지, zod/구체 타입/가드 사용(렌더러/메인 모두)
-- [ ] contextIsolation 유지, preload에서 최소 API만 노출(start/post)
+- [ ] any 금지, 컨트롤러는 ValidationPipe + class-validator 사용(메인), 렌더러 경계는 zod 가드 적용 가능
+- [ ] contextIsolation 유지, preload에서 최소 API만 노출(start/post → `rpc.request`, `electronBridge.on`로 확장 예정)
 - [ ] 파일 기반 저장 구조 유지(userData 하위 경로), 날짜는 ISO 직렬화
 
 ## Current State
@@ -33,7 +35,8 @@
 - [x] AgentSessionModule: `@EventPattern('agent:*' | 'agent.events')` 제공
 - [x] PresetModule: `FileBasedPresetRepository` 제공
 - [x] McpUsageModule: `InMemoryUsageTracker` 제공
-- [ ] PresetController, McpUsageController, McpController, Chat/ConversationController, BuiltinToolController, BridgeController 미구현
+- [x] PresetController, McpUsageController 구현 및 일부 테스트 추가
+- [ ] McpController, Chat/ConversationController, BuiltinToolController, BridgeController 미구현
 - [ ] 기존 services/* 호출부 미이관(점진 제거 예정)
 
 ## Interface Sketch
@@ -68,8 +71,8 @@
 
 - [x] 모듈 토대: LlmBridgeModule, McpRegistryModule, AgentCoreModule
 - [x] 모듈 토대(추가): PresetModule, McpUsageModule
-- [ ] PresetController 추가(@EventPattern 채널/DTO), 기존 preset 서비스 이관
-- [ ] McpUsageController 추가, 기존 mcp-usage 서비스 이관
+- [x] PresetController 추가(@EventPattern 채널/DTO), 기존 preset 서비스 이관
+- [x] McpUsageController 추가, 기존 mcp-usage 서비스 이관
 - [ ] McpController 추가, 기존 mcp 서비스 이관
 - [ ] Chat/ConversationController 추가, 기존 chat 서비스 이관
 - [ ] BuiltinToolModule/Controller 추가, 기존 builtin-tool 이관
@@ -97,7 +100,7 @@
 
 ## 네이밍/버저닝
 
-- 채널 접두사: `preset.*`, `mcp.*`, `mcp.usage.*`, `chat.*`, `bridge.*`, `builtin.*`
+- 채널/용어는 공용 문서 참조: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`
 - 프레임 메서드: nxt 프레임에 `method` 포함(렌더러 RxJS demux 용)
 - 스펙 버전: rpcSpecVersion 0.2 (문서 반영)
 
@@ -110,7 +113,7 @@
 ## 산출물
 
 - 모듈/컨트롤러 소스(도메인별)
-- 채널/DTO 스키마(zod) 및 문서 업데이트
+- 채널/DTO 스키마(class-validator/ValidationPipe on main, zod 가드 on renderer) 및 문서 업데이트
 - Jest 테스트(단위/통합)
 - 서비스 제거 커밋 및 릴리즈 노트
 

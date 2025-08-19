@@ -1,5 +1,7 @@
 # Electron RPC/이벤트 수렴 계획서 (v0.2)
 
+> 공용 용어/채널 정의: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`
+
 ## Requirements
 
 ### 성공 조건
@@ -21,6 +23,10 @@
 - [ ] `any` 사용 금지, 코어 타입/가드 적극 사용.
 - [ ] `contextIsolation: true` 유지. `window.require` 사용 금지 → preload에서 안전 API 노출.
 - [ ] 대용량은 ArrayBuffer/Transferable 사용, `Date`는 ISO 문자열 직렬화.
+
+## 채널/용어
+
+공용 문서 참조: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`
 
 ## Interface Sketch
 
@@ -84,14 +90,14 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 - [x] ElectronEventTransport에 cancel 처리(subscriptions by cid) 기본 구현
 - [ ] `AgentEventBridge` 도입: core 이벤트 `agentos:` 접두사 브로드캐스트
 - [ ] MCP 사용량 업데이트 경로 이벤트화 점검(샘플링/취소 포함)
-- [ ] 메서드별 zod 스키마 초안(최소 입력 검증) 추가
+- [ ] 메서드별 DTO/class-validator 스키마(메인) 및 zod 가드(렌더러) 초안 추가
 - [ ] 계약 테스트: mock Transport로 `req/res/err/nxt/end/can` 스냅샷
 - [ ] E2E: snapshot+watch 시나리오, 취소/타임아웃, CoreError 전파 확인
 - [x] 데모 스트림 경로 연결: `demo.streamTicks` (Frame-level prototype)
 
 ## 작업 순서
 
-1. [완료] **Preload 확장**: `electronBridge.on` + `rpc.request` 추가
+1. **Preload 확장**: `electronBridge.on` + `rpc.request` 추가
 2. [완료] **Renderer 전송**: 채널 기반 `ElectronIpcTransport` 구현
 3. [완료] **서비스 추가 1차**: Agent/Bridge/Preset/MCP/MCPUsage/Conversation RPC 서비스 추가 및 등록
 4. [진행] **호출부 이관**: 기존 훅/컨테이너를 RPC 서비스로 점진 이관

@@ -1,26 +1,32 @@
 # 작업계획서: GUI Agent API 정합화 및 리팩토링
 
+> 공용 용어/채널 정의: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`
+
 ## Requirements
 
 ### 성공 조건
 
-- [x] Electron main ↔ preload ↔ renderer 간 통신 인터페이스가 `apps/gui/src/shared/types/agentos-api.ts`, `ipc-channel.ts` 스펙과 1:1 일치한다.
-- [x] 도메인별 IPC 핸들러가 main 프로세스에 분리/등록되어 있다(`agent`, `builtinTool`, `mcp`, `preset`, `mcpUsageLog`, `bridge`).
-- [x] renderer의 IpcChannel(ElectronIpcChannel)과 서비스 계층이 스펙에 맞춰 호출명/시그니처가 정렬되어 있다.
+- [x] Electron main ↔ preload ↔ renderer 간 통신 인터페이스가 `apps/gui/src/shared/types/agentos-api.ts`와 IPC 스펙에 1:1 정렬된다.
+- [x] 도메인별 IPC 핸들러가 main 프로세스에 분리/등록되어 있다(`agent`, `builtin`, `mcp`, `preset`, `mcp.usage`, `bridge`).
+- [x] 렌더러의 RPC 표면(RpcEndpoint + ElectronIpcTransport)과 서비스 계층이 스펙에 맞춰 호출명/시그니처가 정렬되어 있다.
 - [x] 기존 컴포넌트/훅은 호환 어댑터(alias/임시 ChatService)로 컴파일이 유지된다.
 - [x] 전체 리포지토리 타입체크 통과(`pnpm -r typecheck`).
 - [x] agent:chat/endSession IPC가 최소 mock 응답으로 동작한다.
 
 ### 사용 시나리오
 
-- GUI가 Electron 환경에서 실행될 때 renderer는 `window.electronAPI`를 통해 스펙과 동일한 네임스페이스로 main과 통신한다.
+- GUI가 Electron 환경에서 실행될 때 renderer는 preload가 노출한 안전 API(`rpc.request`, `electronBridge.on`) 또는 서비스 레이어를 통해 스펙과 동일한 네임스페이스로 main과 통신한다.
 - MCP 툴/사용량, 프리셋, 브리지, 에이전트(메타/채팅)가 서비스 계층을 통해 일관된 메서드명으로 호출된다.
-- 개발자는 MockIpcChannel로 테스트 환경에서도 동일한 인터페이스를 사용할 수 있다.
+- 개발자는 Mock 트랜스포트/서비스로 테스트 환경에서도 동일한 인터페이스를 사용할 수 있다.
 
 ### 제약 조건
 
-- 실제 LLM/Agent 연동은 후속 단계에서 진행. 현재는 최소 mock 응답으로 agent:chat 구현.
+- 실제 LLM/Agent 연동은 후속 단계에서 진행. 현재는 최소 mock 응답으로 채팅 API를 검증.
 - 기존 코드와의 호환을 위해 일시적으로 alias/어댑터를 유지한다(후속 제거 예정).
+
+## 채널/용어
+
+공용 문서 참조: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`
 
 ## Interface Sketch
 
@@ -65,13 +71,13 @@ export interface McpUsageLogProtocol {
 
 - [x] 계획서 작성 및 커밋
 - [x] preload를 AgentOsAPI 스펙 구조로 재작성
-- [x] main IPC 핸들러 도메인 분리(`agent`, `builtinTool`, `mcpUsageLog`, `bridge` 정합화)
-- [x] renderer IpcChannel(ElectronIpcChannel) 스펙 정렬
+- [x] main IPC 핸들러 도메인 분리(`agent`, `builtin`, `mcp.usage`, `bridge` 정합화)
+- [x] 렌더러 RPC 표면(RpcEndpoint + ElectronIpcTransport) 스펙 정렬
 - [x] 서비스 계층 정리 + 호환 alias 제공(`BridgeService`, `McpService`, `PresetService`)
 - [x] BuiltinToolService 추가, McpUsageLogService 사용
 - [x] MockIpcChannel을 스펙에 맞게 전면 교체
 - [x] 컴포넌트/훅 호출 정리(MCP 사용량, 프리셋, 타입 보완)
-- [x] agent:chat/endSession 임시 동작 구현(main)
+- [x] 채팅 API 최소 구현(에코/임시)으로 경로 검증(main)
 - [x] 타입체크 통과 확인(`pnpm -r typecheck`)
 - [x] 호환 alias 제거 및 호출부 일괄 전환(services/컴포넌트/훅/스토어)
 - [ ] 실제 Agent/Bridge/ChatManager 연동 (main):

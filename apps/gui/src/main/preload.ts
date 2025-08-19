@@ -7,4 +7,9 @@ contextBridge.exposeInMainWorld('electronBridge', {
   post: (frame) => {
     ipcRenderer.send('bridge:post', frame);
   },
+  on: (channel: string, handler: (payload: unknown) => void) => {
+    const wrapped = (_e: unknown, payload: unknown) => handler(payload);
+    ipcRenderer.on(channel, wrapped);
+    return () => ipcRenderer.off(channel, wrapped);
+  },
 });
