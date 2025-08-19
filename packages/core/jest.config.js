@@ -6,6 +6,9 @@ module.exports = {
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },
+  moduleNameMapper: {
+    '^llm-bridge-loader$': '<rootDir>/src/llm/bridge/file/__tests__/__mocks__/llm-bridge-loader.ts',
+  },
   globals: {
     'ts-jest': {
       tsconfig: '<rootDir>/tsconfig.json',

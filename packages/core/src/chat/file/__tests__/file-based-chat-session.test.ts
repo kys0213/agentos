@@ -79,10 +79,12 @@ describe('FileBasedChatSession', () => {
       await session.commit();
 
       expect(mockStorage.saveSessionMetadata).toHaveBeenCalledWith(
+        expect.any(String),
         'test-session',
         expect.any(Object)
       );
       expect(mockStorage.saveMessageHistories).toHaveBeenCalledWith(
+        expect.any(String),
         'test-session',
         expect.any(Array)
       );
@@ -146,6 +148,7 @@ describe('FileBasedChatSession', () => {
       await session.commit();
 
       expect(mockStorage.saveCheckpoint).toHaveBeenCalledWith(
+        expect.any(String),
         'test-session',
         expect.objectContaining({
           checkpointId: expect.any(String),
@@ -175,6 +178,7 @@ describe('FileBasedChatSession', () => {
       await session.commit();
 
       expect(mockStorage.saveMessageHistories).toHaveBeenCalledWith(
+        expect.any(String),
         'test-session',
         expect.arrayContaining([
           expect.objectContaining({

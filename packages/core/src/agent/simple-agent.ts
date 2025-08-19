@@ -160,7 +160,9 @@ export class SimpleAgent implements Agent {
 
     const metadata = await this.getMetadata();
 
-    const enabledMcps = metadata.preset.enabledMcps;
+    const enabledMcps = (metadata as any).preset?.enabledMcps as
+      | Array<{ name: string; enabledTools?: Array<{ name: string }> }>
+      | undefined;
 
     if (!isNonEmptyArray(enabledMcps)) {
       const tools = await Promise.all(mcps.map(async (mcp) => await mcp.getTools()));

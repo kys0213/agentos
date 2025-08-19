@@ -109,6 +109,7 @@ describe('FileBasedLlmBridgeRegistry (mocked FS)', () => {
   it('register/list/get/active/unregister lifecycle', async () => {
     const baseDir = '/tmp/agentos-core-test';
     const reg = new FileBasedLlmBridgeRegistry(baseDir, new LlmBridgeLoader());
+    await reg.loadBridge('test-bridge');
 
     expect(await reg.listIds()).toEqual([]);
     expect(await reg.getActiveId()).toBeNull();
@@ -119,6 +120,7 @@ describe('FileBasedLlmBridgeRegistry (mocked FS)', () => {
     expect((await reg.getManifest('test-bridge'))?.name).toBe('test-bridge');
     expect(await reg.getActiveId()).toBe('test-bridge');
 
+    await reg.loadBridge('other-bridge');
     const id2 = await reg.register(makeManifest('other-bridge'), {});
     expect(id2).toBe('other-bridge');
     expect((await reg.listIds()).sort()).toEqual(['other-bridge', 'test-bridge']);

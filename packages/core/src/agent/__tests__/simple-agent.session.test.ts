@@ -51,7 +51,9 @@ describe('SimpleAgent.createSession', () => {
     // MCP registry getAll은 빈 배열 반환으로 설정(툴 없는 환경)
     mcp.getAll.mockResolvedValue([] as any);
 
-    const agent = new SimpleAgent('a-1', llm, mcp, chatManager, mock<AgentMetadataRepository>());
+    const repo = mock<AgentMetadataRepository>();
+    repo.getOrThrow.mockResolvedValue(meta);
+    const agent = new SimpleAgent('a-1', llm, mcp, chatManager, repo as unknown as AgentMetadataRepository);
 
     // LLM 응답 목업
     const resp: LlmBridgeResponse = {

@@ -64,7 +64,8 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
   async loadBridge(name: string): Promise<BridgeLoadResult> {
     const result = await this.llmBridgeLoader.load(name);
 
-    this.loadedBridges.set(result.mainfest.name, { loadedResult: result });
+    // Store raw result keyed by manifest name
+    this.loadedBridges.set(result.mainfest.name, result);
 
     return result;
   }
