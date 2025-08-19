@@ -9,4 +9,8 @@ export interface RpcTransport {
 
   /** optional cleanup */
   stop?(): void;
+
+  /** higher-level helpers */
+  request<TRes = unknown, TReq = unknown>(channel: string, payload?: TReq): Promise<TRes>;
+  stream?<T = unknown>(channel: string, handler: (data: T) => void): Promise<() => void>;
 }
