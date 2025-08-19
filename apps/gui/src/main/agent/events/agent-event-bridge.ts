@@ -37,7 +37,7 @@ export class AgentEventBridge {
     this.outbound.emit<AgentEventPayload>({ type: 'agent.status.changed', payload: { agentId, status } });
   }
 
-  stream(): Observable<OutboundEvent<AgentEventPayload>> {
+  stream(): Observable<OutboundEvent> {
     return this.outbound.ofType(/^agent\./);
   }
 }
