@@ -2,7 +2,7 @@
 import type { FrameTransport, RpcClient } from '../../shared/rpc/transport';
 import { Cid, RpcFrame, RpcMetadata } from '../../shared/rpc/rpc-frame';
 import { isObservable, Observable } from 'rxjs';
-import { utils } from '@agentos/lang';
+import { createNotifier, type Notifier } from '@agentos/lang/utils';
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 
@@ -28,7 +28,7 @@ type StreamContext<T> = {
   queue: T[];
   done: boolean;
   err: unknown;
-  wake: utils.Notifier;
+  wake: Notifier;
   cid: Cid;
 };
 
@@ -87,7 +87,7 @@ export class RpcEndpoint implements RpcClient {
       queue: [],
       done: false,
       err: null,
-      wake: utils.createNotifier(),
+      wake: createNotifier(),
       cid: this.cid(),
     };
 
