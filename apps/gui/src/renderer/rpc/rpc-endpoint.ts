@@ -66,56 +66,62 @@ export class RpcEndpoint {
     });
   }
 
-  async *stream<T>(
-    method: string,
-    payload?: unknown,
-    meta?: RpcMetadata
-  ): AsyncGenerator<T, void, unknown> {
+  stream<T>(method: string, payload?: unknown, meta?: RpcMetadata): AsyncGenerator<T, void, unknown> {
     const cid = this.cid();
     const queue: T[] = [];
     let done = false;
     let err: unknown;
 
-    const p = new Promise<void>((resolve) => {
-      this.pending.set(cid, {
-        resolve: () => {},
-        reject: (e) => {
-          err = e;
-        },
-        next: (v) => queue.push(v as T),
-        complete: () => {
-          done = true;
-          resolve();
-        },
-        error: (e) => {
-          err = e;
-          done = true;
-          resolve();
-        },
-      });
+    // Register observer before posting request
+    const wake = (() => {
+      let notify: (() => void) | null = null;
+      const p = new Promise<void>((resolve) => (notify = resolve));
+      return { p, notify: () => notify?.() };
+    })();
+
+    this.pending.set(cid, {
+      resolve: () => {},
+      reject: (e) => {
+        err = e;
+        wake.notify();
+      },
+      next: (v) => {
+        queue.push(v as T);
+        wake.notify();
+      },
+      complete: () => {
+        done = true;
+        wake.notify();
+      },
+      error: (e) => {
+        err = e;
+        done = true;
+        wake.notify();
+      },
     });
 
-    // 요청 발송
+    // Post request synchronously so callers can observe it immediately
     this.transport.post({ kind: 'req', cid, method, payload, meta });
 
-    try {
-      while (!done) {
-        if (queue.length) {
-          yield queue.shift()!;
-        } else {
-          await Promise.race([p, new Promise((r) => setTimeout(r, 8))]);
+    const self = this;
+    async function* iterator(): AsyncGenerator<T, void, unknown> {
+      try {
+        while (!done) {
+          if (queue.length) {
+            yield queue.shift()!;
+          } else {
+            await Promise.race([wake.p, new Promise((r) => setTimeout(r, 8))]);
+          }
+          if (err) throw err;
         }
-        if (err) {
-          throw err;
+      } finally {
+        if (!done) {
+          self.transport.post({ kind: 'can', cid });
         }
+        self.pending.delete(cid);
       }
-    } finally {
-      if (!done) {
-        this.transport.post({ kind: 'can', cid });
-      }
-
-      this.pending.delete(cid);
     }
+    return iterator();
   }
 
   cancel(cid: Cid) {
