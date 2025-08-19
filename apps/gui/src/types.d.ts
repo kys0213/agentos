@@ -30,6 +30,9 @@ declare global {
 
     electronAPI: AgentOsAPI;
     electronBridge?: RpcTransport;
+    rpc?: {
+      request: (channel: string, payload?: unknown) => Promise<unknown>;
+    };
   }
 
   // process 객체 부분 polyfill (브라우저 환경용)
