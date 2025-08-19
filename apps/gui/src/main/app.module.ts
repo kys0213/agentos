@@ -7,6 +7,7 @@ import { PresetApiModule } from './preset/preset.module';
 import { McpUsageModule } from './common/mcp/mcp-usage.module';
 import { McpRegistryModule } from './common/mcp/mcp-registry.module';
 import { McpUsageController } from './mcp/mcp-usage.controller';
+import { McpUsagePublisher } from './mcp/mcp-usage.publisher';
 import { OutboundChannelModule } from './common/event/outbound-channel.module';
 
 @Module({
@@ -27,6 +28,7 @@ import { OutboundChannelModule } from './common/event/outbound-channel.module';
         forbidNonWhitelisted: false,
       }),
     },
+    McpUsagePublisher,
   ],
   controllers: [McpUsageController],
 })

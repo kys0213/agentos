@@ -32,4 +32,24 @@ export class ElectronIpcTransport implements RpcTransport {
     const ep = this.ensureEndpoint();
     return ep.request<TRes>(channel, payload as any);
   }
+
+  async stream<T = unknown>(channel: string, handler: (data: T) => void): Promise<() => void> {
+    const ep = this.ensureEndpoint();
+    const it = ep.stream<T>(channel);
+    let closed = false;
+    (async () => {
+      try {
+        for await (const v of it) {
+          if (closed) break;
+          handler(v);
+        }
+      } catch {
+        // swallow
+      }
+    })();
+    return async () => {
+      closed = true;
+      if (typeof (it as any).return === 'function') await (it as any).return();
+    };
+  }
 }

@@ -2,10 +2,12 @@ import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { McpRegistry } from '@agentos/core';
 import { ClearDto, GetLogsDto, GetStatsDto, HourlyStatsDto, LogsInRangeDto } from './dto/mcp-usage.dto';
+import { OutboundChannel } from '../common/event/outbound-channel';
+import { map } from 'rxjs';
 
 @Controller()
 export class McpUsageController {
-  constructor(private readonly registry: McpRegistry) {}
+  constructor(private readonly registry: McpRegistry, private readonly outbound: OutboundChannel) {}
 
   @EventPattern('mcp.usage.getLogs')
   async getUsageLogs(@Payload() data: GetLogsDto) {
@@ -98,5 +100,11 @@ export class McpUsageController {
     const _clients = await this.registry.getAll();
     // Stub: call client.clearLogs when available
     return { success: true };
+  }
+
+  // Stream outbound usage events via OutboundChannel
+  @EventPattern('mcp.usage.events')
+  events() {
+    return this.outbound.ofType('mcp.usage.').pipe(map((ev) => ev));
   }
 }

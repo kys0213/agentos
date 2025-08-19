@@ -42,10 +42,8 @@ export class McpUsageRpcService {
   async subscribeToUsageUpdates(
     callback: (event: McpUsageUpdateEvent) => void
   ): Promise<() => void> {
-    // TODO: switch to OutboundChannel-driven event stream when available
-    await this.transport.request('mcpUsageLog:subscribe-usage-updates');
-    // Events are published on 'mcp:usage-update'
+    // New: subscribe via controller stream endpoint
     if (!this.transport.stream) throw new Error('Transport does not support event streams');
-    return this.transport.stream('mcp:usage-update', callback as any);
+    return this.transport.stream('mcp.usage.events', callback as any);
   }
 }
