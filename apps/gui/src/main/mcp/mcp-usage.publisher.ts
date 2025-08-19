@@ -4,7 +4,7 @@ import { OutboundChannel } from '../common/event/outbound-channel';
 
 @Injectable()
 export class McpUsagePublisher implements OnModuleInit, OnModuleDestroy {
-  private timer: any;
+  private timer: NodeJS.Timeout | null = null;
   private lastCounts = new Map<string, number>();
 
   constructor(
@@ -19,7 +19,7 @@ export class McpUsagePublisher implements OnModuleInit, OnModuleDestroy {
     if (this.timer) clearInterval(this.timer);
   }
 
-  private async scan() {
+  private async scan(): Promise<void> {
     // Usage tracking removed from protocol client; publisher is a no-op for now.
     return;
   }

@@ -31,7 +31,9 @@ export class BridgeController {
   @EventPattern('bridge.register')
   async register(@Payload() data: RegisterPayload) {
     // Assumes loader has already loaded the manifest by name in app bootstrap or via a prior call.
-    const id = await this.registry.register(data.manifest, data.config as any, { id: data.id });
+    const id = await this.registry.register(data.manifest, data.config as Record<string, unknown>, {
+      id: data.id,
+    });
     return { id };
   }
 

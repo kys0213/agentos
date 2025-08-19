@@ -4,17 +4,10 @@ import type {
   CursorPaginationResult,
 } from '../common/pagination/cursor-pagination';
 import type { Agent, AgentChatResult, AgentExecuteOptions } from './agent';
-import type { AgentSearchQuery } from './agent-search';
 import type { AgentSession } from './agent-session';
 import type { AgentService } from './agent.service';
-import { Errors } from '../common/error/core-error';
-import { CreateAgentMetadata } from './agent-metadata';
-
-import { LlmBridgeRegistry } from '../llm/bridge/registry';
-import { SimpleAgent } from './simple-agent';
-import { McpRegistry } from '../tool/mcp/mcp.registery';
-import { ChatManager } from '../chat/chat.manager';
-import { AgentMetadataRepository } from './agent-metadata.repository';
+import type { AgentSearchQuery } from './agent-search';
+import type { AgentManager } from './agent-manager';
 
 /**
  * A minimal AgentService implementation that wraps an existing AgentManager.
@@ -22,103 +15,52 @@ import { AgentMetadataRepository } from './agent-metadata.repository';
  * - Provides simple in-memory search using getAllAgents.
  */
 export class SimpleAgentService implements AgentService {
-  private readonly agents = new Map<string, Agent>();
-
   constructor(
-    private readonly llmBridgeRegistry: LlmBridgeRegistry,
-    private readonly mcpRegistry: McpRegistry,
-    private readonly chatManager: ChatManager,
-    private readonly agentMetadataRepository: AgentMetadataRepository
+    private readonly manager: AgentManager,
+    private readonly metadataRepo?: import('./agent-metadata.repository').AgentMetadataRepository
   ) {}
 
-  async createAgent(metadata: CreateAgentMetadata): Promise<Agent> {
-    const llmBridge = await this.llmBridgeRegistry.getBridgeOrThrow(metadata.preset.llmBridgeName);
-
-    const createdMetadata = await this.agentMetadataRepository.create(metadata);
-
-    const agent = new SimpleAgent(
-      createdMetadata.id,
-      llmBridge,
-      this.mcpRegistry,
-      this.chatManager,
-      this.agentMetadataRepository
-    );
-
-    this.agents.set(agent.id, agent);
-
-    return agent;
-  }
-
   async getAgent(agentId: string): Promise<Agent | null> {
-    // cache first
-    if (this.agents.has(agentId)) {
-      return this.agents.get(agentId)!;
-    }
-
-    const meta = await this.agentMetadataRepository.get(agentId);
-
-    if (!meta) {
-      return null;
-    }
-
-    const llmBridge = await this.llmBridgeRegistry.getBridgeByName(meta.preset.llmBridgeName);
-
-    if (!llmBridge) {
-      return null;
-    }
-
-    const agent = new SimpleAgent(
-      meta.id,
-      llmBridge,
-      this.mcpRegistry,
-      this.chatManager,
-      this.agentMetadataRepository
-    );
-
-    this.agents.set(agentId, agent);
-
-    return agent;
+    return await this.manager.getAgent(agentId);
   }
 
   async listAgents(pagination?: CursorPagination): Promise<CursorPaginationResult<Agent>> {
-    const metas = await this.agentMetadataRepository.list(pagination);
-
-    const items: Agent[] = [];
-    for (const m of metas.items) {
-      const maybe = await this.getAgent(m.id);
-      if (maybe) items.push(maybe);
-    }
-
-    return { items, nextCursor: metas.nextCursor, hasMore: metas.hasMore };
+    return await this.manager.getAllAgents(pagination);
   }
 
   async searchAgents(
     query: AgentSearchQuery,
     pagination?: CursorPagination
   ): Promise<CursorPaginationResult<Agent>> {
-    // Use repository-level search first, then materialize Agents
-    const metas = await this.agentMetadataRepository.search(query, pagination);
-
-    const items: Agent[] = [];
-
-    for (const m of metas.items) {
-      const maybe = await this.getAgent(m.id);
-      if (maybe) items.push(maybe);
+    if (this.metadataRepo) {
+      const res = await this.metadataRepo.search(query, pagination);
+      const agents: Agent[] = [];
+      for (const meta of res.items) {
+        const agent = await this.manager.getAgent(meta.id);
+        if (agent) agents.push(agent);
+      }
+      return { items: agents, nextCursor: res.nextCursor, hasMore: res.hasMore };
     }
 
-    return { items, nextCursor: metas.nextCursor, hasMore: metas.hasMore };
+    // Fallback: load a page (or all if no pagination) then filter in-memory.
+    const all = await this.manager.getAllAgents({
+      limit: 1000,
+      cursor: pagination?.cursor || '',
+      direction: 'forward',
+    });
+    const withMeta = await Promise.all(
+      all.items.map(async (a) => ({ a, m: await a.getMetadata() }))
+    );
+    const filtered = withMeta.filter(({ m }) => this.matchesMeta(m, query)).map(({ a }) => a);
+    return this.paginate(filtered, pagination);
   }
 
   async createSession(
     agentId: string,
     options?: { sessionId?: string; presetId?: string }
   ): Promise<AgentSession> {
-    const agent = await this.getAgent(agentId);
-
-    if (!agent) {
-      throw Errors.notFound('agent', `Agent not found: ${agentId}`, { agentId });
-    }
-
+    const agent = await this.manager.getAgent(agentId);
+    if (!agent) throw new Error(`Agent not found: ${agentId}`);
     return await agent.createSession(options);
   }
 
@@ -127,11 +69,7 @@ export class SimpleAgentService implements AgentService {
     messages: UserMessage[],
     options?: AgentExecuteOptions
   ): Promise<AgentChatResult> {
-    const agent = await this.getAgent(agentId);
-    if (!agent) {
-      throw Errors.notFound('agent', `Agent not found: ${agentId}`, { agentId });
-    }
-    return await agent.chat(messages, options);
+    return await this.manager.execute(agentId, messages, options);
   }
 
   private matchesMeta(m: Awaited<ReturnType<Agent['getMetadata']>>, q: AgentSearchQuery): boolean {

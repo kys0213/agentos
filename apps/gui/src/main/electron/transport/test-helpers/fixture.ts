@@ -6,7 +6,11 @@ export type BridgePostHandler = (e: { sender: { id: number } }, frame: RpcFrame)
 export function createIpcMainFixture() {
   let handler: BridgePostHandler | null = null;
   const ipcMain: Partial<IpcMain> = {};
-  (ipcMain as any).on = (channel: string, listener: (event: any, ...args: any[]) => void) => {
+  (
+    ipcMain as unknown as {
+      on: (c: string, l: (event: unknown, ...args: unknown[]) => void) => unknown;
+    }
+  ).on = (channel: string, listener: (event: unknown, ...args: unknown[]) => void) => {
     if (channel === 'bridge:post') handler = listener as unknown as BridgePostHandler;
     return ipcMain;
   };

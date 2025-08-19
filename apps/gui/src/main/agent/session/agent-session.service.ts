@@ -8,7 +8,6 @@ import type {
 } from '@agentos/core';
 import { Inject, Injectable } from '@nestjs/common';
 import type { Message, UserMessage } from 'llm-bridge-spec';
-import { map } from 'rxjs';
 import { AGENT_SERVICE_TOKEN } from '../../common/agent/constants';
 import { AgentEventBridge } from '../events/agent-event-bridge';
 

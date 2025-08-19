@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Message } from 'llm-bridge-spec';
 import { OutboundChannel, OutboundEvent } from '../../common/event/outbound-channel';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 
 export type AgentEventKind =
   | 'agent.session.created'

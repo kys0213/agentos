@@ -3,15 +3,15 @@
 import { RpcFrame } from '../../shared/rpc/rpc-frame';
 
 export interface IpcLike {
-  on: (channel: string, listener: (event: unknown, payload: any) => void) => void;
-  off: (channel: string, listener: (event: unknown, payload: any) => void) => void;
-  send: (channel: string, payload: any) => void;
+  on<T = unknown>(channel: string, listener: (event: unknown, payload: T) => void): void;
+  off<T = unknown>(channel: string, listener: (event: unknown, payload: T) => void): void;
+  send<T = unknown>(channel: string, payload: T): void;
 }
 
 export function createElectronBridge(ipc: IpcLike) {
   return {
     start: (onFrame: (f: RpcFrame) => void) => {
-      ipc.on('bridge:frame', (_e, f) => onFrame(f));
+      ipc.on<RpcFrame>('bridge:frame', (_e, f) => onFrame(f));
     },
     post: (frame: RpcFrame) => {
       ipc.send('bridge:post', frame);
@@ -49,7 +49,7 @@ export function createRpc(
             reject(err as Error);
           }
         };
-        ipc.on('bridge:frame', onFrame);
+        ipc.on<RpcFrame>('bridge:frame', onFrame);
         ipc.send('bridge:post', {
           kind: 'req',
           cid,
