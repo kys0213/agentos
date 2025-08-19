@@ -1,10 +1,13 @@
 import type { LlmManifest } from 'llm-bridge-spec';
+import { LlmBridgeLoader } from 'llm-bridge-loader';
+import { FileBasedLlmBridgeRegistry } from '../file-based-llm-bridge-registry';
+import path from 'node:path';
 
 // In-memory file store to mock @agentos/lang fs layer deterministically
 const store = new Map<string, string>();
 
 // Helper to extract filename from path
-const filenameOf = (p: string) => p.split(/[\\/]/).pop() || '';
+const filenameOf = (p: string) => path.basename(p);
 
 jest.mock('@agentos/lang', () => {
   const ok = <T>(result: T) => ({ success: true, result });
@@ -80,8 +83,6 @@ jest.mock('@agentos/lang', () => {
   return { fs: { FileUtils, JsonFileHandler: MockJsonFileHandler } };
 });
 
-import { FileBasedLlmBridgeRegistry } from '../../registry';
-
 const makeManifest = (name: string): LlmManifest => ({
   schemaVersion: '1.0.0',
   name,
@@ -107,18 +108,18 @@ describe('FileBasedLlmBridgeRegistry (mocked FS)', () => {
 
   it('register/list/get/active/unregister lifecycle', async () => {
     const baseDir = '/tmp/agentos-core-test';
-    const reg = new FileBasedLlmBridgeRegistry(baseDir);
+    const reg = new FileBasedLlmBridgeRegistry(baseDir, new LlmBridgeLoader());
 
     expect(await reg.listIds()).toEqual([]);
     expect(await reg.getActiveId()).toBeNull();
 
-    const id1 = await reg.register(makeManifest('test-bridge'));
+    const id1 = await reg.register(makeManifest('test-bridge'), {});
     expect(id1).toBe('test-bridge');
     expect((await reg.listIds()).sort()).toEqual(['test-bridge']);
     expect((await reg.getManifest('test-bridge'))?.name).toBe('test-bridge');
     expect(await reg.getActiveId()).toBe('test-bridge');
 
-    const id2 = await reg.register(makeManifest('other-bridge'));
+    const id2 = await reg.register(makeManifest('other-bridge'), {});
     expect(id2).toBe('other-bridge');
     expect((await reg.listIds()).sort()).toEqual(['other-bridge', 'test-bridge']);
     expect(await reg.getActiveId()).toBe('test-bridge');

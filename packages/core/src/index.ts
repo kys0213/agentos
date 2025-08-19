@@ -51,3 +51,4 @@ export * from './common/error/core-error';
 export * from './llm/bridge/types';
 export * from './llm/bridge/registry';
 export * from './llm/bridge/usage';
+export * from './llm/bridge/file/file-based-llm-bridge-registry';

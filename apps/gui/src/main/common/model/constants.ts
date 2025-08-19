@@ -1,0 +1,1 @@
+export const LLM_BRIDGE_REGISTRY_TOKEN = Symbol('LLM_BRIDGE_REGISTRY');

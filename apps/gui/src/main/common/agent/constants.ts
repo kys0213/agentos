@@ -4,3 +4,5 @@ export const AGENT_SESSION_MANAGER_TOKEN = Symbol('AGENT_SESSION_MANAGER');
 export const AGENT_SERVICE_TOKEN = Symbol('AGENT_SERVICE');
 
 export const AGENT_MANAGER_TOKEN = Symbol('AGENT_MANAGER');
+
+export const CHAT_MANAGER_TOKEN = Symbol('CHAT_MANAGER');

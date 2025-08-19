@@ -25,4 +25,3 @@ export type AgentOutboundEvent = z.infer<typeof AgentOutboundEvent>;
 export function isAgentOutboundEvent(ev: unknown): ev is AgentOutboundEvent {
   return AgentOutboundEvent.safeParse(ev).success;
 }
-

@@ -36,25 +36,36 @@ export class SimpleAgentService implements AgentService {
 
     const createdMetadata = await this.agentMetadataRepository.create(metadata);
 
-    return new SimpleAgent(
+    const agent = new SimpleAgent(
       createdMetadata.id,
       llmBridge,
       this.mcpRegistry,
       this.chatManager,
       this.agentMetadataRepository
     );
+
+    this.agents.set(agent.id, agent);
+
+    return agent;
   }
 
   async getAgent(agentId: string): Promise<Agent | null> {
     // cache first
-    if (this.agents.has(agentId)) return this.agents.get(agentId)!;
+    if (this.agents.has(agentId)) {
+      return this.agents.get(agentId)!;
+    }
 
     const meta = await this.agentMetadataRepository.get(agentId);
-    if (!meta) return null;
 
-    const llmBridge =
-      (await this.llmBridgeRegistry.getBridgeByName(meta.preset.llmBridgeName)) ?? null;
-    if (!llmBridge) return null;
+    if (!meta) {
+      return null;
+    }
+
+    const llmBridge = await this.llmBridgeRegistry.getBridgeByName(meta.preset.llmBridgeName);
+
+    if (!llmBridge) {
+      return null;
+    }
 
     const agent = new SimpleAgent(
       meta.id,
@@ -63,17 +74,21 @@ export class SimpleAgentService implements AgentService {
       this.chatManager,
       this.agentMetadataRepository
     );
+
     this.agents.set(agentId, agent);
+
     return agent;
   }
 
   async listAgents(pagination?: CursorPagination): Promise<CursorPaginationResult<Agent>> {
     const metas = await this.agentMetadataRepository.list(pagination);
+
     const items: Agent[] = [];
     for (const m of metas.items) {
       const maybe = await this.getAgent(m.id);
       if (maybe) items.push(maybe);
     }
+
     return { items, nextCursor: metas.nextCursor };
   }
 
@@ -83,11 +98,14 @@ export class SimpleAgentService implements AgentService {
   ): Promise<CursorPaginationResult<Agent>> {
     // Use repository-level search first, then materialize Agents
     const metas = await this.agentMetadataRepository.search(query, pagination);
+
     const items: Agent[] = [];
+
     for (const m of metas.items) {
       const maybe = await this.getAgent(m.id);
       if (maybe) items.push(maybe);
     }
+
     return { items, nextCursor: metas.nextCursor };
   }
 

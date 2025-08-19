@@ -42,6 +42,7 @@ export class SimpleAgent implements Agent {
   }
 
   async delete(): Promise<void> {
+    this.activeSessions.clear();
     await this.agentMetadataRepository.delete(this.id);
   }
 

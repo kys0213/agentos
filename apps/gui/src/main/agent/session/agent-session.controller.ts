@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { AgentSessionService } from './agent-session.service';
-import type { AgentExecuteOptions, AgentMetadata } from '@agentos/core';
+import type { AgentExecuteOptions, AgentMetadata, CreateAgentMetadata } from '@agentos/core';
 import type { UserMessage } from 'llm-bridge-spec';
 
 @Controller()
@@ -41,9 +41,8 @@ export class AgentSessionController {
   }
 
   @EventPattern('agent:create')
-  async createAgent(@Payload() agent: AgentMetadata) {
-    // agent는 id 포함 생성 본문을 그대로 받음
-    return await this.svc.createAgent(agent as any);
+  async createAgent(@Payload() agent: CreateAgentMetadata) {
+    return await this.svc.createAgent(agent);
   }
 
   @EventPattern('agent:delete')
