@@ -1,0 +1,115 @@
+import { RpcEndpoint } from '../rpc-endpoint';
+import type { RpcTransport } from '../../../shared/rpc/transport';
+import type { RpcFrame } from '../../../shared/rpc/rpc-frame';
+
+class MockTransport implements RpcTransport {
+  public sent: RpcFrame[] = [];
+  public onFrame: ((f: RpcFrame) => void) | null = null;
+  start(cb: (f: RpcFrame) => void): void {
+    this.onFrame = cb;
+  }
+  post(frame: RpcFrame): void {
+    this.sent.push(frame);
+  }
+  stop(): void {
+    /* no-op */
+  }
+  async request<TRes = unknown, TReq = unknown>(channel: string, payload?: TReq): Promise<TRes> {
+    // not used directly in these tests
+    throw new Error('not implemented');
+  }
+}
+
+describe('RpcEndpoint', () => {
+  test('request resolves on res frame', async () => {
+    const tr = new MockTransport();
+    const ep = new RpcEndpoint(tr, { timeoutMs: 1000 });
+    ep.start();
+
+    const p = ep.request<number>('math.add', { a: 1, b: 2 });
+    const req = tr.sent.find((f) => f.kind === 'req')! as any;
+    expect(req).toBeDefined();
+
+    tr.onFrame?.({ kind: 'res', cid: req.cid, ok: true, result: 3 });
+
+    await expect(p).resolves.toBe(3);
+  });
+
+  test('request rejects on err frame', async () => {
+    const tr = new MockTransport();
+    const ep = new RpcEndpoint(tr, { timeoutMs: 1000 });
+    ep.start();
+
+    const p = ep.request('boom', {});
+    const req = tr.sent.find((f) => f.kind === 'req')! as any;
+
+    tr.onFrame?.({ kind: 'err', cid: req.cid, ok: false, message: 'bad', code: 'INTERNAL' as any });
+
+    await expect(p).rejects.toThrow('bad');
+  });
+
+  test('request times out when no response', async () => {
+    jest.useFakeTimers();
+    const tr = new MockTransport();
+    const ep = new RpcEndpoint(tr, { timeoutMs: 20 });
+    ep.start();
+    const p = ep.request('slow', {});
+    jest.advanceTimersByTime(25);
+    await expect(p).rejects.toThrow(/RPC_TIMEOUT/);
+    jest.useRealTimers();
+  });
+
+  test('stream yields nxt frames until end', async () => {
+    const tr = new MockTransport();
+    const ep = new RpcEndpoint(tr);
+    ep.start();
+
+    const gen = ep.stream<number>('tick');
+    const req = tr.sent.find((f) => f.kind === 'req')! as any;
+
+    tr.onFrame?.({ kind: 'nxt', cid: req.cid, data: 1 });
+    tr.onFrame?.({ kind: 'nxt', cid: req.cid, data: 2 });
+    tr.onFrame?.({ kind: 'end', cid: req.cid });
+
+    const out: number[] = [];
+    for await (const v of gen) out.push(v);
+
+    expect(out).toEqual([1, 2]);
+  });
+
+  test('stream sends can on early consumer cancel', async () => {
+    const tr = new MockTransport();
+    const ep = new RpcEndpoint(tr);
+    ep.start();
+
+    const gen = ep.stream<number>('tick');
+    const req = tr.sent.find((f) => f.kind === 'req')! as any;
+    tr.onFrame?.({ kind: 'nxt', cid: req.cid, data: 1 });
+
+    // consume one and break
+    const it = gen[Symbol.asyncIterator]();
+    const first = await it.next();
+    expect(first.value).toBe(1);
+    await it.return?.();
+
+    // endpoint should post a cancel frame
+    const hasCancel = tr.sent.some((f) => f.kind === 'can' && (f as any).cid === req.cid);
+    expect(hasCancel).toBe(true);
+  });
+
+  test('acts as server: register handler and respond', async () => {
+    const tr = new MockTransport();
+    const ep = new RpcEndpoint(tr);
+    ep.start();
+
+    ep.register('math.add', (p: any) => (p.a ?? 0) + (p.b ?? 0));
+
+    tr.onFrame?.({ kind: 'req', cid: 'c9', method: 'math.add', payload: { a: 2, b: 5 } } as any);
+
+    const res = tr.sent.find((f) => f.kind === 'res' && (f as any).cid === 'c9') as any;
+    expect(res).toBeDefined();
+    expect(res.ok).toBe(true);
+    expect(res.result).toBe(7);
+  });
+});
+
