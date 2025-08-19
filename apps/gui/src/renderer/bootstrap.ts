@@ -1,4 +1,4 @@
-import { RpcTransport } from '../shared/rpc/transport';
+import type { RpcClient } from '../shared/rpc/transport';
 import { AgentOsServiceNames } from '../shared/types/agentos-api';
 import { ServiceContainer } from './ipc/service-container';
 import { wireAgentEvents } from './rpc/agent-events';
@@ -17,7 +17,7 @@ import { BuiltinToolService } from './services/builtin-tool.service';
  * Bootstrap 결과 타입
  */
 export interface BootstrapResult {
-  rpcTransport: RpcTransport;
+  rpcTransport: RpcClient;
   bridgeService: BridgeService;
   mcpService: McpService;
   presetService: PresetService;
@@ -29,7 +29,7 @@ export interface BootstrapResult {
  * 애플리케이션 Bootstrap 함수
  * IpcChannel을 주입받아 모든 서비스를 초기화하고 ServiceContainer에 등록
  */
-export async function bootstrap(rpcTransport: RpcTransport): Promise<BootstrapResult> {
+export async function bootstrap(rpcTransport: RpcClient): Promise<BootstrapResult> {
   console.log('🚀 Starting application bootstrap...');
 
   // 모든 서비스에 동일한 IpcChannel 주입하여 생성
