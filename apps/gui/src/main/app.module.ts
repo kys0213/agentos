@@ -8,6 +8,7 @@ import { PresetApiModule } from './preset/preset.module';
 import { McpUsageModule } from './common/mcp/mcp-usage.module';
 import { McpRegistryModule } from './common/mcp/mcp-registry.module';
 import { McpUsageController } from './mcp/mcp-usage.controller';
+import { OutboundChannelModule } from './common/event/outbound-channel.module';
 
 @Module({
   imports: [
@@ -16,9 +17,9 @@ import { McpUsageController } from './mcp/mcp-usage.controller';
     PresetApiModule,
     McpRegistryModule,
     McpUsageModule,
+    OutboundChannelModule,
   ],
   providers: [
-    OutboundChannel,
     {
       provide: APP_PIPE,
       useValue: new ValidationPipe({
