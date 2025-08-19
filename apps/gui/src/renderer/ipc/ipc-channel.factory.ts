@@ -21,24 +21,29 @@ export class RpcTransportFactory {
 
     const environment = this.detectEnvironment();
     const envInfo = this.getEnvironmentInfo();
+
     console.log(`Detected environment: ${environment}`, envInfo);
 
     switch (environment) {
       case 'electron': {
         // Build a FrameTransport over window.electronBridge and create an RpcEndpoint
-        const bridge = (window as any).electronBridge;
+        const bridge = window.electronBridge;
+
         if (!bridge || typeof bridge.start !== 'function' || typeof bridge.post !== 'function') {
           throw new Error('electronBridge is not available');
         }
+
         const frameTransport = {
           start: (onFrame: (f: RpcFrame) => void) => bridge.start(onFrame),
           post: (frame: RpcFrame) => bridge.post(frame),
           stop: () => bridge.stop?.(),
         };
-        const endpoint = new RpcEndpoint(frameTransport as any);
+
+        const endpoint = new RpcEndpoint(frameTransport);
         endpoint.start();
-        // Use endpoint directly as RpcClient
-        this._instance = endpoint as unknown as RpcClient;
+
+        this._instance = endpoint;
+
         return this._instance;
       }
 
