@@ -2,76 +2,48 @@
  * 테스트 환경 진입점
  * MockIpcChannel을 사용하여 bootstrap 실행
  */
+import { RpcFrame } from '../shared/rpc/rpc-frame';
+import { RpcTransport } from '../shared/rpc/transport';
 import { bootstrap } from './bootstrap';
-import { MockIpcChannel } from './ipc/mock-ipc-channel';
-
-console.log('🧪 Starting test environment...');
-
-// 테스트 환경에서는 MockIpcChannel을 명시적으로 사용
-const ipcChannel = new MockIpcChannel();
-
-// Bootstrap 실행
-const services = bootstrap(ipcChannel);
-
-console.log('🧪 Test environment ready with services:', Object.keys(services));
 
 // 테스트용 헬퍼 함수들
-export const testHelpers = {
-  /**
-   * 새로운 MockIpcChannel로 다시 bootstrap
-   */
-  resetServices: () => {
-    const newChannel = new MockIpcChannel();
-    return bootstrap(newChannel);
-  },
+export class TestHelpers {
+  private rpcTransport: RpcTransport = {
+    // TODO mock transport 추가
+    start: function (onFrame: (f: RpcFrame) => void): void {
+      throw new Error('Function not implemented.');
+    },
+    post: function (frame: RpcFrame): void {
+      throw new Error('Function not implemented.');
+    },
+    request: function <TRes = unknown, TReq = unknown>(
+      channel: string,
+      payload?: TReq
+    ): Promise<TRes> {
+      throw new Error('Function not implemented.');
+    },
+  };
 
-  /**
-   * 현재 Mock 데이터 상태 확인
-   */
-  getMockData: () => {
-    if (ipcChannel instanceof MockIpcChannel) {
-      return {
-        // MockIpcChannel의 private 데이터에 접근하기 위한 public 메서드가 필요할 수 있음
-        // 지금은 기본 구조만 제공
-        message: 'Mock data access would need additional methods in MockIpcChannel',
-      };
-    }
-    return null;
-  },
+  constructor() {}
 
-  /**
-   * 테스트용 데이터 주입
-   */
-  setupTestData: async () => {
-    // 테스트용 기본 데이터 생성
-    await (services as any).chatService.createSession({
-      preset: {
-        id: 'test-preset',
-        name: 'Test Preset',
-        description: 'Test preset for unit tests',
-        author: 'Test',
-        version: '1.0.0',
-        systemPrompt: 'Test system prompt',
-        llmBridgeName: 'test-bridge',
-        llmBridgeConfig: {},
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        status: 'active',
-        usageCount: 0,
-        knowledgeDocuments: 0,
-        knowledgeStats: {
-          indexed: 0,
-          vectorized: 0,
-          totalSize: 0,
-        },
-        category: ['general'],
-      },
-    });
+  getRpcTransport() {
+    return this.rpcTransport;
+  }
 
-    await services.bridgeService.registerBridge({ name: 'Test Bridge' } as any);
+  async init() {
+    const services = await bootstrap(this.rpcTransport);
+    return services;
+  }
 
-    console.log('🧪 Test data setup completed');
-  },
-};
+  async reset() {
+    return this.init();
+  }
+}
 
-export default services;
+async function main() {
+  const helpers = new TestHelpers();
+  const services = await helpers.init();
+  console.log('🧪 Test environment ready with services:', Object.keys(services));
+}
+
+main();

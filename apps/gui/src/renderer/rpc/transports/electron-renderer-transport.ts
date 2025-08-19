@@ -1,74 +1,36 @@
 import { RpcFrame } from '../../../shared/rpc/rpc-frame';
-import type { RpcTransport } from '../../../shared/rpc/transport';
+import type { CloseFn, RpcTransport } from '../../../shared/rpc/transport';
 import { RpcEndpoint } from '../rpc-endpoint';
 
-type BridgeLike = {
-  start: (onFrame: (f: RpcFrame) => void) => void;
-  post: (frame: RpcFrame) => void;
-  stop?: () => void;
-};
+export class ElectronRendererTransport implements RpcTransport {
+  private endpoint: RpcEndpoint;
 
-export class ElectronIpcTransport implements RpcTransport {
-  private endpoint?: RpcEndpoint;
-
-  private bridge: BridgeLike;
-
-  constructor(bridge?: BridgeLike) {
-    // Allow passing a custom bridge (for tests); default to window.electronBridge
-    const b =
-      bridge ||
-      (typeof window !== 'undefined' && (window as any).electronBridge
-        ? (window as any).electronBridge
-        : null);
-    if (!b || typeof b.start !== 'function' || typeof b.post !== 'function') {
-      throw new Error('ElectronIpcTransport: electronBridge not available or invalid');
-    }
-    this.bridge = b as BridgeLike;
-  }
-
-  private resolveBridge(): BridgeLike {
-    if (this.bridge) return this.bridge;
-    const b =
-      typeof window !== 'undefined' && (window as any).electronBridge
-        ? ((window as any).electronBridge as BridgeLike)
-        : null;
-    if (!b || typeof b.start !== 'function' || typeof b.post !== 'function') {
-      throw new Error('ElectronIpcTransport: electronBridge not available when needed');
-    }
-    this.bridge = b;
-    return this.bridge;
+  constructor(private readonly bridge: RpcTransport) {
+    this.endpoint = new RpcEndpoint(this);
   }
 
   start(onFrame: (f: RpcFrame) => void): void {
-    this.resolveBridge().start(onFrame);
+    this.bridge.start(onFrame);
   }
   post(frame: RpcFrame): void {
-    this.resolveBridge().post(frame);
+    this.bridge.post(frame);
   }
+
   stop?(): void {
     if (this.bridge.stop) {
       this.bridge.stop();
-      this.endpoint?.stop();
+      this.endpoint?.clear();
     }
-  }
-
-  private ensureEndpoint() {
-    if (!this.endpoint) {
-      this.endpoint = new RpcEndpoint(this);
-      this.endpoint.start();
-    }
-    return this.endpoint;
   }
 
   async request<TRes = unknown, TReq = unknown>(channel: string, payload?: TReq): Promise<TRes> {
-    const ep = this.ensureEndpoint();
-    return ep.request<TRes>(channel, payload as any);
+    return this.endpoint.request<TRes>(channel, payload);
   }
 
-  async stream<T = unknown>(channel: string, handler: (data: T) => void): Promise<() => void> {
-    const ep = this.ensureEndpoint();
-    const it = ep.stream<T>(channel);
+  async stream<T = unknown>(channel: string, handler: (data: T) => void): Promise<CloseFn> {
+    const it = this.endpoint.stream<T>(channel);
     let closed = false;
+
     (async () => {
       try {
         for await (const v of it) {
@@ -79,9 +41,12 @@ export class ElectronIpcTransport implements RpcTransport {
         // swallow
       }
     })();
+
     return async () => {
       closed = true;
-      if (typeof (it as any).return === 'function') await (it as any).return();
+      if (typeof it.return === 'function') {
+        await it.return();
+      }
     };
   }
 }

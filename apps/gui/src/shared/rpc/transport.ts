@@ -12,5 +12,7 @@ export interface RpcTransport {
 
   /** higher-level helpers */
   request<TRes = unknown, TReq = unknown>(channel: string, payload?: TReq): Promise<TRes>;
-  stream?<T = unknown>(channel: string, handler: (data: T) => void): Promise<() => void>;
+  stream?<T = unknown>(channel: string, handler: (data: T) => void): Promise<CloseFn>;
 }
+
+export type CloseFn = () => Promise<void>;

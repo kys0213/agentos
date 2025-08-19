@@ -1,22 +1,21 @@
-import type { IpcChannel } from '../../shared/types/ipc-channel';
-
-import { ElectronIpcChannel } from './electron-ipc-channel';
+import { RpcTransport } from '../../shared/rpc/transport';
+import { ElectronRendererTransport } from '../rpc/transports/electron-renderer-transport';
 import { MockIpcChannel } from './mock-ipc-channel';
 
 /**
  * 환경별 IpcChannel 구현체를 생성하는 팩토리 클래스
  * 런타임에 현재 환경을 감지하여 적절한 구현체를 반환
  */
-export class IpcChannelFactory {
-  private static _instance: IpcChannel | null = null;
+export class RpcTransportFactory {
+  private static _instance: RpcTransport | null = null;
 
   /**
    * 현재 환경에 맞는 IpcChannel 구현체를 생성하여 반환
    * 싱글톤 패턴으로 한 번 생성된 인스턴스를 재사용
    */
-  static create(): IpcChannel {
-    if (this._instance) {
-      return this._instance;
+  static create(): RpcTransport {
+    if (RpcTransportFactory._instance) {
+      return RpcTransportFactory._instance;
     }
 
     const environment = this.detectEnvironment();
@@ -25,21 +24,17 @@ export class IpcChannelFactory {
 
     switch (environment) {
       case 'electron':
-        this._instance = new ElectronIpcChannel();
-        break;
+        return new ElectronRendererTransport(window.electronBridge);
 
       default:
-        this._instance = new MockIpcChannel();
-        break;
+        throw new Error(`Unsupported environment: ${environment}`);
     }
-
-    return this._instance;
   }
 
   /**
    * 특정 구현체를 강제로 설정 (주로 테스트용)
    */
-  static setInstance(instance: IpcChannel): void {
+  static setInstance(instance: RpcTransport): void {
     this._instance = instance;
   }
 
@@ -167,13 +162,13 @@ export class IpcChannelFactory {
 /**
  * 간편한 IpcChannel 인스턴스 접근을 위한 헬퍼 함수
  */
-export function createIpcChannel(): IpcChannel {
-  return IpcChannelFactory.create();
+export function createRpcTransport(): RpcTransport {
+  return RpcTransportFactory.create();
 }
 
 /**
  * 환경 감지 결과를 확인하기 위한 헬퍼 함수 (개발/디버깅용)
  */
 export function getEnvironmentInfo() {
-  return IpcChannelFactory.getEnvironmentInfo();
+  return RpcTransportFactory.getEnvironmentInfo();
 }

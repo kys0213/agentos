@@ -5,44 +5,24 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { bootstrap } from './bootstrap';
-import { createIpcChannel, getEnvironmentInfo } from './ipc/ipc-channel.factory';
+import { createRpcTransport, getEnvironmentInfo } from './ipc/ipc-channel.factory';
 import NewAppLayout from './components/App';
 import { QueryProvider } from './providers/QueryProvider';
 import './styles/globals.css';
+import { waitForRpcReady } from './rpc/waitForReady';
 
 async function initializeApp() {
-  // 환경 감지 및 상세 로깅
+  await waitForRpcReady();
+
   const envInfo = getEnvironmentInfo();
   console.log(`🚀 Starting AgentOS in ${envInfo.detected} environment...`);
   console.log('Environment details:', envInfo);
 
-  // 자동 환경 감지로 적절한 IpcChannel 생성
-  const ipcChannel = createIpcChannel();
-  console.log('📡 IpcChannel created:', ipcChannel.constructor.name);
+  const rpcTransport = createRpcTransport();
+  console.log('📡 IpcChannel created:', rpcTransport.constructor.name);
 
-  // Bootstrap 실행 - 모든 서비스 초기화
-  const services = bootstrap(ipcChannel);
+  await bootstrap(rpcTransport);
 
-  console.log(`✅ AgentOS ready with services:`, Object.keys(services));
-
-  // 디버깅용 전역 설정 - 개발 환경에서만
-  const isDevelopment =
-    (typeof (globalThis as any).__APP_ENV__ !== 'undefined' &&
-      (globalThis as any).__APP_ENV__.nodeEnv === 'development') ||
-    (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') ||
-    (typeof window !== 'undefined' && window.location?.hostname === 'localhost');
-
-  if (typeof window !== 'undefined' && isDevelopment) {
-    (window as any).__agentosServices = services;
-    (window as any).__debug = {
-      environment: envInfo,
-      channel: ipcChannel,
-      services,
-    };
-    console.log('🔧 Debug objects available at window.__debug and window.__agentosServices');
-  }
-
-  // React 앱 렌더링
   const container = document.getElementById('root');
   if (container) {
     const root = createRoot(container);
@@ -52,13 +32,11 @@ async function initializeApp() {
     console.error('❌ Failed to find root element');
     throw new Error('Root element not found');
   }
-
-  return services;
 }
 
 // 에러 처리와 함께 앱 시작
 initializeApp()
-  .then((services) => {
+  .then(() => {
     console.log('🎉 AgentOS initialization complete');
   })
   .catch((error) => {

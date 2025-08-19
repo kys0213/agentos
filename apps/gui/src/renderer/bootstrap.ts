@@ -1,26 +1,23 @@
+import { RpcTransport } from '../shared/rpc/transport';
 import { AgentOsServiceNames } from '../shared/types/agentos-api';
-import type { IpcChannel } from '../shared/types/ipc-channel';
-import { AgentRpcService as AgentService } from './rpc/services/agent.service';
-import { ConversationRpcService as ConversationService } from './rpc/services/conversation.service';
-import { BridgeRpcService as BridgeService } from './rpc/services/bridge.service';
-import { BuiltinToolService } from './services/builtin-tool.service';
-import { createIpcChannel } from './ipc/ipc-channel.factory';
-import { McpRpcService as McpService } from './rpc/services/mcp.service';
-import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usage.service';
-import { PresetRpcService as PresetService } from './rpc/services/preset.service';
 import { ServiceContainer } from './ipc/service-container';
-import { ElectronFrameBridge } from './rpc/transports/electron-frame-bridge';
-import { RpcEndpoint } from './rpc/rpc-endpoint';
-import { EndpointClient } from './rpc/clients/endpoint-client';
-import { waitForRendererReady } from './rpc/waitForReady';
-import { startStream, fromBridge$ } from './rpc/frame-channel';
 import { wireAgentEvents } from './rpc/agent-events';
+import { fromBridge$, startStream } from './rpc/frame-channel';
+import { AgentRpcService as AgentService } from './rpc/services/agent.service';
+import { BridgeRpcService as BridgeService } from './rpc/services/bridge.service';
+import { ConversationRpcService as ConversationService } from './rpc/services/conversation.service';
+import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usage.service';
+import { McpRpcService as McpService } from './rpc/services/mcp.service';
+import { PresetRpcService as PresetService } from './rpc/services/preset.service';
+
+import { waitForRpcReady } from './rpc/waitForReady';
+import { BuiltinToolService } from './services/builtin-tool.service';
 
 /**
  * Bootstrap 결과 타입
  */
 export interface BootstrapResult {
-  ipcChannel: IpcChannel;
+  rpcTransport: RpcTransport;
   bridgeService: BridgeService;
   mcpService: McpService;
   presetService: PresetService;
@@ -32,28 +29,8 @@ export interface BootstrapResult {
  * 애플리케이션 Bootstrap 함수
  * IpcChannel을 주입받아 모든 서비스를 초기화하고 ServiceContainer에 등록
  */
-export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
+export async function bootstrap(rpcTransport: RpcTransport): Promise<BootstrapResult> {
   console.log('🚀 Starting application bootstrap...');
-
-  // IpcChannel 생성 또는 주입받은 것 사용 (기존 경로 유지)
-  const channel = ipcChannel || createIpcChannel();
-  console.log('📡 IpcChannel created/injected');
-
-  // Wait until preload injected bridge/rpc are ready
-  // (prevents early calls before electronBridge is available)
-  // Note: this call is sync here; caller should await when used in async context
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  waitForRendererReady();
-
-  // Frame-based transport + endpoint client
-  const frameBridge = new ElectronFrameBridge();
-  const endpoint = new RpcEndpoint({
-    start: (onFrame) => frameBridge.start(onFrame),
-    post: (frame) => frameBridge.post(frame),
-    stop: () => frameBridge.stop(),
-  } as any);
-  endpoint.start();
-  const rpcTransport = new EndpointClient(endpoint);
 
   // 모든 서비스에 동일한 IpcChannel 주입하여 생성
   // 새 RPC 서비스(Bridge/Preset/Agent)는 채널 기반 Transport를 사용
@@ -61,7 +38,7 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
   const mcpService = new McpService(rpcTransport);
   const presetService = new PresetService(rpcTransport);
   const agentService = new AgentService(rpcTransport);
-  const builtinToolService = new BuiltinToolService(channel);
+  const builtinToolService = new BuiltinToolService(rpcTransport);
   const conversationService = new ConversationService(rpcTransport);
   const mcpUsageLogService = new McpUsageLogService(rpcTransport);
 
@@ -98,7 +75,7 @@ export function bootstrap(ipcChannel?: IpcChannel): BootstrapResult {
   }
 
   return {
-    ipcChannel: channel,
+    rpcTransport,
     bridgeService,
     mcpService,
     presetService,

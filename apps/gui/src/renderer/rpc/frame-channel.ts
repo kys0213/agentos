@@ -53,13 +53,6 @@ export function selectDataByMethod<T = unknown>(
     ) as unknown as Observable<T>;
 }
 
-// Example usage (renderer):
-// const frames$ = fromBridge$((window as any).electronBridge);
-// const agent$ = frames$.pipe(selectDataByMethod('agent.'));
-// const preset$ = frames$.pipe(selectDataByMethod(/^preset\./));
-
-// --- Simple stream initiator helpers ---
-
 let seq = 0;
 function newCid() {
   return `${Date.now()}-${++seq}-${Math.random().toString(16).slice(2)}`;

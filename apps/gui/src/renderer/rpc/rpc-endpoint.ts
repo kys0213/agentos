@@ -2,6 +2,8 @@
 import { RpcTransport } from '../../shared/rpc/transport';
 import { Cid, RpcFrame, RpcMetadata } from '../../shared/rpc/rpc-frame';
 import { isObservable, Observable } from 'rxjs';
+import { utils } from '@agentos/lang';
+
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 
 export type RpcHandler = (payload: unknown, meta?: unknown) => unknown; // Promise | AsyncGenerator | Observable-like
@@ -22,6 +24,14 @@ type RpcObserver = {
   error?: (e: any) => void;
 };
 
+type StreamContext<T> = {
+  queue: T[];
+  done: boolean;
+  err: unknown;
+  wake: utils.Notifier;
+  cid: Cid;
+};
+
 export class RpcEndpoint {
   private pending = new Map<Cid, RpcObserver>();
   private cancelListeners = new Set<(f: RpcFrame) => void>();
@@ -33,13 +43,7 @@ export class RpcEndpoint {
     private opts: RpcClientOptions = {}
   ) {}
 
-  start() {
-    this.transport.start(this.onFrame);
-  }
-  stop() {
-    if (this.transport.stop) {
-      this.transport.stop();
-    }
+  clear() {
     this.pending.clear();
     this.handlers = {};
     this.seq = 0;
@@ -71,61 +75,57 @@ export class RpcEndpoint {
     payload?: unknown,
     meta?: RpcMetadata
   ): AsyncGenerator<T, void, unknown> {
-    const cid = this.cid();
-    const queue: T[] = [];
-    let done = false;
-    let err: unknown;
+    const context: StreamContext<T> = {
+      queue: [],
+      done: false,
+      err: null,
+      wake: utils.createNotifier(),
+      cid: this.cid(),
+    };
 
-    // Register observer before posting request
-    const wake = (() => {
-      let notify: (() => void) | null = null;
-      const p = new Promise<void>((resolve) => (notify = resolve));
-      return { p, notify: () => notify?.() };
-    })();
-
-    this.pending.set(cid, {
+    this.pending.set(context.cid, {
       resolve: () => {},
       reject: (e) => {
-        err = e;
-        wake.notify();
+        context.err = e;
+        context.wake.notify();
       },
       next: (v) => {
-        queue.push(v as T);
-        wake.notify();
+        context.queue.push(v as T);
+        context.wake.notify();
       },
       complete: () => {
-        done = true;
-        wake.notify();
+        context.done = true;
+        context.wake.notify();
       },
       error: (e) => {
-        err = e;
-        done = true;
-        wake.notify();
+        context.err = e;
+        context.done = true;
+        context.wake.notify();
       },
     });
 
     // Post request synchronously so callers can observe it immediately
-    this.transport.post({ kind: 'req', cid, method, payload, meta });
+    this.transport.post({ kind: 'req', cid: context.cid, method, payload, meta });
 
-    const self = this;
-    async function* iterator(): AsyncGenerator<T, void, unknown> {
-      try {
-        while (!done || queue.length) {
-          if (queue.length) {
-            yield queue.shift()!;
-          } else {
-            await Promise.race([wake.p, new Promise((r) => setTimeout(r, 8))]);
-          }
-          if (err) throw err;
+    return this.iterator(context);
+  }
+
+  private async *iterator<T>(context: StreamContext<T>): AsyncGenerator<T, void, unknown> {
+    try {
+      while (!context.done || context.queue.length) {
+        if (context.queue.length) {
+          yield context.queue.shift()!;
+        } else {
+          await Promise.race([context.wake.wait(), new Promise((r) => setTimeout(r, 8))]);
         }
-      } finally {
-        if (!done) {
-          self.transport.post({ kind: 'can', cid });
-        }
-        self.pending.delete(cid);
+        if (context.err) throw context.err;
       }
+    } finally {
+      if (!context.done) {
+        this.transport.post({ kind: 'can', cid: context.cid });
+      }
+      this.pending.delete(context.cid);
     }
-    return iterator();
   }
 
   cancel(cid: Cid) {
