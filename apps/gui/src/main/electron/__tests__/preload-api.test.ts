@@ -1,4 +1,4 @@
-import { createElectronBridge, createRpc, IpcLike } from '../electron/preload-api';
+import { createElectronBridge, createRpc, IpcLike } from '../preload-api';
 
 class MockIpc implements IpcLike {
   private listeners = new Map<string, Set<(e: unknown, p: any) => void>>();
@@ -47,7 +47,9 @@ describe('preload-api factories', () => {
     await expect(p).resolves.toEqual(['a', 'b']);
 
     // Further emits for same cid should not cause handler errors (already unsubscribed)
-    expect(() => ipc.emit('bridge:frame', { kind: 'res', cid, ok: true, result: [] })).not.toThrow();
+    expect(() =>
+      ipc.emit('bridge:frame', { kind: 'res', cid, ok: true, result: [] })
+    ).not.toThrow();
   });
 
   test('rpc.request rejects on err frame and includes fields', async () => {
@@ -55,7 +57,14 @@ describe('preload-api factories', () => {
     const rpc = createRpc(ipc);
     const p = rpc.request('preset.list', {});
     const cid = ipc.sent[ipc.sent.length - 1].payload.cid;
-    ipc.emit('bridge:frame', { kind: 'err', cid, ok: false, message: 'NO_HANDLER', code: 'NOT_FOUND', domain: 'common' });
+    ipc.emit('bridge:frame', {
+      kind: 'err',
+      cid,
+      ok: false,
+      message: 'NO_HANDLER',
+      code: 'NOT_FOUND',
+      domain: 'common',
+    });
     await expect(p).rejects.toHaveProperty('message', 'NO_HANDLER');
   });
 
@@ -71,4 +80,3 @@ describe('preload-api factories', () => {
     await expect(p).resolves.toBe(2);
   });
 });
-
