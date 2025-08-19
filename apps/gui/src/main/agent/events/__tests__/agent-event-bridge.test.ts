@@ -11,7 +11,7 @@ describe('AgentEventBridge', () => {
       received.push(ev);
       if (received.length === 1) {
         expect(ev.type).toBe('agent.session.message');
-        expect((ev as any).payload.sessionId).toBe('s1');
+        expect((ev.payload as any).sessionId).toBe('s1');
         sub.unsubscribe();
         done();
       }
@@ -23,4 +23,3 @@ describe('AgentEventBridge', () => {
     } as any);
   });
 });
-
