@@ -49,22 +49,21 @@ pnpm test        # 단위 테스트 통과 확인
 # 4. 작업 완료 후 Pull Request 생성 - 절대 직접 병합 금지!
 git push origin feature/ux-command-palette
 
-# 5. GitHub에서 Pull Request 생성
-gh pr create --title "Add Command Palette system" --body "$(cat <<'EOF'
-## Summary
-- Command Palette implementation with Cmd+K shortcut
-- Categories: chat, settings, navigation, mcp
-- Real-time search with fuzzy matching
 
-## TODO Completed
-✅ [TODO 1/4] Add kbar library integration
-✅ [TODO 2/4] Implement keyboard shortcuts
-✅ [TODO 3/4] Add command categories
-✅ [TODO 4/4] Complete app integration
+# 5. GitHub에서 Pull Request 생성 (PR 템플릿 기반)
 
-🤖 Generated with [Claude Code](https://claude.ai/code)
-EOF
-)"
+권장: GitHub 웹 UI에서 PR을 생성하면 `.github/pull_request_template.md`가 자동 적용됩니다. PR 본문은 반드시 "계획서(Plan) 기반"으로 작성합니다.
+
+CLI를 선호한다면 아래 중 하나를 사용하고, 생성 후 본문을 템플릿 구조에 맞추어 편집하세요.
+
+```bash
+# 기본 PR 생성 (브라우저에서 템플릿 자동 적용 권장)
+gh pr create --title "Add Command Palette system" --web
+
+# 또는 템플릿 파일을 본문으로 채우고 수정을 위해 브라우저 열기
+gh pr create --title "Add Command Palette system" \
+  --body-file .github/pull_request_template.md --web
+```
 
 # ⚠️ 중요: 절대 git merge 명령어 사용 금지!
 # ⚠️ 모든 병합은 Pull Request를 통해서만!
@@ -134,7 +133,15 @@ Resolves: GUI_CYCLIC_UX_REDESIGN_PLAN.md Phase 1 Task 1"
 3. **TODO 단위 작업**: 각 TODO 완료 시마다 커밋
 4. **테스트 실행**: `pnpm lint` && `pnpm test` 통과 확인
 5. **문서 업데이트**: 완료된 TODO 체크 후 커밋
-6. **Pull Request 생성**: `gh pr create`로 PR 생성
+6. **Pull Request 생성**: PR 템플릿 기반으로 생성하고, 본문은 "Plan 중심 요약"으로 작성
+   - Context: Plan 링크(`plan/<file>.md` 또는 승격 후 `docs/<file>.md`), Scope
+   - Requirements: 계획서의 성공조건 요약(3~5줄)
+   - TODO Status: 계획서의 TODO 목록 복사 + 완료 체크 표시
+   - Changes: 핵심 변경사항 불릿(3~7개)
+   - Verification: `pnpm -r typecheck | test | build` 결과 요약
+   - Docs: Plan→Docs 승격 여부/경로, 기존 유사 문서 병합/확장 여부
+   - Risks/Notes: 브레이킹/제약/후속작업
+   - 길고 일반적인 가이드 복붙은 금지. 반드시 계획서 준수/검증 중심으로 작성
 7. **브랜치 유지**: PR 승인까지 브랜치 절대 삭제 금지
 
 ## 🚨 **절대 금지 사항**
@@ -155,8 +162,8 @@ git branch -d feature/branch   # PR 승인 전 절대 금지!
 # 1. 브랜치에서 작업 완료
 git push origin feature/branch-name
 
-# 2. Pull Request 생성
-gh pr create --title "Feature description"
+# 2. Pull Request 생성 (PR 템플릿 기반, Plan 중심 작성)
+gh pr create --web
 
 # 3. PR 승인까지 대기 (브랜치 유지)
 # 4. 승인 후 GitHub에서 Merge
@@ -168,6 +175,10 @@ gh pr create --title "Feature description"
 - **브랜치별 리뷰**: 전체 기능 단위로 종합 검토
 - **커밋별 리뷰**: TODO 단위의 세부 변경사항 검토
 - **문서 동기화**: 계획서의 TODO 체크와 실제 구현 일치 확인
+- **Plan→Docs 승격**: 모든 TODO 완료 시 `plan/` 문서를 `docs/`로 승격하고 원본 삭제(Deprecated 디렉토리 금지). 유사 문서는 병합/확장.
+
+> Tip
+> CI 가드(선택): PR 본문에 Plan 링크가 없거나, `FEATURE` 커밋이 있는데 `plan/` 파일이 남아있는 경우 실패하도록 GitHub Actions/Danger로 검증하는 것을 권장합니다.
 
 ## 📊 **품질 관리**
 
