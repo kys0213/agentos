@@ -45,3 +45,40 @@ This document defines mandatory patterns for GUI implementation to keep the code
 - Avoid hidden global coupling; favor explicit props for cross-feature synchronization.
 
 By following these patterns, we ensure consistent, maintainable GUI code that cleanly separates data orchestration from presentation.
+
+---
+
+## 8) LLM Bridge Integration (Interfaces)
+
+Interface-first summary for Model Manager ↔ Bridge integration.
+
+- Service contracts (renderer, via DI):
+  - `bridge.registerBridge(config: LlmManifest)`
+  - `bridge.unregisterBridge(id: string)`
+  - `bridge.switchBridge(id: string)`
+  - `bridge.getCurrentBridge(): { id: string; config: LlmManifest } | null`
+  - `bridge.getBridgeIds(): string[]`
+  - `bridge.getBridgeConfig(id: string): LlmManifest | null`
+
+- React Query keys (BRIDGE_QK):
+  - `current`: `['bridge','current']`
+  - `ids`: `['bridge','ids']`
+  - `config(id)`: `['bridge','config', id]`
+  - `list`: composed list from ids + manifests
+
+- Hooks (recommended):
+  - `useInstalledBridges()` → loads composed list into `BRIDGE_QK.list`
+  - `useCurrentBridge()` → active bridge snapshot
+  - Mutations: `useSwitchBridge()`, `useRegisterBridge()`, `useUnregisterBridge()`
+    - Invalidate minimal keys: switch → `current, ids, list`; unregister → `ids, list, current`
+
+- Acceptance criteria:
+  - Presentational components never access ServiceContainer directly
+  - Loading/error/empty states passed as props; containers control when to render them
+  - Type-safety: spec-aligned `LlmManifest`, no `any`
+
+- Usage scenarios:
+  - ModelManager composes list/current via hooks
+  - Settings screens reuse hooks and invalidation strategy
+
+Note: Implementation is non-normative; rely on IPC contracts documented in `ELECTRON_MCP_IPC_SPEC.md` and terms in `IPC_TERMS_AND_CHANNELS.md`.
