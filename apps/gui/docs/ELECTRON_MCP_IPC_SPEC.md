@@ -1,5 +1,7 @@
 # Electron Reactive RPC 아키텍처 문서 (v0.2)
 
+Note: This spec is interface-first. It defines contracts (methods, payloads, frames, error policies). Code-level implementation details are non‑normative and provided only as examples. Canonical types live under `apps/gui/src/shared/types/*`.
+
 > 공용 용어/채널 정의: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`
 
 이 문서는 **Electron(Main: NestJS Microservice + RxJS / Renderer: React + RxJS)** 기반 앱에서 **postMessage 스타일 공통 RPC 레이어**로 단발/RPC와 스트림을 일관 처리하는 스펙을 정의합니다. Electron/Web(Service Worker)/Chrome Extension 등으로 **Transport 교체만으로 재사용** 가능하도록 설계되었습니다. 본 v0.2는 packages/core의 타입/이벤트 스펙에 맞춰 구체 타입과 에러 정책, 이벤트 연계를 강화하며, 전송계층과 서비스 계층을 분리한 **채널 기반 Transport + 타입 안전 서비스 레이어**를 권장합니다.
@@ -32,6 +34,19 @@
   - 코어 타입 정합: payload/result는 코어 타입을 우선 사용
 
 ---
+
+## 2.1 서비스 네임스페이스 개요 (인터페이스 요약)
+
+최신 시그니처는 `apps/gui/src/shared/types/agentos-api.ts`, `apps/gui/src/shared/types/ipc-channel.ts`를 기준으로 합니다.
+
+- agent: `chat`, `endSession`, `getAgentMetadata`, `getAllAgentMetadatas`, `updateAgent`, `createAgent`, `deleteAgent`
+- bridge: `registerBridge`, `unregisterBridge`, `switchBridge`, `getCurrentBridge`, `getBridgeIds`, `getBridgeConfig`
+- builtinTool: `getAllBuiltinTools`, `getBuiltinTool`, `invokeBuiltinTool`
+- mcp: `getAllMcp`, `connectMcp`, `disconnectMcp`, `executeMcpTool`, `getMcpResources`, `readMcpResource`, `getMcpStatus`, `getToolMetadata`, `getAllToolMetadata`
+- preset: `getAllPresets`, `createPreset`, `updatePreset`, `deletePreset`, `getPreset`
+- mcpUsageLog: `getUsageLogs`, `getAllUsageLogs`, `getUsageStats`, `getHourlyStats`, `getUsageLogsInRange`, `clearUsageLogs`, `setUsageTracking`, `subscribeToUsageUpdates`
+
+채널명/용어는 `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`를 참조하세요.
 
 ## 3. 디렉터리 레이아웃 (권장)
 
@@ -244,7 +259,7 @@ export class ChromeExtensionPortTransport implements RpcTransport {
 
 ---
 
-## 7. Main: NestJS 커스텀 트랜스포트
+## 7. Main: NestJS 커스텀 트랜스포트 (Non‑normative example)
 
 ### 7.1 Nest Microservice 부팅 + 프레임 브리지(현재)
 
@@ -321,7 +336,7 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
 
 ---
 
-## 8. Hub(State) 패턴 (Main)
+## 8. Hub(State) 패턴 (Main) (Non‑normative example)
 
 ```ts
 export type GlobalAgentConfig = { defaultModel: string; temperature: number; maxTokens: number };
@@ -364,7 +379,7 @@ export class HubHandlers {
 
 ---
 
-## 9. Renderer 통합
+## 9. Renderer 통합 (Non‑normative example)
 
 ### 9.1 권장: 채널 기반 Transport + 서비스 레이어
 
@@ -399,7 +414,7 @@ export const mergedGlobal$ = merge(snap$, global$);
 
 ---
 
-## 10. 에러/취소/타임아웃 정책
+## 10. 에러/취소/타임아웃 정책 (Contract summary)
 
 - **단발**: `request()`에 `timeoutMs` 적용 → `err` 프레임 또는 타임아웃 예외
 - **스트림**: 소비자 쪽 `for await` 탈출/해지 시 `can` 프레임 전송 → 서버 구독 해지
@@ -409,7 +424,7 @@ export const mergedGlobal$ = merge(snap$, global$);
 
 ---
 
-## 11. 보안 가이드
+## 11. 보안 가이드 (Contract summary)
 
 - **Preload 최소 API**만 노출 (`start`, `post`) — 차기에는 `electronBridge.on`, `rpc.request`로 확장 (자세한 용어/채널: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`)
 - **메시지 검증**: `method`/`payload` zod 스키마 검증
@@ -420,7 +435,7 @@ export const mergedGlobal$ = merge(snap$, global$);
 
 ---
 
-## 12. 퍼포먼스 팁
+## 12. 퍼포먼스 팁 (Non‑normative tips)
 
 - 대량 이벤트는 **MessageChannelMain** 포트 어댑터 고려
 - `auditTime(16~33ms)` 배칭으로 IPC 부하 완화
@@ -429,7 +444,7 @@ export const mergedGlobal$ = merge(snap$, global$);
 
 ---
 
-## 13. 네이밍 & 컨벤션
+## 13. 네이밍 & 컨벤션 (Contract summary)
 
 - 메서드: `domain.action` (`hub.getSnapshot`, `hub.watchGlobal`, `ai.streamChat`)
 - 프레임 속성: `kind/cid/method/payload/meta` 고정
@@ -438,7 +453,7 @@ export const mergedGlobal$ = merge(snap$, global$);
 
 ---
 
-## 14. 테스트 전략
+## 14. 테스트 전략 (Non‑normative example)
 
 - **단위**: 핸들러(입력→출력), 엔진(request/stream 타임아웃, 취소)
 - **계약**: 프레임 왕복(mock Transport) 스냅샷 테스트

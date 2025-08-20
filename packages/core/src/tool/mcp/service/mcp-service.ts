@@ -41,7 +41,8 @@ export class McpService {
 
   constructor(
     private readonly repository: McpToolRepository,
-    private readonly registry: McpMetadataRegistry
+    private readonly registry: McpMetadataRegistry,
+    private readonly usageService?: import('../usage/service/mcp-usage-service').McpUsageService
   ) {
     // Registry 이벤트를 서비스 이벤트로 전파
     this.setupEventForwarding();
@@ -106,6 +107,56 @@ export class McpService {
     } catch (error) {
       this.emitOperationEvent('unregisterTool', 'completed', false, toolId);
       throw new Error(`Failed to unregister MCP tool ${toolId}: ${error}`);
+    }
+  }
+
+  /**
+   * 도구 실행 (이 서비스 계층을 통해 호출할 때 Usage 기록 연동)
+   * @param toolName 도구 이름
+   * @param args 입력 인자
+   * @param meta 추가 메타(에이전트/세션)
+   */
+  async executeTool(
+    toolName: string,
+    args: unknown,
+    meta?: { agentId?: string; sessionId?: string }
+  ): Promise<unknown> {
+    this.ensureInitialized();
+
+    // find toolId if registered
+    const toolMeta = this.registry.getAllTools().items.find((t) => t.name === toolName) || null;
+    const toolId = toolMeta?.id;
+
+    this.emitOperationEvent('executeTool', 'started', undefined, toolId ?? undefined);
+
+    const startId = this.usageService
+      ? await this.usageService.recordStart({
+          toolId,
+          toolName,
+          agentId: meta?.agentId,
+          sessionId: meta?.sessionId,
+        })
+      : undefined;
+    const start = Date.now();
+    try {
+      const result = await this.registry.executeTool(toolName, args);
+      const durationMs = Date.now() - start;
+      if (this.usageService && startId) {
+        await this.usageService.recordEnd(startId, { status: 'success', durationMs });
+      }
+      this.emitOperationEvent('executeTool', 'completed', true, toolId ?? undefined);
+      return result;
+    } catch (e) {
+      const durationMs = Date.now() - start;
+      if (this.usageService && startId) {
+        await this.usageService.recordEnd(startId, {
+          status: 'error',
+          durationMs,
+          errorCode: (e as Error)?.name || 'ERROR',
+        });
+      }
+      this.emitOperationEvent('executeTool', 'completed', false, toolId ?? undefined);
+      throw e;
     }
   }
 

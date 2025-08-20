@@ -38,6 +38,10 @@ export { McpRegistry } from './mcp.registery';
 export type { McpServiceEvents } from './service/mcp-service';
 export { McpService } from './service/mcp-service';
 
+// Usage Layer (service + repository; types remain internal to avoid name clash with legacy)
+export { FileMcpUsageRepository } from './usage/repository/file-mcp-usage-repository';
+export { McpUsageService } from './usage/service/mcp-usage-service';
+
 // Legacy exports (for backward compatibility)
 export { McpEvent, type McpEventMap } from './mcp-event';
 export { McpTransportFactory } from './mcp-transport.factory';

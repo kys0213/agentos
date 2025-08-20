@@ -53,7 +53,13 @@ describe('SimpleAgent.createSession', () => {
 
     const repo = mock<AgentMetadataRepository>();
     repo.getOrThrow.mockResolvedValue(meta);
-    const agent = new SimpleAgent('a-1', llm, mcp, chatManager, repo as unknown as AgentMetadataRepository);
+    const agent = new SimpleAgent(
+      'a-1',
+      llm,
+      mcp,
+      chatManager,
+      repo as unknown as AgentMetadataRepository
+    );
 
     // LLM 응답 목업
     const resp: LlmBridgeResponse = {

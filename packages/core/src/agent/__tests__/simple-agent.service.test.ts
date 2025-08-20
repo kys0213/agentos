@@ -99,7 +99,9 @@ describe('SimpleAgentService', () => {
     (m2 as any).preset = { llmBridgeName: manifestName } as any;
 
     repo.list.mockResolvedValue({ items: [m1, m2], nextCursor: '', hasMore: false });
-    repo.get.mockImplementation(async (id: string) => (id === 'a1' ? m1 : id === 'a2' ? m2 : null) as any);
+    repo.get.mockImplementation(
+      async (id: string) => (id === 'a1' ? m1 : id === 'a2' ? m2 : null) as any
+    );
     (repo.getOrThrow as any).mockImplementation(async (id: string) => (id === 'a1' ? m1 : m2));
     llmReg.getBridgeByName.mockResolvedValue(mock<LlmBridge>() as unknown as LlmBridge);
 
@@ -141,7 +143,11 @@ describe('SimpleAgentService', () => {
     (repo.getOrThrow as any).mockResolvedValue(m1);
     (repo.getOrThrow as any).mockResolvedValue(m1);
     llmReg.getBridgeByName.mockResolvedValue(mock<LlmBridge>() as unknown as LlmBridge);
-    chatMgr.create.mockResolvedValue({ sessionId: 's-1', appendMessage: async () => {}, sumUsage: async () => {} } as any);
+    chatMgr.create.mockResolvedValue({
+      sessionId: 's-1',
+      appendMessage: async () => {},
+      sumUsage: async () => {},
+    } as any);
 
     const svc = new SimpleAgentService(llmReg, mcpReg, chatMgr, repo);
     const session = await svc.createSession('a1');
@@ -158,8 +164,14 @@ describe('SimpleAgentService', () => {
     (m1 as any).preset = { llmBridgeName: manifestName, enabledMcps: [] } as any;
     repo.get.mockResolvedValue(m1);
     (repo.getOrThrow as any).mockResolvedValue(m1);
-    llmReg.getBridgeByName.mockResolvedValue({ invoke: async () => ({ content: { contentType: 'text', value: 'ok' }, toolCalls: [] }) } as unknown as LlmBridge);
-    chatMgr.create.mockResolvedValue({ sessionId: 's-1', appendMessage: async () => {}, sumUsage: async () => {} } as any);
+    llmReg.getBridgeByName.mockResolvedValue({
+      invoke: async () => ({ content: { contentType: 'text', value: 'ok' }, toolCalls: [] }),
+    } as unknown as LlmBridge);
+    chatMgr.create.mockResolvedValue({
+      sessionId: 's-1',
+      appendMessage: async () => {},
+      sumUsage: async () => {},
+    } as any);
     // Ensure agent.getMetadata returns preset with enabledMcps when called during execute
     const { SimpleAgent } = await import('../simple-agent');
     jest.spyOn(SimpleAgent.prototype as any, 'getMetadata').mockResolvedValue(m1 as any);
