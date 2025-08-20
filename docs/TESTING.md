@@ -602,6 +602,62 @@ describe('ComponentName', () => {
 - 유틸리티 함수: 100%
 - 통합 테스트: 주요 시나리오 커버
 
+### 5. 임시 파일/디렉터리 관리 (테스트 산출물 정리)
+
+- OS 임시 디렉터리 사용: `os.tmpdir()` + `fs.mkdtemp`로 테스트별 고유 경로를 생성하세요.
+- 정리 책임: `afterEach` 또는 `afterAll`에서 생성한 파일/폴더를 반드시 삭제하세요.
+- 저장 위치 원칙: 레포지토리 내부 고정 경로(예: `__tests__/tmp`) 사용을 지양합니다. 불가피할 경우 정리 훅을 통해 항상 비워둡니다.
+- .gitignore 의존 금지: 산출물 무시는 임시 조치일 뿐입니다. 테스트가 스스로 정리하도록 구현하세요.
+
+예시: 고유 임시 디렉터리 생성 + 정리
+
+```ts
+// __tests__/example.test.ts
+import * as fs from 'node:fs/promises';
+import * as os from 'node:os';
+import * as path from 'node:path';
+
+describe('feature using temp files', () => {
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'agentos-'));
+  });
+
+  afterEach(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('writes a file to temp dir', async () => {
+    const file = path.join(tmpDir, 'data.json');
+    await fs.writeFile(file, JSON.stringify({ ok: true }), 'utf-8');
+    const text = await fs.readFile(file, 'utf-8');
+    expect(JSON.parse(text).ok).toBe(true);
+  });
+});
+```
+
+예시: 레포 내부 임시 디렉터리를 부득이하게 사용할 때
+
+```ts
+// __tests__/example-in-repo.test.ts
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+
+describe('legacy tmp path', () => {
+  const tmpDir = path.join(__dirname, 'tmp');
+
+  beforeEach(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+    await fs.mkdir(tmpDir, { recursive: true });
+  });
+
+  afterAll(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  });
+});
+```
+
 ## 🚨 주의사항
 
 ### 금지사항
