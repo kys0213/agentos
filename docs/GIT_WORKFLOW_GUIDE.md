@@ -140,6 +140,9 @@ Resolves: GUI_CYCLIC_UX_REDESIGN_PLAN.md Phase 1 Task 1"
    - Changes: 핵심 변경사항 불릿(3~7개)
    - Verification: `pnpm -r typecheck | test | build` 결과 요약
    - Docs: Plan→Docs 승격 여부/경로, 기존 유사 문서 병합/확장 여부
+   - PR 유형별 문서 원칙:
+     - Feature/Fix: 변경된 인터페이스/동작에 맞게 기존 문서를 반드시 갱신
+     - Refactor/Perf/Chore: 외부 인터페이스 변화가 없으면 문서 갱신 생략 가능(Plan만 삭제). 변화가 있다면 문서 갱신 필수
    - Risks/Notes: 브레이킹/제약/후속작업
    - 길고 일반적인 가이드 복붙은 금지. 반드시 계획서 준수/검증 중심으로 작성
 7. **브랜치 유지**: PR 승인까지 브랜치 절대 삭제 금지
@@ -176,6 +179,7 @@ gh pr create --web
 - **커밋별 리뷰**: TODO 단위의 세부 변경사항 검토
 - **문서 동기화**: 계획서의 TODO 체크와 실제 구현 일치 확인
 - **Plan→Docs 승격**: 모든 TODO 완료 시 `plan/` 문서를 `docs/`로 승격하고 원본 삭제(Deprecated 디렉토리 금지). 유사 문서는 병합/확장.
+- **Interface-first 문서**: 최종 문서는 인터페이스/계약/시나리오를 우선하며, 내부 구현 세부는 문서 대상이 아님.
 
 > Tip
 > CI 가드(선택): PR 본문에 Plan 링크가 없거나, `FEATURE` 커밋이 있는데 `plan/` 파일이 남아있는 경우 실패하도록 GitHub Actions/Danger로 검증하는 것을 권장합니다.
