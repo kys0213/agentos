@@ -44,11 +44,11 @@ export class FileMcpUsageRepository implements McpUsageRepository {
     const totalUsage = filtered.length;
     const errorCount = filtered.filter((l) => l.status === 'error').length;
     const durations = filtered.map((l) => l.durationMs ?? 0).filter((d) => d > 0);
-    const averageDuration = durations.length > 0
-      ? durations.reduce((a, b) => a + b, 0) / durations.length
-      : 0;
+    const averageDuration =
+      durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
     const last = filtered.reduce<number | undefined>((acc, l) => {
-      const t = l.timestamp instanceof Date ? l.timestamp.getTime() : new Date(l.timestamp).getTime();
+      const t =
+        l.timestamp instanceof Date ? l.timestamp.getTime() : new Date(l.timestamp).getTime();
       return acc === undefined || t > acc ? t : acc;
     }, undefined);
     const successRate = totalUsage > 0 ? (totalUsage - errorCount) / totalUsage : 0;
@@ -106,4 +106,3 @@ export class FileMcpUsageRepository implements McpUsageRepository {
     await fs.writeFile(this.storagePath, JSON.stringify(serializable, null, 2), 'utf-8');
   }
 }
-

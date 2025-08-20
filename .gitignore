@@ -35,6 +35,7 @@ Thumbs.db
 
 # Testing
 coverage
+**/__tests__/tmp/
 
 # Electron
 .electron-builder.env

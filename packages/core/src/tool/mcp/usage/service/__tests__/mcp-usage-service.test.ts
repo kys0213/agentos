@@ -42,4 +42,3 @@ describe('McpUsageService', () => {
     expect(stats.averageDuration).toBeGreaterThan(0);
   });
 });
-

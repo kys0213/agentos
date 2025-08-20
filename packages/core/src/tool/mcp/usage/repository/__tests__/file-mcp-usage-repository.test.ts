@@ -16,8 +16,22 @@ describe('FileMcpUsageRepository', () => {
     const repo = new FileMcpUsageRepository(filePath);
     const t0 = new Date('2025-01-01T00:00:00Z');
     const logs: McpUsageLog[] = [
-      { id: '1', toolName: 'a', timestamp: t0, operation: 'tool.call', status: 'success', durationMs: 10 },
-      { id: '2', toolName: 'b', timestamp: new Date(t0.getTime() + 1000), operation: 'tool.call', status: 'error', durationMs: 20 },
+      {
+        id: '1',
+        toolName: 'a',
+        timestamp: t0,
+        operation: 'tool.call',
+        status: 'success',
+        durationMs: 10,
+      },
+      {
+        id: '2',
+        toolName: 'b',
+        timestamp: new Date(t0.getTime() + 1000),
+        operation: 'tool.call',
+        status: 'error',
+        durationMs: 20,
+      },
     ];
     await repo.append(logs);
     const all = await repo.list();
@@ -54,8 +68,22 @@ describe('FileMcpUsageRepository', () => {
   it('computes stats', async () => {
     const repo = new FileMcpUsageRepository(filePath);
     const t0 = new Date('2025-01-01T00:00:00Z');
-    await repo.append({ id: '1', toolName: 'a', timestamp: t0, operation: 'tool.call', status: 'success', durationMs: 10 });
-    await repo.append({ id: '2', toolName: 'a', timestamp: new Date(t0.getTime() + 2000), operation: 'tool.call', status: 'error', durationMs: 30 });
+    await repo.append({
+      id: '1',
+      toolName: 'a',
+      timestamp: t0,
+      operation: 'tool.call',
+      status: 'success',
+      durationMs: 10,
+    });
+    await repo.append({
+      id: '2',
+      toolName: 'a',
+      timestamp: new Date(t0.getTime() + 2000),
+      operation: 'tool.call',
+      status: 'error',
+      durationMs: 30,
+    });
     const stats = await repo.getStats({ toolName: 'a' });
     expect(stats.totalUsage).toBe(2);
     expect(stats.errorCount).toBe(1);

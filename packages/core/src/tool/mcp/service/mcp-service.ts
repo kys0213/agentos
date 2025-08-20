@@ -130,7 +130,12 @@ export class McpService {
     this.emitOperationEvent('executeTool', 'started', undefined, toolId ?? undefined);
 
     const startId = this.usageService
-      ? await this.usageService.recordStart({ toolId, toolName, agentId: meta?.agentId, sessionId: meta?.sessionId })
+      ? await this.usageService.recordStart({
+          toolId,
+          toolName,
+          agentId: meta?.agentId,
+          sessionId: meta?.sessionId,
+        })
       : undefined;
     const start = Date.now();
     try {
