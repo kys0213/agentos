@@ -19,10 +19,11 @@
 - ...
 
 ## Verification
-<!-- 실행/검증 결과 요약: 명령어와 핵심 결과만 작성 -->
-- `pnpm -r typecheck`: pass
-- `pnpm -r test`: pass
-- Build/manual checks: ...
+<!-- pass/fail 유무만 간단히 기입 (출력 로그/세부 결과는 첨부 금지) -->
+- Typecheck: pass | fail
+- Tests: pass | fail
+- Build: pass | fail
+- Manual checks (optional): ...
 
 ## Docs
 <!-- 계획서 승격/병합 여부와 경로. PR 유형별 원칙 적용: Feature/Fix는 문서 필수 갱신, Refactor/Perf/Chore는 외부 인터페이스 불변 시 생략 가능 -->
