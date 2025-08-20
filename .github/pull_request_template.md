@@ -57,6 +57,15 @@ pnpm test
 - [ ] API 문서 업데이트 (필요한 경우)
 - [ ] 사용 예시 추가 (필요한 경우)
 
+## 📄 Plan Lifecycle Checklist (필수)
+
+- [ ] 관련 Plan의 TODO가 모두 완료되었는가?
+- [ ] `plan/<file>.md` 내용을 정리해 `docs/<file>.md`로 승격했는가?
+- [ ] 원본 `plan/` 파일을 삭제했는가? (Deprecated 디렉토리 사용 금지)
+- [ ] 유사/중복 문서를 검색해 병합 또는 기존 문서 확장으로 반영했는가?
+- [ ] ToC/README/내부 링크를 최신 경로로 갱신했는가?
+- [ ] 승격/갱신된 문서 경로를 명시했는가? (예: `docs/...`)
+
 ## ✅ 코드 품질 체크리스트 (Code Quality Checklist)
 
 ### 코드 스타일
