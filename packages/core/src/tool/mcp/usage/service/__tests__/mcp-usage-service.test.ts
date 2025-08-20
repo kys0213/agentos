@@ -12,6 +12,10 @@ describe('McpUsageService', () => {
     await fs.mkdir(tmpDir, { recursive: true });
   });
 
+  afterAll(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  });
+
   it('records start/end and persists a usage log', async () => {
     const repo = new FileMcpUsageRepository(filePath);
     const service = new McpUsageService(repo);

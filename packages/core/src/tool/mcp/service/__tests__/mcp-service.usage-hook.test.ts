@@ -12,6 +12,10 @@ describe('McpService usage hook integration', () => {
     await fs.mkdir(tmpDir, { recursive: true });
   });
 
+  afterAll(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  });
+
   it('records usage when executing tool via service', async () => {
     const usageRepo = new FileMcpUsageRepository(usageFile);
     const usageService = new McpUsageService(usageRepo);

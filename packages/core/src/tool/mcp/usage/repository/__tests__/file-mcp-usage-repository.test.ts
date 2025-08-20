@@ -12,6 +12,10 @@ describe('FileMcpUsageRepository', () => {
     await fs.mkdir(tmpDir, { recursive: true });
   });
 
+  afterAll(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  });
+
   it('appends and lists logs', async () => {
     const repo = new FileMcpUsageRepository(filePath);
     const t0 = new Date('2025-01-01T00:00:00Z');
