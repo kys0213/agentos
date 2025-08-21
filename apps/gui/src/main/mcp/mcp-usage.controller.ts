@@ -73,7 +73,11 @@ function toCoreQuery(q?: {
   };
 }
 
-function toCorePagination(pg?: { cursor?: string; limit?: number; direction?: 'forward' | 'backward' }) {
+function toCorePagination(pg?: {
+  cursor?: string;
+  limit?: number;
+  direction?: 'forward' | 'backward';
+}) {
   if (!pg) return undefined as any;
   return {
     cursor: pg.cursor ?? '',
