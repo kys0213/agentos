@@ -33,7 +33,7 @@ refactor/state-management
 
 ### **브랜치 생성 및 작업**
 
-```bash
+````bash
 # 1. 최신 main 브랜치로 전환
 git checkout main
 git pull origin main
@@ -63,11 +63,13 @@ gh pr create --title "Add Command Palette system" --web
 # 또는 템플릿 파일을 본문으로 채우고 수정을 위해 브라우저 열기
 gh pr create --title "Add Command Palette system" \
   --body-file .github/pull_request_template.md --web
-```
+````
 
 # ⚠️ 중요: 절대 git merge 명령어 사용 금지!
+
 # ⚠️ 모든 병합은 Pull Request를 통해서만!
-```
+
+````
 
 ## 📝 **TODO별 커밋 전략**
 
@@ -85,7 +87,7 @@ gh pr create --title "Add Command Palette system" \
 
 # 전체 기능 완료 시
 🎉 [FEATURE] Complete Command Palette system implementation
-```
+````
 
 ### **실제 작업 예시**
 

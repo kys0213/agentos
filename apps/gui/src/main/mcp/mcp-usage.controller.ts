@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
-import { McpService } from '@agentos/core';
+import { McpUsageService } from '@agentos/core';
 import {
   ClearDto,
   GetLogsDto,
@@ -14,25 +14,21 @@ import { map } from 'rxjs';
 @Controller()
 export class McpUsageController {
   constructor(
-    private readonly mcp: McpService,
+    private readonly usage: McpUsageService,
     private readonly outbound: OutboundChannel
   ) {}
 
   @EventPattern('mcp.usage.getLogs')
   async getUsageLogs(@Payload() data: GetLogsDto) {
-    // 현재 코어 서비스는 세밀한 로그를 보관하지 않으므로 빈 배열 반환
-    return [] as unknown[];
+    const query = toCoreQuery(data?.query);
+    const pg = toCorePagination(data?.pg);
+    return this.usage.list(query, pg);
   }
 
   @EventPattern('mcp.usage.getStats')
   async getUsageStats(@Payload() dto?: GetStatsDto) {
-    const tools = this.mcp.getAllTools().items;
-    const totalUsage = tools.reduce((sum, t) => sum + (t.usageCount ?? 0), 0);
-    const lastUsedTimes = tools
-      .map((t) => t.lastUsedAt?.getTime())
-      .filter((n): n is number => typeof n === 'number');
-    const lastUsedAt = lastUsedTimes.length > 0 ? new Date(Math.max(...lastUsedTimes)) : undefined;
-    return { totalUsage, successRate: 0, averageDuration: 0, lastUsedAt, errorCount: 0 };
+    const query = toCoreQuery(dto?.query);
+    return this.usage.getStats(query);
   }
 
   @EventPattern('mcp.usage.getHourlyStats')
@@ -43,12 +39,12 @@ export class McpUsageController {
 
   @EventPattern('mcp.usage.getLogsInRange')
   async getLogsInRange(@Payload() data: LogsInRangeDto) {
-    return [] as unknown[];
+    return [] as unknown[]; // TODO: optional
   }
 
   @EventPattern('mcp.usage.clear')
   async clear(@Payload() dto?: ClearDto) {
-    // Stub: call client.clearLogs when available
+    // TODO: optional clear support
     return { success: true };
   }
 
@@ -57,4 +53,35 @@ export class McpUsageController {
   events() {
     return this.outbound.ofType('mcp.usage.').pipe(map((ev) => ev));
   }
+}
+
+// ---------- helpers ----------
+function toCoreQuery(q?: {
+  toolId?: string;
+  toolName?: string;
+  agentId?: string;
+  sessionId?: string;
+  status?: 'success' | 'error';
+  from?: string;
+  to?: string;
+}) {
+  if (!q) return undefined;
+  return {
+    ...q,
+    from: q.from ? new Date(q.from) : undefined,
+    to: q.to ? new Date(q.to) : undefined,
+  };
+}
+
+function toCorePagination(pg?: {
+  cursor?: string;
+  limit?: number;
+  direction?: 'forward' | 'backward';
+}) {
+  if (!pg) return undefined as any;
+  return {
+    cursor: pg.cursor ?? '',
+    limit: pg.limit ?? 20,
+    direction: pg.direction ?? 'forward',
+  } as any;
 }

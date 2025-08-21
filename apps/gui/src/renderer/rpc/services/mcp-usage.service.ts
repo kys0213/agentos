@@ -11,14 +11,23 @@ import type {
 export class McpUsageRpcService {
   constructor(private readonly transport: RpcClient) {}
 
-  getUsageLogs(clientName?: string, options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
-    return this.transport.request('mcp.usage.getLogs', { clientName, options });
+  async getUsageLogs(clientName?: string, _options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
+    // Map to core shape: { query, pg }
+    const payload: any = clientName ? { query: { toolName: clientName } } : {};
+    const res = (await this.transport.request('mcp.usage.getLogs', payload)) as {
+      items?: McpUsageLog[];
+    };
+    return res?.items ?? [];
   }
-  getAllUsageLogs(options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
-    return this.transport.request('mcp.usage.getLogs', { options });
+  async getAllUsageLogs(_options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
+    const res = (await this.transport.request('mcp.usage.getLogs', {})) as {
+      items?: McpUsageLog[];
+    };
+    return res?.items ?? [];
   }
   getUsageStats(clientName?: string): Promise<McpUsageStats> {
-    return this.transport.request('mcp.usage.getStats', { clientName });
+    const payload: any = clientName ? { query: { toolName: clientName } } : {};
+    return this.transport.request('mcp.usage.getStats', payload);
   }
   getHourlyStats(date: Date, clientName?: string): Promise<HourlyStatsResponse> {
     return this.transport.request('mcp.usage.getHourlyStats', {

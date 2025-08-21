@@ -1,20 +1,40 @@
 import { IsIn, IsInt, IsISO8601, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class UsageFilterOptionsDto {
+export class UsageQueryDto {
   @IsOptional()
   @IsString()
-  status?: string;
+  toolId?: string;
+
+  @IsOptional()
+  @IsString()
+  toolName?: string;
 
   @IsOptional()
   @IsString()
   agentId?: string;
 
   @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(0)
-  offset?: number;
+  @IsString()
+  sessionId?: string;
+
+  @IsOptional()
+  @IsString()
+  status?: 'success' | 'error';
+
+  @IsOptional()
+  @IsISO8601()
+  from?: string;
+
+  @IsOptional()
+  @IsISO8601()
+  to?: string;
+}
+
+export class CursorPaginationDto {
+  @IsOptional()
+  @IsString()
+  cursor?: string;
 
   @IsOptional()
   @Type(() => Number)
@@ -23,34 +43,33 @@ export class UsageFilterOptionsDto {
   limit?: number;
 
   @IsOptional()
-  @IsIn(['asc', 'desc'])
-  sortOrder?: 'asc' | 'desc';
+  @IsIn(['forward', 'backward'])
+  direction?: 'forward' | 'backward';
 }
 
 export class GetLogsDto {
   @IsOptional()
-  @IsString()
-  clientName?: string;
+  @ValidateNested()
+  @Type(() => UsageQueryDto)
+  query?: UsageQueryDto;
 
   @IsOptional()
   @ValidateNested()
-  @Type(() => UsageFilterOptionsDto)
-  options?: UsageFilterOptionsDto;
+  @Type(() => CursorPaginationDto)
+  pg?: CursorPaginationDto;
 }
 
 export class GetStatsDto {
   @IsOptional()
-  @IsString()
-  clientName?: string;
+  @ValidateNested()
+  @Type(() => UsageQueryDto)
+  query?: UsageQueryDto;
 }
 
+// The following DTOs are retained for future TODOs; not implemented in this pass
 export class HourlyStatsDto {
   @IsISO8601()
   date!: string;
-
-  @IsOptional()
-  @IsString()
-  clientName?: string;
 }
 
 export class LogsInRangeDto {
@@ -59,10 +78,6 @@ export class LogsInRangeDto {
 
   @IsISO8601()
   endDate!: string;
-
-  @IsOptional()
-  @IsString()
-  clientName?: string;
 }
 
 export class ClearDto {
