@@ -1,5 +1,12 @@
 import { Module } from '@nestjs/common';
-import { McpRegistry, McpMetadataRegistry, McpService, FileMcpToolRepository } from '@agentos/core';
+import {
+  McpRegistry,
+  McpMetadataRegistry,
+  McpService,
+  FileMcpToolRepository,
+  FileMcpUsageRepository,
+  McpUsageService,
+} from '@agentos/core';
 import { McpUsagePublisher } from '../../mcp/mcp-usage.publisher';
 import { ElectronAppEnvironment } from '../../electron/electron-app.environment';
 import * as path from 'path';
@@ -21,12 +28,33 @@ import * as path from 'path';
     },
     {
       provide: McpService,
-      inject: [FileMcpToolRepository, McpMetadataRegistry],
-      useFactory: (repo: FileMcpToolRepository, meta: McpMetadataRegistry) =>
-        new McpService(repo, meta),
+      inject: [FileMcpToolRepository, McpMetadataRegistry, McpUsageService],
+      useFactory: (
+        repo: FileMcpToolRepository,
+        meta: McpMetadataRegistry,
+        usage: McpUsageService
+      ) => new McpService(repo, meta, usage),
+    },
+    {
+      provide: FileMcpUsageRepository,
+      inject: [ElectronAppEnvironment],
+      useFactory: (env: ElectronAppEnvironment) =>
+        new FileMcpUsageRepository(path.join(env.userDataPath, 'mcp-usage.json')),
+    },
+    {
+      provide: McpUsageService,
+      inject: [FileMcpUsageRepository],
+      useFactory: (repo: FileMcpUsageRepository) => new McpUsageService(repo),
     },
     McpUsagePublisher,
   ],
-  exports: [McpRegistry, McpService, McpMetadataRegistry, FileMcpToolRepository],
+  exports: [
+    McpRegistry,
+    McpService,
+    McpMetadataRegistry,
+    FileMcpToolRepository,
+    FileMcpUsageRepository,
+    McpUsageService,
+  ],
 })
 export class McpRegistryModule {}
