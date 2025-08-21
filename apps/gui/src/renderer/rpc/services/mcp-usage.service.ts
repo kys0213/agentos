@@ -14,12 +14,16 @@ export class McpUsageRpcService {
   async getUsageLogs(clientName?: string, _options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
     // Map to core shape: { query, pg }
     const payload: any = clientName ? { query: { toolName: clientName } } : {};
-    const res = await this.transport.request('mcp.usage.getLogs', payload);
-    return (res?.items ?? []) as McpUsageLog[];
+    const res = (await this.transport.request('mcp.usage.getLogs', payload)) as {
+      items?: McpUsageLog[];
+    };
+    return res?.items ?? [];
   }
   async getAllUsageLogs(_options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
-    const res = await this.transport.request('mcp.usage.getLogs', {});
-    return (res?.items ?? []) as McpUsageLog[];
+    const res = (await this.transport.request('mcp.usage.getLogs', {})) as {
+      items?: McpUsageLog[];
+    };
+    return res?.items ?? [];
   }
   getUsageStats(clientName?: string): Promise<McpUsageStats> {
     const payload: any = clientName ? { query: { toolName: clientName } } : {};
