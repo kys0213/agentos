@@ -34,21 +34,27 @@ export class AgentSessionService {
 
     // 스트림 브로드캐스트: 어시스턴트 메시지 이벤트 발행
     const last: Message | undefined = result.messages[result.messages.length - 1];
-    if (last) this.events.publishSessionMessage(result.sessionId, last);
+    if (last) {
+      this.events.publishSessionMessage(result.sessionId, last);
+    }
 
     return result;
   }
 
   async endSession(agentId: string, sessionId: string): Promise<void> {
     const agent = await this.agentService.getAgent(agentId);
-    if (!agent) throw new Error(`Agent not found: ${agentId}`);
+    if (!agent) {
+      throw new Error(`Agent not found: ${agentId}`);
+    }
     await agent.endSession(sessionId);
     this.events.publishSessionEnded(sessionId);
   }
 
   async getMetadata(id: string): Promise<AgentMetadata | null> {
     const agent = await this.agentService.getAgent(id);
-    if (!agent) throw new Error(`Agent not found: ${id}`);
+    if (!agent) {
+      throw new Error(`Agent not found: ${id}`);
+    }
     return await agent.getMetadata();
   }
 
@@ -74,7 +80,9 @@ export class AgentSessionService {
   ): Promise<AgentMetadata> {
     const agent = await this.agentService.getAgent(agentId);
 
-    if (!agent) throw new Error(`Agent not found: ${agentId}`);
+    if (!agent) {
+      throw new Error(`Agent not found: ${agentId}`);
+    }
 
     await agent.update(patch as Partial<AgentMetadata>);
 

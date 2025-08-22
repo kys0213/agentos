@@ -63,7 +63,9 @@ export class McpUsageController {
         buckets[hour]++;
       }
 
-      if (!page.hasMore || !page.nextCursor) break;
+      if (!page.hasMore || !page.nextCursor) {
+        break;
+      }
 
       cursor = page.nextCursor;
     }
@@ -111,7 +113,9 @@ function toCoreQuery(q?: {
       to?: Date;
     }
   | undefined {
-  if (!q) return;
+  if (!q) {
+    return;
+  }
 
   return {
     ...q,
@@ -125,7 +129,9 @@ function toCorePagination(pg?: {
   limit?: number;
   direction?: 'forward' | 'backward';
 }): CursorPagination | undefined {
-  if (!pg) return;
+  if (!pg) {
+    return;
+  }
   return {
     cursor: pg.cursor ?? '',
     limit: pg.limit ?? 20,

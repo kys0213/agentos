@@ -16,7 +16,9 @@ export class BridgeController {
   @EventPattern('bridge.get-current')
   async getCurrent() {
     const id = await this.registry.getActiveId();
-    if (!id) return null;
+    if (!id) {
+      return null;
+    }
     const manifest = await this.registry.getManifest(id);
     return manifest ? { id, manifest } : null;
   }

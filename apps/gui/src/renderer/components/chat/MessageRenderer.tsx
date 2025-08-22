@@ -88,9 +88,15 @@ const MessageRenderer: React.FC<MessageRendererProps> = ({
       const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
       const diffDays = Math.floor(diffHours / 24);
 
-      if (diffHours < 1) return 'now';
-      if (diffHours < 24) return `${diffHours}h`;
-      if (diffDays < 7) return `${diffDays}d`;
+      if (diffHours < 1) {
+        return 'now';
+      }
+      if (diffHours < 24) {
+        return `${diffHours}h`;
+      }
+      if (diffDays < 7) {
+        return `${diffDays}d`;
+      }
       return date.toLocaleDateString();
     }
     return date.toLocaleString();
