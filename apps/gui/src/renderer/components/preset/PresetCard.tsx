@@ -59,7 +59,11 @@ export const PresetCard: React.FC<PresetCardProps> = ({
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Model:</span>
           <span className="font-medium text-foreground">
-            {(preset.llmBridgeConfig as any)?.model ?? ''}
+            {String(
+              (preset.llmBridgeConfig &&
+                (preset.llmBridgeConfig as Record<string, unknown>).model) ??
+                ''
+            )}
           </span>
         </div>
         <div className="flex justify-between text-sm">

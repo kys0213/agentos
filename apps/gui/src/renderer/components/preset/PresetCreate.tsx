@@ -768,14 +768,20 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                                         <span>v{mcpTool.version}</span>
                                         {mcpTool.name === 'stdio' && (
                                           <span className="font-mono text-xs">
-                                            {(mcpTool as any).command}
+                                            {'command' in mcpTool
+                                              ? String(
+                                                  (mcpTool as { command?: unknown }).command ?? ''
+                                                )
+                                              : ''}
                                           </span>
                                         )}
                                         {(mcpTool.name === 'streamableHttp' ||
                                           mcpTool.name === 'websocket' ||
                                           mcpTool.name === 'sse') && (
                                           <span className="font-mono text-xs">
-                                            {(mcpTool as any).url}
+                                            {'url' in mcpTool
+                                              ? String((mcpTool as { url?: unknown }).url ?? '')
+                                              : ''}
                                           </span>
                                         )}
                                       </div>

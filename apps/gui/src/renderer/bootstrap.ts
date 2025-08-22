@@ -61,7 +61,13 @@ export async function bootstrap(rpcTransport: RpcClient): Promise<BootstrapResul
 
   // --- Agent events stream bootstrap (frame-based) ---
   try {
-    const bridge = (window as any).electronBridge;
+    type ElectronBridgeLike = {
+      start: (onFrame: (f: unknown) => void) => void;
+      post: (frame: unknown) => void;
+      on: (channel: string, handler: (payload: unknown) => void) => () => void;
+    };
+    const bridge = (window as unknown as { electronBridge?: ElectronBridgeLike })
+      .electronBridge as ElectronBridgeLike;
     // Start agent events stream (req → nxt*)
     startStream(bridge, 'agent.events');
     // Wire parsed events (replace handlers with store updates as needed)
