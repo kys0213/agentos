@@ -4,6 +4,29 @@
 
 이 프로젝트에서는 **`any` 타입 사용을 절대 금지**합니다. `any`는 TypeScript의 타입 안전성을 무력화시키며, 런타임 오류와 디버깅 어려움을 야기합니다.
 
+### ⛔ 금지: `as any` 단언(assertion)
+
+`as any`는 규칙적으로 금지합니다. 즉각적인 편의 대신, 다음 중 하나로 대체하세요.
+
+- 구체 타입 정의/제네릭 도입으로 올바른 타입을 전달
+- `unknown` + 타입 가드(zod/사용자 정의)로 런타임 검증 후 사용
+- 유니온/내로잉을 통해 안전한 분기 처리
+
+예시 — 잘못된 사용 vs 대안
+
+```ts
+// ❌ 금지
+const id = (frame as any).cid;
+
+// ✅ 대안 1: 공용 필드가 있는 판별 유니온이면 바로 접근
+const id = frame.cid;
+
+// ✅ 대안 2: zod/가드 사용
+const parsed = FrameSchema.safeParse(frame);
+if (!parsed.success) throw new Error('invalid frame');
+const id2 = parsed.data.cid;
+```
+
 ## 1. any 대신 사용할 타입들
 
 ### 1.1 unknown 타입
@@ -203,6 +226,14 @@ module.exports = {
     '@typescript-eslint/no-unsafe-call': 'error',
     '@typescript-eslint/no-unsafe-member-access': 'error',
     '@typescript-eslint/no-unsafe-return': 'error',
+    // 선택: `as any` 단언을 더 엄격히 차단 (TS 파서 필요)
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: "TSAsExpression > TSAnyKeyword",
+        message: "Do not use 'as any'; use proper typing, generics, or runtime guards.",
+      },
+    ],
   },
 };
 ```
@@ -212,6 +243,7 @@ module.exports = {
 Pull Request 시 다음 사항을 확인:
 
 - [ ] 새로운 `any` 타입이 추가되지 않았는가?
+- [ ] `as any` 단언이 없는가?
 - [ ] `unknown` 사용 시 적절한 타입 가드가 있는가?
 - [ ] 인터페이스에 구체적인 타입이 정의되어 있는가?
 - [ ] 제네릭을 사용할 수 있는 곳에서 `any` 대신 제네릭을 사용했는가?

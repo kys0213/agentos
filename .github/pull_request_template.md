@@ -39,6 +39,10 @@
 - Included format changes in commits: yes | no
 - Lint (no errors): pass | fail (warnings allowed)
 
+## Type Safety
+- Introduced `any` or `as any`: no | yes (explain why)
+- Used `unknown` + guards or zod for untyped input: yes | no
+
 ## Docs
 
 <!-- 계획서 승격/병합 여부와 경로. PR 유형별 원칙 적용: Feature/Fix는 문서 필수 갱신, Refactor/Perf/Chore는 외부 인터페이스 불변 시 생략 가능 -->
