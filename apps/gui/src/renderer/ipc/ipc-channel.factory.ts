@@ -1,7 +1,6 @@
-import type { RpcClient } from '../../shared/rpc/transport';
 import type { RpcFrame } from '../../shared/rpc/rpc-frame';
+import type { FrameTransport, RpcClient } from '../../shared/rpc/transport';
 import { RpcEndpoint } from '../rpc/rpc-endpoint';
-import { MockIpcChannel } from './mock-ipc-channel';
 
 /**
  * 환경별 IpcChannel 구현체를 생성하는 팩토리 클래스
@@ -9,6 +8,9 @@ import { MockIpcChannel } from './mock-ipc-channel';
  */
 export class RpcTransportFactory {
   private static _instance: RpcClient | null = null;
+  private static getAppEnv() {
+    return window.__APP_ENV__;
+  }
 
   /**
    * 현재 환경에 맞는 IpcChannel 구현체를 생성하여 반환
@@ -33,7 +35,7 @@ export class RpcTransportFactory {
           throw new Error('electronBridge is not available');
         }
 
-        const frameTransport = {
+        const frameTransport: FrameTransport = {
           start: (onFrame: (f: RpcFrame) => void) => bridge.start(onFrame),
           post: (frame: RpcFrame) => bridge.post(frame),
           stop: () => bridge.stop?.(),
@@ -114,8 +116,9 @@ export class RpcTransportFactory {
   private static isDevelopmentMode(): boolean {
     try {
       // Vite가 주입한 환경변수 사용
-      if (typeof (globalThis as any).__APP_ENV__ !== 'undefined') {
-        return (globalThis as any).__APP_ENV__.nodeEnv === 'development';
+      const appEnv = this.getAppEnv();
+      if (appEnv && typeof appEnv.nodeEnv !== 'undefined') {
+        return appEnv.nodeEnv === 'development';
       }
 
       // process.env가 정의되어 있다면 사용
@@ -144,8 +147,9 @@ export class RpcTransportFactory {
   private static getBuildTarget(): 'electron' | 'web' {
     try {
       // Vite가 주입한 빌드 타겟 사용
-      if (typeof (globalThis as any).__APP_ENV__ !== 'undefined') {
-        const t = (globalThis as any).__APP_ENV__.buildTarget as 'electron' | 'web' | 'extension';
+      const appEnv = this.getAppEnv();
+      if (appEnv && typeof appEnv.buildTarget !== 'undefined') {
+        const t = appEnv.buildTarget;
         return t === 'extension' ? 'web' : t;
       }
 
@@ -167,10 +171,7 @@ export class RpcTransportFactory {
       checks: {
         isElectron: this.isElectronEnvironment(),
       },
-      buildInfo:
-        typeof (globalThis as any).__APP_ENV__ !== 'undefined'
-          ? (globalThis as any).__APP_ENV__
-          : undefined,
+      buildInfo: this.getAppEnv(),
       isDevelopment: this.isDevelopmentMode(),
       buildTarget: this.getBuildTarget(),
       hasElectronAPI: typeof window !== 'undefined' && window.electronAPI !== undefined,

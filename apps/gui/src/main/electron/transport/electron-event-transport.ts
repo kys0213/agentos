@@ -103,7 +103,7 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
             ok: false,
             message: String(anyErr.message ?? '[error]'),
             code: anyErr.code ?? 'INTERNAL',
-            details: anyErr.details,
+            details: isObject(anyErr.details) ? anyErr.details : undefined,
           });
         } else if (e instanceof Error) {
           return this.sendTo(senderId, {

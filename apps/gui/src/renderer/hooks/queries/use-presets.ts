@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ServiceContainer } from '../../ipc/service-container';
-import type { Preset } from '@agentos/core';
+import type { CreatePreset, Preset } from '@agentos/core';
 
 // Query Keys
 const QUERY_KEYS = {
@@ -37,7 +37,7 @@ export const useCreatePreset = () => {
   const presetService = ServiceContainer.getOrThrow('preset');
 
   return useMutation({
-    mutationFn: (preset: Preset) => presetService.createPreset(preset as any),
+    mutationFn: (preset: CreatePreset) => presetService.createPreset(preset),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.presets });
     },
