@@ -61,17 +61,18 @@ interface ToolUsageLog {
 ### TODO (Phases)
 
 - Phase 2 — 타입/인터페이스 확장
-  - [ ] Shared Types: `mcp-usage-types.ts` 정의 (GUI 전용 확장 포함)
-  - [ ] Electron API 타입 확장 (`electron-api.ts`)
-  - [ ] IpcChannel 인터페이스 확장 (사용량 추적 메서드 추가)
+  - [x] Shared Types: `mcp-usage-types.ts` 정의 (GUI 전용 확장 포함)
+  - [x] IpcChannel/RPC 인터페이스 확장 (사용량 추적 메서드 추가)
 - Phase 3 — Main 구현
-  - [ ] `mcp:*` 사용량 조회/통계/정리 핸들러 구현
-  - [ ] 사용량 업데이트 브로드캐스트(폴링 기반 임시) 구현
+  - [x] `mcp.usage.getLogs`/`getStats` 핸들러 구현 (core McpUsageService 연동)
+  - [x] `mcp.usage.getHourlyStats` 구현 (UTC 0–23 버킷 집계)
+  - [ ] `mcp.usage.clear` (코어 인터페이스 확장 후 연동)
+  - [x] 사용량 업데이트 스트림(`mcp.usage.events`) 노출
 - Phase 4 — Renderer 구현
-  - [ ] ElectronIpcChannel 확장 (새 메서드 연결)
-  - [ ] McpService 사용량 추적 기능 + 구독 추가
+  - [x] RPC 서비스 연결 (list/stats/hourly)
+  - [x] subscribeToUsageUpdates 구현(stream API 사용)
 - Phase 5 — 통합 검증
-  - [ ] 타입체크/빌드/테스트/린트 통과
+  - [x] 타입체크/빌드/테스트/린트 통과
 
 ### 테스트 전략 요약
 

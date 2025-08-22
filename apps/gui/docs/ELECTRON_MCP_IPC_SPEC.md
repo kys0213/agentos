@@ -44,7 +44,8 @@ Note: This spec is interface-first. It defines contracts (methods, payloads, fra
 - builtin.\*: `builtin.install`, `builtin.list`, `builtin.invoke`, `builtin.remove`
 - mcp.\*: `mcp.getTool`(payload: `{ name }`), `mcp.invokeTool`(payload: `{ name, input?, resumptionToken? }`)
 - preset.\*: `preset.list`, `preset.get`, `preset.create`, `preset.update`, `preset.delete`
-- mcp.usage.\*: `mcp.usage.getLogs`, `mcp.usage.getStats`, `mcp.usage.getHourlyStats`, `mcp.usage.clear`
+- mcp.usage.\*: `mcp.usage.getLogs`, `mcp.usage.getStats`, `mcp.usage.getHourlyStats` (payload: `{ date: ISOString }`, resp: `{ hourlyData: Array<[number, number]> }`), `mcp.usage.clear`
+- mcp.usage.events: usage 업데이트 스트림 채널. `AsyncGenerator<McpUsageUpdateEvent>` 형태로 이벤트를 전송하며, 클라이언트는 iterator `return()` 호출로 취소할 수 있다.
 
 Renderer 서비스 메서드명은 내부 편의를 위한 래퍼이며, 실제 전송 채널/페이로드는 위 규약을 따른다.
 

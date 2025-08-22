@@ -34,8 +34,12 @@ export class McpUsageController {
   @EventPattern('mcp.usage.getHourlyStats')
   async getHourlyStats(@Payload() data: HourlyStatsDto) {
     const base = new Date(data.date);
-    const start = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate(), 0, 0, 0, 0));
-    const end = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate(), 23, 59, 59, 999));
+    const start = new Date(
+      Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate(), 0, 0, 0, 0)
+    );
+    const end = new Date(
+      Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate(), 23, 59, 59, 999)
+    );
 
     const buckets = new Array<number>(24).fill(0);
     // Pull all logs in range (paginate)
@@ -44,10 +48,11 @@ export class McpUsageController {
     const limit = 500;
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const page = await this.usage.list(
-        { from: start, to: end },
-        { cursor, limit, direction: 'forward' } as any
-      );
+      const page = await this.usage.list({ from: start, to: end }, {
+        cursor,
+        limit,
+        direction: 'forward',
+      } as any);
       for (const l of page.items) {
         const hour = new Date(l.timestamp).getUTCHours();
         buckets[hour]++;
