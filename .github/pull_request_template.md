@@ -40,6 +40,7 @@
 - Lint (no errors): pass | fail (warnings allowed)
 
 ## Type Safety
+
 - Introduced `any` or `as any`: no | yes (explain why)
 - Used `unknown` + guards or zod for untyped input: yes | no
 

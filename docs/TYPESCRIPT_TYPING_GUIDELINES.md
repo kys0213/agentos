@@ -230,7 +230,7 @@ module.exports = {
     'no-restricted-syntax': [
       'error',
       {
-        selector: "TSAsExpression > TSAnyKeyword",
+        selector: 'TSAsExpression > TSAnyKeyword',
         message: "Do not use 'as any'; use proper typing, generics, or runtime guards.",
       },
     ],

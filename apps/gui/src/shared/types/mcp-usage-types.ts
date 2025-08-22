@@ -61,7 +61,12 @@ export const McpUsageUpdateEventSchema = z.object({
     .optional(),
   metadata: z.any().optional(),
   connectionStatus: z
-    .union([z.literal('connected'), z.literal('disconnected'), z.literal('error'), z.literal('pending')])
+    .union([
+      z.literal('connected'),
+      z.literal('disconnected'),
+      z.literal('error'),
+      z.literal('pending'),
+    ])
     .optional(),
   timestamp: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
 });

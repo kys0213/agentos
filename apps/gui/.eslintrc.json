@@ -9,7 +9,7 @@
       "error",
       {
         "selector": "TSAsExpression > TSAnyKeyword",
-        "message": "Do not use 'as any'; use proper typing, generics, or runtime guards.">
+        "message": "Do not use 'as any'; use proper typing, generics, or runtime guards."
       }
     ]
   }
