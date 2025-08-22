@@ -24,10 +24,9 @@ describe('RpcEndpoint.on close() sends cancel (can) frame', () => {
     // Close subscription and expect cancel to be posted immediately
     await close();
 
-    const can = posted.find((f) => f.kind === 'can' && (f as any).cid === (req as any)?.cid);
+    const can = posted.find((f) => f.kind === 'can' && f.cid === req?.cid);
     expect(can).toBeTruthy();
 
     rpc.stop();
   });
 });
-
