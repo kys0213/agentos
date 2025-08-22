@@ -118,7 +118,7 @@ export type RpcFrame =
 
 ### 4.1 서비스 레이어(권장)와 메서드-타입 매핑
 
-Transport는 채널 문자열과 payload만 다루고, 타입 안전성은 서비스 레이어에서 보장합니다.
+Transport는 채널 문자열과 payload만 다루고, 타입 안전성은 서비스 레이어에서 보장합니다. 구독형 API는 `on(channel, handler)`처럼 래핑해 사용하며, 구독 해제 시점에 즉시 `cancel(can)` 프레임이 전송되도록 `iterator.return()`을 호출하는 것을 권장합니다(즉시 자원 해제 & 백프레셔 개선).
 
 권장 패턴(채널 기반 RpcClient + 타입 안전 서비스):
 
