@@ -4,6 +4,10 @@
     "project": ["./tsconfig.json"]
   },
   "rules": {
+    "curly": ["warn", "all"],
+    "brace-style": ["error", "1tbs", { "allowSingleLine": false }],
+    "no-nested-ternary": "warn",
+    "multiline-ternary": ["warn", "always-multiline"],
     "@typescript-eslint/no-explicit-any": "warn",
     "no-restricted-syntax": [
       "error",

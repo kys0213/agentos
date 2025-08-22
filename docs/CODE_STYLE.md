@@ -14,6 +14,19 @@ This project uses **TypeScript** with ESLint and Prettier to keep the codebase c
 3. **Test-Driven Development** — write tests first when adding new behavior.
 4. **Type Safety** — favor generics and avoid `any`. If you must accept unknown input, use `unknown` and guard types before use.
 
+## Control Flow & Readability
+
+- **Always use braces**: All control statements (if/else/for/while/try-catch) must use braces.
+- **No single-line blocks**: Even for short conditions, write blocks on multiple lines.
+  - Bad: `if (ready) { start(); }`
+  - Good:
+    ```ts
+    if (ready) {
+      start();
+    }
+    ```
+- **Ternary usage**: Avoid nested ternaries; prefer multiline formatting for readability.
+
 ## Frontend Architecture
 
 - **Container/Presentation Split**
