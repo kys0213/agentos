@@ -241,6 +241,16 @@ export function MCPToolsManager() {
     return `${days}d ago`;
   };
 
+  const statusDotClass = (status: 'success' | 'error' | string) => {
+    if (status === 'success') {
+      return 'bg-green-500';
+    }
+    if (status === 'error') {
+      return 'bg-red-500';
+    }
+    return 'bg-yellow-500';
+  };
+
   // Tool management handlers
   const handleConnectTool = async (toolId: string) => {
     try {
@@ -418,13 +428,7 @@ export function MCPToolsManager() {
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-2 h-2 rounded-full ${
-                              log.status === 'success'
-                                ? 'bg-green-500'
-                                : log.status === 'error'
-                                  ? 'bg-red-500'
-                                  : 'bg-yellow-500'
-                            }`}
+                            className={`w-2 h-2 rounded-full ${statusDotClass(log.status)}`}
                           ></div>
                           <div>
                             <p className="text-sm font-medium text-foreground">{log.toolName}</p>

@@ -81,6 +81,40 @@ interface KnowledgeTemplate {
   }>;
 }
 
+// Runtime type guard for stored document shape from localStorage (JSON)
+type StoredKnowledgeDocument = {
+  id: string;
+  title: string;
+  content: string;
+  filename?: string;
+  size: number;
+  type: 'markdown' | 'text';
+  createdAt?: string;
+  updatedAt?: string;
+  tags?: string[];
+  indexed?: boolean;
+  vectorized?: boolean;
+  agentId?: string;
+  agentName?: string;
+  isTemplate?: boolean;
+};
+
+function isStoredKnowledgeDocument(o: unknown): o is StoredKnowledgeDocument {
+  if (!o || typeof o !== 'object') return false;
+  const v = o as Record<string, unknown>;
+  const has = (k: string) => Object.prototype.hasOwnProperty.call(v, k);
+  return (
+    typeof v.id === 'string' &&
+    typeof v.title === 'string' &&
+    typeof v.content === 'string' &&
+    typeof v.size === 'number' &&
+    (v.type === 'markdown' || v.type === 'text') &&
+    (!has('createdAt') || typeof v.createdAt === 'string') &&
+    (!has('updatedAt') || typeof v.updatedAt === 'string') &&
+    (!has('tags') || Array.isArray(v.tags))
+  );
+}
+
 export function KnowledgeBaseManager({
   agentId,
   agentName,
@@ -119,13 +153,28 @@ export function KnowledgeBaseManager({
     const savedDocuments = localStorage.getItem(getStorageKey('documents'));
     if (savedDocuments) {
       try {
-        const parsed = JSON.parse(savedDocuments);
-        const documentsWithDates = parsed.map((doc: any) => ({
-          ...doc,
-          createdAt: new Date(doc.createdAt),
-          updatedAt: new Date(doc.updatedAt),
-        }));
-        setDocuments(documentsWithDates);
+        const parsed: unknown = JSON.parse(savedDocuments);
+        const arr = Array.isArray(parsed) ? parsed : [];
+        const next: KnowledgeDocument[] = arr
+          .filter(isStoredKnowledgeDocument)
+          .map((doc) => ({
+            id: doc.id,
+            title: doc.title,
+            content: doc.content,
+            filename: doc.filename,
+            size: doc.size,
+            type: doc.type,
+            createdAt: new Date(doc.createdAt ?? Date.now()),
+            updatedAt: new Date(doc.updatedAt ?? Date.now()),
+            tags: Array.isArray(doc.tags) ? doc.tags : [],
+            chunks: [],
+            indexed: !!doc.indexed,
+            vectorized: !!doc.vectorized,
+            agentId: agentId ?? '',
+            agentName: agentName ?? '',
+            isTemplate: !!doc.isTemplate,
+          }));
+        setDocuments(next);
       } catch (error) {
         console.error('Failed to load documents:', error);
       }
