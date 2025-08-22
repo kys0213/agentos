@@ -400,7 +400,9 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
   };
 
   const isFormValid = () => {
-    if (!formData.name || !formData.version) return false;
+    if (!formData.name || !formData.version) {
+      return false;
+    }
 
     switch (formData.type) {
       case 'stdio':

@@ -111,7 +111,9 @@ export function KnowledgeBaseManager({
 
   // Load preset-specific data (project isolation)
   useEffect(() => {
-    if (!agentId) return;
+    if (!agentId) {
+      return;
+    }
 
     // Load documents from localStorage (project-specific)
     const savedDocuments = localStorage.getItem(getStorageKey('documents'));
@@ -282,7 +284,9 @@ export function KnowledgeBaseManager({
   };
 
   const calculateKnowledgeStats = () => {
-    if (!documents.length) return;
+    if (!documents.length) {
+      return;
+    }
 
     const stats: PresetKnowledgeStats = {
       totalDocuments: documents.length,
@@ -380,7 +384,9 @@ export function KnowledgeBaseManager({
 
   const vectorizeDocument = async (docId: string) => {
     const doc = documents.find((d) => d.id === docId);
-    if (!doc) return;
+    if (!doc) {
+      return;
+    }
 
     setIsIndexing(true);
     setIndexingProgress(0);
@@ -450,7 +456,9 @@ export function KnowledgeBaseManager({
 
   const applyTemplate = () => {
     const template = availableTemplates.find((t) => t.id === selectedTemplate);
-    if (!template) return;
+    if (!template) {
+      return;
+    }
 
     const templateDocs = template.documents.map((doc, index) => ({
       id: `${agentId}-template-${Date.now()}-${index}`,
@@ -481,7 +489,9 @@ export function KnowledgeBaseManager({
   };
 
   const searchDocuments = (query: string) => {
-    if (!query.trim()) return documents;
+    if (!query.trim()) {
+      return documents;
+    }
 
     return documents.filter(
       (doc) =>
