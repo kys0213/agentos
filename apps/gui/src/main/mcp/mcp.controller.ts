@@ -1,28 +1,24 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
-import { McpRegistry } from '@agentos/core';
-
-type InvokePayload = {
-  name: string; // fully qualified: <mcp>.<tool>
-  input?: Record<string, unknown>;
-  resumptionToken?: string;
-};
+import { McpService } from '@agentos/core';
+import { GetToolDto, InvokeToolDto, type Resp } from './dto/mcp.dto';
 
 @Controller()
 export class McpController {
-  constructor(private readonly registry: McpRegistry) {}
+  constructor(private readonly mcp: McpService) {}
 
   @EventPattern('mcp.getTool')
-  async getTool(@Payload() name: string) {
-    return await this.registry.getTool(name);
+  async getTool(@Payload() dto: GetToolDto) {
+    return this.mcp.getTool(dto.name);
   }
 
   @EventPattern('mcp.invokeTool')
-  async invokeTool(@Payload() data: InvokePayload) {
-    const info = await this.registry.getToolOrThrow(data.name);
-    return await info.mcp.invokeTool(info.tool, {
-      input: data.input,
-      resumptionToken: data.resumptionToken,
-    });
+  async invokeTool(@Payload() data: InvokeToolDto): Promise<Resp<unknown>> {
+    try {
+      const result = await this.mcp.executeTool(data.name, data.input, undefined);
+      return { success: true, result };
+    } catch (e: unknown) {
+      return { success: false, error: e instanceof Error ? e.message : String(e) };
+    }
   }
 }

@@ -12,17 +12,26 @@ export class ConversationRpcService {
   listSessions(
     pagination?: CursorPagination
   ): Promise<CursorPaginationResult<ChatSessionDescription>> {
-    return this.transport.request('chat:list-sessions', pagination);
+    return this.transport.request<CursorPaginationResult<ChatSessionDescription>>(
+      'chat:list-sessions',
+      pagination
+    );
   }
 
   getMessages(
     sessionId: string,
     pagination?: CursorPagination
   ): Promise<CursorPaginationResult<Readonly<MessageHistory>>> {
-    return this.transport.request('chat:get-messages', { sessionId, pagination });
+    return this.transport.request<CursorPaginationResult<Readonly<MessageHistory>>>(
+      'chat:get-messages',
+      { sessionId, pagination }
+    );
   }
 
   deleteSession(sessionId: string): Promise<{ success: boolean; error?: string }> {
-    return this.transport.request('chat:delete-session', sessionId);
+    return this.transport.request<{ success: boolean; error?: string }>(
+      'chat:delete-session',
+      sessionId
+    );
   }
 }

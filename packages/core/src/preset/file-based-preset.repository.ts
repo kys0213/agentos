@@ -1,7 +1,7 @@
 import path from 'path';
 import { fs } from '@agentos/lang';
 import { CursorPaginationResult } from '../common/pagination/cursor-pagination';
-import { Preset } from './preset';
+import { CreatePreset, Preset } from './preset';
 import { PresetRepository, PresetSummary } from './preset.repository';
 
 export class FileBasedPresetRepository implements PresetRepository {
@@ -10,14 +10,22 @@ export class FileBasedPresetRepository implements PresetRepository {
   async list(): Promise<CursorPaginationResult<PresetSummary>> {
     await fs.FileUtils.ensureDir(this.baseDir);
     const entriesResult = await fs.FileUtils.readDir(this.baseDir);
+
     if (!entriesResult.success) {
       return { items: [], nextCursor: '', hasMore: false };
     }
+
     const entries = entriesResult.result;
+
     const items: PresetSummary[] = [];
+
     for (const entry of entries) {
-      if (!entry.endsWith('.json')) continue;
+      if (!entry.endsWith('.json')) {
+        continue;
+      }
+
       const preset = await this.get(entry.replace(/\.json$/, ''));
+
       if (preset) {
         items.push({
           id: preset.id,
@@ -27,33 +35,66 @@ export class FileBasedPresetRepository implements PresetRepository {
         });
       }
     }
+
     items.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+
     return { items, nextCursor: '', hasMore: false };
   }
 
   async get(id: string): Promise<Preset | null> {
     const filePath = this.resolvePath(id);
+
     const jsonHandler = fs.JsonFileHandler.create<Preset>(filePath);
 
     const result = await jsonHandler.read();
+
     if (!result.success) {
       return null;
     }
 
     const data = result.result;
+
     return {
       ...data,
       createdAt: new Date(data.createdAt),
       updatedAt: new Date(data.updatedAt),
-    } as Preset;
+    };
   }
 
-  async create(preset: Preset): Promise<void> {
-    await this.saveFile(preset.id, preset);
+  async create(preset: CreatePreset): Promise<Preset> {
+    // Backward-compat: if caller provided an id (legacy tests/flows), honor it; otherwise generate.
+    const providedId = (preset as unknown as { id?: string })?.id;
+    const id = providedId ?? (await this.generateId());
+
+    const full: Preset = {
+      ...preset,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      usageCount: 0,
+      knowledgeDocuments: 0,
+      knowledgeStats: {
+        indexed: 0,
+        vectorized: 0,
+        totalSize: 0,
+      },
+    };
+
+    await this.saveFile(id, full);
+
+    return full;
   }
 
-  async update(id: string, preset: Preset): Promise<void> {
+  private async generateId(): Promise<string> {
+    return `p_${Date.now().toString(36)}`;
+  }
+
+  async update(id: string, preset: Preset): Promise<Preset> {
+    preset.updatedAt = new Date();
+
     await this.saveFile(id, preset);
+
+    return preset;
   }
 
   async delete(id: string): Promise<void> {
@@ -66,6 +107,7 @@ export class FileBasedPresetRepository implements PresetRepository {
 
   private async saveFile(id: string, preset: Preset): Promise<void> {
     const filePath = this.resolvePath(id);
+
     const jsonHandler = fs.JsonFileHandler.create<Preset>(filePath);
 
     const result = await jsonHandler.write(preset, {
@@ -73,6 +115,7 @@ export class FileBasedPresetRepository implements PresetRepository {
       indent: 2,
       ensureDir: true,
     });
+
     if (!result.success) {
       throw new Error(`Failed to save preset: ${String(result.reason)}`);
     }

@@ -17,7 +17,7 @@
 ## 채널 네임스페이스
 
 - preset.\*: `preset.list`, `preset.get`, `preset.create`, `preset.update`, `preset.delete`
-- mcp.\*: `mcp.register`, `mcp.unregister`, `mcp.getTool`, `mcp.invokeTool`
+- mcp.\*: `mcp.getTool`(payload: `{ name: string }`), `mcp.invokeTool`(payload: `{ name: string; input?: object; resumptionToken?: string }`)
 - mcp.usage.\*: `mcp.usage.getLogs`, `mcp.usage.getStats`, `mcp.usage.getHourlyStats`, `mcp.usage.clear`
 - chat.\*: `chat.listSessions`, `chat.getSession`, `chat.removeSession`
 - conversation.\*: `conversation.list`, `conversation.get`

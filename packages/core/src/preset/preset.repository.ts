@@ -1,5 +1,5 @@
 import { CursorPagination, CursorPaginationResult } from '../common/pagination/cursor-pagination';
-import { Preset } from './preset';
+import { CreatePreset, Preset } from './preset';
 
 /**
  * A lightweight summary of a preset.
@@ -29,12 +29,12 @@ export interface PresetRepository {
   /**
    * Save a new preset.
    */
-  create(preset: Preset): Promise<void>;
+  create(preset: CreatePreset): Promise<Preset>;
 
   /**
    * Update an existing preset.
    */
-  update(id: string, preset: Preset): Promise<void>;
+  update(id: string, preset: Preset): Promise<Preset>;
 
   /**
    * Remove a preset.

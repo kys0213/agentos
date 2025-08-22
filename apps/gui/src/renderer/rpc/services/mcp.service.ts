@@ -43,7 +43,7 @@ export class McpRpcService {
 
   // New controller-based routes
   getTool(fullyQualifiedName: string) {
-    return this.transport.request('mcp.getTool', fullyQualifiedName);
+    return this.transport.request('mcp.getTool', { name: fullyQualifiedName });
   }
   invokeTool(
     fullyQualifiedName: string,

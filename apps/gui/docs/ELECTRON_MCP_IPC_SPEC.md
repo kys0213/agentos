@@ -37,16 +37,22 @@ Note: This spec is interface-first. It defines contracts (methods, payloads, fra
 
 ## 2.1 서비스 네임스페이스 개요 (인터페이스 요약)
 
-최신 시그니처는 `apps/gui/src/shared/types/agentos-api.ts`, `apps/gui/src/shared/types/ipc-channel.ts`를 기준으로 합니다.
+최신 채널/페이로드 규약은 `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`를 기준으로 합니다. 아래는 대표 채널과 요약입니다.
 
-- agent: `chat`, `endSession`, `getAgentMetadata`, `getAllAgentMetadatas`, `updateAgent`, `createAgent`, `deleteAgent`
-- bridge: `registerBridge`, `unregisterBridge`, `switchBridge`, `getCurrentBridge`, `getBridgeIds`, `getBridgeConfig`
-- builtinTool: `getAllBuiltinTools`, `getBuiltinTool`, `invokeBuiltinTool`
-- mcp: `getAllMcp`, `connectMcp`, `disconnectMcp`, `executeMcpTool`, `getMcpResources`, `readMcpResource`, `getMcpStatus`, `getToolMetadata`, `getAllToolMetadata`
-- preset: `getAllPresets`, `createPreset`, `updatePreset`, `deletePreset`, `getPreset`
-- mcpUsageLog: `getUsageLogs`, `getAllUsageLogs`, `getUsageStats`, `getHourlyStats`, `getUsageLogsInRange`, `clearUsageLogs`, `setUsageTracking`, `subscribeToUsageUpdates`
+- agent.\*: `agent.chat`, `agent.endSession`, `agent.getMetadata`, `agent.getAllMetadatas`, `agent.update`, `agent.create`, `agent.delete`
+- bridge.\*: `bridge.register`, `bridge.unregister`, `bridge.switch`, `bridge.get-current`, `bridge.list`, `bridge.get-config`
+- builtin.\*: `builtin.install`, `builtin.list`, `builtin.invoke`, `builtin.remove`
+- mcp.\*: `mcp.getTool`(payload: `{ name }`), `mcp.invokeTool`(payload: `{ name, input?, resumptionToken? }`)
+- preset.\*: `preset.list`, `preset.get`, `preset.create`, `preset.update`, `preset.delete`
+- mcp.usage.\*: `mcp.usage.getLogs`, `mcp.usage.getStats`, `mcp.usage.getHourlyStats`, `mcp.usage.clear`
 
-채널명/용어는 `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`를 참조하세요.
+Renderer 서비스 메서드명은 내부 편의를 위한 래퍼이며, 실제 전송 채널/페이로드는 위 규약을 따른다.
+
+### 2.1.1 페이로드/응답 규칙(요약)
+
+- DTO: 컨트롤러는 `class-validator` DTO를 사용하여 payload를 검증한다. 예: `mcp.getTool` → `{ name: string }`.
+- 가변 작업 응답: bridge 등록/해지/스위치, `mcp.invokeTool` 등은 `{ success, result? | error }` 래퍼를 사용한다.
+- 목록/조회 응답: 기존 타입(예: `CursorPaginationResult<T>`, 구체 엔티티)을 직접 반환한다.
 
 ## 3. 디렉터리 레이아웃 (권장)
 

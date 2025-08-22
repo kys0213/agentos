@@ -26,11 +26,18 @@
 
 ## Verification
 
-<!-- 실행/검증 결과 요약: 명령어와 핵심 결과만 작성 -->
+<!-- pass/fail 유무만 간단히 기입 (출력 로그/세부 결과는 첨부 금지) -->
 
-- `pnpm -r typecheck`: pass
-- `pnpm -r test`: pass
-- Build/manual checks: ...
+- Typecheck: pass | fail
+- Tests: pass | fail
+- Build: pass | fail
+- Manual checks (optional): ...
+
+## Formatting & Lint
+
+- Ran `pnpm format`: yes | no
+- Included format changes in commits: yes | no
+- Lint (no errors): pass | fail (warnings allowed)
 
 ## Docs
 

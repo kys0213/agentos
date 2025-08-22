@@ -41,8 +41,9 @@ git pull origin main
 # 2. 새 기능 브랜치 생성
 git checkout -b feature/ux-command-palette
 
-# 3. push 전 검증
-pnpm lint        # 자동 수정(--fix) 포함해 실행 권장
+# 3. push 전 검증 (포맷 포함)
+pnpm format      # Prettier 포맷 적용 — 변경분을 반드시 커밋에 포함!
+pnpm lint        # 자동 수정(--fix) 포함해 실행 권장 (에러 0, 경고 최소화)
 pnpm typecheck   # 타입 오류 없도록 보장
 pnpm test        # 단위 테스트 통과 확인
 
@@ -200,8 +201,14 @@ pnpm build     # 빌드 오류 확인
 
 > Note
 >
-> - `pnpm lint --fix` 실행 후 변경된 파일이 있는지 `git status`로 확인하고, 반드시 커밋에 포함하세요. (자동 포맷팅/정렬만 바뀐 변경도 동일하게 커밋)
+> - `pnpm format` → `git status` → 변경 사항을 반드시 스테이지/커밋하세요. 포맷 변경이 누락되면 PR에서 불일치가 발생합니다.
+> - `pnpm lint --fix` 실행 후에도 변경 파일 여부를 `git status`로 확인하고, 포맷과 함께 커밋에 포함합니다.
 > - 린트 에러/경고로 인한 의미 없는 잡음 방지를 위해, 자동 수정으로 해결 가능한 항목은 즉시 반영하고 커밋합니다.
+
+### **권장 자동화(선택)**
+
+- pre-commit 훅으로 `pnpm format && pnpm lint`를 실행하여 포맷 누락을 방지합니다.(husky 등)
+- CI에서 PR에 포맷/린트 오류가 있으면 실패하도록 Guard를 추가합니다.
 
 ### **GUI 테스트 정책 (Playwright MCP)**
 
