@@ -54,9 +54,26 @@ export class McpUsageRpcService {
     });
   }
   async subscribeToUsageUpdates(
-    _callback: (event: McpUsageUpdateEvent) => void
+    callback: (event: McpUsageUpdateEvent) => void
   ): Promise<() => void> {
-    // TODO: rewire to frame-level stream or controller if needed
-    return async () => {};
+    if (!this.transport.stream) return async () => {};
+    const it = this.transport.stream<McpUsageUpdateEvent>('mcp.usage.events');
+    let closed = false;
+    (async () => {
+      try {
+        for await (const ev of it as AsyncGenerator<McpUsageUpdateEvent>) {
+          if (closed) break;
+          callback(ev);
+        }
+      } catch {
+        // ignore stream errors
+      }
+    })();
+    return async () => {
+      closed = true;
+      // signal cancel to server
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (it as any)?.return?.();
+    };
   }
 }
