@@ -43,14 +43,19 @@ export class RpcEndpoint implements RpcClient {
     private opts: RpcClientOptions = {}
   ) {}
 
-  on<T = unknown>(channel: string, handler: (payload: T) => void): CloseFn {
+  on<T = unknown>(
+    channel: string,
+    handler: (payload: T) => void,
+    onError?: (e: unknown) => void
+  ): CloseFn {
     let closed = false;
+
+    const generator = this.stream<T>(channel);
 
     const close = async () => {
       closed = true;
+      await generator.return?.();
     };
-
-    const generator = this.stream<T>(channel);
 
     (async () => {
       try {
@@ -58,8 +63,8 @@ export class RpcEndpoint implements RpcClient {
           if (closed) break;
           handler(payload);
         }
-      } catch {
-        // ignore stream errors
+      } catch (e) {
+        onError?.(e);
       }
     })();
 
