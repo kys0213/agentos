@@ -18,14 +18,7 @@ import type {
   PresetStatus,
 } from '@agentos/core';
 
-export class UpdatePresetDto {
-  @IsString()
-  id!: string;
-
-  @ValidateNested()
-  @Type(() => PresetUpsertDto)
-  preset!: PresetUpsertDto;
-}
+// Define PresetUpsertDto before UpdatePresetDto to avoid TDZ issues in decorators
 
 export class EnabledMcpDto implements EnabledMcp {
   name!: string;
@@ -131,4 +124,13 @@ export class PresetUpsertDto implements Preset {
   @IsArray()
   @IsString({ each: true })
   category!: string[];
+}
+
+export class UpdatePresetDto {
+  @IsString()
+  id!: string;
+
+  @ValidateNested()
+  @Type(() => PresetUpsertDto)
+  preset!: PresetUpsertDto;
 }
