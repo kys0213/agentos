@@ -1,5 +1,5 @@
 // rpc/engine.ts
-import type { FrameTransport, RpcClient } from '../../shared/rpc/transport';
+import type { CloseFn, FrameTransport, RpcClient } from '../../shared/rpc/transport';
 import { Cid, RpcFrame, RpcMetadata } from '../../shared/rpc/rpc-frame';
 import { isObservable, Observable } from 'rxjs';
 import { createNotifier, type Notifier } from './notifier';
@@ -42,6 +42,29 @@ export class RpcEndpoint implements RpcClient {
     private transport: FrameTransport,
     private opts: RpcClientOptions = {}
   ) {}
+
+  on<T = unknown>(channel: string, handler: (payload: T) => void): CloseFn {
+    let closed = false;
+
+    const close = async () => {
+      closed = true;
+    };
+
+    const generator = this.stream<T>(channel);
+
+    (async () => {
+      try {
+        for await (const payload of generator) {
+          if (closed) break;
+          handler(payload);
+        }
+      } catch {
+        // ignore stream errors
+      }
+    })();
+
+    return close;
+  }
 
   start() {
     this.transport.start(this.onFrame);

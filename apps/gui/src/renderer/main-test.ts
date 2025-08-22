@@ -3,7 +3,7 @@
  * MockIpcChannel을 사용하여 bootstrap 실행
  */
 import { RpcFrame } from '../shared/rpc/rpc-frame';
-import { RpcTransport } from '../shared/rpc/transport';
+import { CloseFn, RpcTransport } from '../shared/rpc/transport';
 import { bootstrap } from './bootstrap';
 
 // 테스트용 헬퍼 함수들
@@ -20,6 +20,9 @@ export class TestHelpers {
       channel: string,
       payload?: TReq
     ): Promise<TRes> {
+      throw new Error('Function not implemented.');
+    },
+    on: function <T = unknown>(channel: string, handler: (payload: T) => void): CloseFn {
       throw new Error('Function not implemented.');
     },
   };

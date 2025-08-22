@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
-import { McpUsageService } from '@agentos/core';
+import { CursorPagination, McpUsageService } from '@agentos/core';
 import {
   ClearDto,
   GetLogsDto,
@@ -31,6 +31,7 @@ export class McpUsageController {
     return this.usage.getStats(query);
   }
 
+  // TODO cache 레이어 추가
   @EventPattern('mcp.usage.getHourlyStats')
   async getHourlyStats(@Payload() data: HourlyStatsDto) {
     const base = new Date(data.date);
@@ -48,20 +49,27 @@ export class McpUsageController {
     const limit = 500;
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const page = await this.usage.list({ from: start, to: end }, {
-        cursor,
-        limit,
-        direction: 'forward',
-      } as any);
+      const page = await this.usage.list(
+        { from: start, to: end },
+        {
+          cursor,
+          limit,
+          direction: 'forward',
+        }
+      );
+
       for (const l of page.items) {
         const hour = new Date(l.timestamp).getUTCHours();
         buckets[hour]++;
       }
+
       if (!page.hasMore || !page.nextCursor) break;
+
       cursor = page.nextCursor;
     }
 
     const hourlyData: Array<[number, number]> = buckets.map((c, h) => [h, c]);
+
     return { hourlyData };
   }
 
@@ -92,8 +100,19 @@ function toCoreQuery(q?: {
   status?: 'success' | 'error';
   from?: string;
   to?: string;
-}) {
-  if (!q) return undefined;
+}):
+  | {
+      toolId?: string;
+      toolName?: string;
+      agentId?: string;
+      sessionId?: string;
+      status?: 'success' | 'error';
+      from?: Date;
+      to?: Date;
+    }
+  | undefined {
+  if (!q) return;
+
   return {
     ...q,
     from: q.from ? new Date(q.from) : undefined,
@@ -105,11 +124,11 @@ function toCorePagination(pg?: {
   cursor?: string;
   limit?: number;
   direction?: 'forward' | 'backward';
-}) {
-  if (!pg) return undefined as any;
+}): CursorPagination | undefined {
+  if (!pg) return;
   return {
     cursor: pg.cursor ?? '',
     limit: pg.limit ?? 20,
     direction: pg.direction ?? 'forward',
-  } as any;
+  };
 }

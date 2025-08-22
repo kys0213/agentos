@@ -14,6 +14,7 @@ export interface FrameTransport {
 export interface RpcClient {
   request<TRes = unknown, TReq = unknown>(channel: string, payload?: TReq): Promise<TRes>;
   stream?<T = unknown>(channel: string, payload?: unknown): AsyncGenerator<T, void, unknown>;
+  on<T = unknown>(channel: string, handler: (payload: T) => void): CloseFn;
 }
 
 // Back-compat combined type (to be removed after migration)

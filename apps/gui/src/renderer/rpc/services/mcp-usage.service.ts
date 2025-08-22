@@ -25,16 +25,19 @@ export class McpUsageRpcService {
     const res = await this.transport.request<McpUsageLog[]>('mcp.usage.getLogs', {});
     return res;
   }
+
   getUsageStats(clientName?: string): Promise<McpUsageStats> {
     const payload = clientName ? { query: { toolName: clientName } } : {};
     return this.transport.request<McpUsageStats>('mcp.usage.getStats', payload);
   }
+
   getHourlyStats(date: Date, clientName?: string): Promise<HourlyStatsResponse> {
     return this.transport.request<HourlyStatsResponse>('mcp.usage.getHourlyStats', {
       date: date.toISOString(),
       clientName,
     });
   }
+
   getUsageLogsInRange(startDate: Date, endDate: Date, clientName?: string): Promise<McpUsageLog[]> {
     return this.transport.request<McpUsageLog[]>('mcp.usage.getLogsInRange', {
       startDate: startDate.toISOString(),
@@ -42,6 +45,7 @@ export class McpUsageRpcService {
       clientName,
     });
   }
+
   clearUsageLogs(olderThan?: Date): Promise<ClearUsageLogsResponse> {
     return this.transport.request<ClearUsageLogsResponse>(
       'mcp.usage.clear',
@@ -58,24 +62,15 @@ export class McpUsageRpcService {
     callback: (event: McpUsageUpdateEvent) => void
   ): Promise<() => void> {
     if (!this.transport.stream) return async () => {};
-    const it = this.transport.stream<McpUsageUpdateEvent>('mcp.usage.events');
-    let closed = false;
-    (async () => {
-      try {
-        for await (const ev of it as AsyncGenerator<McpUsageUpdateEvent>) {
-          if (closed) break;
-          const ok = McpUsageUpdateEventSchema.safeParse(ev).success;
-          if (ok) callback(ev);
-        }
-      } catch {
-        // ignore stream errors
+
+    const close = this.transport.on<McpUsageUpdateEvent>('mcp.usage.events', (ev) => {
+      const { success } = McpUsageUpdateEventSchema.safeParse(ev);
+
+      if (success) {
+        callback(ev);
       }
-    })();
-    return async () => {
-      closed = true;
-      // signal cancel to server
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (it as any)?.return?.();
-    };
+    });
+
+    return close;
   }
 }
