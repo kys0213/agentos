@@ -100,7 +100,9 @@ type StoredKnowledgeDocument = {
 };
 
 function isStoredKnowledgeDocument(o: unknown): o is StoredKnowledgeDocument {
-  if (!o || typeof o !== 'object') return false;
+  if (!o || typeof o !== 'object') {
+    return false;
+  }
   const v = o as Record<string, unknown>;
   const has = (k: string) => Object.prototype.hasOwnProperty.call(v, k);
   return (
@@ -155,25 +157,23 @@ export function KnowledgeBaseManager({
       try {
         const parsed: unknown = JSON.parse(savedDocuments);
         const arr = Array.isArray(parsed) ? parsed : [];
-        const next: KnowledgeDocument[] = arr
-          .filter(isStoredKnowledgeDocument)
-          .map((doc) => ({
-            id: doc.id,
-            title: doc.title,
-            content: doc.content,
-            filename: doc.filename,
-            size: doc.size,
-            type: doc.type,
-            createdAt: new Date(doc.createdAt ?? Date.now()),
-            updatedAt: new Date(doc.updatedAt ?? Date.now()),
-            tags: Array.isArray(doc.tags) ? doc.tags : [],
-            chunks: [],
-            indexed: !!doc.indexed,
-            vectorized: !!doc.vectorized,
-            agentId: agentId ?? '',
-            agentName: agentName ?? '',
-            isTemplate: !!doc.isTemplate,
-          }));
+        const next: KnowledgeDocument[] = arr.filter(isStoredKnowledgeDocument).map((doc) => ({
+          id: doc.id,
+          title: doc.title,
+          content: doc.content,
+          filename: doc.filename,
+          size: doc.size,
+          type: doc.type,
+          createdAt: new Date(doc.createdAt ?? Date.now()),
+          updatedAt: new Date(doc.updatedAt ?? Date.now()),
+          tags: Array.isArray(doc.tags) ? doc.tags : [],
+          chunks: [],
+          indexed: !!doc.indexed,
+          vectorized: !!doc.vectorized,
+          agentId: agentId ?? '',
+          agentName: agentName ?? '',
+          isTemplate: !!doc.isTemplate,
+        }));
         setDocuments(next);
       } catch (error) {
         console.error('Failed to load documents:', error);

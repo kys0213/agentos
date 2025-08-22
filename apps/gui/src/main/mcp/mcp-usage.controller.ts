@@ -19,15 +19,15 @@ export class McpUsageController {
   ) {}
 
   @EventPattern('mcp.usage.getLogs')
-  async getUsageLogs(@Payload() data: GetLogsDto) {
-    const query = toCoreQuery(data?.query);
-    const pg = toCorePagination(data?.pg);
+  async getUsageLogs(@Payload() _data: GetLogsDto) {
+    const query = toCoreQuery(_data?.query);
+    const pg = toCorePagination(_data?.pg);
     return this.usage.list(query, pg);
   }
 
   @EventPattern('mcp.usage.getStats')
-  async getUsageStats(@Payload() dto?: GetStatsDto) {
-    const query = toCoreQuery(dto?.query);
+  async getUsageStats(@Payload() _dto?: GetStatsDto) {
+    const query = toCoreQuery(_dto?.query);
     return this.usage.getStats(query);
   }
 
