@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { PresetController } from '../preset.controller';
 import { PRESET_REPOSITORY_TOKEN } from '../../common/preset/constants';
-import type { PresetRepository, Preset, CursorPaginationResult } from '@agentos/core';
+import type { PresetRepository, Preset, CursorPaginationResult, CreatePreset } from '@agentos/core';
 
 class InMemoryPresetRepo implements PresetRepository {
   store = new Map<string, Preset>();
@@ -18,11 +18,24 @@ class InMemoryPresetRepo implements PresetRepository {
   async get(id: string): Promise<Preset | null> {
     return this.store.get(id) ?? null;
   }
-  async create(preset: Preset): Promise<void> {
-    this.store.set(preset.id, preset);
+  async create(preset: CreatePreset): Promise<Preset> {
+    const p = {
+      ...preset,
+      id: 'p1',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      usageCount: 0,
+      knowledgeDocuments: 0,
+      knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 },
+    };
+
+    this.store.set(p.id, p);
+
+    return p;
   }
-  async update(id: string, preset: Preset): Promise<void> {
+  async update(id: string, preset: Preset): Promise<Preset> {
     this.store.set(id, preset);
+    return preset;
   }
   async delete(id: string): Promise<void> {
     this.store.delete(id);
@@ -37,38 +50,38 @@ describe('PresetController', () => {
     }).compile();
 
     const ctrl = moduleRef.get(PresetController);
-    const now = new Date();
-    const p: Preset = {
-      id: 'p1',
+
+    const p: CreatePreset = {
       name: 'n',
       description: 'd',
       author: 'a',
-      createdAt: now,
-      updatedAt: now,
       version: '1.0.0',
       systemPrompt: 'sp',
       enabledMcps: [],
       llmBridgeName: 'b',
       llmBridgeConfig: {},
       status: 'active',
-      usageCount: 0,
-      knowledgeDocuments: 0,
-      knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 },
       category: ['general'],
-    } as Preset;
+    };
 
-    const created = await ctrl.create(p as any);
+    const created = await ctrl.create(p);
+
+    if (!created.success) {
+      throw new Error('Failed to create preset');
+    }
+
     expect(created.success).toBe(true);
+    expect(created.result.id).toBeDefined();
 
-    const one = await ctrl.get('p1');
-    expect(one?.id).toBe('p1');
+    const one = await ctrl.get(created.result.id);
+    expect(one?.id).toBe(created.result.id);
 
     const list = await ctrl.list();
-    expect(list.items.some((s) => s.id === 'p1')).toBe(true);
+    expect(list.items.some((s) => s.id === created.result.id)).toBe(true);
 
     const upd = await ctrl.update({
-      id: 'p1',
-      preset: { ...p, name: 'n2', updatedAt: new Date() } as any,
+      id: created.result.id,
+      preset: { ...created.result, name: 'n2' },
     });
     expect(upd.success).toBe(true);
 

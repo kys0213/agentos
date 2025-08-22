@@ -1,10 +1,13 @@
+import type {
+  CursorPaginationResult,
+  Preset,
+  PresetRepository,
+  PresetSummary,
+} from '@agentos/core';
 import { Controller, Inject } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
-import type { Preset } from '@agentos/core';
-import type { CursorPaginationResult } from '@agentos/core';
-import type { PresetSummary, PresetRepository } from '@agentos/core';
 import { PRESET_REPOSITORY_TOKEN } from '../common/preset/constants';
-import { PresetUpsertDto, UpdatePresetDto } from './dto/preset-upsert.dto';
+import { PresetCreateDto, UpdatePresetDto } from './dto/preset-upsert.dto';
 
 @Controller()
 export class PresetController {
@@ -22,37 +25,32 @@ export class PresetController {
 
   @EventPattern('preset.create')
   async create(
-    @Payload() preset: PresetUpsertDto
-  ): Promise<{ success: true } | { success: false; error: string }> {
-    try {
-      await this.repo.create(preset as unknown as Preset);
-      return { success: true };
-    } catch (e: any) {
-      return { success: false, error: e?.message ?? String(e) };
-    }
+    @Payload() createPreset: PresetCreateDto
+  ): Promise<{ success: true; result: Preset } | { success: false; error: string }> {
+    return this.safeZone(() => this.repo.create(createPreset));
   }
 
   @EventPattern('preset.update')
   async update(
     @Payload() data: UpdatePresetDto
-  ): Promise<{ success: true } | { success: false; error: string }> {
-    try {
-      await this.repo.update(data.id, data.preset as unknown as Preset);
-      return { success: true };
-    } catch (e: any) {
-      return { success: false, error: e?.message ?? String(e) };
-    }
+  ): Promise<{ success: true; result: Preset } | { success: false; error: string }> {
+    return this.safeZone(() => this.repo.update(data.id, data.preset));
   }
 
   @EventPattern('preset.delete')
   async remove(
     @Payload() id: string
   ): Promise<{ success: true } | { success: false; error: string }> {
+    return this.safeZone(() => this.repo.delete(id));
+  }
+
+  private async safeZone<T>(
+    fn: () => Promise<T>
+  ): Promise<{ success: true; result: T } | { success: false; error: string }> {
     try {
-      await this.repo.delete(id);
-      return { success: true };
-    } catch (e: any) {
-      return { success: false, error: e?.message ?? String(e) };
+      return { success: true, result: await fn() };
+    } catch (e: unknown) {
+      return { success: false, error: e instanceof Error ? e.message : String(e) };
     }
   }
 }
