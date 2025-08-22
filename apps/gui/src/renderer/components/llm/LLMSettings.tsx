@@ -26,7 +26,9 @@ const LLMSettings: React.FC<LLMSettingsProps> = ({
   switchError,
 }) => {
   const handleBridgeChange = async (bridgeId: string) => {
-    if (bridgeId === currentBridge?.id) return;
+    if (bridgeId === currentBridge?.id) {
+      return;
+    }
     await onSwitch(bridgeId);
   };
 

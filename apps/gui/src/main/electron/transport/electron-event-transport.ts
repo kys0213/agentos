@@ -154,7 +154,9 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
 
   private sendToAll(frame: RpcFrame) {
     for (const w of BrowserWindow.getAllWindows()) {
-      if (!w.isDestroyed()) w.webContents.send('bridge:frame', frame);
+      if (!w.isDestroyed()) {
+        w.webContents.send('bridge:frame', frame);
+      }
     }
   }
 

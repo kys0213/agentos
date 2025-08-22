@@ -11,13 +11,17 @@ export function createIpcMainFixture() {
       on: (c: string, l: (event: unknown, ...args: unknown[]) => void) => unknown;
     }
   ).on = (channel: string, listener: (event: unknown, ...args: unknown[]) => void) => {
-    if (channel === 'bridge:post') handler = listener as unknown as BridgePostHandler;
+    if (channel === 'bridge:post') {
+      handler = listener as unknown as BridgePostHandler;
+    }
     return ipcMain;
   };
   return {
     ipcMain: ipcMain as IpcMain,
     emit: (frame: RpcFrame, senderId = 1) => {
-      if (!handler) throw new Error('bridge:post listener not registered');
+      if (!handler) {
+        throw new Error('bridge:post listener not registered');
+      }
       handler({ sender: { id: senderId } }, frame);
     },
     reset: () => {

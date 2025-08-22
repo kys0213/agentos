@@ -21,7 +21,9 @@ export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) =>
   useEffect(() => {
     if (!selectedAgentId) {
       const next = activeAgents[0]?.id ?? mentionableAgents[0]?.id;
-      if (next) setSelectedAgentId(next);
+      if (next) {
+        setSelectedAgentId(next);
+      }
     }
   }, [selectedAgentId, activeAgents, mentionableAgents]);
 
@@ -36,7 +38,9 @@ export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) =>
   const sendMutation = useSendChatMessage(selectedAgentId, {
     sessionId: currentSessionId,
     onSessionId: (sid) => {
-      if (selectedAgentId) sessionIdMapRef.current.set(selectedAgentId, sid);
+      if (selectedAgentId) {
+        sessionIdMapRef.current.set(selectedAgentId, sid);
+      }
     },
   });
 

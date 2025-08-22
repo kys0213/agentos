@@ -34,7 +34,9 @@ export function createRpc(
       return new Promise((resolve, reject) => {
         const cid = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
         const onFrame = (_e: unknown, f: RpcFrame) => {
-          if (!f || f.cid !== cid) return;
+          if (!f || f.cid !== cid) {
+            return;
+          }
           if (f.kind === 'res' && f.ok === true) {
             ipc.off('bridge:frame', onFrame);
             resolve(f.result);

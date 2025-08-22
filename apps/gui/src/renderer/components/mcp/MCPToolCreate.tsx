@@ -326,13 +326,17 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
   };
 
   const handleCreate = () => {
-    if (!isFormValid()) return;
+    if (!isFormValid()) {
+      return;
+    }
 
     let finalConfig: McpConfig;
 
     const envObj = envVars.reduce(
       (acc, env) => {
-        if (env.key && env.value) acc[env.key] = env.value;
+        if (env.key && env.value) {
+          acc[env.key] = env.value;
+        }
         return acc;
       },
       {} as Record<string, string>
@@ -340,7 +344,9 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
 
     const headersObj = headers.reduce(
       (acc, header) => {
-        if (header.key && header.value) acc[header.key] = header.value;
+        if (header.key && header.value) {
+          acc[header.key] = header.value;
+        }
         return acc;
       },
       {} as Record<string, string>
@@ -394,7 +400,9 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
   };
 
   const isFormValid = () => {
-    if (!formData.name || !formData.version) return false;
+    if (!formData.name || !formData.version) {
+      return false;
+    }
 
     switch (formData.type) {
       case 'stdio':
@@ -1284,7 +1292,9 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                             ...(envVars.length > 0 && {
                               env: envVars.reduce(
                                 (acc, env) => {
-                                  if (env.key && env.value) acc[env.key] = env.value;
+                                  if (env.key && env.value) {
+                                    acc[env.key] = env.value;
+                                  }
                                   return acc;
                                 },
                                 {} as Record<string, string>
@@ -1296,7 +1306,9 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                           ...(headers.length > 0 && {
                             headers: headers.reduce(
                               (acc, header) => {
-                                if (header.key && header.value) acc[header.key] = header.value;
+                                if (header.key && header.value) {
+                                  acc[header.key] = header.value;
+                                }
                                 return acc;
                               },
                               {} as Record<string, string>
