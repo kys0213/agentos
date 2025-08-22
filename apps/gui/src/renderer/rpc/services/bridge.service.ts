@@ -15,10 +15,20 @@ export class BridgeRpcService {
       .then(() => ({ success: true }));
   }
   unregisterBridge(id: string): Promise<{ success: boolean }> {
-    return this.transport.request('bridge.unregister', id);
+    return this.transport
+      .request<{ success: boolean } | { success: boolean; result: { success: true } } | { success: false; error: string }>(
+        'bridge.unregister',
+        id
+      )
+      .then((res: any) => ({ success: !!(res?.success) && !res?.error }));
   }
   switchBridge(id: string): Promise<{ success: boolean }> {
-    return this.transport.request('bridge.switch', id);
+    return this.transport
+      .request<{ success: boolean } | { success: boolean; result: { success: true } } | { success: false; error: string }>(
+        'bridge.switch',
+        id
+      )
+      .then((res: any) => ({ success: !!(res?.success) && !res?.error }));
   }
   async getCurrentBridge(): Promise<{ id: string; config: LlmManifest } | null> {
     const res = await this.transport.request<{ id: string; manifest: LlmManifest } | null>(

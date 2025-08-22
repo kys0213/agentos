@@ -14,11 +14,11 @@ export class PresetRpcService {
     return this.transport.request('preset.get', id);
   }
 
-  create(preset: CreatePreset): Promise<{ success: boolean; error?: string }> {
+  create(preset: CreatePreset): Promise<{ success: boolean; result?: Preset; error?: string }> {
     return this.transport.request('preset.create', preset);
   }
 
-  update(id: string, preset: Preset): Promise<{ success: boolean; error?: string }> {
+  update(id: string, preset: Preset): Promise<{ success: boolean; result?: Preset; error?: string }> {
     return this.transport.request('preset.update', { id, preset });
   }
 
@@ -63,7 +63,7 @@ export class PresetRpcService {
       throw new Error(res.error || 'Failed to create preset');
     }
 
-    const got = await this.getOrThrow(res.id);
+    const got = await this.getOrThrow((res as any).result?.id ?? '');
 
     return got;
   }
