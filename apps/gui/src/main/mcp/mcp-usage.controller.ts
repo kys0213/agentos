@@ -76,12 +76,12 @@ export class McpUsageController {
   }
 
   @EventPattern('mcp.usage.getLogsInRange')
-  async getLogsInRange(@Payload() data: LogsInRangeDto) {
+  async getLogsInRange(@Payload() _data: LogsInRangeDto) {
     return [] as unknown[]; // TODO: optional
   }
 
   @EventPattern('mcp.usage.clear')
-  async clear(@Payload() dto?: ClearDto) {
+  async clear(@Payload() _dto?: ClearDto) {
     // TODO: optional clear support
     return { success: true };
   }

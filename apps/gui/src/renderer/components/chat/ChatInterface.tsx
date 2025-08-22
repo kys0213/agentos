@@ -36,7 +36,7 @@ export function ChatInterface({
   const [messages, setMessages] = useState<Readonly<MessageHistory>[]>([]);
 
   const [inputMessage, setInputMessage] = useState('');
-  const [isTyping, _setIsTyping] = useState(false);
+  const [isTyping] = useState(false);
 
   const handleSendMessage = () => {
     if (!inputMessage.trim()) {

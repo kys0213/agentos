@@ -148,7 +148,7 @@ export function ModelManager(props: ModelManagerProps) {
 
         <TabsContent value="instances" className="space-y-6">
           {/* Model Instances */}
-          {items.length === 0 ? (
+          {items.length === 0 && (
             <Card className="p-6">
               <div className="flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-gray-500" />
@@ -158,7 +158,8 @@ export function ModelManager(props: ModelManagerProps) {
                 </div>
               </div>
             </Card>
-          ) : (
+          )}
+          {items.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {items
                 .filter((m) =>

@@ -21,7 +21,6 @@ const NewAppLayout: React.FC = () => {
 
   const appData = useAppData();
   const { activeSection, setActiveSection } = navigation;
-  const { currentAgents: _currentAgents } = appData;
 
   // Chat Mode: Full screen ChatView with integrated ChatHistory sidebar
   if (activeSection === 'chat') {

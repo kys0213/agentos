@@ -150,7 +150,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
               <MessageSquare className="w-5 h-5 text-muted-foreground" />
               <div>
                 <h1 className="text-lg font-semibold text-foreground">Research Data Analysis</h1>
-                {activeAgents.length > 0 ? (
+                {activeAgents.length > 0 && (
                   <div className="mt-1 flex flex-wrap gap-2">
                     {activeAgents.map((a) => (
                       <span
@@ -165,7 +165,8 @@ export const ChatView: React.FC<ChatViewProps> = ({
                       </span>
                     ))}
                   </div>
-                ) : (
+                )}
+                {activeAgents.length === 0 && (
                   <p className="text-sm text-muted-foreground">Active: No active agents</p>
                 )}
               </div>
