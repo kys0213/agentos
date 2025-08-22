@@ -39,12 +39,12 @@ Note: This spec is interface-first. It defines contracts (methods, payloads, fra
 
 최신 채널/페이로드 규약은 `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`를 기준으로 합니다. 아래는 대표 채널과 요약입니다.
 
-- agent.*: `agent.chat`, `agent.endSession`, `agent.getMetadata`, `agent.getAllMetadatas`, `agent.update`, `agent.create`, `agent.delete`
-- bridge.*: `bridge.register`, `bridge.unregister`, `bridge.switch`, `bridge.get-current`, `bridge.list`, `bridge.get-config`
-- builtin.*: `builtin.install`, `builtin.list`, `builtin.invoke`, `builtin.remove`
-- mcp.*: `mcp.getTool`(payload: `{ name }`), `mcp.invokeTool`(payload: `{ name, input?, resumptionToken? }`)
-- preset.*: `preset.list`, `preset.get`, `preset.create`, `preset.update`, `preset.delete`
-- mcp.usage.*: `mcp.usage.getLogs`, `mcp.usage.getStats`, `mcp.usage.getHourlyStats`, `mcp.usage.clear`
+- agent.\*: `agent.chat`, `agent.endSession`, `agent.getMetadata`, `agent.getAllMetadatas`, `agent.update`, `agent.create`, `agent.delete`
+- bridge.\*: `bridge.register`, `bridge.unregister`, `bridge.switch`, `bridge.get-current`, `bridge.list`, `bridge.get-config`
+- builtin.\*: `builtin.install`, `builtin.list`, `builtin.invoke`, `builtin.remove`
+- mcp.\*: `mcp.getTool`(payload: `{ name }`), `mcp.invokeTool`(payload: `{ name, input?, resumptionToken? }`)
+- preset.\*: `preset.list`, `preset.get`, `preset.create`, `preset.update`, `preset.delete`
+- mcp.usage.\*: `mcp.usage.getLogs`, `mcp.usage.getStats`, `mcp.usage.getHourlyStats`, `mcp.usage.clear`
 
 Renderer 서비스 메서드명은 내부 편의를 위한 래퍼이며, 실제 전송 채널/페이로드는 위 규약을 따른다.
 

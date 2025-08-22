@@ -18,7 +18,10 @@ export class PresetRpcService {
     return this.transport.request('preset.create', preset);
   }
 
-  update(id: string, preset: Preset): Promise<{ success: boolean; result?: Preset; error?: string }> {
+  update(
+    id: string,
+    preset: Preset
+  ): Promise<{ success: boolean; result?: Preset; error?: string }> {
     return this.transport.request('preset.update', { id, preset });
   }
 

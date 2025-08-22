@@ -1,6 +1,5 @@
 import { Controller, Inject } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
-import type { LlmManifest } from 'llm-bridge-spec';
 import type { LlmBridgeRegistry } from '@agentos/core';
 import { LLM_BRIDGE_REGISTRY_TOKEN } from '../common/model/constants';
 import { RegisterBridgeDto, type Resp } from './dto/bridge.dto';
@@ -30,9 +29,11 @@ export class BridgeController {
   @EventPattern('bridge.register')
   async register(@Payload() data: RegisterBridgeDto): Promise<Resp<{ id: string }>> {
     try {
-      const id = await this.registry.register(data.manifest, data.config as Record<string, unknown>, {
-        id: data.id,
-      });
+      const id = await this.registry.register(
+        data.manifest,
+        data.config as Record<string, unknown>,
+        { id: data.id }
+      );
       return { success: true, result: { id } };
     } catch (e: unknown) {
       return { success: false, error: e instanceof Error ? e.message : String(e) };

@@ -19,7 +19,10 @@ describe('BridgeController', () => {
     }).compile();
 
     const ctrl = mod.get(BridgeController);
-    const res: any = await ctrl.register({ manifest: { name: 'm', version: '1.0.0' } as any, config: {} } as any);
+    const res: any = await ctrl.register({
+      manifest: { name: 'm', version: '1.0.0' } as any,
+      config: {},
+    } as any);
     expect(res.success).toBe(true);
     expect(res.result.id).toBe('id-1');
   });

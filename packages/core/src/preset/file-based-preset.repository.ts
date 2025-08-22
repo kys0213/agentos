@@ -62,7 +62,9 @@ export class FileBasedPresetRepository implements PresetRepository {
   }
 
   async create(preset: CreatePreset): Promise<Preset> {
-    const id = await this.generateId();
+    // Backward-compat: if caller provided an id (legacy tests/flows), honor it; otherwise generate.
+    const providedId = (preset as unknown as { id?: string })?.id;
+    const id = providedId ?? (await this.generateId());
 
     const full: Preset = {
       ...preset,

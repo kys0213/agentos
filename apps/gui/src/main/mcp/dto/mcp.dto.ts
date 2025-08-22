@@ -20,4 +20,3 @@ export class InvokeToolDto {
 export type Ok<T> = { success: true; result: T };
 export type Err = { success: false; error: string };
 export type Resp<T> = Ok<T> | Err;
-

@@ -5,7 +5,9 @@ import type { McpService } from '@agentos/core';
 describe('McpController', () => {
   it('invokes tool via McpService and wraps response', async () => {
     const mockMcp: Partial<Record<keyof McpService, any>> = {
-      executeTool: jest.fn().mockResolvedValue({ isError: false, contents: [], resumptionToken: undefined }),
+      executeTool: jest
+        .fn()
+        .mockResolvedValue({ isError: false, contents: [], resumptionToken: undefined }),
       getTool: jest.fn().mockReturnValue(null),
     };
 
@@ -17,7 +19,7 @@ describe('McpController', () => {
     const ctrl = moduleRef.get(McpController);
     const resp: any = await ctrl.invokeTool({ name: 'foo.bar' } as any);
     expect(resp.success).toBe(true);
-    expect((mockMcp.executeTool as any)).toHaveBeenCalledWith('foo.bar', undefined, undefined);
+    expect(mockMcp.executeTool as any).toHaveBeenCalledWith('foo.bar', undefined, undefined);
   });
 
   it('wraps error as { success: false }', async () => {
@@ -50,6 +52,6 @@ describe('McpController', () => {
     const ctrl = moduleRef.get(McpController);
     const tool: any = await ctrl.getTool({ name: 'foo.bar' } as any);
     expect(tool).toEqual({ id: 't1' });
-    expect((mockMcp.getTool as any)).toHaveBeenCalledWith('foo.bar');
+    expect(mockMcp.getTool as any).toHaveBeenCalledWith('foo.bar');
   });
 });
