@@ -1,11 +1,12 @@
 import type { RpcClient } from '../../../shared/rpc/transport';
 import type { McpUsageLog, McpUsageStats } from '@agentos/core';
-import type {
+import {
   UsageLogQueryOptions,
   HourlyStatsResponse,
   ClearUsageLogsResponse,
   SetUsageTrackingResponse,
   McpUsageUpdateEvent,
+  McpUsageUpdateEventSchema,
 } from '../../../shared/types/mcp-usage-types';
 
 export class McpUsageRpcService {
@@ -63,7 +64,8 @@ export class McpUsageRpcService {
       try {
         for await (const ev of it as AsyncGenerator<McpUsageUpdateEvent>) {
           if (closed) break;
-          callback(ev);
+          const ok = McpUsageUpdateEventSchema.safeParse(ev).success;
+          if (ok) callback(ev);
         }
       } catch {
         // ignore stream errors
