@@ -15,13 +15,13 @@ export interface RpcClientOptions {
 }
 
 type RpcObserver = {
-  resolve: (v: any) => void;
-  reject: (e: any) => void;
+  resolve: (v: unknown) => void;
+  reject: (e: unknown) => void;
   timer?: number | NodeJS.Timeout;
   // streaming
-  next?: (v: any) => void;
+  next?: (v: unknown) => void;
   complete?: () => void;
-  error?: (e: any) => void;
+  error?: (e: unknown) => void;
 };
 
 type StreamContext<T> = {
@@ -268,11 +268,16 @@ export class RpcEndpoint implements RpcClient {
 }
 
 function isAsyncGen(o: unknown): o is AsyncGenerator<unknown, void, unknown> {
-  return isObject(o) && typeof (o as any)[Symbol.asyncIterator] === 'function';
+  if (!isObject(o)) return false;
+  const iterator = (o as { [Symbol.asyncIterator]?: unknown })[Symbol.asyncIterator];
+  return typeof iterator === 'function';
 }
 function isObservableLike(o: unknown): o is Observable<unknown> {
-  return isObservable(o) && o && typeof (o as any).subscribe === 'function';
+  return (
+    isObservable(o) && isObject(o) && typeof (o as { subscribe?: unknown }).subscribe === 'function'
+  );
 }
 function isPromiseLike(o: unknown): o is PromiseLike<unknown> {
-  return !!o && typeof (o as any).then === 'function';
+  const isObjOrFn = (typeof o === 'object' && o !== null) || typeof o === 'function';
+  return isObjOrFn && typeof (o as { then?: unknown }).then === 'function';
 }

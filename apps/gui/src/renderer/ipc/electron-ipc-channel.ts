@@ -28,6 +28,21 @@ import type {
   SetUsageTrackingResponse,
   UsageLogQueryOptions,
 } from '../../shared/types/mcp-usage-types';
+import { FrameTransport } from '../../shared/rpc/transport';
+import { RpcFrame } from '../../shared/rpc/rpc-frame';
+
+// Preload-exposed bridge typing
+export interface ElectronEventBridge extends FrameTransport {
+  start: (onFrame: (f: RpcFrame) => void) => void;
+  post: (frame: RpcFrame) => void;
+  stop: () => void;
+}
+
+declare global {
+  interface Window {
+    electronBridge?: ElectronEventBridge;
+  }
+}
 
 export class ElectronIpcChannel implements IpcChannel {
   private get electronAPI() {
@@ -163,7 +178,7 @@ export class ElectronIpcChannel implements IpcChannel {
     // 메인에 구독 활성화 요청 (폴링/브리지 설정 등)
     await this.electronAPI.mcpUsageLog.subscribeToUsageUpdates(callback);
     // Preload에서 노출한 안전한 이벤트 브리지 사용
-    const bridge = (window as any).electronBridge;
+    const bridge = window.electronBridge;
     if (!bridge || typeof bridge.on !== 'function') {
       throw new Error('electronBridge.on is not available. Ensure preload exposes it.');
     }

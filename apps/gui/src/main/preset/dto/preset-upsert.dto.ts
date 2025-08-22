@@ -61,7 +61,7 @@ export class PresetCreateDto implements CreatePreset {
   llmBridgeName!: string;
 
   @IsObject()
-  llmBridgeConfig!: Record<string, any>;
+  llmBridgeConfig!: Record<string, unknown>;
 
   @IsEnum(['active', 'idle', 'inactive'])
   status!: PresetStatus;

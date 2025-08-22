@@ -95,15 +95,15 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
             code: e.code,
             details: e.details,
           });
-        } else if (isObject(e) && 'code' in (e as any)) {
-          const anyErr = e as any;
+        } else if (isObject(e) && 'code' in e) {
+          const anyErr = e as { message?: string; code?: string; details?: unknown };
           return this.sendTo(senderId, {
             kind: 'err',
             cid: frame.cid,
             ok: false,
             message: String(anyErr.message ?? '[error]'),
             code: anyErr.code ?? 'INTERNAL',
-            details: anyErr.details,
+            details: isObject(anyErr.details) ? anyErr.details : undefined,
           });
         } else if (e instanceof Error) {
           return this.sendTo(senderId, {

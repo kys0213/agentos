@@ -62,11 +62,11 @@ export class PresetRpcService {
 
     const res = await this.create(param);
 
-    if (!res.success) {
+    if (!res.success || !res.result?.id) {
       throw new Error(res.error || 'Failed to create preset');
     }
 
-    const got = await this.getOrThrow((res as any).result?.id ?? '');
+    const got = await this.getOrThrow(res.result.id);
 
     return got;
   }

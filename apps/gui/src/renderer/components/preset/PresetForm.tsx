@@ -35,7 +35,7 @@ export function PrestForm({
     systemPrompt: '',
     category: ['research'],
     llmBridgeConfig: {},
-    status: 'active' as any,
+    status: 'active',
     ...preset,
   };
 

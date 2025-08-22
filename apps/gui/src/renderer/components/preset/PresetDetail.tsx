@@ -200,7 +200,7 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
               </div>
               <div>
                 <p className="text-lg font-semibold text-foreground">
-                  {formatDate(editedPreset.updatedAt as any)}
+                  {formatDate(editedPreset.updatedAt)}
                 </p>
                 <p className="text-xs text-muted-foreground">Last Updated</p>
               </div>
