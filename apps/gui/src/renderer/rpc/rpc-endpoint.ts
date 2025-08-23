@@ -101,7 +101,14 @@ export class RpcEndpoint implements RpcClient {
         this.pending.delete(cid);
         reject(new Error(`RPC_TIMEOUT ${method}`));
       }, timeoutMs);
-      this.pending.set(cid, { resolve, reject, timer });
+      this.pending.set(cid, {
+        resolve: (v: unknown) => {
+          // Cast unknown payload to generic T before resolving
+          resolve(v as T);
+        },
+        reject,
+        timer,
+      });
       this.transport.post({ kind: 'req', cid, method, payload, meta });
     });
   }
