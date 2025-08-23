@@ -18,7 +18,7 @@ export class IpcAgent implements Agent {
     private readonly agentId: string
   ) {}
 
-  createSession(options?: { sessionId?: string; presetId?: string }): Promise<AgentSession> {
+  createSession(_options?: { sessionId?: string; presetId?: string }): Promise<AgentSession> {
     throw new Error('Method not implemented.');
   }
 

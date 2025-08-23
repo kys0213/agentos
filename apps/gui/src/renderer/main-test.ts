@@ -10,19 +10,19 @@ import { bootstrap } from './bootstrap';
 export class TestHelpers {
   private rpcTransport: RpcTransport = {
     // TODO mock transport 추가
-    start: function (onFrame: (f: RpcFrame) => void): void {
+    start: function (_onFrame: (f: RpcFrame) => void): void {
       throw new Error('Function not implemented.');
     },
-    post: function (frame: RpcFrame): void {
+    post: function (_frame: RpcFrame): void {
       throw new Error('Function not implemented.');
     },
     request: function <TRes = unknown, TReq = unknown>(
-      channel: string,
-      payload?: TReq
+      _channel: string,
+      _payload?: TReq
     ): Promise<TRes> {
       throw new Error('Function not implemented.');
     },
-    on: function <T = unknown>(channel: string, handler: (payload: T) => void): CloseFn {
+    on: function <T = unknown>(_channel: string, _handler: (payload: T) => void): CloseFn {
       throw new Error('Function not implemented.');
     },
   };

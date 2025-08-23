@@ -15,8 +15,8 @@ export class PresetStore {
   async save(preset: Preset): Promise<void> {
     // ID가 있으면 업데이트, 없으면 생성
     if (await this.exists(preset.id)) {
-      const { id: _id, ...patch } = preset;
-      await this.presetService.updatePreset(preset.id, patch);
+      const { id, ...patch } = preset;
+      await this.presetService.updatePreset(id, patch);
     } else {
       const createData: CreatePreset = {
         name: preset.name,

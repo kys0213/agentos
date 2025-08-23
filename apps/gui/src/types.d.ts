@@ -21,11 +21,11 @@ declare global {
 
   // 개발 환경 디버깅용 전역 객체들
   interface Window {
-    __agentosServices?: any;
+    __agentosServices?: unknown;
     __debug?: {
-      environment: any;
-      channel: any;
-      services: any;
+      environment: unknown;
+      channel: unknown;
+      services: unknown;
     };
 
     electronAPI: AgentOsAPI;
