@@ -59,7 +59,9 @@ export const useSendChatMessage = (
       text: string;
       _mentionedAgentIds?: string[];
     }) => {
-      if (!agentId) throw new Error('agentId is required');
+      if (!agentId) {
+        throw new Error('agentId is required');
+      }
 
       const agentService = ServiceContainer.getOrThrow('agent');
 
@@ -122,7 +124,9 @@ export const useSendChatMessage = (
       return { userMessage, assistantMessages } as const;
     },
     onSuccess: ({ assistantMessages }) => {
-      if (!agentId) return;
+      if (!agentId) {
+        return;
+      }
       queryClient.setQueryData(
         CHAT_QUERY_KEYS.history(agentId),
         (prev?: Readonly<MessageHistory>[]) => [...(prev ?? []), ...assistantMessages]

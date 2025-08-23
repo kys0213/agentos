@@ -1,4 +1,4 @@
-import type { CreatePreset, Preset, PresetStatus } from '@agentos/core';
+import type { CreatePreset, Preset } from '@agentos/core';
 import {
   BarChart3,
   BookOpen,
@@ -339,12 +339,13 @@ export function PresetManager({
             </TabsContent>
 
             <TabsContent value="edit" className="h-full">
-              {selectedPreset ? (
+              {selectedPreset && (
                 <PrestForm
                   preset={selectedPreset}
-                  onSubmit={(data) => selectedPreset && onUpdatePreset?.(selectedPreset.id, data)}
+                  onSubmit={(data) => onUpdatePreset?.(selectedPreset.id, data)}
                 />
-              ) : (
+              )}
+              {!selectedPreset && (
                 <Card className="p-6 h-full flex items-center justify-center">
                   <div className="text-center text-muted-foreground">
                     <Settings className="w-12 h-12 mx-auto mb-4" />
@@ -356,13 +357,14 @@ export function PresetManager({
             </TabsContent>
 
             <TabsContent value="knowledge" className="h-full">
-              {selectedPreset ? (
+              {selectedPreset && (
                 <KnowledgeBaseManager
                   agentId={selectedPreset.id}
                   agentName={selectedPreset.name}
                   agentCategory={selectedPreset.category[0]}
                 />
-              ) : (
+              )}
+              {!selectedPreset && (
                 <Card className="p-6 h-full flex items-center justify-center">
                   <div className="text-center text-muted-foreground">
                     <BookOpen className="w-12 h-12 mx-auto mb-4" />

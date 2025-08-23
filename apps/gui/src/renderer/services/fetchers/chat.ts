@@ -59,7 +59,7 @@ export async function createChatSession(
 export async function sendMessage(
   agentId: string,
   content: string,
-  mentionedAgents?: string[]
+  _mentionedAgents?: string[]
 ): Promise<MessageHistory[]> {
   try {
     const agentService = ServiceContainer.getOrThrow('agent');

@@ -29,7 +29,9 @@ export function byMethod(
           return false;
         }
 
-        if (!frame.method) return false;
+        if (!frame.method) {
+          return false;
+        }
 
         if (pattern instanceof RegExp) {
           return pattern.test(frame.method);

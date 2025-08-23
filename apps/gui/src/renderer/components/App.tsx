@@ -1,7 +1,6 @@
 import React from 'react';
 
 // Import new design hooks for Chat mode only
-import { useAppData } from '../hooks/useAppData';
 import { useAppNavigation } from '../hooks/useAppNavigation';
 
 // Chat 컨테이너 적용
@@ -19,7 +18,6 @@ import ManagementView from './layout/ManagementView';
 const NewAppLayout: React.FC = () => {
   const navigation = useAppNavigation();
 
-  const appData = useAppData();
   const { activeSection, setActiveSection } = navigation;
 
   // Chat Mode: Full screen ChatView with integrated ChatHistory sidebar

@@ -203,11 +203,8 @@ export function SubAgentManager({
                   <HelpCircle className="w-4 h-4" />
                   <span>Agent Status Guide</span>
                 </div>
-                {showStatusGuide ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
+                {showStatusGuide && <ChevronUp className="w-4 h-4" />}
+                {!showStatusGuide && <ChevronDown className="w-4 h-4" />}
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent>

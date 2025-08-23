@@ -8,7 +8,9 @@ export function createNotifier(): Notifier {
   let pending = false;
 
   const wait = async () => {
-    if (pending) return;
+    if (pending) {
+      return;
+    }
     pending = true;
     await new Promise<void>((res) => {
       resolve = () => {
@@ -21,7 +23,9 @@ export function createNotifier(): Notifier {
   };
 
   const notify = () => {
-    if (resolve) resolve();
+    if (resolve) {
+      resolve();
+    }
   };
 
   return { wait, notify };

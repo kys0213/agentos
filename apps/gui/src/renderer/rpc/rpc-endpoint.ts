@@ -180,14 +180,16 @@ export class RpcEndpoint implements RpcClient {
     if (f.kind === 'req') {
       const fn = this.handlers[f.method];
 
-      if (!fn)
-        return this.transport.post({
+      if (!fn) {
+        this.transport.post({
           kind: 'err',
           cid: f.cid,
           ok: false,
           message: `NO_HANDLER ${f.method}`,
           code: 'NOT_FOUND',
         });
+        return;
+      }
 
       try {
         const out = fn(f.payload, f.meta);
@@ -242,7 +244,9 @@ export class RpcEndpoint implements RpcClient {
 
     const waiter = this.pending.get(f.cid);
 
-    if (!waiter) return;
+    if (!waiter) {
+      return;
+    }
 
     if (f.kind === 'res') {
       clearTimeout(waiter.timer);

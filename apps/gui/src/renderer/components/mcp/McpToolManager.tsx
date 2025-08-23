@@ -601,12 +601,13 @@ export function MCPToolsManager() {
                                       : handleConnectTool(tool.id)
                                   }
                                 >
-                                  {tool.status === 'connected' ? (
+                                  {tool.status === 'connected' && (
                                     <>
                                       <Unlink className="w-3 h-3 mr-1" />
                                       Disconnect
                                     </>
-                                  ) : (
+                                  )}
+                                  {tool.status !== 'connected' && (
                                     <>
                                       <Link className="w-3 h-3 mr-1" />
                                       Connect
@@ -647,13 +648,7 @@ export function MCPToolsManager() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                               <div
-                                className={`w-3 h-3 rounded-full ${
-                                  log.status === 'success'
-                                    ? 'bg-green-500'
-                                    : log.status === 'error'
-                                      ? 'bg-red-500'
-                                      : 'bg-yellow-500'
-                                }`}
+                                className={`w-3 h-3 rounded-full ${statusDotClass(log.status)}`}
                               ></div>
                               <div>
                                 <div className="flex items-center gap-2">
