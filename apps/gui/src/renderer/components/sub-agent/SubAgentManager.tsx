@@ -1,11 +1,9 @@
 import {
   Activity,
-  Bot,
   CheckCircle,
   ChevronDown,
   ChevronUp,
   Clock,
-  Database,
   HelpCircle,
   Info,
   MessageSquare,
@@ -15,7 +13,6 @@ import {
   Settings,
   Sparkles,
   Users,
-  Zap,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '../ui/badge';

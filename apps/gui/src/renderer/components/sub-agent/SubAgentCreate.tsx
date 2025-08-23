@@ -73,7 +73,9 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
   };
 
   const handleCreate = () => {
-    if (!validateFormData(formData)) return;
+    if (!validateFormData(formData)) {
+      return;
+    }
 
     const newAgent: CreateAgentMetadata = {
       name: formData.name,

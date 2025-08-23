@@ -36,20 +36,11 @@ export interface ModelManagerProps {
 export function ModelManager(props: ModelManagerProps) {
   const [activeTab, setActiveTab] = useState('instances');
   const [searchQuery, setSearchQuery] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
   const { items, isLoading, onRefresh, onSwitch } = props;
   const handleRefresh = () => onRefresh();
 
-  const handleInstallModel = async (modelId: string) => {
-    try {
-      // In real implementation, this would register a new bridge
-      console.log('Installing model:', modelId);
-      // await bridgeService.registerBridge(modelId, config);
-      handleRefresh();
-    } catch (err) {
-      console.error('Failed to install model:', err);
-    }
-  };
+  // Installation flow is handled by container; local stub removed
 
   const handleSwitchModel = async (bridgeId: string) => {
     try {

@@ -46,25 +46,27 @@ const SmartErrorMessage: React.FC<SmartErrorMessageProps> = ({ message, classNam
             <div className="space-y-2">
               <p className="text-xs font-medium text-red-800">Suggested Actions:</p>
               <div className="flex flex-wrap gap-2">
-                {errorActions.map((action, index) => (
-                  <button
-                    key={index}
-                    onClick={action.action}
-                    className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                      action.variant === 'destructive'
-                        ? 'bg-red-600 text-white hover:bg-red-700'
-                        : 'bg-red-100 text-red-800 hover:bg-red-200'
-                    }`}
-                    data-testid={`error-action-${index}`}
-                  >
-                    {action.variant === 'destructive' ? (
-                      <Wrench className="w-3 h-3" />
-                    ) : (
-                      <Settings className="w-3 h-3" />
-                    )}
-                    {action.label}
-                  </button>
-                ))}
+                {errorActions.map((action, index) => {
+                  const isDestructive = action.variant === 'destructive';
+                  const btnClass = isDestructive
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'bg-red-100 text-red-800 hover:bg-red-200';
+                  return (
+                    <button
+                      key={index}
+                      onClick={action.action}
+                      className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-md transition-colors ${btnClass}`}
+                      data-testid={`error-action-${index}`}
+                    >
+                      {isDestructive ? (
+                        <Wrench className="w-3 h-3" />
+                      ) : (
+                        <Settings className="w-3 h-3" />
+                      )}
+                      {action.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
