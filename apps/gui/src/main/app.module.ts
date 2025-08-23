@@ -6,7 +6,6 @@ import { ElectronAppModule } from './electron/electron-app.module';
 import { PresetApiModule } from './preset/preset.module';
 import { McpUsageModule } from './common/mcp/mcp-usage.module';
 import { McpRegistryModule } from './common/mcp/mcp-registry.module';
-import { McpUsagePublisher } from './mcp/mcp-usage.publisher';
 import { McpApiModule } from './mcp/mcp.api.module';
 import { McpUsageApiModule } from './mcp/mcp-usage.api.module';
 import { BridgeApiModule } from './bridge/bridge.api.module';
@@ -33,8 +32,6 @@ import { OutboundChannelModule } from './common/event/outbound-channel.module';
         forbidNonWhitelisted: false,
       }),
     },
-    McpUsagePublisher,
   ],
-  controllers: [],
 })
 export class AppModule {}

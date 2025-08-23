@@ -10,6 +10,11 @@
     "typecheck": "pnpm -r typecheck",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
+  "pnpm": {
+    "overrides": {
+      "llm-bridge-loader": "link:packages/llm-bridge-loader"
+    }
+  },
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
