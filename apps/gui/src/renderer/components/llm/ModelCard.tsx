@@ -68,7 +68,7 @@ export function ModelCard({ model, onSwitch }: Props) {
       </div>
 
       {/* Capabilities */}
-      {model.capabilities?.length ? (
+      {model.capabilities && model.capabilities.length > 0 && (
         <div className="mt-4">
           <div className="text-xs text-muted-foreground mb-1">Capabilities</div>
           <div className="flex flex-wrap gap-1">
@@ -79,7 +79,7 @@ export function ModelCard({ model, onSwitch }: Props) {
             ))}
           </div>
         </div>
-      ) : null}
+      )}
 
       <div className="flex items-center gap-2 mt-4 pt-4 border-t">
         <Button

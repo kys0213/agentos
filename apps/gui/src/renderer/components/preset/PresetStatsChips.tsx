@@ -15,7 +15,9 @@ export const PresetStatsChips: React.FC<PresetStatsChipsProps> = ({
   totalDocs = 0,
   showIsolation = true,
 }) => {
-  if (totalDocs <= 0) return null;
+  if (totalDocs <= 0) {
+    return null;
+  }
   return (
     <div className="flex flex-wrap gap-1 mb-4">
       <Badge variant="secondary" className="text-xs gap-1">

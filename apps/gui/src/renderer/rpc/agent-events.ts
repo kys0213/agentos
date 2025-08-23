@@ -21,7 +21,7 @@ export function wireAgentEvents(
   frames$: Observable<RpcFrame>,
   handlers: AgentEventHandlers
 ): Subscription {
-  const agent$ = frames$.pipe(selectDataByMethod<unknown>('agent.'));
+  const agent$ = frames$.pipe(selectDataByMethod('agent.'));
   return agent$
     .pipe(
       map((ev) => AgentOutboundEvent.safeParse(ev)),

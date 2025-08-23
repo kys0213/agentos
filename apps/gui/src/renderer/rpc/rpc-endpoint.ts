@@ -60,7 +60,9 @@ export class RpcEndpoint implements RpcClient {
     (async () => {
       try {
         for await (const payload of generator) {
-          if (closed) break;
+          if (closed) {
+            break;
+          }
           handler(payload);
         }
       } catch (e) {
@@ -101,7 +103,14 @@ export class RpcEndpoint implements RpcClient {
         this.pending.delete(cid);
         reject(new Error(`RPC_TIMEOUT ${method}`));
       }, timeoutMs);
-      this.pending.set(cid, { resolve, reject, timer });
+      this.pending.set(cid, {
+        resolve: (v: unknown) => {
+          // Cast unknown payload to generic T before resolving
+          resolve(v as T);
+        },
+        reject,
+        timer,
+      });
       this.transport.post({ kind: 'req', cid, method, payload, meta });
     });
   }
@@ -173,14 +182,16 @@ export class RpcEndpoint implements RpcClient {
     if (f.kind === 'req') {
       const fn = this.handlers[f.method];
 
-      if (!fn)
-        return this.transport.post({
+      if (!fn) {
+        this.transport.post({
           kind: 'err',
           cid: f.cid,
           ok: false,
           message: `NO_HANDLER ${f.method}`,
           code: 'NOT_FOUND',
         });
+        return;
+      }
 
       try {
         const out = fn(f.payload, f.meta);
@@ -235,7 +246,9 @@ export class RpcEndpoint implements RpcClient {
 
     const waiter = this.pending.get(f.cid);
 
-    if (!waiter) return;
+    if (!waiter) {
+      return;
+    }
 
     if (f.kind === 'res') {
       clearTimeout(waiter.timer);

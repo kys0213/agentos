@@ -1,11 +1,9 @@
 import {
   Activity,
-  Bot,
   CheckCircle,
   ChevronDown,
   ChevronUp,
   Clock,
-  Database,
   HelpCircle,
   Info,
   MessageSquare,
@@ -15,7 +13,6 @@ import {
   Settings,
   Sparkles,
   Users,
-  Zap,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '../ui/badge';
@@ -206,11 +203,8 @@ export function SubAgentManager({
                   <HelpCircle className="w-4 h-4" />
                   <span>Agent Status Guide</span>
                 </div>
-                {showStatusGuide ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
+                {showStatusGuide && <ChevronUp className="w-4 h-4" />}
+                {!showStatusGuide && <ChevronDown className="w-4 h-4" />}
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent>

@@ -2,7 +2,7 @@ import React from 'react';
 import type { Preset } from '@agentos/core';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
+// import { Badge } from '../ui/badge';
 import { CategoryIcon } from '../common/CategoryIcon';
 import { PresetStatusBadge } from './PresetStatusBadge';
 import { Edit, Copy, Trash2, MoreHorizontal } from 'lucide-react';

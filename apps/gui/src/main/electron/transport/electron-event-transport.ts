@@ -32,7 +32,7 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
   close() {}
 
   // eslint-disable-next-line @typescript-eslint/ban-types
-  on<_EventKey extends string = string, _EventCallback extends Function = Function>() {
+  on() {
     throw new Error('Method not implemented.');
   }
   unwrap<T>(): T {

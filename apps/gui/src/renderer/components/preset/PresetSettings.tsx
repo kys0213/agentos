@@ -32,7 +32,7 @@ const PresetSettings: React.FC = () => {
         <Text fontWeight="semibold" mb={2}>
           Current Preset
         </Text>
-        {currentPreset ? (
+        {currentPreset && (
           <VStack align="start" spacing={1}>
             <Text>
               <strong>Name:</strong> {currentPreset.name}
@@ -41,9 +41,8 @@ const PresetSettings: React.FC = () => {
               <strong>Description:</strong> {currentPreset.description || 'No description'}
             </Text>
           </VStack>
-        ) : (
-          <Text color="gray.500">No preset selected</Text>
         )}
+        {!currentPreset && <Text color="gray.500">No preset selected</Text>}
       </Box>
 
       {/* 프리셋 선택 */}

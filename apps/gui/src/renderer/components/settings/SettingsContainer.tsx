@@ -1,10 +1,9 @@
 import React from 'react';
 import { Box, Button, VStack, HStack, Text } from '@chakra-ui/react';
 import { useSettingsState, useSettingsActions, useUIActions } from '../../stores/app-store';
-import { useMcpConfigs, useConnectMcp } from '../../hooks/queries/use-mcp';
 import LLMSettingsContainer from '../llm/LLMSettingsContainer';
 import PresetSettings from '../preset/PresetSettings';
-import type { McpConfig } from '@agentos/core';
+// MCP config handled via Management section; no direct usage here
 
 /**
  * 설정 컨테이너 컴포넌트
@@ -17,19 +16,7 @@ const SettingsContainer: React.FC = () => {
   const settingsActions = useSettingsActions();
   const uiActions = useUIActions();
 
-  // React Query 데이터
-  const { data: mcpConfigs = [] } = useMcpConfigs();
-  const connectMcpMutation = useConnectMcp();
-
-  // MCP 설정 저장 핸들러
-  const handleSaveMcp = async (config: McpConfig) => {
-    try {
-      await connectMcpMutation.mutateAsync(config);
-      settingsActions.toggleMcpSettings();
-    } catch (error) {
-      console.error('Failed to save MCP config:', error);
-    }
-  };
+  // React Query 데이터: MCP queries/actions are wired via Management section; placeholders only
 
   return (
     <Box p={4} h="100%" overflow="auto">

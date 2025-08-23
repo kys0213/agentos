@@ -16,7 +16,9 @@ export const PresetPicker: React.FC<PresetPickerProps> = ({ presets, value, onCh
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return presets;
+    if (!q) {
+      return presets;
+    }
     return presets.filter((p) =>
       [p.name, p.description, ...(p.category ?? [])].some((s) => s?.toLowerCase().includes(q))
     );

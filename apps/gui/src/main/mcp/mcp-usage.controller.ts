@@ -19,15 +19,15 @@ export class McpUsageController {
   ) {}
 
   @EventPattern('mcp.usage.getLogs')
-  async getUsageLogs(@Payload() data: GetLogsDto) {
-    const query = toCoreQuery(data?.query);
-    const pg = toCorePagination(data?.pg);
+  async getUsageLogs(@Payload() _data: GetLogsDto) {
+    const query = toCoreQuery(_data?.query);
+    const pg = toCorePagination(_data?.pg);
     return this.usage.list(query, pg);
   }
 
   @EventPattern('mcp.usage.getStats')
-  async getUsageStats(@Payload() dto?: GetStatsDto) {
-    const query = toCoreQuery(dto?.query);
+  async getUsageStats(@Payload() _dto?: GetStatsDto) {
+    const query = toCoreQuery(_dto?.query);
     return this.usage.getStats(query);
   }
 
@@ -76,12 +76,12 @@ export class McpUsageController {
   }
 
   @EventPattern('mcp.usage.getLogsInRange')
-  async getLogsInRange(@Payload() data: LogsInRangeDto) {
+  async getLogsInRange(@Payload() _data: LogsInRangeDto) {
     return [] as unknown[]; // TODO: optional
   }
 
   @EventPattern('mcp.usage.clear')
-  async clear(@Payload() dto?: ClearDto) {
+  async clear(@Payload() _dto?: ClearDto) {
     // TODO: optional clear support
     return { success: true };
   }

@@ -8,7 +8,9 @@ export default function useMessageSearch(
   term: string
 ): SearchableMessage[] {
   return useMemo(() => {
-    if (!term) return messages;
+    if (!term) {
+      return messages;
+    }
     const lower = term.toLowerCase();
     return messages.filter((m) => m.text.toLowerCase().includes(lower));
   }, [messages, term]);

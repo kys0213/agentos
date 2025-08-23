@@ -61,7 +61,9 @@ export class McpUsageRpcService {
   async subscribeToUsageUpdates(
     callback: (event: McpUsageUpdateEvent) => void
   ): Promise<() => void> {
-    if (!this.transport.stream) return async () => {};
+    if (!this.transport.stream) {
+      return async () => {};
+    }
 
     const close = this.transport.on<McpUsageUpdateEvent>('mcp.usage.events', (ev) => {
       const { success } = McpUsageUpdateEventSchema.safeParse(ev);

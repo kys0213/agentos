@@ -27,7 +27,7 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({
-  agentId,
+  agentId: _agentId,
   agentName,
   agentPreset,
   onClose,
@@ -36,7 +36,7 @@ export function ChatInterface({
   const [messages, setMessages] = useState<Readonly<MessageHistory>[]>([]);
 
   const [inputMessage, setInputMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const [isTyping] = useState(false);
 
   const handleSendMessage = () => {
     if (!inputMessage.trim()) {

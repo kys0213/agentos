@@ -184,11 +184,15 @@ export function RACPManager() {
                       {phase.phase}: {phase.title}
                     </h3>
                     <Badge className={`text-xs border ${getStatusColor(phase.status)}`}>
-                      {phase.status === 'in-progress'
-                        ? 'In Progress'
-                        : phase.status === 'completed'
-                          ? 'Completed'
-                          : 'Planned'}
+                      {(() => {
+                        if (phase.status === 'in-progress') {
+                          return 'In Progress';
+                        }
+                        if (phase.status === 'completed') {
+                          return 'Completed';
+                        }
+                        return 'Planned';
+                      })()}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-3">
@@ -209,9 +213,10 @@ export function RACPManager() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {phase.items.map((item, itemIndex) => (
                     <div key={itemIndex} className="flex items-center gap-2 text-sm">
-                      {item.done ? (
+                      {item.done && (
                         <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
-                      ) : (
+                      )}
+                      {!item.done && (
                         <div className="w-4 h-4 border border-gray-300 rounded-sm flex-shrink-0" />
                       )}
                       <span className={item.done ? 'text-foreground' : 'text-muted-foreground'}>
