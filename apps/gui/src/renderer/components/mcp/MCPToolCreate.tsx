@@ -95,6 +95,38 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
   const [connectionTests, setConnectionTests] = useState<ConnectionTest[]>([]);
   const [finalTestResult, setFinalTestResult] = useState<'success' | 'error' | null>(null);
 
+  // Derived flags/labels to simplify JSX (avoid nested/long ternaries)
+  const isWebsocket = formData.type === 'websocket';
+  const isSse = formData.type === 'sse';
+  const isStreamHttp = formData.type === 'streamableHttp';
+  const isHttpLike = isStreamHttp || isSse;
+  let connTitle = 'Server-Sent Events';
+  if (isStreamHttp) {
+    connTitle = 'HTTP Streaming';
+  } else if (isWebsocket) {
+    connTitle = 'WebSocket';
+  }
+  let urlPlaceholder = 'http://localhost:8080/mcp';
+  if (isWebsocket) {
+    urlPlaceholder = 'ws://localhost:8080/mcp';
+  } else if (isSse) {
+    urlPlaceholder = 'http://localhost:8080/events';
+  }
+  const ConnIcon = isWebsocket ? Wifi : Globe;
+
+  const badgeVariant = (s: ConnectionTest['status']) => {
+    switch (s) {
+      case 'success':
+        return 'default' as const;
+      case 'error':
+        return 'destructive' as const;
+      case 'running':
+        return 'outline' as const;
+      default:
+        return 'secondary' as const;
+    }
+  };
+
   const connectionTypes = [
     {
       type: 'stdio' as const,
@@ -326,13 +358,17 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
   };
 
   const handleCreate = () => {
-    if (!isFormValid()) return;
+    if (!isFormValid()) {
+      return;
+    }
 
     let finalConfig: McpConfig;
 
     const envObj = envVars.reduce(
       (acc, env) => {
-        if (env.key && env.value) acc[env.key] = env.value;
+        if (env.key && env.value) {
+          acc[env.key] = env.value;
+        }
         return acc;
       },
       {} as Record<string, string>
@@ -340,7 +376,9 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
 
     const headersObj = headers.reduce(
       (acc, header) => {
-        if (header.key && header.value) acc[header.key] = header.value;
+        if (header.key && header.value) {
+          acc[header.key] = header.value;
+        }
         return acc;
       },
       {} as Record<string, string>
@@ -394,7 +432,9 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
   };
 
   const isFormValid = () => {
-    if (!formData.name || !formData.version) return false;
+    if (!formData.name || !formData.version) {
+      return false;
+    }
 
     switch (formData.type) {
       case 'stdio':
@@ -799,7 +839,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                             Add Variable
                           </Button>
                         </div>
-                        {envVars.length === 0 ? (
+                        {envVars.length === 0 && (
                           <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
                             <Key className="w-8 h-8 text-gray-400 mx-auto mb-3" />
                             <p className="text-sm text-muted-foreground">
@@ -815,7 +855,8 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                               Add First Variable
                             </Button>
                           </div>
-                        ) : (
+                        )}
+                        {envVars.length > 0 && (
                           <div className="space-y-3">
                             {envVars.map((env, index) => (
                               <div key={index} className="flex gap-2">
@@ -848,23 +889,12 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                   </Card>
                 )}
 
-                {(formData.type === 'streamableHttp' ||
-                  formData.type === 'websocket' ||
-                  formData.type === 'sse') && (
+                {(isHttpLike || isWebsocket) && (
                   <Card className="p-6">
                     <div className="flex items-center gap-2 mb-4">
-                      {formData.type === 'websocket' ? (
-                        <Wifi className="w-5 h-5 text-blue-500" />
-                      ) : (
-                        <Globe className="w-5 h-5 text-blue-500" />
-                      )}
+                      <ConnIcon className="w-5 h-5 text-blue-500" />
                       <h3 className="text-lg font-semibold text-foreground">
-                        {formData.type === 'streamableHttp'
-                          ? 'HTTP Streaming'
-                          : formData.type === 'websocket'
-                            ? 'WebSocket'
-                            : 'Server-Sent Events'}{' '}
-                        Configuration
+                        {connTitle} Configuration
                       </h3>
                     </div>
                     <div className="space-y-6">
@@ -874,13 +904,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                           id="url"
                           value={formData.url}
                           onChange={(e) => updateFormData({ url: e.target.value })}
-                          placeholder={
-                            formData.type === 'websocket'
-                              ? 'ws://localhost:8080/mcp'
-                              : formData.type === 'sse'
-                                ? 'http://localhost:8080/events'
-                                : 'http://localhost:8080/mcp'
-                          }
+                          placeholder={urlPlaceholder}
                           className="mt-1 font-mono"
                         />
                         <p className="text-xs text-muted-foreground mt-1">
@@ -888,7 +912,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                         </p>
                       </div>
 
-                      {(formData.type === 'streamableHttp' || formData.type === 'sse') && (
+                      {isHttpLike && (
                         <div>
                           <div className="flex items-center justify-between mb-3">
                             <Label>Headers</Label>
@@ -902,7 +926,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                               Add Header
                             </Button>
                           </div>
-                          {headers.length === 0 ? (
+                          {headers.length === 0 && (
                             <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
                               <FileText className="w-8 h-8 text-gray-400 mx-auto mb-3" />
                               <p className="text-sm text-muted-foreground">No custom headers set</p>
@@ -916,7 +940,8 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                                 Add First Header
                               </Button>
                             </div>
-                          ) : (
+                          )}
+                          {headers.length > 0 && (
                             <div className="space-y-3">
                               {headers.map((header, index) => (
                                 <div key={index} className="flex gap-2">
@@ -1047,11 +1072,8 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                       disabled={isTestingConnection || !isFormValid()}
                       className="gap-2"
                     >
-                      {isTestingConnection ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <RefreshCw className="w-4 h-4" />
-                      )}
+                      {isTestingConnection && <Loader2 className="w-4 h-4 animate-spin" />}
+                      {!isTestingConnection && <RefreshCw className="w-4 h-4" />}
                       {isTestingConnection ? 'Testing...' : 'Run Test'}
                     </Button>
                   </div>
@@ -1122,18 +1144,7 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
                               <h5 className="font-medium text-foreground">{test.step}</h5>
-                              <Badge
-                                variant={
-                                  test.status === 'success'
-                                    ? 'default'
-                                    : test.status === 'error'
-                                      ? 'destructive'
-                                      : test.status === 'running'
-                                        ? 'outline'
-                                        : 'secondary'
-                                }
-                                className="text-xs"
-                              >
+                              <Badge variant={badgeVariant(test.status)} className="text-xs">
                                 {test.status}
                               </Badge>
                             </div>
@@ -1166,9 +1177,10 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                           : 'border-red-200 bg-red-50'
                       }
                     >
-                      {finalTestResult === 'success' ? (
+                      {finalTestResult === 'success' && (
                         <CheckCircle className="w-4 h-4 text-green-600" />
-                      ) : (
+                      )}
+                      {finalTestResult === 'error' && (
                         <AlertTriangle className="w-4 h-4 text-red-600" />
                       )}
                       <AlertDescription
@@ -1284,7 +1296,9 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                             ...(envVars.length > 0 && {
                               env: envVars.reduce(
                                 (acc, env) => {
-                                  if (env.key && env.value) acc[env.key] = env.value;
+                                  if (env.key && env.value) {
+                                    acc[env.key] = env.value;
+                                  }
                                   return acc;
                                 },
                                 {} as Record<string, string>
@@ -1296,7 +1310,9 @@ export function MCPToolCreate({ onBack, onCreate }: MCPToolCreateProps) {
                           ...(headers.length > 0 && {
                             headers: headers.reduce(
                               (acc, header) => {
-                                if (header.key && header.value) acc[header.key] = header.value;
+                                if (header.key && header.value) {
+                                  acc[header.key] = header.value;
+                                }
                                 return acc;
                               },
                               {} as Record<string, string>

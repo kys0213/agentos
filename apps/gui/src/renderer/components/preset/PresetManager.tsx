@@ -1,10 +1,8 @@
-import type { CreatePreset, Preset, PresetStatus } from '@agentos/core';
+import type { CreatePreset, Preset } from '@agentos/core';
 import {
-  Archive,
   BarChart3,
   BookOpen,
   CheckCircle,
-  Clock,
   FileText,
   Folder,
   FolderOpen,
@@ -55,7 +53,7 @@ export function PresetManager({
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   // Removed create wizard modal state
   const [presets, setPresets] = useState<Preset[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading] = useState(true);
 
   const sourcePresets = injectedPresets ?? presets;
   const loading = injectedLoading ?? isLoading;
@@ -112,12 +110,16 @@ export function PresetManager({
   };
 
   const duplicatePreset = (preset: Preset) => {
-    if (onDuplicatePreset) return onDuplicatePreset(preset);
+    if (onDuplicatePreset) {
+      return onDuplicatePreset(preset);
+    }
     setPresets((prev) => [...prev, preset]);
   };
 
   const deletePresetLocal = (presetId: string) => {
-    if (onDeletePreset) return onDeletePreset(presetId);
+    if (onDeletePreset) {
+      return onDeletePreset(presetId);
+    }
     setPresets((prev) => prev.filter((p) => p.id !== presetId));
   };
 
@@ -337,12 +339,13 @@ export function PresetManager({
             </TabsContent>
 
             <TabsContent value="edit" className="h-full">
-              {selectedPreset ? (
+              {selectedPreset && (
                 <PrestForm
                   preset={selectedPreset}
-                  onSubmit={(data) => selectedPreset && onUpdatePreset?.(selectedPreset.id, data)}
+                  onSubmit={(data) => onUpdatePreset?.(selectedPreset.id, data)}
                 />
-              ) : (
+              )}
+              {!selectedPreset && (
                 <Card className="p-6 h-full flex items-center justify-center">
                   <div className="text-center text-muted-foreground">
                     <Settings className="w-12 h-12 mx-auto mb-4" />
@@ -354,13 +357,14 @@ export function PresetManager({
             </TabsContent>
 
             <TabsContent value="knowledge" className="h-full">
-              {selectedPreset ? (
+              {selectedPreset && (
                 <KnowledgeBaseManager
                   agentId={selectedPreset.id}
                   agentName={selectedPreset.name}
                   agentCategory={selectedPreset.category[0]}
                 />
-              ) : (
+              )}
+              {!selectedPreset && (
                 <Card className="p-6 h-full flex items-center justify-center">
                   <div className="text-center text-muted-foreground">
                     <BookOpen className="w-12 h-12 mx-auto mb-4" />

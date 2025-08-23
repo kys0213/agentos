@@ -33,16 +33,15 @@ import type {
 } from '../../shared/types/mcp-usage-types';
 
 export class MockIpcChannel implements IpcChannel {
-  private bridges = new Map<string, LlmManifest>();
-  private currentBridgeId: string | null = null;
-  private mcpConfigs: McpConfig[] = [];
-  private mcpConnected = new Set<string>();
-  private toolMetadataByClient = new Map<string, McpToolMetadata[]>();
-  private usageLogs: McpUsageLog[] = [];
-  private presets: Preset[] = [];
-  private agents: AgentMetadata[] = [];
-  private sessions: Map<string, { title: string; updatedAt: Date; messages: MessageHistory[] }> =
-    new Map();
+  bridges = new Map<string, LlmManifest>();
+  currentBridgeId: string | null = null;
+  mcpConfigs: McpConfig[] = [];
+  mcpConnected = new Set<string>();
+  toolMetadataByClient = new Map<string, McpToolMetadata[]>();
+  usageLogs: McpUsageLog[] = [];
+  presets: Preset[] = [];
+  agents: AgentMetadata[] = [];
+  sessions: Map<string, { title: string; updatedAt: Date; messages: MessageHistory[] }> = new Map();
 
   // Agent
   async chat(
@@ -54,15 +53,19 @@ export class MockIpcChannel implements IpcChannel {
     const sessionId = options?.sessionId ?? `session_${Date.now()}`;
     const text = messages
       .map((m) => {
-        const c: any = (m as any).content;
-        if (typeof c === 'string') return c;
+        const c = m.content;
+        if (typeof c === 'string') {
+          return c;
+        }
+
         if (Array.isArray(c)) {
           return c
             .map((it) => (typeof it === 'string' ? it : (it?.value ?? it?.text ?? '')))
             .join('\n');
         }
+
         if (c && typeof c === 'object') {
-          return c.value ?? c.text ?? JSON.stringify(c);
+          return (c as { value?: unknown }).value ?? JSON.stringify(c);
         }
         return '';
       })
@@ -89,7 +92,9 @@ export class MockIpcChannel implements IpcChannel {
     patch: Partial<Omit<AgentMetadata, 'id'>>
   ): Promise<AgentMetadata> {
     const idx = this.agents.findIndex((a) => a.id === agentId);
-    if (idx === -1) throw new Error(`Agent not found: ${agentId}`);
+    if (idx === -1) {
+      throw new Error(`Agent not found: ${agentId}`);
+    }
     const updated = { ...this.agents[idx], ...patch, id: agentId } as AgentMetadata;
     this.agents[idx] = updated;
     return updated;
@@ -113,7 +118,9 @@ export class MockIpcChannel implements IpcChannel {
   }
   async deleteAgent(id: string): Promise<AgentMetadata> {
     const found = await this.getAgentMetadata(id);
-    if (!found) throw new Error(`Agent not found: ${id}`);
+    if (!found) {
+      throw new Error(`Agent not found: ${id}`);
+    }
     this.agents = this.agents.filter((a) => a.id !== id);
     return found;
   }
@@ -125,21 +132,24 @@ export class MockIpcChannel implements IpcChannel {
   async getBuiltinTool(_id: string): Promise<BuiltinTool | null> {
     return null;
   }
-  async invokeBuiltinTool<R>(_toolName: string, _args: Record<string, any>): Promise<R> {
+  async invokeBuiltinTool<R>(_toolName: string, _args: Record<string, unknown>): Promise<R> {
     return {} as R;
   }
 
   // Bridge
   async registerBridge(config: LlmManifest): Promise<{ success: boolean }> {
-    const id = (config as any).name ?? `bridge_${this.bridges.size + 1}`;
+    const id = (config as { name?: string }).name ?? `bridge_${this.bridges.size + 1}`;
     this.bridges.set(id, config);
-    if (!this.currentBridgeId) this.currentBridgeId = id;
+    if (!this.currentBridgeId) {
+      this.currentBridgeId = id;
+    }
     return { success: true };
   }
   async unregisterBridge(id: string): Promise<{ success: boolean }> {
     const ok = this.bridges.delete(id);
-    if (this.currentBridgeId === id)
+    if (this.currentBridgeId === id) {
       this.currentBridgeId = this.bridges.keys().next().value ?? null;
+    }
     return { success: ok };
   }
   async switchBridge(id: string): Promise<{ success: boolean }> {
@@ -147,9 +157,13 @@ export class MockIpcChannel implements IpcChannel {
     return { success: true };
   }
   async getCurrentBridge(): Promise<{ id: string; config: LlmManifest } | null> {
-    if (!this.currentBridgeId) return null;
+    if (!this.currentBridgeId) {
+      return null;
+    }
     const cfg = this.bridges.get(this.currentBridgeId);
-    if (!cfg) return null;
+    if (!cfg) {
+      return null;
+    }
     return { id: this.currentBridgeId, config: cfg };
   }
   async getBridgeIds(): Promise<string[]> {
@@ -164,9 +178,11 @@ export class MockIpcChannel implements IpcChannel {
     return [...this.mcpConfigs];
   }
   async connectMcp(config: McpConfig): Promise<{ success: boolean }> {
-    const existing = this.mcpConfigs.find((c) => (c as any).name === (config as any).name);
-    if (!existing) this.mcpConfigs.push(config);
-    this.mcpConnected.add((config as any).name);
+    const existing = this.mcpConfigs.find((c) => c.name === config.name);
+    if (!existing) {
+      this.mcpConfigs.push(config);
+    }
+    this.mcpConnected.add(config.name);
     return { success: true };
   }
   async disconnectMcp(name: string): Promise<{ success: boolean }> {
@@ -189,9 +205,9 @@ export class MockIpcChannel implements IpcChannel {
       status: 'success',
       duration: Math.floor(Math.random() * 200) + 10,
       timestamp: new Date(),
-      parameters: args as any,
+      parameters: args,
       result: 'ok',
-    } as any;
+    };
     this.usageLogs.push(log);
     return { success: true, result: { echoedArgs: args } };
   }
@@ -207,8 +223,7 @@ export class MockIpcChannel implements IpcChannel {
   async getToolMetadata(client: string): Promise<McpToolMetadata> {
     const list = this.toolMetadataByClient.get(client) ?? [];
     return (
-      list[0] ??
-      ({
+      list[0] ?? {
         id: 'mock',
         name: 'Mock Tool',
         description: '',
@@ -216,7 +231,7 @@ export class MockIpcChannel implements IpcChannel {
         provider: 'mock',
         usageCount: 0,
         permissions: [],
-      } as any)
+      }
     );
   }
   async getAllToolMetadata(): Promise<McpToolMetadata[]> {
@@ -234,14 +249,18 @@ export class MockIpcChannel implements IpcChannel {
   }
   async updatePreset(id: string, preset: Partial<Omit<Preset, 'id'>>): Promise<Preset> {
     const idx = this.presets.findIndex((p) => p.id === id);
-    if (idx === -1) throw new Error(`Preset not found: ${id}`);
+    if (idx === -1) {
+      throw new Error(`Preset not found: ${id}`);
+    }
     const updated = { ...this.presets[idx], ...preset, id } as Preset;
     this.presets[idx] = updated;
     return updated;
   }
   async deletePreset(id: string): Promise<Preset> {
     const found = this.presets.find((p) => p.id === id);
-    if (!found) throw new Error(`Preset not found: ${id}`);
+    if (!found) {
+      throw new Error(`Preset not found: ${id}`);
+    }
     this.presets = this.presets.filter((p) => p.id !== id);
     return found;
   }
@@ -258,8 +277,14 @@ export class MockIpcChannel implements IpcChannel {
       .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
     const idx = pagination?.cursor ? items.findIndex((i) => i.id === pagination.cursor) : -1;
     const limit = pagination?.limit ?? items.length;
-    const startIndex =
-      idx >= 0 ? (pagination?.direction === 'backward' ? Math.max(0, idx - limit) : idx + 1) : 0;
+    let startIndex = 0;
+    if (idx >= 0) {
+      if (pagination?.direction === 'backward') {
+        startIndex = Math.max(0, idx - limit);
+      } else {
+        startIndex = idx + 1;
+      }
+    }
     const paged = items.slice(startIndex, startIndex + limit);
     return { items: paged, nextCursor: paged.at(-1)?.id ?? '', hasMore: false };
   }
@@ -282,11 +307,17 @@ export class MockIpcChannel implements IpcChannel {
   // Usage Log
   async getUsageLogs(clientName: string, options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
     let logs = [...this.usageLogs];
-    if (options?.status) logs = logs.filter((l) => l.status === options.status);
-    if (options?.agentId) logs = logs.filter((l) => l.agentId === options.agentId);
-    if (options?.sortOrder === 'asc')
+    if (options?.status) {
+      logs = logs.filter((l) => l.status === options.status);
+    }
+    if (options?.agentId) {
+      logs = logs.filter((l) => l.agentId === options.agentId);
+    }
+    if (options?.sortOrder === 'asc') {
       logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-    else logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    } else {
+      logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    }
     if (options?.offset !== undefined || options?.limit !== undefined) {
       const offset = options.offset || 0;
       const limit = options.limit || 50;
@@ -295,13 +326,19 @@ export class MockIpcChannel implements IpcChannel {
     return logs;
   }
   async getAllUsageLogs(options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
-    return this.getUsageLogs('*', options).then((_) => {
+    return this.getUsageLogs('*', options).then(() => {
       let all = [...this.usageLogs];
-      if (options?.status) all = all.filter((l) => l.status === options.status);
-      if (options?.agentId) all = all.filter((l) => l.agentId === options.agentId);
-      if (options?.sortOrder === 'asc')
+      if (options?.status) {
+        all = all.filter((l) => l.status === options.status);
+      }
+      if (options?.agentId) {
+        all = all.filter((l) => l.agentId === options.agentId);
+      }
+      if (options?.sortOrder === 'asc') {
         all.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-      else all.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      } else {
+        all.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      }
       if (options?.offset !== undefined || options?.limit !== undefined) {
         const offset = options.offset || 0;
         const limit = options.limit || 50;
@@ -317,7 +354,7 @@ export class MockIpcChannel implements IpcChannel {
       averageDuration: 0,
       lastUsedAt: undefined,
       errorCount: 0,
-    } as any;
+    };
   }
   async getHourlyStats(_date: Date, _clientName?: string): Promise<HourlyStatsResponse> {
     return { hourlyData: Array.from({ length: 24 }, (_, h) => [h, 0]) };
@@ -350,25 +387,27 @@ export const MockIpcUtils = {
   addBridge(channel: MockIpcChannel, cfg: LlmManifest) {
     return channel.registerBridge(cfg);
   },
+
   async addPreset(channel: MockIpcChannel, preset: Preset) {
     // expose through public API
-    return channel.createPreset(preset as any);
+    return channel.createPreset(preset);
   },
+
   async seedMcpClient(channel: MockIpcChannel, config: McpConfig, tools?: McpToolMetadata[]) {
     await channel.connectMcp(config);
     if (tools && tools.length) {
-      (channel as any).toolMetadataByClient?.set((config as any).name, tools);
+      channel.toolMetadataByClient?.set(config.name, tools);
     }
   },
   async addUsageLog(channel: MockIpcChannel, log: McpUsageLog) {
-    (channel as any).usageLogs?.push(log);
+    channel.usageLogs?.push(log);
   },
   clear(channel: MockIpcChannel) {
-    (channel as any).mcpConfigs = [];
-    (channel as any).mcpConnected = new Set();
-    (channel as any).toolMetadataByClient = new Map();
-    (channel as any).usageLogs = [];
-    (channel as any).presets = [];
-    (channel as any).agents = [];
+    channel.mcpConfigs = [];
+    channel.mcpConnected = new Set();
+    channel.toolMetadataByClient = new Map();
+    channel.usageLogs = [];
+    channel.presets = [];
+    channel.agents = [];
   },
 };

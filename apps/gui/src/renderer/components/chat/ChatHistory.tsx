@@ -25,7 +25,9 @@ export function ChatHistory({
 
   const filteredAgents = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return agents;
+    if (!q) {
+      return agents;
+    }
     return agents.filter(
       (a) =>
         a.name.toLowerCase().includes(q) ||

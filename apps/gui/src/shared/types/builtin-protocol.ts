@@ -11,5 +11,5 @@ export interface BuiltinToolProtocol {
    */
   getBuiltinTool(id: string): Promise<BuiltinTool | null>;
 
-  invokeBuiltinTool<R>(toolName: string, args: Record<string, any>): Promise<R>;
+  invokeBuiltinTool<R>(toolName: string, args: Record<string, unknown>): Promise<R>;
 }

@@ -44,7 +44,8 @@ Note: This spec is interface-first. It defines contracts (methods, payloads, fra
 - builtin.\*: `builtin.install`, `builtin.list`, `builtin.invoke`, `builtin.remove`
 - mcp.\*: `mcp.getTool`(payload: `{ name }`), `mcp.invokeTool`(payload: `{ name, input?, resumptionToken? }`)
 - preset.\*: `preset.list`, `preset.get`, `preset.create`, `preset.update`, `preset.delete`
-- mcp.usage.\*: `mcp.usage.getLogs`, `mcp.usage.getStats`, `mcp.usage.getHourlyStats`, `mcp.usage.clear`
+- mcp.usage.\*: `mcp.usage.getLogs`, `mcp.usage.getStats`, `mcp.usage.getHourlyStats` (payload: `{ date: ISOString }`, resp: `{ hourlyData: Array<[number, number]> }`), `mcp.usage.clear`
+- mcp.usage.events: usage 업데이트 스트림 채널. `AsyncGenerator<McpUsageUpdateEvent>` 형태로 이벤트를 전송하며, 클라이언트는 iterator `return()` 호출로 취소할 수 있다.
 
 Renderer 서비스 메서드명은 내부 편의를 위한 래퍼이며, 실제 전송 채널/페이로드는 위 규약을 따른다.
 
@@ -117,7 +118,7 @@ export type RpcFrame =
 
 ### 4.1 서비스 레이어(권장)와 메서드-타입 매핑
 
-Transport는 채널 문자열과 payload만 다루고, 타입 안전성은 서비스 레이어에서 보장합니다.
+Transport는 채널 문자열과 payload만 다루고, 타입 안전성은 서비스 레이어에서 보장합니다. 구독형 API는 `on(channel, handler)`처럼 래핑해 사용하며, 구독 해제 시점에 즉시 `cancel(can)` 프레임이 전송되도록 `iterator.return()`을 호출하는 것을 권장합니다(즉시 자원 해제 & 백프레셔 개선).
 
 권장 패턴(채널 기반 RpcClient + 타입 안전 서비스):
 

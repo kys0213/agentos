@@ -1,17 +1,12 @@
 import { Observable, filter, share } from 'rxjs';
 import type { RpcFrame } from '../../shared/rpc/rpc-frame';
-
-type Bridge = {
-  start: (onFrame: (f: RpcFrame) => void) => void;
-  post: (f: RpcFrame) => void;
-  stop?: () => void;
-};
+import { FrameTransport } from '../../shared/rpc/transport';
 
 /**
  * Wraps preload bridge into a cold Observable of RpcFrame.
  * Use once and share among consumers to avoid multiple start() invocations.
  */
-export function fromBridge$(bridge: Bridge): Observable<RpcFrame> {
+export function fromBridge$(bridge: FrameTransport): Observable<RpcFrame> {
   return new Observable<RpcFrame>((sub) => {
     bridge.start((f) => sub.next(f));
     return () => bridge.stop?.();
@@ -29,11 +24,20 @@ export function byMethod(
 ): (source: Observable<RpcFrame>) => Observable<RpcFrame> {
   return (source) =>
     source.pipe(
-      filter((f) => {
-        const m = (f as any).method as string | undefined;
-        if (!m) return false;
-        if (pattern instanceof RegExp) return pattern.test(m);
-        return m === pattern || m.startsWith(pattern);
+      filter((frame) => {
+        if (frame.kind !== 'req' && frame.kind !== 'nxt') {
+          return false;
+        }
+
+        if (!frame.method) {
+          return false;
+        }
+
+        if (pattern instanceof RegExp) {
+          return pattern.test(frame.method);
+        }
+
+        return frame.method === pattern || frame.method.startsWith(pattern);
       })
     );
 }
@@ -41,19 +45,19 @@ export function byMethod(
 /**
  * Convenience selector: stream only data payloads for frames with matching method.
  */
-export function selectDataByMethod<T = unknown>(
+export function selectDataByMethod(
   pattern: string | RegExp
-): (source: Observable<RpcFrame>) => Observable<T> {
+): (source: Observable<RpcFrame>) => Observable<RpcFrame> {
   return (source) =>
     source.pipe(
       byMethod(pattern),
-      filter((f) => f.kind === 'nxt'),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      filter((f: any) => 'data' in f)
-    ) as unknown as Observable<T>;
+      filter((frame) => frame.kind === 'nxt'),
+      filter((frame) => 'data' in frame)
+    );
 }
 
 let seq = 0;
+
 function newCid() {
   return `${Date.now()}-${++seq}-${Math.random().toString(16).slice(2)}`;
 }
@@ -62,7 +66,7 @@ function newCid() {
  * Starts a stream by posting a req frame; returns a cancel function that sends a can frame.
  */
 export function startStream(
-  bridge: Bridge,
+  bridge: FrameTransport,
   method: string,
   payload?: unknown,
   meta?: { senderId?: number; rpcSpecVersion?: string; ts?: number }

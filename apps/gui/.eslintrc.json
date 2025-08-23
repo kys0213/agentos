@@ -2,5 +2,19 @@
   "extends": ["../../.eslintrc.json"],
   "parserOptions": {
     "project": ["./tsconfig.json"]
+  },
+  "rules": {
+    "curly": ["warn", "all"],
+    "brace-style": ["error", "1tbs", { "allowSingleLine": false }],
+    "no-nested-ternary": "warn",
+    "multiline-ternary": ["warn", "always-multiline"],
+    "@typescript-eslint/no-explicit-any": "warn",
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "TSAsExpression > TSAnyKeyword",
+        "message": "Do not use 'as any'; use proper typing, generics, or runtime guards."
+      }
+    ]
   }
 }

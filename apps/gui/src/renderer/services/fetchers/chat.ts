@@ -1,5 +1,6 @@
 import { ServiceContainer } from '../../ipc/service-container';
 import type { ChatSessionMetadata, MessageHistory, ReadonlyAgentMetadata } from '@agentos/core';
+import type { Message, StringContent } from 'llm-bridge-spec';
 
 /**
  * Chat-related fetcher functions using ServiceContainer
@@ -58,25 +59,24 @@ export async function createChatSession(
 export async function sendMessage(
   agentId: string,
   content: string,
-  mentionedAgents?: string[]
+  _mentionedAgents?: string[]
 ): Promise<MessageHistory[]> {
   try {
     const agentService = ServiceContainer.getOrThrow('agent');
 
-    const result = await agentService.chat(
-      agentId,
-      [{ role: 'user', content: { contentType: 'text', value: content } } as any],
-      { sessionId: agentId, maxTurnCount: 1 }
-    );
+    const userMessage: Message = {
+      role: 'user',
+      content: { contentType: 'text', value: content } as StringContent,
+    };
+    const result = await agentService.chat(agentId, [userMessage], {
+      sessionId: agentId,
+      maxTurnCount: 1,
+    });
 
-    // 결과 메시지를 MessageHistory로 변환 (간단 매핑)
-    const mapped: MessageHistory[] = result.messages.map((m: any, idx: number) => ({
+    // 결과 메시지를 MessageHistory로 변환 (원본 Message 구조 보존)
+    const mapped: MessageHistory[] = result.messages.map((m, idx: number) => ({
+      ...m,
       messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
-      role: m.role === 'assistant' ? 'assistant' : (m.role as any),
-      content:
-        m.content?.contentType === 'text'
-          ? { contentType: 'text', value: m.content.value }
-          : { contentType: 'text', value: JSON.stringify(m.content) },
       createdAt: new Date(),
     }));
 

@@ -75,7 +75,9 @@ export const useInstalledBridges = () => {
       const list: { id: string; manifest: LlmManifest }[] = [];
       for (let i = 0; i < ids.length; i++) {
         const m = manifests[i];
-        if (m) list.push({ id: ids[i], manifest: m });
+        if (m) {
+          list.push({ id: ids[i], manifest: m });
+        }
       }
       return list;
     },

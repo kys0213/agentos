@@ -5,6 +5,12 @@ import type { MessageHistory } from '@agentos/core';
  * @param message MessageHistory 또는 MessageRecord
  * @returns 파싱된 텍스트 문자열
  */
+type TextLike = { contentType: string; value: string };
+
+function isTextLike(obj: unknown): obj is TextLike {
+  return !!obj && typeof obj === 'object' && 'contentType' in obj && 'value' in obj;
+}
+
 export function parseMessageContent(message: MessageHistory): string {
   if (!message.content) {
     return '';
@@ -24,9 +30,8 @@ export function parseMessageContent(message: MessageHistory): string {
   }
 
   // 단일 콘텐츠(레거시) 호환 처리
-  if (typeof message.content === 'object' && (message.content as any).contentType) {
-    const legacy = message.content as { contentType: string; value: string };
-    return legacy.contentType === 'text' ? legacy.value : '';
+  if (isTextLike(message.content)) {
+    return message.content.contentType === 'text' ? message.content.value : '';
   }
 
   return '';
@@ -65,16 +70,20 @@ export function parseMessagePreview(message: MessageHistory, maxLength: number =
  * @returns content에 텍스트가 포함되어 있으면 true
  */
 export function hasTextContent(message: MessageHistory): boolean {
-  if (!message.content) return false;
+  if (!message.content) {
+    return false;
+  }
 
-  if (typeof message.content === 'string') return true;
+  if (typeof message.content === 'string') {
+    return true;
+  }
 
   if (Array.isArray(message.content)) {
     return message.content.some((c) => c.contentType === 'text');
   }
 
-  if (typeof message.content === 'object' && (message.content as any).contentType) {
-    return (message.content as any).contentType === 'text';
+  if (isTextLike(message.content)) {
+    return message.content.contentType === 'text';
   }
 
   return false;

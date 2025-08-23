@@ -18,7 +18,7 @@ export class IpcAgent implements Agent {
     private readonly agentId: string
   ) {}
 
-  createSession(options?: { sessionId?: string; presetId?: string }): Promise<AgentSession> {
+  createSession(_options?: { sessionId?: string; presetId?: string }): Promise<AgentSession> {
     throw new Error('Method not implemented.');
   }
 
@@ -83,8 +83,8 @@ export class IpcAgent implements Agent {
     return await this.agentProtocol.chat(this.agentId, messages, options);
   }
 
-  async update(patch: Partial<ReadonlyAgentMetadata>): Promise<void> {
-    await this.agentProtocol.updateAgent(this.agentId, patch as any);
+  async update(patch: Partial<Omit<ReadonlyAgentMetadata, 'id'>>): Promise<void> {
+    await this.agentProtocol.updateAgent(this.agentId, patch);
   }
 
   async delete(): Promise<void> {

@@ -27,7 +27,7 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({
-  agentId,
+  agentId: _agentId,
   agentName,
   agentPreset,
   onClose,
@@ -36,10 +36,12 @@ export function ChatInterface({
   const [messages, setMessages] = useState<Readonly<MessageHistory>[]>([]);
 
   const [inputMessage, setInputMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const [isTyping] = useState(false);
 
   const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
+    if (!inputMessage.trim()) {
+      return;
+    }
 
     // TODO agent 와 대화하기
 
@@ -166,7 +168,11 @@ export function ChatInterface({
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder="메시지를 입력하세요..."
-            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleSendMessage();
+              }
+            }}
             className="flex-1"
           />
           <Button onClick={handleSendMessage} disabled={!inputMessage.trim()}>

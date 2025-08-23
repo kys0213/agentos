@@ -32,7 +32,7 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
   close() {}
 
   // eslint-disable-next-line @typescript-eslint/ban-types
-  on<_EventKey extends string = string, _EventCallback extends Function = Function>() {
+  on() {
     throw new Error('Method not implemented.');
   }
   unwrap<T>(): T {
@@ -95,15 +95,15 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
             code: e.code,
             details: e.details,
           });
-        } else if (isObject(e) && 'code' in (e as any)) {
-          const anyErr = e as any;
+        } else if (isObject(e) && 'code' in e) {
+          const anyErr = e as { message?: string; code?: string; details?: unknown };
           return this.sendTo(senderId, {
             kind: 'err',
             cid: frame.cid,
             ok: false,
             message: String(anyErr.message ?? '[error]'),
             code: anyErr.code ?? 'INTERNAL',
-            details: anyErr.details,
+            details: isObject(anyErr.details) ? anyErr.details : undefined,
           });
         } else if (e instanceof Error) {
           return this.sendTo(senderId, {
@@ -154,7 +154,9 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
 
   private sendToAll(frame: RpcFrame) {
     for (const w of BrowserWindow.getAllWindows()) {
-      if (!w.isDestroyed()) w.webContents.send('bridge:frame', frame);
+      if (!w.isDestroyed()) {
+        w.webContents.send('bridge:frame', frame);
+      }
     }
   }
 

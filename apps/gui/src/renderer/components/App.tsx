@@ -1,8 +1,6 @@
 import React from 'react';
 
 // Import new design hooks for Chat mode only
-import { useMentionableAgents } from '../hooks/queries/use-chat';
-import { useAppData } from '../hooks/useAppData';
 import { useAppNavigation } from '../hooks/useAppNavigation';
 
 // Chat 컨테이너 적용
@@ -20,11 +18,7 @@ import ManagementView from './layout/ManagementView';
 const NewAppLayout: React.FC = () => {
   const navigation = useAppNavigation();
 
-  const appData = useAppData();
-  const { data: mentionables = [], status: mentionablesStatus } = useMentionableAgents();
-
   const { activeSection, setActiveSection } = navigation;
-  const { currentAgents } = appData;
 
   // Chat Mode: Full screen ChatView with integrated ChatHistory sidebar
   if (activeSection === 'chat') {

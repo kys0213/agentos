@@ -10,7 +10,6 @@ import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usa
 import { McpRpcService as McpService } from './rpc/services/mcp.service';
 import { PresetRpcService as PresetService } from './rpc/services/preset.service';
 
-import { waitForRpcReady } from './rpc/waitForReady';
 import { BuiltinToolService } from './services/builtin-tool.service';
 
 /**
@@ -61,8 +60,8 @@ export async function bootstrap(rpcTransport: RpcClient): Promise<BootstrapResul
 
   // --- Agent events stream bootstrap (frame-based) ---
   try {
-    const bridge = (window as any).electronBridge;
-    // Start agent events stream (req → nxt*)
+    const bridge = window.electronBridge;
+
     startStream(bridge, 'agent.events');
     // Wire parsed events (replace handlers with store updates as needed)
     const frames$ = fromBridge$(bridge);

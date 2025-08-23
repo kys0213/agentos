@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { CreatePreset, Preset } from '@agentos/core';
 import { PresetManager } from './PresetManager';
 import {
   fetchPresets,
@@ -34,12 +35,13 @@ export const PresetManagerContainer: React.FC<{ onStartCreatePreset?: () => void
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => createPreset(data),
+    mutationFn: (data: CreatePreset) => createPreset(data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['presets'] }),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => updatePreset(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<Omit<Preset, 'id'>> }) =>
+      updatePreset(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['presets'] }),
   });
 
@@ -49,34 +51,38 @@ export const PresetManagerContainer: React.FC<{ onStartCreatePreset?: () => void
   });
 
   const alert = useMemo(() => {
-    if (createMutation.isSuccess)
+    if (createMutation.isSuccess) {
       return (
         <Alert className="mb-3">
           <AlertTitle>Preset created</AlertTitle>
           <AlertDescription>New preset has been added.</AlertDescription>
         </Alert>
       );
-    if (updateMutation.isSuccess)
+    }
+    if (updateMutation.isSuccess) {
       return (
         <Alert className="mb-3">
           <AlertTitle>Preset updated</AlertTitle>
           <AlertDescription>Changes have been saved.</AlertDescription>
         </Alert>
       );
-    if (deleteMutation.isSuccess)
+    }
+    if (deleteMutation.isSuccess) {
       return (
         <Alert className="mb-3">
           <AlertTitle>Preset deleted</AlertTitle>
           <AlertDescription>Preset has been removed.</AlertDescription>
         </Alert>
       );
-    if (duplicateMutation.isSuccess)
+    }
+    if (duplicateMutation.isSuccess) {
       return (
         <Alert className="mb-3">
           <AlertTitle>Preset duplicated</AlertTitle>
           <AlertDescription>Copy created successfully.</AlertDescription>
         </Alert>
       );
+    }
     if (
       createMutation.isError ||
       updateMutation.isError ||
@@ -136,9 +142,11 @@ export const PresetManagerContainer: React.FC<{ onStartCreatePreset?: () => void
         isLoading={false}
         onDeletePreset={(id) => deleteMutation.mutate(id)}
         onDuplicatePreset={(p) => duplicateMutation.mutate(p.id)}
-        onCreatePreset={(data) => createMutation.mutate(data as any)}
-        onCreatePresetAsync={(data) => createMutation.mutateAsync(data as any)}
-        onUpdatePreset={(id, data) => updateMutation.mutate({ id, data } as any)}
+        onCreatePreset={(data) => createMutation.mutate(data as unknown as CreatePreset)}
+        onCreatePresetAsync={(data) => createMutation.mutateAsync(data as CreatePreset)}
+        onUpdatePreset={(id, data) =>
+          updateMutation.mutate({ id, data: data as Partial<Omit<Preset, 'id'>> })
+        }
         onStartCreatePreset={onStartCreatePreset}
       />
     </div>

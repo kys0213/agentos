@@ -15,6 +15,7 @@ async function initializeApp() {
   await waitForRpcReady();
 
   const envInfo = getEnvironmentInfo();
+
   console.log(`🚀 Starting AgentOS in ${envInfo.detected} environment...`);
   console.log('Environment details:', envInfo);
 

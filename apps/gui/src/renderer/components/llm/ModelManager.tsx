@@ -36,20 +36,11 @@ export interface ModelManagerProps {
 export function ModelManager(props: ModelManagerProps) {
   const [activeTab, setActiveTab] = useState('instances');
   const [searchQuery, setSearchQuery] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
   const { items, isLoading, onRefresh, onSwitch } = props;
   const handleRefresh = () => onRefresh();
 
-  const handleInstallModel = async (modelId: string) => {
-    try {
-      // In real implementation, this would register a new bridge
-      console.log('Installing model:', modelId);
-      // await bridgeService.registerBridge(modelId, config);
-      handleRefresh();
-    } catch (err) {
-      console.error('Failed to install model:', err);
-    }
-  };
+  // Installation flow is handled by container; local stub removed
 
   const handleSwitchModel = async (bridgeId: string) => {
     try {
@@ -148,7 +139,7 @@ export function ModelManager(props: ModelManagerProps) {
 
         <TabsContent value="instances" className="space-y-6">
           {/* Model Instances */}
-          {items.length === 0 ? (
+          {items.length === 0 && (
             <Card className="p-6">
               <div className="flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-gray-500" />
@@ -158,7 +149,8 @@ export function ModelManager(props: ModelManagerProps) {
                 </div>
               </div>
             </Card>
-          ) : (
+          )}
+          {items.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {items
                 .filter((m) =>

@@ -16,7 +16,9 @@ export class McpUsagePublisher implements OnModuleInit, OnModuleDestroy {
     this.timer = setInterval(() => this.scan(), 2000);
   }
   async onModuleDestroy() {
-    if (this.timer) clearInterval(this.timer);
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
   }
 
   private async scan(): Promise<void> {

@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { MessageHistory, ReadonlyAgentMetadata } from '@agentos/core';
-import type { Message, MultiModalContent } from 'llm-bridge-spec';
 import { normalizeToArrayContent } from './normalize';
 import { ServiceContainer } from '../../ipc/service-container';
 
@@ -55,12 +54,14 @@ export const useSendChatMessage = (
   return useMutation({
     mutationFn: async ({
       text,
-      mentionedAgentIds,
+      mentionedAgentIds: _mentionedAgentIds,
     }: {
       text: string;
       mentionedAgentIds?: string[];
     }) => {
-      if (!agentId) throw new Error('agentId is required');
+      if (!agentId) {
+        throw new Error('agentId is required');
+      }
 
       const agentService = ServiceContainer.getOrThrow('agent');
 
@@ -123,7 +124,9 @@ export const useSendChatMessage = (
       return { userMessage, assistantMessages } as const;
     },
     onSuccess: ({ assistantMessages }) => {
-      if (!agentId) return;
+      if (!agentId) {
+        return;
+      }
       queryClient.setQueryData(
         CHAT_QUERY_KEYS.history(agentId),
         (prev?: Readonly<MessageHistory>[]) => [...(prev ?? []), ...assistantMessages]

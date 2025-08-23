@@ -1,5 +1,6 @@
 // Core 타입들을 재사용하여 일관성 보장
 import { McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
+import { z } from 'zod';
 
 /**
  * 사용량 로그 조회 옵션
@@ -36,6 +37,39 @@ export interface McpUsageUpdateEvent {
   /** 이벤트 발생 시간 */
   timestamp: Date;
 }
+
+export const McpUsageUpdateEventSchema = z.object({
+  type: z.union([
+    z.literal('usage-logged'),
+    z.literal('metadata-updated'),
+    z.literal('connection-changed'),
+  ]),
+  clientName: z.string(),
+  newLog: z
+    .object({
+      id: z.string(),
+      toolId: z.string().optional(),
+      toolName: z.string().optional(),
+      timestamp: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
+      operation: z.literal('tool.call'),
+      status: z.union([z.literal('success'), z.literal('error')]),
+      durationMs: z.number().optional(),
+      agentId: z.string().optional(),
+      sessionId: z.string().optional(),
+      errorCode: z.string().optional(),
+    })
+    .optional(),
+  metadata: z.any().optional(),
+  connectionStatus: z
+    .union([
+      z.literal('connected'),
+      z.literal('disconnected'),
+      z.literal('error'),
+      z.literal('pending'),
+    ])
+    .optional(),
+  timestamp: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
+});
 
 /**
  * GUI용 확장 메타데이터

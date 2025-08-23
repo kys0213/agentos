@@ -81,6 +81,43 @@ interface KnowledgeTemplate {
   }>;
 }
 
+// Runtime type guard for stored document shape from localStorage (JSON)
+type StoredKnowledgeDocument = {
+  id: string;
+  title: string;
+  content: string;
+  filename?: string;
+  size: number;
+  type: 'markdown' | 'text';
+  createdAt?: string;
+  updatedAt?: string;
+  tags?: string[];
+  indexed?: boolean;
+  vectorized?: boolean;
+  agentId?: string;
+  agentName?: string;
+  isTemplate?: boolean;
+};
+
+function isStoredKnowledgeDocument(o: unknown): o is StoredKnowledgeDocument {
+  if (!o || typeof o !== 'object') {
+    return false;
+  }
+
+  const v = o as Record<string, unknown>;
+  const has = (k: string) => Object.prototype.hasOwnProperty.call(v, k);
+  return (
+    typeof v.id === 'string' &&
+    typeof v.title === 'string' &&
+    typeof v.content === 'string' &&
+    typeof v.size === 'number' &&
+    (v.type === 'markdown' || v.type === 'text') &&
+    (!has('createdAt') || typeof v.createdAt === 'string') &&
+    (!has('updatedAt') || typeof v.updatedAt === 'string') &&
+    (!has('tags') || Array.isArray(v.tags))
+  );
+}
+
 export function KnowledgeBaseManager({
   agentId,
   agentName,
@@ -111,19 +148,37 @@ export function KnowledgeBaseManager({
 
   // Load preset-specific data (project isolation)
   useEffect(() => {
-    if (!agentId) return;
+    if (!agentId) {
+      return;
+    }
 
     // Load documents from localStorage (project-specific)
     const savedDocuments = localStorage.getItem(getStorageKey('documents'));
     if (savedDocuments) {
       try {
-        const parsed = JSON.parse(savedDocuments);
-        const documentsWithDates = parsed.map((doc: any) => ({
-          ...doc,
-          createdAt: new Date(doc.createdAt),
-          updatedAt: new Date(doc.updatedAt),
-        }));
-        setDocuments(documentsWithDates);
+        const parsed: unknown = JSON.parse(savedDocuments);
+        const arr = Array.isArray(parsed) ? parsed : [];
+        const next: KnowledgeDocument[] = (arr as unknown[])
+          .filter(isStoredKnowledgeDocument)
+          .map((doc) => ({
+            id: doc.id,
+            title: doc.title,
+            content: doc.content,
+            filename: doc.filename,
+            size: doc.size,
+            type: doc.type,
+            createdAt: new Date(doc.createdAt ?? Date.now()),
+            updatedAt: new Date(doc.updatedAt ?? Date.now()),
+            tags: Array.isArray(doc.tags) ? doc.tags : [],
+            chunks: [],
+            indexed: !!doc.indexed,
+            vectorized: !!doc.vectorized,
+            agentId: agentId ?? '',
+            agentName: agentName ?? '',
+            isTemplate: !!doc.isTemplate,
+          }));
+
+        setDocuments(next);
       } catch (error) {
         console.error('Failed to load documents:', error);
       }
@@ -282,7 +337,9 @@ export function KnowledgeBaseManager({
   };
 
   const calculateKnowledgeStats = () => {
-    if (!documents.length) return;
+    if (!documents.length) {
+      return;
+    }
 
     const stats: PresetKnowledgeStats = {
       totalDocuments: documents.length,
@@ -380,7 +437,9 @@ export function KnowledgeBaseManager({
 
   const vectorizeDocument = async (docId: string) => {
     const doc = documents.find((d) => d.id === docId);
-    if (!doc) return;
+    if (!doc) {
+      return;
+    }
 
     setIsIndexing(true);
     setIndexingProgress(0);
@@ -450,7 +509,9 @@ export function KnowledgeBaseManager({
 
   const applyTemplate = () => {
     const template = availableTemplates.find((t) => t.id === selectedTemplate);
-    if (!template) return;
+    if (!template) {
+      return;
+    }
 
     const templateDocs = template.documents.map((doc, index) => ({
       id: `${agentId}-template-${Date.now()}-${index}`,
@@ -481,7 +542,9 @@ export function KnowledgeBaseManager({
   };
 
   const searchDocuments = (query: string) => {
-    if (!query.trim()) return documents;
+    if (!query.trim()) {
+      return documents;
+    }
 
     return documents.filter(
       (doc) =>
@@ -541,11 +604,8 @@ export function KnowledgeBaseManager({
                         {availableTemplates.map((template) => (
                           <SelectItem key={template.id} value={template.id}>
                             <div className="flex items-center gap-2">
-                              {template.category === 'global' ? (
-                                <Sparkles className="w-4 h-4" />
-                              ) : (
-                                <Layout className="w-4 h-4" />
-                              )}
+                              {template.category === 'global' && <Sparkles className="w-4 h-4" />}
+                              {template.category !== 'global' && <Layout className="w-4 h-4" />}
                               <div>
                                 <div className="font-medium">{template.name}</div>
                                 <div className="text-xs text-muted-foreground">
@@ -893,7 +953,7 @@ export function KnowledgeBaseManager({
 
                 {/* Document Preview */}
                 <div className="w-1/2">
-                  {selectedDocument ? (
+                  {selectedDocument && (
                     <Card className="p-6 h-full">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-foreground">
@@ -932,7 +992,8 @@ export function KnowledgeBaseManager({
                         </div>
                       </ScrollArea>
                     </Card>
-                  ) : (
+                  )}
+                  {!selectedDocument && (
                     <Card className="p-6 h-full flex items-center justify-center">
                       <div className="text-center text-muted-foreground">
                         <BookOpen className="w-12 h-12 mx-auto mb-4" />
@@ -1091,9 +1152,10 @@ export function KnowledgeBaseManager({
                     {availableTemplates.map((template) => (
                       <div key={template.id} className="border rounded-lg p-4">
                         <div className="flex items-center gap-2 mb-2">
-                          {template.category === 'global' ? (
+                          {template.category === 'global' && (
                             <Sparkles className="w-4 h-4 text-yellow-600" />
-                          ) : (
+                          )}
+                          {template.category !== 'global' && (
                             <Layout className="w-4 h-4 text-blue-600" />
                           )}
                           <h4 className="font-medium text-foreground">{template.name}</h4>

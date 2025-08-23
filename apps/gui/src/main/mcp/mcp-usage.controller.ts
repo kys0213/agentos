@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
-import { McpUsageService } from '@agentos/core';
+import { CursorPagination, McpUsageService } from '@agentos/core';
 import {
   ClearDto,
   GetLogsDto,
@@ -19,23 +19,28 @@ export class McpUsageController {
   ) {}
 
   @EventPattern('mcp.usage.getLogs')
-  async getUsageLogs(@Payload() data: GetLogsDto) {
-    const query = toCoreQuery(data?.query);
-    const pg = toCorePagination(data?.pg);
+  async getUsageLogs(@Payload() _data: GetLogsDto) {
+    const query = toCoreQuery(_data?.query);
+    const pg = toCorePagination(_data?.pg);
     return this.usage.list(query, pg);
   }
 
   @EventPattern('mcp.usage.getStats')
-  async getUsageStats(@Payload() dto?: GetStatsDto) {
-    const query = toCoreQuery(dto?.query);
+  async getUsageStats(@Payload() _dto?: GetStatsDto) {
+    const query = toCoreQuery(_dto?.query);
     return this.usage.getStats(query);
   }
 
+  // TODO cache 레이어 추가
   @EventPattern('mcp.usage.getHourlyStats')
   async getHourlyStats(@Payload() data: HourlyStatsDto) {
     const base = new Date(data.date);
-    const start = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate(), 0, 0, 0, 0));
-    const end = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate(), 23, 59, 59, 999));
+    const start = new Date(
+      Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate(), 0, 0, 0, 0)
+    );
+    const end = new Date(
+      Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate(), 23, 59, 59, 999)
+    );
 
     const buckets = new Array<number>(24).fill(0);
     // Pull all logs in range (paginate)
@@ -46,27 +51,37 @@ export class McpUsageController {
     while (true) {
       const page = await this.usage.list(
         { from: start, to: end },
-        { cursor, limit, direction: 'forward' } as any
+        {
+          cursor,
+          limit,
+          direction: 'forward',
+        }
       );
+
       for (const l of page.items) {
         const hour = new Date(l.timestamp).getUTCHours();
         buckets[hour]++;
       }
-      if (!page.hasMore || !page.nextCursor) break;
+
+      if (!page.hasMore || !page.nextCursor) {
+        break;
+      }
+
       cursor = page.nextCursor;
     }
 
     const hourlyData: Array<[number, number]> = buckets.map((c, h) => [h, c]);
+
     return { hourlyData };
   }
 
   @EventPattern('mcp.usage.getLogsInRange')
-  async getLogsInRange(@Payload() data: LogsInRangeDto) {
+  async getLogsInRange(@Payload() _data: LogsInRangeDto) {
     return [] as unknown[]; // TODO: optional
   }
 
   @EventPattern('mcp.usage.clear')
-  async clear(@Payload() dto?: ClearDto) {
+  async clear(@Payload() _dto?: ClearDto) {
     // TODO: optional clear support
     return { success: true };
   }
@@ -87,8 +102,21 @@ function toCoreQuery(q?: {
   status?: 'success' | 'error';
   from?: string;
   to?: string;
-}) {
-  if (!q) return undefined;
+}):
+  | {
+      toolId?: string;
+      toolName?: string;
+      agentId?: string;
+      sessionId?: string;
+      status?: 'success' | 'error';
+      from?: Date;
+      to?: Date;
+    }
+  | undefined {
+  if (!q) {
+    return;
+  }
+
   return {
     ...q,
     from: q.from ? new Date(q.from) : undefined,
@@ -100,11 +128,13 @@ function toCorePagination(pg?: {
   cursor?: string;
   limit?: number;
   direction?: 'forward' | 'backward';
-}) {
-  if (!pg) return undefined as any;
+}): CursorPagination | undefined {
+  if (!pg) {
+    return;
+  }
   return {
     cursor: pg.cursor ?? '',
     limit: pg.limit ?? 20,
     direction: pg.direction ?? 'forward',
-  } as any;
+  };
 }

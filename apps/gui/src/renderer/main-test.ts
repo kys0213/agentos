@@ -3,23 +3,26 @@
  * MockIpcChannel을 사용하여 bootstrap 실행
  */
 import { RpcFrame } from '../shared/rpc/rpc-frame';
-import { RpcTransport } from '../shared/rpc/transport';
+import { CloseFn, RpcTransport } from '../shared/rpc/transport';
 import { bootstrap } from './bootstrap';
 
 // 테스트용 헬퍼 함수들
 export class TestHelpers {
   private rpcTransport: RpcTransport = {
     // TODO mock transport 추가
-    start: function (onFrame: (f: RpcFrame) => void): void {
+    start: function (_onFrame: (f: RpcFrame) => void): void {
       throw new Error('Function not implemented.');
     },
-    post: function (frame: RpcFrame): void {
+    post: function (_frame: RpcFrame): void {
       throw new Error('Function not implemented.');
     },
     request: function <TRes = unknown, TReq = unknown>(
-      channel: string,
-      payload?: TReq
+      _channel: string,
+      _payload?: TReq
     ): Promise<TRes> {
+      throw new Error('Function not implemented.');
+    },
+    on: function <T = unknown>(_channel: string, _handler: (payload: T) => void): CloseFn {
       throw new Error('Function not implemented.');
     },
   };

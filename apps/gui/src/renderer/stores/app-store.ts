@@ -83,7 +83,7 @@ const initialState: AppState = {
 // Zustand 스토어 생성
 export const useAppStore = create<AppState & AppActions>()(
   devtools(
-    subscribeWithSelector((set, get) => ({
+    subscribeWithSelector((set, _get) => ({
       // 상태
       ...initialState,
 

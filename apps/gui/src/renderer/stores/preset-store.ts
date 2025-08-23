@@ -1,4 +1,4 @@
-import type { Preset } from '@agentos/core';
+import type { CreatePreset, Preset } from '@agentos/core';
 import type { PresetProtocol } from '../../shared/types/proset-protocol';
 import { ServiceContainer } from '../ipc/service-container';
 
@@ -15,9 +15,22 @@ export class PresetStore {
   async save(preset: Preset): Promise<void> {
     // ID가 있으면 업데이트, 없으면 생성
     if (await this.exists(preset.id)) {
-      await this.presetService.updatePreset(preset.id, preset as any);
+      const { id, ...patch } = preset;
+      await this.presetService.updatePreset(id, patch);
     } else {
-      await this.presetService.createPreset(preset as any);
+      const createData: CreatePreset = {
+        name: preset.name,
+        description: preset.description,
+        author: preset.author,
+        version: preset.version,
+        systemPrompt: preset.systemPrompt,
+        enabledMcps: preset.enabledMcps,
+        llmBridgeName: preset.llmBridgeName,
+        llmBridgeConfig: preset.llmBridgeConfig,
+        status: preset.status,
+        category: preset.category,
+      };
+      await this.presetService.createPreset(createData);
     }
   }
 

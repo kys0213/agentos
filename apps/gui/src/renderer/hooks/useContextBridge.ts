@@ -15,12 +15,12 @@ interface NavigationContext {
   chatSessionId?: string | null;
   settingsSection?: string;
   timestamp?: number;
-  returnData?: Record<string, any>;
+  returnData?: Record<string, unknown>;
 }
 
 interface ContextBridgeReturn {
   goToSettings: (section?: string, fromContext?: Partial<NavigationContext>) => void;
-  backToChat: (returnData?: Record<string, any>) => void;
+  backToChat: (returnData?: Record<string, unknown>) => void;
   goToHistory: () => void;
   context: NavigationContext | null;
   hasContext: boolean;
@@ -54,7 +54,7 @@ export const useContextBridge = (): ContextBridgeReturn => {
   );
 
   const backToChat = useCallback(
-    (returnData?: Record<string, any>) => {
+    (returnData?: Record<string, unknown>) => {
       if (context?.chatSessionId) {
         // 이전 채팅 세션 복원 로직은 필요시 추가
         console.log('Context Bridge: Restoring chat session', context.chatSessionId);
@@ -101,30 +101,41 @@ export const useContextBridge = (): ContextBridgeReturn => {
 /**
  * 설정 변경 완료 후 피드백 표시
  */
-const showSettingsAppliedFeedback = (data: Record<string, any>) => {
-  if (data.bridgeChanged) {
+const showSettingsAppliedFeedback = (data: Record<string, unknown>) => {
+  if ('bridgeChanged' in data && data.bridgeChanged) {
     // TODO: Toast 라이브러리 추가 후 구현
-    console.log(`✅ Switched to ${data.bridgeName}. Ready to chat!`);
+    const name = 'bridgeName' in data ? String(data.bridgeName) : 'bridge';
+    console.log(`✅ Switched to ${name}. Ready to chat!`);
   }
 
-  if (data.mcpAdded) {
-    console.log(`✅ MCP server "${data.mcpName}" connected successfully!`);
+  if ('mcpAdded' in data && data.mcpAdded) {
+    const mcp = 'mcpName' in data ? String(data.mcpName) : 'MCP';
+    console.log(`✅ MCP server "${mcp}" connected successfully!`);
   }
 
-  if (data.presetApplied) {
-    console.log(`✅ Preset "${data.presetName}" applied successfully!`);
+  if ('presetApplied' in data && data.presetApplied) {
+    const preset = 'presetName' in data ? String(data.presetName) : 'Preset';
+    console.log(`✅ Preset "${preset}" applied successfully!`);
   }
 
   // 임시로 브라우저 알림 (나중에 toast로 교체)
-  if (data.bridgeChanged || data.mcpAdded || data.presetApplied) {
-    // 간단한 성공 표시
-    const message = data.bridgeChanged
-      ? `Switched to ${data.bridgeName}`
-      : data.mcpAdded
-        ? `MCP server "${data.mcpName}" connected`
-        : `Preset "${data.presetName}" applied`;
-
-    // 임시로 console.log (나중에 toast 시스템으로 교체)
+  const changed = Boolean(
+    ('bridgeChanged' in data && data.bridgeChanged) ||
+      ('mcpAdded' in data && data.mcpAdded) ||
+      ('presetApplied' in data && data.presetApplied)
+  );
+  if (changed) {
+    let message = '';
+    if ('bridgeChanged' in data && data.bridgeChanged) {
+      const name = 'bridgeName' in data ? String(data.bridgeName) : 'bridge';
+      message = `Switched to ${name}`;
+    } else if ('mcpAdded' in data && data.mcpAdded) {
+      const mcp = 'mcpName' in data ? String(data.mcpName) : 'MCP';
+      message = `MCP server "${mcp}" connected`;
+    } else if ('presetApplied' in data && data.presetApplied) {
+      const preset = 'presetName' in data ? String(data.presetName) : 'Preset';
+      message = `Preset "${preset}" applied`;
+    }
     console.log('🔄 Settings Applied:', message);
   }
 };

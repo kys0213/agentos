@@ -169,7 +169,11 @@ export function SettingsManager() {
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const updateSetting = (category: keyof SettingsData, key: string, value: any) => {
+  const updateSetting = <C extends keyof SettingsData, K extends keyof SettingsData[C]>(
+    category: C,
+    key: K,
+    value: SettingsData[C][K]
+  ) => {
     setSettings((prev) => ({
       ...prev,
       [category]: {

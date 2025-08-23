@@ -23,7 +23,13 @@ import { Textarea } from '../ui/textarea';
 
 interface ToolBuilderCreateProps {
   onBack: () => void;
-  onCreate: (tool: any) => void;
+  onCreate: (tool: {
+    name: string;
+    description: string;
+    category: string;
+    code: string;
+    config: unknown;
+  }) => void;
 }
 
 type Step = 'describe' | 'analyze' | 'generate' | 'test' | 'deploy';
@@ -31,7 +37,7 @@ type Step = 'describe' | 'analyze' | 'generate' | 'test' | 'deploy';
 export function ToolBuilderCreate({ onBack, onCreate }: ToolBuilderCreateProps) {
   const [currentStep, setCurrentStep] = useState<Step>('describe');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);
+  // progress is computed from step; no separate state to avoid unused warnings
 
   // Form data
   const [description, setDescription] = useState('');
@@ -39,10 +45,33 @@ export function ToolBuilderCreate({ onBack, onCreate }: ToolBuilderCreateProps) 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
   // Generated data
-  const [analysis, setAnalysis] = useState<any>(null);
+  type AnalysisParam = { name: string; type: string; required: boolean; description: string };
+  type Analysis = {
+    detectedType: string;
+    endpoint: string;
+    method: string;
+    authType: string;
+    parameters: AnalysisParam[];
+    responseFormat: string;
+    rateLimits: string;
+  };
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [generatedCode, setGeneratedCode] = useState('');
-  const [toolConfig, setToolConfig] = useState<any>(null);
-  const [testResults, setTestResults] = useState<any>(null);
+  type ToolConfig = {
+    name: string;
+    description: string;
+    category: string;
+    apiEndpoint: string;
+    method: string;
+  };
+  const [toolConfig, setToolConfig] = useState<ToolConfig | null>(null);
+  type TestResults = {
+    status: 'success' | 'error';
+    message: string;
+    responseTime: string;
+    testData: Record<string, unknown>;
+  };
+  const [testResults, setTestResults] = useState<TestResults | null>(null);
 
   const steps = [
     { id: 'describe', label: 'Describe', icon: Sparkles },
@@ -51,6 +80,16 @@ export function ToolBuilderCreate({ onBack, onCreate }: ToolBuilderCreateProps) 
     { id: 'test', label: 'Test', icon: Play },
     { id: 'deploy', label: 'Deploy', icon: CheckCircle },
   ];
+
+  const stepCircleClass = (isCompleted: boolean, isActive: boolean) => {
+    if (isCompleted) {
+      return 'bg-primary text-primary-foreground';
+    }
+    if (isActive) {
+      return 'bg-primary/10 text-primary border-2 border-primary';
+    }
+    return 'bg-muted text-muted-foreground';
+  };
 
   const popularTemplates = [
     {
@@ -153,14 +192,14 @@ export const slackMessenger = {
 
     switch (currentStep) {
       case 'describe':
-        setProgress(20);
+        // step progress updated implicitly by UI
         await delay(1500);
         setAnalysis(mockAnalysis);
         setCurrentStep('analyze');
         break;
 
       case 'analyze':
-        setProgress(40);
+        // step progress updated implicitly by UI
         await delay(2000);
         setGeneratedCode(mockGeneratedCode);
         setToolConfig({
@@ -174,7 +213,7 @@ export const slackMessenger = {
         break;
 
       case 'generate':
-        setProgress(60);
+        // step progress updated implicitly by UI
         await delay(1500);
         setTestResults({
           status: 'success',
@@ -190,14 +229,17 @@ export const slackMessenger = {
         break;
 
       case 'test':
-        setProgress(80);
+        // step progress updated implicitly by UI
         await delay(1000);
         setCurrentStep('deploy');
         break;
 
       case 'deploy':
-        setProgress(100);
+        // step progress updated implicitly by UI
         await delay(1500);
+        if (!toolConfig) {
+          break;
+        }
         onCreate({
           name: toolConfig.name,
           description: toolConfig.description,
@@ -211,12 +253,25 @@ export const slackMessenger = {
     setIsProcessing(false);
   };
 
-  const handleTemplateSelect = (template: any) => {
+  const handleTemplateSelect = (template: { id: string; example: string }) => {
     setSelectedTemplate(template.id);
     setDescription(template.example);
   };
 
   const getStepIndex = () => steps.findIndex((step) => step.id === currentStep);
+
+  const primaryButtonLabel = (step: Step): string => {
+    if (step === 'describe') {
+      return 'Analyze Request';
+    }
+    if (step === 'analyze') {
+      return 'Generate Code';
+    }
+    if (step === 'generate') {
+      return 'Run Tests';
+    }
+    return 'Deploy Tool';
+  };
 
   return (
     <div className="h-screen bg-background flex flex-col">
@@ -256,13 +311,10 @@ export const slackMessenger = {
             return (
               <div key={step.id} className="flex items-center gap-2">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    isCompleted
-                      ? 'bg-primary text-primary-foreground'
-                      : isActive
-                        ? 'bg-primary/10 text-primary border-2 border-primary'
-                        : 'bg-muted text-muted-foreground'
-                  }`}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${stepCircleClass(
+                    isCompleted,
+                    isActive
+                  )}`}
                 >
                   {isCompleted ? <CheckCircle className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
                 </div>
@@ -407,7 +459,7 @@ export const slackMessenger = {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {analysis.parameters.map((param: any, index: number) => (
+                    {analysis.parameters.map((param: AnalysisParam, index: number) => (
                       <div
                         key={index}
                         className="flex items-start justify-between p-3 bg-muted/50 rounded"
@@ -547,9 +599,10 @@ export const slackMessenger = {
             <Card>
               <CardHeader>
                 <CardTitle className="gap-2 flex items-center">
-                  {testResults.status === 'success' ? (
+                  {testResults.status === 'success' && (
                     <CheckCircle className="w-5 h-5 text-status-active" />
-                  ) : (
+                  )}
+                  {testResults.status !== 'success' && (
                     <AlertTriangle className="w-5 h-5 text-status-error" />
                   )}
                   Test Results
@@ -638,18 +691,9 @@ export const slackMessenger = {
                 disabled={isProcessing || !description.trim()}
                 className="gap-2"
               >
-                {isProcessing ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Sparkles className="w-4 h-4" />
-                )}
-                {currentStep === 'describe'
-                  ? 'Analyze Request'
-                  : currentStep === 'analyze'
-                    ? 'Generate Code'
-                    : currentStep === 'generate'
-                      ? 'Run Tests'
-                      : 'Deploy Tool'}
+                {!isProcessing && <Sparkles className="w-4 h-4" />}
+                {isProcessing && <Loader2 className="w-4 h-4 animate-spin" />}
+                {primaryButtonLabel(currentStep)}
               </Button>
             )}
 

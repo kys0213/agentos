@@ -9,10 +9,10 @@ export class BuiltinToolService implements BuiltinToolProtocol {
   async getAllBuiltinTools(): Promise<BuiltinTool[]> {
     return [];
   }
-  async getBuiltinTool(id: string): Promise<BuiltinTool | null> {
+  async getBuiltinTool(_id: string): Promise<BuiltinTool | null> {
     return null;
   }
-  async invokeBuiltinTool<R>(toolName: string, args: Record<string, any>): Promise<R> {
-    return {} as R;
+  async invokeBuiltinTool<R>(_toolName: string, _args: Record<string, unknown>): Promise<R> {
+    return {} as R; // TODO: wire to main once BuiltinToolController is ready
   }
 }

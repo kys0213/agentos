@@ -1,8 +1,18 @@
 import { RpcEndpoint } from '../rpc-endpoint';
-import type { RpcTransport } from '../../../shared/rpc/transport';
+import type { CloseFn, RpcTransport } from '../../../shared/rpc/transport';
 import type { RpcFrame } from '../../../shared/rpc/rpc-frame';
 
 class MockTransport implements RpcTransport {
+  stream?<T = unknown>(channel: string, payload?: unknown): AsyncGenerator<T, void, unknown> {
+    throw new Error('Method not implemented.');
+  }
+  on<T = unknown>(
+    channel: string,
+    handler: (payload: T) => void,
+    onError?: (e: unknown) => void
+  ): CloseFn {
+    throw new Error('Method not implemented.');
+  }
   public sent: RpcFrame[] = [];
   public onFrame: ((f: RpcFrame) => void) | null = null;
   start(cb: (f: RpcFrame) => void): void {

@@ -30,7 +30,9 @@ export function useSessionMessages(sessionId: string | undefined, pagination?: C
       ? CONVERSATION_QUERY_KEYS.messages(sessionId, pagination?.cursor)
       : ['conversation', 'messages', 'disabled'],
     queryFn: async () => {
-      if (!sessionId) return null;
+      if (!sessionId) {
+        return null;
+      }
       const svc = ServiceContainer.getOrThrow('conversation');
       return svc.getMessages(sessionId, pagination);
     },
