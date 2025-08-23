@@ -163,7 +163,9 @@ export class RpcEndpoint implements RpcClient {
         } else {
           await Promise.race([context.wake.wait(), new Promise((r) => setTimeout(r, 8))]);
         }
-        if (context.err) throw context.err;
+        if (context.err) {
+          throw context.err;
+        }
       }
     } finally {
       if (!context.done) {
@@ -281,7 +283,9 @@ export class RpcEndpoint implements RpcClient {
 }
 
 function isAsyncGen(o: unknown): o is AsyncGenerator<unknown, void, unknown> {
-  if (!isObject(o)) return false;
+  if (!isObject(o)) {
+    return false;
+  }
   const iterator = (o as { [Symbol.asyncIterator]?: unknown })[Symbol.asyncIterator];
   return typeof iterator === 'function';
 }

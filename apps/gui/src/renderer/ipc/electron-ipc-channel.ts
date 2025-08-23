@@ -89,7 +89,7 @@ export class ElectronIpcChannel implements IpcChannel {
   async getBuiltinTool(id: string): Promise<BuiltinTool | null> {
     return this.electronAPI.builtinTool.getBuiltinTool(id);
   }
-  async invokeBuiltinTool<R>(toolName: string, args: Record<string, any>): Promise<R> {
+  async invokeBuiltinTool<R>(toolName: string, args: Record<string, unknown>): Promise<R> {
     return this.electronAPI.builtinTool.invokeBuiltinTool(toolName, args);
   }
 

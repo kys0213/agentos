@@ -155,7 +155,9 @@ export class RpcTransportFactory {
 
       // 환경 감지 결과로 추정
       const detected = this.detectEnvironment();
-      if (detected === 'web') return 'web';
+      if (detected === 'web') {
+        return 'web';
+      }
       return 'electron';
     } catch {
       return 'electron';
