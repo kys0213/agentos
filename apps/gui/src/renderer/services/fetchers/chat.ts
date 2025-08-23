@@ -73,14 +73,10 @@ export async function sendMessage(
       maxTurnCount: 1,
     });
 
-    // 결과 메시지를 MessageHistory로 변환 (간단 매핑)
+    // 결과 메시지를 MessageHistory로 변환 (원본 Message 구조 보존)
     const mapped: MessageHistory[] = result.messages.map((m, idx: number) => ({
+      ...m,
       messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
-      role: m.role === 'assistant' ? 'assistant' : m.role,
-      content:
-        m.content?.contentType === 'text'
-          ? { contentType: 'text', value: m.content.value }
-          : { contentType: 'text', value: JSON.stringify(m.content) },
       createdAt: new Date(),
     }));
 

@@ -70,9 +70,13 @@ export function parseMessagePreview(message: MessageHistory, maxLength: number =
  * @returns content에 텍스트가 포함되어 있으면 true
  */
 export function hasTextContent(message: MessageHistory): boolean {
-  if (!message.content) return false;
+  if (!message.content) {
+    return false;
+  }
 
-  if (typeof message.content === 'string') return true;
+  if (typeof message.content === 'string') {
+    return true;
+  }
 
   if (Array.isArray(message.content)) {
     return message.content.some((c) => c.contentType === 'text');
