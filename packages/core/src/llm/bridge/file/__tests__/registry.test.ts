@@ -1,4 +1,5 @@
 import type { LlmManifest } from 'llm-bridge-spec';
+import z from 'zod';
 import { LlmBridgeLoader } from 'llm-bridge-loader';
 import { FileBasedLlmBridgeRegistry } from '../file-based-llm-bridge-registry';
 import path from 'node:path';
@@ -88,7 +89,7 @@ const makeManifest = (name: string): LlmManifest => ({
   name,
   language: 'node',
   entry: 'index.js',
-  configSchema: { type: 'object', properties: {} },
+  configSchema: z.object({}),
   capabilities: {
     modalities: ['text'],
     supportsToolCall: true,
@@ -97,6 +98,7 @@ const makeManifest = (name: string): LlmManifest => ({
     supportsStreaming: true,
     supportsVision: true,
   },
+  models: [],
   description: `Manifest for ${name}`,
 });
 

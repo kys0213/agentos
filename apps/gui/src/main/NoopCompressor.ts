@@ -5,7 +5,7 @@ export class NoopCompressor implements CompressStrategy {
     return {
       summary: {
         role: 'system',
-        content: { contentType: 'text', value: 'summary not implemented' },
+        content: [{ contentType: 'text', value: 'summary not implemented' }],
       },
       compressedCount: messages.length,
     };

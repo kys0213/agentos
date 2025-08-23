@@ -184,10 +184,8 @@ export async function browseHistory(manager: ChatManager, sessionId: string): Pr
     const page = await ensurePage(pageIndex);
     if (!page) return;
     for (const message of page.items) {
-      const content =
-        !Array.isArray(message.content) && message.content.contentType === 'text'
-          ? message.content.value
-          : '[non-text]';
+      const first = Array.isArray(message.content) ? message.content[0] : (message.content as any);
+      const content = first && first.contentType === 'text' ? first.value : '[non-text]';
       const time = message.createdAt.toISOString();
       console.log(`${chalk.gray('[' + time + ']')} ${chalk.cyan(message.role)}: ${content}`);
     }

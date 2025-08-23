@@ -66,7 +66,7 @@ export async function sendMessage(
 
     const userMessage: Message = {
       role: 'user',
-      content: { contentType: 'text', value: content } as StringContent,
+      content: [{ contentType: 'text', value: content } as StringContent],
     };
     const result = await agentService.chat(agentId, [userMessage], {
       sessionId: agentId,

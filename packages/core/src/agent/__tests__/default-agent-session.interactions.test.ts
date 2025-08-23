@@ -94,7 +94,7 @@ describe('DefaultAgentSession interactions', () => {
     agent.on('status', (p) => statusEvents.push(p.state));
 
     const run = agent.chat(
-      [{ role: 'user', content: { contentType: 'text', value: 'hi' } } as UserMessage],
+      [{ role: 'user', content: [{ contentType: 'text', value: 'hi' }] } as UserMessage],
       { abortSignal: ac.signal }
     );
 
@@ -120,7 +120,7 @@ describe('DefaultAgentSession interactions', () => {
     agent.on('error', (e) => errors.push(e.error));
 
     const run = agent.chat(
-      [{ role: 'user', content: { contentType: 'text', value: 'hi' } } as UserMessage],
+      [{ role: 'user', content: [{ contentType: 'text', value: 'hi' }] } as UserMessage],
       { timeout: 5 }
     );
 
@@ -141,7 +141,7 @@ describe('DefaultAgentSession interactions', () => {
     agent.on('error', (e) => errors.push(e.error));
 
     await expect(
-      agent.chat([{ role: 'user', content: { contentType: 'text', value: 'hi' } } as UserMessage])
+      agent.chat([{ role: 'user', content: [{ contentType: 'text', value: 'hi' }] } as UserMessage])
     ).rejects.toThrow('boom');
     expect(errors.length).toBeGreaterThan(0);
     expect(errors[0].message).toContain('boom');

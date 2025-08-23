@@ -1,4 +1,4 @@
-import { LlmBridge, ChatMessage } from 'llm-bridge-spec';
+import { LlmBridge, UserMessage } from 'llm-bridge-spec';
 import { CompressStrategy, CompressionResult, MessageHistory } from '@agentos/core';
 
 /**
@@ -10,22 +10,23 @@ export class LlmCompressor implements CompressStrategy {
   async compress(messages: MessageHistory[]): Promise<CompressionResult> {
     const text = messages
       .map((m) => {
-        if (!Array.isArray(m.content) && m.content.contentType === 'text') {
-          return `${m.role}: ${m.content.value}`;
+        const first = Array.isArray(m.content) ? m.content[0] : (m.content as any);
+        if (first && first.contentType === 'text') {
+          return `${m.role}: ${first.value}`;
         }
         return `${m.role}: [non-text]`;
       })
       .join('\n');
 
-    const prompt: ChatMessage = {
+    const prompt: UserMessage = {
       role: 'user',
-      content: { contentType: 'text', value: `Summarize the following conversation:\n${text}` },
+      content: [{ contentType: 'text', value: `Summarize the following conversation:\n${text}` }],
     };
 
     const response = await this.bridge.invoke({ messages: [prompt] });
 
     return {
-      summary: { role: 'system', content: response.content },
+      summary: { role: 'system', content: [response.content] },
       compressedCount: messages.length,
     };
   }

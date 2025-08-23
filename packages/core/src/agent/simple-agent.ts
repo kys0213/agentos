@@ -83,7 +83,7 @@ export class SimpleAgent implements Agent {
 
       buffer.push({
         role: 'assistant',
-        content: response.content,
+        content: [response.content],
       });
 
       return {
@@ -202,8 +202,8 @@ export class SimpleAgent implements Agent {
 
     const assistantMessage: AssistantMessage = {
       role: 'assistant',
-      content: response.content,
-    };
+      content: [response.content],
+    } as any;
 
     await chatSession.appendMessage(assistantMessage);
 

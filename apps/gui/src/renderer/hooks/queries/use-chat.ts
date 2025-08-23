@@ -69,7 +69,7 @@ export const useSendChatMessage = (
       const userMessage: MessageHistory = {
         messageId: `user-${Date.now()}`,
         role: 'user',
-        content: { contentType: 'text', value: text },
+        content: [{ contentType: 'text', value: text }],
         createdAt: new Date(),
       };
 
@@ -85,7 +85,7 @@ export const useSendChatMessage = (
       // AgentProtocol.chat 호출
       const result = await agentService.chat(
         agentId,
-        [{ role: 'user', content: { contentType: 'text', value: text } }],
+        [{ role: 'user', content: [{ contentType: 'text', value: text }] }],
         {
           // 세션 ID 우선 사용, 없으면 agentId로 폴백
           sessionId: options?.sessionId ?? agentId,
@@ -112,7 +112,7 @@ export const useSendChatMessage = (
           return {
             messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
             role: m.role,
-            content: content[0],
+            content,
             createdAt: new Date(),
           };
         }

@@ -52,16 +52,18 @@ export class FileBasedChatSession implements ChatSession {
           messageId: this.nextMessageId(),
           createdAt: new Date(),
           ...compressed.summary,
-        },
+        } as unknown as MessageHistory,
         createdAt: new Date(),
         coveringUpTo: first.createdAt,
       };
 
-      await this.storage.saveCheckpoint(
-        this.agentId,
-        this.sessionId,
-        this.metadata.latestCheckpoint
-      );
+      if (this.metadata.latestCheckpoint) {
+        await this.storage.saveCheckpoint(
+          this.agentId,
+          this.sessionId,
+          this.metadata.latestCheckpoint
+        );
+      }
       await this.storage.saveMessageHistories(
         this.agentId,
         this.sessionId,
@@ -74,12 +76,12 @@ export class FileBasedChatSession implements ChatSession {
 
     if (!this.metadata.title && this.titleCompressor) {
       const userMessage = this.metadata.recentMessages.find((message) => message.role === 'user');
-
       if (userMessage) {
         const { summary } = await this.titleCompressor.compress([userMessage]);
-
-        this.metadata.title =
-          summary.content.contentType === 'text' ? summary.content.value : undefined;
+        const first = Array.isArray(summary.content)
+          ? summary.content[0]
+          : (summary.content as any);
+        this.metadata.title = first && first.contentType === 'text' ? first.value : undefined;
       }
     }
 
@@ -100,11 +102,11 @@ export class FileBasedChatSession implements ChatSession {
    * @param message - The message to append
    */
   async appendMessage(message: Message): Promise<MessageHistory> {
-    const history: MessageHistory = {
+    const history = {
       messageId: this.nextMessageId(),
       createdAt: new Date(),
       ...message,
-    };
+    } as unknown as MessageHistory;
     this.metadata.recentMessages.push(history);
     this.metadata.totalMessages++;
     return history;

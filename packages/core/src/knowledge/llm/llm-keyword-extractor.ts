@@ -35,7 +35,7 @@ export class LlmBridgeKeywordExtractor implements KeywordExtractor {
     const messages: UserMessage[] = [
       {
         role: 'user',
-        content: { contentType: 'text', value: combinedText },
+        content: [{ contentType: 'text', value: combinedText }],
       },
     ];
 

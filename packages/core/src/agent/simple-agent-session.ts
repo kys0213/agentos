@@ -396,7 +396,7 @@ export class DefaultAgentSession implements AgentSession {
 
     const persistedAssistant = await this.chatSession.appendMessage({
       role: 'assistant',
-      content: response.content,
+      content: [response.content],
     });
     if (persistedAssistant) {
       this.emit('message', { message: persistedAssistant });

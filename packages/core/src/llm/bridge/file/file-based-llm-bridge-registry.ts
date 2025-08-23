@@ -63,10 +63,8 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
 
   async loadBridge(name: string): Promise<BridgeLoadResult> {
     const result = await this.llmBridgeLoader.load(name);
-
     // Store raw result keyed by manifest name
-    this.loadedBridges.set(result.mainfest.name, result);
-
+    this.loadedBridges.set(result.manifest.name, result);
     return result;
   }
 
@@ -121,9 +119,8 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
       throw Errors.notFound('llm_bridge', `Bridge ${manifest.name} not found`);
     }
 
-    const { ctor, mainfest } = loadedResult;
-
-    const bridge = new ctor(mainfest.configSchema.parse(config));
+    const { ctor, manifest: loadedManifest } = loadedResult;
+    const bridge = new ctor(loadedManifest.configSchema.parse(config));
 
     this.createdBridges.set(id, bridge);
 

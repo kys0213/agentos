@@ -12,29 +12,12 @@ function isTextLike(obj: unknown): obj is TextLike {
 }
 
 export function parseMessageContent(message: MessageHistory): string {
-  if (!message.content) {
-    return '';
-  }
-
-  // MessageRecord 타입 (IPC 통신용)
-  if (typeof message.content === 'string') {
-    return message.content;
-  }
-
-  // MessageHistory 타입 (Core 표준: 배열)
-  if (Array.isArray(message.content)) {
-    return message.content
-      .filter((c) => c.contentType === 'text')
-      .map((c) => c.value)
-      .join('\n');
-  }
-
-  // 단일 콘텐츠(레거시) 호환 처리
-  if (isTextLike(message.content)) {
-    return message.content.contentType === 'text' ? message.content.value : '';
-  }
-
-  return '';
+  if (!Array.isArray(message.content)) return '';
+  const arr = message.content as any[];
+  return arr
+    .filter((c) => c && (c as any).contentType === 'text')
+    .map((c) => (c as any).value)
+    .join('\n');
 }
 
 /**
@@ -70,21 +53,7 @@ export function parseMessagePreview(message: MessageHistory, maxLength: number =
  * @returns content에 텍스트가 포함되어 있으면 true
  */
 export function hasTextContent(message: MessageHistory): boolean {
-  if (!message.content) {
-    return false;
-  }
-
-  if (typeof message.content === 'string') {
-    return true;
-  }
-
-  if (Array.isArray(message.content)) {
-    return message.content.some((c) => c.contentType === 'text');
-  }
-
-  if (isTextLike(message.content)) {
-    return message.content.contentType === 'text';
-  }
-
-  return false;
+  if (!Array.isArray(message.content)) return false;
+  const arr = message.content as any[];
+  return arr.some((c) => c && (c as any).contentType === 'text');
 }
