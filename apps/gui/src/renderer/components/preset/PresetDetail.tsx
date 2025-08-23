@@ -1,17 +1,5 @@
 import type { Preset } from '@agentos/core';
-import {
-  ArrowLeft,
-  BarChart3,
-  Brain,
-  Calendar,
-  Code,
-  Database,
-  FileText,
-  Save,
-  Trash2,
-  Users,
-  Zap,
-} from 'lucide-react';
+import { ArrowLeft, Brain, Calendar, FileText, Save, Trash2, Users, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { CategoryIcon } from '../common/CategoryIcon';
 import {
@@ -48,9 +36,14 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
 
   const formatDate = (d?: Date | string): string => {
     try {
-      if (!d) return '-';
+      if (!d) {
+        return '-';
+      }
       const date = typeof d === 'string' ? new Date(d) : d;
-      return isNaN(date.getTime()) ? '-' : date.toLocaleDateString();
+      if (isNaN(date.getTime())) {
+        return '-';
+      }
+      return date.toLocaleDateString();
     } catch {
       return '-';
     }

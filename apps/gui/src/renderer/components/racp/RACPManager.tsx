@@ -184,11 +184,15 @@ export function RACPManager() {
                       {phase.phase}: {phase.title}
                     </h3>
                     <Badge className={`text-xs border ${getStatusColor(phase.status)}`}>
-                      {phase.status === 'in-progress'
-                        ? 'In Progress'
-                        : phase.status === 'completed'
-                          ? 'Completed'
-                          : 'Planned'}
+                      {(() => {
+                        if (phase.status === 'in-progress') {
+                          return 'In Progress';
+                        }
+                        if (phase.status === 'completed') {
+                          return 'Completed';
+                        }
+                        return 'Planned';
+                      })()}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-3">

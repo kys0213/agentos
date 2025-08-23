@@ -1,10 +1,8 @@
 import type { CreatePreset, Preset, PresetStatus } from '@agentos/core';
 import {
-  Archive,
   BarChart3,
   BookOpen,
   CheckCircle,
-  Clock,
   FileText,
   Folder,
   FolderOpen,
@@ -55,7 +53,7 @@ export function PresetManager({
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   // Removed create wizard modal state
   const [presets, setPresets] = useState<Preset[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading] = useState(true);
 
   const sourcePresets = injectedPresets ?? presets;
   const loading = injectedLoading ?? isLoading;
@@ -112,12 +110,16 @@ export function PresetManager({
   };
 
   const duplicatePreset = (preset: Preset) => {
-    if (onDuplicatePreset) return onDuplicatePreset(preset);
+    if (onDuplicatePreset) {
+      return onDuplicatePreset(preset);
+    }
     setPresets((prev) => [...prev, preset]);
   };
 
   const deletePresetLocal = (presetId: string) => {
-    if (onDeletePreset) return onDeletePreset(presetId);
+    if (onDeletePreset) {
+      return onDeletePreset(presetId);
+    }
     setPresets((prev) => prev.filter((p) => p.id !== presetId));
   };
 

@@ -51,34 +51,38 @@ export const PresetManagerContainer: React.FC<{ onStartCreatePreset?: () => void
   });
 
   const alert = useMemo(() => {
-    if (createMutation.isSuccess)
+    if (createMutation.isSuccess) {
       return (
         <Alert className="mb-3">
           <AlertTitle>Preset created</AlertTitle>
           <AlertDescription>New preset has been added.</AlertDescription>
         </Alert>
       );
-    if (updateMutation.isSuccess)
+    }
+    if (updateMutation.isSuccess) {
       return (
         <Alert className="mb-3">
           <AlertTitle>Preset updated</AlertTitle>
           <AlertDescription>Changes have been saved.</AlertDescription>
         </Alert>
       );
-    if (deleteMutation.isSuccess)
+    }
+    if (deleteMutation.isSuccess) {
       return (
         <Alert className="mb-3">
           <AlertTitle>Preset deleted</AlertTitle>
           <AlertDescription>Preset has been removed.</AlertDescription>
         </Alert>
       );
-    if (duplicateMutation.isSuccess)
+    }
+    if (duplicateMutation.isSuccess) {
       return (
         <Alert className="mb-3">
           <AlertTitle>Preset duplicated</AlertTitle>
           <AlertDescription>Copy created successfully.</AlertDescription>
         </Alert>
       );
+    }
     if (
       createMutation.isError ||
       updateMutation.isError ||

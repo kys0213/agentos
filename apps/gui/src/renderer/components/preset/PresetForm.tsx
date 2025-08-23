@@ -45,7 +45,7 @@ export function PrestForm({
     preset?.enabledMcps?.flatMap((mcp) => mcp.enabledTools) || []
   );
 
-  const updateFormData = (field: string, value: any) => {
+  const updateFormData = (field: keyof Preset | string, value: unknown) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -61,8 +61,12 @@ export function PrestForm({
   };
 
   const handleSave = async () => {
-    if (onSubmit) await onSubmit(formData);
-    if (onComplete) onComplete();
+    if (onSubmit) {
+      await onSubmit(formData);
+    }
+    if (onComplete) {
+      onComplete();
+    }
   };
 
   const nextStep = () => {
@@ -77,6 +81,20 @@ export function PrestForm({
     }
   };
 
+  const stepCircleClass = (step: number): string => {
+    if (step === currentStep) {
+      return 'bg-primary text-primary-foreground';
+    }
+    if (step < currentStep) {
+      return 'bg-green-500 text-white';
+    }
+    return 'bg-gray-200 text-gray-500';
+  };
+
+  const arrowClass = (step: number): string => {
+    return step < currentStep ? 'text-green-500' : 'text-gray-300';
+  };
+
   // Render create wizard steps
   if (isCreateMode) {
     return (
@@ -86,23 +104,11 @@ export function PrestForm({
           {[1, 2, 3, 4, 5].map((step) => (
             <div key={step} className="flex items-center">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
-                  step === currentStep
-                    ? 'bg-primary text-primary-foreground'
-                    : step < currentStep
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-200 text-gray-500'
-                }`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${stepCircleClass(step)}`}
               >
                 {step < currentStep ? <CheckCircle className="w-4 h-4" /> : step}
               </div>
-              {step < 5 && (
-                <ArrowRight
-                  className={`w-4 h-4 mx-2 ${
-                    step < currentStep ? 'text-green-500' : 'text-gray-300'
-                  }`}
-                />
-              )}
+              {step < 5 && <ArrowRight className={`w-4 h-4 mx-2 ${arrowClass(step)}`} />}
             </div>
           ))}
         </div>
@@ -240,12 +246,13 @@ export function PrestForm({
           </Button>
 
           <div className="flex gap-2">
-            {currentStep < 5 ? (
+            {currentStep < 5 && (
               <Button onClick={nextStep} disabled={!formData.name || !formData.description}>
                 Next
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-            ) : (
+            )}
+            {currentStep >= 5 && (
               <Button onClick={handleSave}>
                 <Save className="w-4 h-4 mr-2" />
                 Create Preset
