@@ -12,7 +12,7 @@ export function createNotifier(): Notifier {
       return;
     }
     pending = true;
-    await new Promise<void>((res) => {
+    await new Promise<void>((_res) => {
       resolve = () => {
         pending = false;
         const r = resolve;

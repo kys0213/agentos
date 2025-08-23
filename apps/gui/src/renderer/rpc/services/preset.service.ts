@@ -77,7 +77,9 @@ export class PresetRpcService {
 
     const res = await this.update(id, next);
 
-    if (!res.success) throw new Error(res.error || 'Failed to update preset');
+    if (!res.success) {
+      throw new Error(res.error || 'Failed to update preset');
+    }
 
     const got = await this.getOrThrow(id);
 

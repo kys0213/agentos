@@ -51,6 +51,7 @@ const SmartErrorMessage: React.FC<SmartErrorMessageProps> = ({ message, classNam
                   const btnClass = isDestructive
                     ? 'bg-red-600 text-white hover:bg-red-700'
                     : 'bg-red-100 text-red-800 hover:bg-red-200';
+                  const IconComp = isDestructive ? Wrench : Settings;
                   return (
                     <button
                       key={index}
@@ -58,12 +59,7 @@ const SmartErrorMessage: React.FC<SmartErrorMessageProps> = ({ message, classNam
                       className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-md transition-colors ${btnClass}`}
                       data-testid={`error-action-${index}`}
                     >
-                      {isDestructive && (
-                        <Wrench className="w-3 h-3" />
-                      )}
-                      {!isDestructive && (
-                        <Settings className="w-3 h-3" />
-                      )}
+                      <IconComp className="w-3 h-3" />
                       {action.label}
                     </button>
                   );

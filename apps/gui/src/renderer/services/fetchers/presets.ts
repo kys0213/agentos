@@ -29,7 +29,9 @@ export async function deletePreset(id: string): Promise<Preset> {
 export async function duplicatePresetById(id: string): Promise<Preset> {
   const presetService = ServiceContainer.getOrThrow('preset');
   const src = await presetService.getPreset(id);
-  if (!src) throw new Error('Preset not found');
+  if (!src) {
+    throw new Error('Preset not found');
+  }
   const copy: CreatePreset = {
     name: src.name + ' (Copy)',
     description: src.description,

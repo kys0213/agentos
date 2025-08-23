@@ -60,7 +60,9 @@ export class RpcEndpoint implements RpcClient {
     (async () => {
       try {
         for await (const payload of generator) {
-          if (closed) break;
+          if (closed) {
+            break;
+          }
           handler(payload);
         }
       } catch (e) {
