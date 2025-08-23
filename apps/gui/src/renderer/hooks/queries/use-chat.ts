@@ -54,10 +54,10 @@ export const useSendChatMessage = (
   return useMutation({
     mutationFn: async ({
       text,
-      _mentionedAgentIds,
+      mentionedAgentIds: _mentionedAgentIds,
     }: {
       text: string;
-      _mentionedAgentIds?: string[];
+      mentionedAgentIds?: string[];
     }) => {
       if (!agentId) {
         throw new Error('agentId is required');

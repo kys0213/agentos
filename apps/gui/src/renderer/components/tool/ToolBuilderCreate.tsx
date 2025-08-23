@@ -237,6 +237,9 @@ export const slackMessenger = {
       case 'deploy':
         // step progress updated implicitly by UI
         await delay(1500);
+        if (!toolConfig) {
+          break;
+        }
         onCreate({
           name: toolConfig.name,
           description: toolConfig.description,
