@@ -48,19 +48,57 @@ export class RpcEndpoint implements RpcClient {
     handler: (payload: T) => void,
     onError?: (e: unknown) => void
   ): CloseFn {
-    let closed = false;
+    const context: StreamContext<T> = {
+      queue: [],
+      done: false,
+      err: null,
+      wake: createNotifier(),
+      cid: this.cid(),
+    };
 
-    const generator = this.stream<T>(channel);
+    const observer: RpcObserver = {
+      resolve: () => {},
+      reject: (e) => {
+        context.err = e;
+        context.wake.notify();
+      },
+      next: (v) => {
+        context.queue.push(v as T);
+        context.wake.notify();
+      },
+      complete: () => {
+        context.done = true;
+        context.wake.notify();
+      },
+      error: (e) => {
+        context.err = e;
+        context.done = true;
+        context.wake.notify();
+      },
+    };
+
+    this.pending.set(context.cid, observer);
+
+    // Post request synchronously so callers can observe it immediately
+    this.transport.post({
+      kind: 'req',
+      cid: context.cid,
+      method: channel,
+    });
+
+    const generator = this.iterator(context);
 
     const close = async () => {
-      closed = true;
-      await generator.return?.();
+      this.transport.post({
+        kind: 'can',
+        cid: context.cid,
+      });
     };
 
     (async () => {
       try {
         for await (const payload of generator) {
-          if (closed) {
+          if (context.done) {
             break;
           }
           handler(payload);
@@ -98,16 +136,15 @@ export class RpcEndpoint implements RpcClient {
     timeoutMs = this.opts.timeoutMs ?? 30000
   ): Promise<T> {
     const cid = this.cid();
+
     return new Promise<T>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(cid);
         reject(new Error(`RPC_TIMEOUT ${method}`));
       }, timeoutMs);
+
       this.pending.set(cid, {
-        resolve: (v: unknown) => {
-          // Cast unknown payload to generic T before resolving
-          resolve(v as T);
-        },
+        resolve: (v: unknown) => resolve(v as T),
         reject,
         timer,
       });
@@ -161,7 +198,7 @@ export class RpcEndpoint implements RpcClient {
         if (context.queue.length) {
           yield context.queue.shift()!;
         } else {
-          await Promise.race([context.wake.wait(), new Promise((r) => setTimeout(r, 8))]);
+          await context.wake.wait();
         }
         if (context.err) {
           throw context.err;
@@ -181,6 +218,7 @@ export class RpcEndpoint implements RpcClient {
 
   private onFrame = async (f: RpcFrame) => {
     this.opts.onLog?.(f);
+
     if (f.kind === 'req') {
       const fn = this.handlers[f.method];
 
