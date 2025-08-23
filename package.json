@@ -13,7 +13,10 @@
   "pnpm": {
     "overrides": {
       "llm-bridge-loader": "link:packages/llm-bridge-loader"
-    }
+    },
+    "ignoredBuiltDependencies": [
+      "electron"
+    ]
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
@@ -35,8 +38,8 @@
     "node": "22.14.0"
   },
   "dependencies": {
-    "@chakra-ui/react": "^2.9.2",
     "@chakra-ui/icons": "^2.1.3",
+    "@chakra-ui/react": "^2.9.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "framer-motion": "^10.18.0"
