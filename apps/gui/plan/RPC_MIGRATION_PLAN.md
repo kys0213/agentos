@@ -73,7 +73,7 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 });
 ```
 
-## Todo
+## Todo (업데이트: 08/23)
 
 - [x] Preload에 이벤트 구독 API 추가: `electronBridge.on(channel, handler): () => void`
 - [x] Preload에 generic invoke 추가: `rpc.request(channel, payload)`
@@ -86,12 +86,17 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 - [x] 문서 업데이트: 스펙/가이드 최신화
 - [x] 폴백 경로에서 세션 메시지 이벤트 브로드캐스트(초기)
 - [ ] 기존 renderer 훅/컨테이너 호출부를 RPC 서비스로 점진 이관 및 정리
+  - (진행) Chat/Preset 관련 호출 정리 및 서비스 의존도 명확화
+  - (보류) mock IPC 경로/테스트 유틸 정리 및 any 제거
 - [x] Main에 프레임 기반 `ElectronEventTransport` 연결(Nest Microservice)
 - [x] ElectronEventTransport에 cancel 처리(subscriptions by cid) 기본 구현
-- [ ] `AgentEventBridge` 도입: core 이벤트 `agentos:` 접두사 브로드캐스트
+- [x] `AgentEventBridge` 도입: core 이벤트 `agentos:` 접두사 브ロード캐스트
+  - apps/gui/src/main/agent/events/agent-event-bridge.ts 기반 브릿지 구성
 - [ ] MCP 사용량 업데이트 경로 이벤트화 점검(샘플링/취소 포함)
-- [ ] 메서드별 DTO/class-validator 스키마(메인) 및 zod 가드(렌더러) 초안 추가
-- [ ] 계약 테스트: mock Transport로 `req/res/err/nxt/end/can` 스냅샷
+- [x] 메서드별 DTO/class-validator 스키마(메인) 및 zod 가드(렌더러) 초안 추가
+  - (완료) preset/mcp-usage DTO 초안, 렌더러 zod 가드 샘플 반영
+  - (보완) 전 채널로 확대 적용 필요
+- [x] 전송 계층 계약 테스트: mock/real Transport로 `req/res/err/nxt/end/can` 왕복 확인
 - [ ] E2E: snapshot+watch 시나리오, 취소/타임아웃, CoreError 전파 확인
 - [x] 데모 스트림 경로 연결: `demo.streamTicks` (Frame-level prototype)
 
@@ -113,8 +118,18 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 - 안전한 점진 도입을 위해 기존 `ipcMain.handle` 경로는 유지하면서 내부를 `RpcEndpoint` 호출로 이행하는 호환 레이어를 추천합니다.
 - MessagePort 최적화는 2차(퍼포먼스) 작업으로 분리합니다.
 
-## 현 상태 요약 (8/16 기준)
+## 현 상태 요약 (08/23 기준)
 
-- Preload는 현재 `start/post`만 노출되어 있으며, `electronBridge.on`/`rpc.request`는 미노출 상태입니다.
-- Main은 `ElectronEventTransport`로 Nest Microservice가 구동되며, `can` 취소 프레임과 `CoreError` 매핑이 반영되어 있습니다.
-- Renderer는 프레임 기반 `RpcEndpoint` + `ElectronIpcTransport`로 스트림/단발을 처리할 수 있는 구조가 준비되어 있습니다.
+- Preload: `electronBridge.on`/`rpc.request` 노출(문서/스펙 정렬 완료).
+- Main: `ElectronEventTransport` + Nest Microservice 연결, `can` 취소 프레임/에러 매핑 동작.
+- Renderer: `RpcEndpoint` + `ElectronIpcTransport` 사용, request/stream 처리 및 타입 정합 보강.
+- 이벤트: `AgentEventBridge` 경유 브로드캐스트 가능(구독 가드 적용 경로 준비).
+- Lint/스타일: GUI 전역 curly/no-nested-ternary/multiline-ternary 강화, 주요 컴포넌트 정리 완료.
+  - 오류 0, 경고는 mock IPC/any 및 일부 잔여 삼항에 한정(후속 브랜치에서 처리).
+- 문서: `apps/gui/docs/GUI_CODE_STYLE.md` 추가(가드 블록/삼항 분리 가이드, PR 체크리스트 포함).
+
+## Lint/Style 하드닝 (추가 섹션)
+
+- 목표: Prettier×ESLint 충돌 제거, 일관된 제어 흐름, 타입 안전성 강화.
+- 적용 규칙: curly(항상), no-nested-ternary, multiline-ternary(엄격), any 금지/`as any` 금지.
+- 현황: 타입체크/린트 오류 0; 경고는 IPC mock/type-safety 후속 작업으로 분리.
