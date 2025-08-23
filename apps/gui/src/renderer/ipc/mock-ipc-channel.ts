@@ -126,7 +126,7 @@ export class MockIpcChannel implements IpcChannel {
   async getBuiltinTool(_id: string): Promise<BuiltinTool | null> {
     return null;
   }
-  async invokeBuiltinTool<R>(_toolName: string, _args: Record<string, any>): Promise<R> {
+  async invokeBuiltinTool<R>(_toolName: string, _args: Record<string, unknown>): Promise<R> {
     return {} as R;
   }
 
@@ -139,8 +139,9 @@ export class MockIpcChannel implements IpcChannel {
   }
   async unregisterBridge(id: string): Promise<{ success: boolean }> {
     const ok = this.bridges.delete(id);
-    if (this.currentBridgeId === id)
+    if (this.currentBridgeId === id) {
       this.currentBridgeId = this.bridges.keys().next().value ?? null;
+    }
     return { success: ok };
   }
   async switchBridge(id: string): Promise<{ success: boolean }> {
@@ -148,9 +149,13 @@ export class MockIpcChannel implements IpcChannel {
     return { success: true };
   }
   async getCurrentBridge(): Promise<{ id: string; config: LlmManifest } | null> {
-    if (!this.currentBridgeId) return null;
+    if (!this.currentBridgeId) {
+      return null;
+    }
     const cfg = this.bridges.get(this.currentBridgeId);
-    if (!cfg) return null;
+    if (!cfg) {
+      return null;
+    }
     return { id: this.currentBridgeId, config: cfg };
   }
   async getBridgeIds(): Promise<string[]> {
@@ -166,7 +171,9 @@ export class MockIpcChannel implements IpcChannel {
   }
   async connectMcp(config: McpConfig): Promise<{ success: boolean }> {
     const existing = this.mcpConfigs.find((c) => c.name === config.name);
-    if (!existing) this.mcpConfigs.push(config);
+    if (!existing) {
+      this.mcpConfigs.push(config);
+    }
     this.mcpConnected.add(config.name);
     return { success: true };
   }
@@ -258,8 +265,14 @@ export class MockIpcChannel implements IpcChannel {
       .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
     const idx = pagination?.cursor ? items.findIndex((i) => i.id === pagination.cursor) : -1;
     const limit = pagination?.limit ?? items.length;
-    const startIndex =
-      idx >= 0 ? (pagination?.direction === 'backward' ? Math.max(0, idx - limit) : idx + 1) : 0;
+    let startIndex = 0;
+    if (idx >= 0) {
+      if (pagination?.direction === 'backward') {
+        startIndex = Math.max(0, idx - limit);
+      } else {
+        startIndex = idx + 1;
+      }
+    }
     const paged = items.slice(startIndex, startIndex + limit);
     return { items: paged, nextCursor: paged.at(-1)?.id ?? '', hasMore: false };
   }
@@ -282,11 +295,17 @@ export class MockIpcChannel implements IpcChannel {
   // Usage Log
   async getUsageLogs(clientName: string, options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
     let logs = [...this.usageLogs];
-    if (options?.status) logs = logs.filter((l) => l.status === options.status);
-    if (options?.agentId) logs = logs.filter((l) => l.agentId === options.agentId);
-    if (options?.sortOrder === 'asc')
+    if (options?.status) {
+      logs = logs.filter((l) => l.status === options.status);
+    }
+    if (options?.agentId) {
+      logs = logs.filter((l) => l.agentId === options.agentId);
+    }
+    if (options?.sortOrder === 'asc') {
       logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-    else logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    } else {
+      logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    }
     if (options?.offset !== undefined || options?.limit !== undefined) {
       const offset = options.offset || 0;
       const limit = options.limit || 50;
@@ -295,13 +314,19 @@ export class MockIpcChannel implements IpcChannel {
     return logs;
   }
   async getAllUsageLogs(options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
-    return this.getUsageLogs('*', options).then((_) => {
+    return this.getUsageLogs('*', options).then(() => {
       let all = [...this.usageLogs];
-      if (options?.status) all = all.filter((l) => l.status === options.status);
-      if (options?.agentId) all = all.filter((l) => l.agentId === options.agentId);
-      if (options?.sortOrder === 'asc')
+      if (options?.status) {
+        all = all.filter((l) => l.status === options.status);
+      }
+      if (options?.agentId) {
+        all = all.filter((l) => l.agentId === options.agentId);
+      }
+      if (options?.sortOrder === 'asc') {
         all.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-      else all.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      } else {
+        all.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      }
       if (options?.offset !== undefined || options?.limit !== undefined) {
         const offset = options.offset || 0;
         const limit = options.limit || 50;
