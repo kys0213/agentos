@@ -17,14 +17,18 @@ Purpose: keep TS/TSX readable and consistent, and avoid Prettier×ESLint conflic
 
 ## Patterns
 
-1) Guard clauses instead of deep if/else nesting
+1. Guard clauses instead of deep if/else nesting
 
 Before
+
 ```tsx
-if (a) doA(); else if (b) doB(); else doC();
+if (a) doA();
+else if (b) doB();
+else doC();
 ```
 
 After
+
 ```tsx
 if (a) {
   doA();
@@ -37,32 +41,46 @@ if (b) {
 doC();
 ```
 
-2) Replace nested ternaries in JSX
+2. Replace nested ternaries in JSX
 
 Before
+
 ```tsx
-{status === 'ok' ? <Ok/> : hasWarn ? <Warn/> : <Err/>}
+{
+  status === 'ok' ? <Ok /> : hasWarn ? <Warn /> : <Err />;
+}
 ```
 
 After
+
 ```tsx
-{status === 'ok' && <Ok/>}
-{status !== 'ok' && hasWarn && <Warn/>}
-{status !== 'ok' && !hasWarn && <Err/>}
+{
+  status === 'ok' && <Ok />;
+}
+{
+  status !== 'ok' && hasWarn && <Warn />;
+}
+{
+  status !== 'ok' && !hasWarn && <Err />;
+}
 ```
+
 or lift logic above render:
+
 ```ts
 const body = status === 'ok' ? <Ok/> : hasWarn ? <Warn/> : <Err/>; // small only
 ```
 
-3) Extract helper for repeated branch styles
+3. Extract helper for repeated branch styles
 
 Before
+
 ```tsx
-<span className={`dot ${s === 'success' ? 'g' : s === 'error' ? 'r' : 'y'}`}/>
+<span className={`dot ${s === 'success' ? 'g' : s === 'error' ? 'r' : 'y'}`} />
 ```
 
 After
+
 ```ts
 function dotClass(s: string) {
   if (s === 'success') return 'g';
@@ -70,17 +88,21 @@ function dotClass(s: string) {
   return 'y';
 }
 ```
+
 ```tsx
-<span className={`dot ${dotClass(status)}`}/>
+<span className={`dot ${dotClass(status)}`} />
 ```
 
-4) Curly blocks for one‑liners
+4. Curly blocks for one‑liners
 
 Before
+
 ```ts
 if (!id) return null;
 ```
+
 After
+
 ```ts
 if (!id) {
   return null;
@@ -99,4 +121,3 @@ if (!id) {
 - [ ] Complex JSX conditions are lifted or split into guarded blocks.
 - [ ] No `any` added; no `as any` present.
 - [ ] `pnpm -r typecheck`, `pnpm -C apps/gui lint`, and `pnpm format` succeed.
-

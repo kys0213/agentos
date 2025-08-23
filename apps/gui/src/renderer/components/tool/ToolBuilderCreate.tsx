@@ -596,9 +596,10 @@ export const slackMessenger = {
             <Card>
               <CardHeader>
                 <CardTitle className="gap-2 flex items-center">
-                  {testResults.status === 'success' ? (
+                  {testResults.status === 'success' && (
                     <CheckCircle className="w-5 h-5 text-status-active" />
-                  ) : (
+                  )}
+                  {testResults.status !== 'success' && (
                     <AlertTriangle className="w-5 h-5 text-status-error" />
                   )}
                   Test Results

@@ -54,7 +54,9 @@ export class MockIpcChannel implements IpcChannel {
     const text = messages
       .map((m) => {
         const c = m.content;
-        if (typeof c === 'string') return c;
+        if (typeof c === 'string') {
+          return c;
+        }
 
         if (Array.isArray(c)) {
           return c
@@ -63,7 +65,7 @@ export class MockIpcChannel implements IpcChannel {
         }
 
         if (c && typeof c === 'object') {
-          return c.value ?? JSON.stringify(c);
+          return (c as { value?: unknown }).value ?? JSON.stringify(c);
         }
         return '';
       })
@@ -90,7 +92,9 @@ export class MockIpcChannel implements IpcChannel {
     patch: Partial<Omit<AgentMetadata, 'id'>>
   ): Promise<AgentMetadata> {
     const idx = this.agents.findIndex((a) => a.id === agentId);
-    if (idx === -1) throw new Error(`Agent not found: ${agentId}`);
+    if (idx === -1) {
+      throw new Error(`Agent not found: ${agentId}`);
+    }
     const updated = { ...this.agents[idx], ...patch, id: agentId } as AgentMetadata;
     this.agents[idx] = updated;
     return updated;
@@ -114,7 +118,9 @@ export class MockIpcChannel implements IpcChannel {
   }
   async deleteAgent(id: string): Promise<AgentMetadata> {
     const found = await this.getAgentMetadata(id);
-    if (!found) throw new Error(`Agent not found: ${id}`);
+    if (!found) {
+      throw new Error(`Agent not found: ${id}`);
+    }
     this.agents = this.agents.filter((a) => a.id !== id);
     return found;
   }
@@ -134,7 +140,9 @@ export class MockIpcChannel implements IpcChannel {
   async registerBridge(config: LlmManifest): Promise<{ success: boolean }> {
     const id = (config as { name?: string }).name ?? `bridge_${this.bridges.size + 1}`;
     this.bridges.set(id, config);
-    if (!this.currentBridgeId) this.currentBridgeId = id;
+    if (!this.currentBridgeId) {
+      this.currentBridgeId = id;
+    }
     return { success: true };
   }
   async unregisterBridge(id: string): Promise<{ success: boolean }> {
@@ -241,14 +249,18 @@ export class MockIpcChannel implements IpcChannel {
   }
   async updatePreset(id: string, preset: Partial<Omit<Preset, 'id'>>): Promise<Preset> {
     const idx = this.presets.findIndex((p) => p.id === id);
-    if (idx === -1) throw new Error(`Preset not found: ${id}`);
+    if (idx === -1) {
+      throw new Error(`Preset not found: ${id}`);
+    }
     const updated = { ...this.presets[idx], ...preset, id } as Preset;
     this.presets[idx] = updated;
     return updated;
   }
   async deletePreset(id: string): Promise<Preset> {
     const found = this.presets.find((p) => p.id === id);
-    if (!found) throw new Error(`Preset not found: ${id}`);
+    if (!found) {
+      throw new Error(`Preset not found: ${id}`);
+    }
     this.presets = this.presets.filter((p) => p.id !== id);
     return found;
   }
