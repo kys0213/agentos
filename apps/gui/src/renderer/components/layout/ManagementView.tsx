@@ -9,7 +9,7 @@ import { Button } from '../ui/button';
 import Sidebar from './Sidebar';
 
 // Import new design hooks like design/App.tsx
-import { CreateAgentMetadata, CreatePreset } from '@agentos/core';
+import { CreatePreset, McpConfig } from '@agentos/core';
 import { useAppData } from '../../hooks/useAppData';
 import { useChatState } from '../../hooks/useChatState';
 import { UseAppNavigationReturn } from '../../stores/store-types';
@@ -50,7 +50,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     handleBackToAgents,
     handleBackToToolBuilder,
     handleStartCreatePreset,
-    handleStartCreateMCPTool,
+    // handleStartCreateMCPTool is not used here
     handleStartCreateAgent,
     handleStartCreateCustomTool,
     isInDetailView,
@@ -70,15 +70,14 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     currentAgents,
     showEmptyState,
     setShowEmptyState,
-    handleUpdateAgentStatus,
+    // handleUpdateAgentStatus not used in this view
     handleCreatePreset,
     handleCreateMCPTool,
-    handleCreateAgent,
+    // handleCreateAgent not used in this view
     handleCreateCustomTool,
-    handleUpdatePreset,
-    handleDeletePreset,
-    getMentionableAgents,
-    getActiveAgents,
+    // handleUpdatePreset,
+    // handleDeletePreset,
+    // mentionable/active agent helpers not used here
     reloadAgents,
   } = appData;
 
@@ -89,36 +88,16 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     return preset;
   };
 
-  const onCreateMCPTool = async (mcpConfig: any) => {
+  const onCreateMCPTool = async (mcpConfig: McpConfig) => {
     const tool = await handleCreateMCPTool(mcpConfig);
     setActiveSection('tools');
     return tool;
   };
 
-  const onCreateAgent = async (newAgent: CreateAgentMetadata) => {
-    const agent = handleCreateAgent(newAgent);
-    setActiveSection('subagents');
-    return agent;
-  };
-
-  const onCreateCustomTool = (toolData: any) => {
+  const onCreateCustomTool = (toolData: unknown) => {
     const tool = handleCreateCustomTool(toolData);
     setActiveSection('toolbuilder');
     return tool;
-  };
-
-  const onUpdatePreset = async (updatedPreset: any) => {
-    await handleUpdatePreset(updatedPreset);
-    if (selectedPreset?.id === updatedPreset.id) {
-      handleSelectPreset({ ...updatedPreset, updatedAt: new Date() });
-    }
-  };
-
-  const onDeletePreset = async (presetId: string) => {
-    await handleDeletePreset(presetId);
-    if (selectedPreset?.id === presetId) {
-      handleBackToPresets();
-    }
   };
 
   const handleOpenChat = (agentId: string) => {
