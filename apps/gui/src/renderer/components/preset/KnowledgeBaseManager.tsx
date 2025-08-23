@@ -103,6 +103,7 @@ function isStoredKnowledgeDocument(o: unknown): o is StoredKnowledgeDocument {
   if (!o || typeof o !== 'object') {
     return false;
   }
+
   const v = o as Record<string, unknown>;
   const has = (k: string) => Object.prototype.hasOwnProperty.call(v, k);
   return (
@@ -157,6 +158,7 @@ export function KnowledgeBaseManager({
       try {
         const parsed: unknown = JSON.parse(savedDocuments);
         const arr = Array.isArray(parsed) ? parsed : [];
+        
         const next: KnowledgeDocument[] = arr.filter(isStoredKnowledgeDocument).map((doc) => ({
           id: doc.id,
           title: doc.title,
@@ -173,7 +175,8 @@ export function KnowledgeBaseManager({
           agentId: agentId ?? '',
           agentName: agentName ?? '',
           isTemplate: !!doc.isTemplate,
-        }));
+        })); 
+          
         setDocuments(next);
       } catch (error) {
         console.error('Failed to load documents:', error);
