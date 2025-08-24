@@ -78,6 +78,25 @@ describe('QA agent scenario simulation', () => {
     expect(ckSet.size).toBe(sRes.length);
 
     // 세션 종료 → 승격 + 체크포인트
+    // Snapshot session state (sanitized) before finalize
+    const snap = o.getSessionStore(sid).toSnapshot();
+    const sessionSummary = {
+      nodes: snap.graph.nodes
+        .filter((n: any) => n.type === 'query')
+        .map((n: any) => ({
+          text: n.text,
+          degree: n.degree,
+          feedback: Number((n.weights?.feedback ?? 0).toFixed(2)),
+          repeat: Number((n.weights?.repeat ?? 0).toFixed(2)),
+        }))
+        .sort((a: any, b: any) => (a.text || '').localeCompare(b.text || '')),
+      edges: snap.graph.edges.reduce((acc: any, e: any) => { acc[e.type] = (acc[e.type] ?? 0) + 1; return acc; }, {} as Record<string, number>),
+    };
+    const sResSanitized = sRes
+      .map(r => ({ from: r.from, text: r.text, score: Number(r.score.toFixed(2)) }))
+      .sort((a, b) => (a.text || '').localeCompare(b.text || ''));
+    expect({ sessionSummary, sRes: sResSanitized }).toMatchSnapshot();
+
     await o.finalizeSession(sid, { promote: true, checkpoint: false });
     const agentStats = o.getAgentStore().stats();
     expect(agentStats.nodes).toBeGreaterThan(0);
@@ -85,6 +104,9 @@ describe('QA agent scenario simulation', () => {
     // 에이전트 스토어에서 검색(세션 종료 이후)
     const aRes = o.getAgentStore().searchSimilarQueries('제품A 테스트케이스', 8);
     expect(aRes.length).toBeGreaterThan(0);
+    const aResSanitized = aRes
+      .map(r => ({ text: r.text, score: Number(r.score.toFixed(2)) }))
+      .sort((a, b) => (a.text || '').localeCompare(b.text || ''));
+    expect({ agentStats, aRes: aResSanitized }).toMatchSnapshot();
   });
 });
-

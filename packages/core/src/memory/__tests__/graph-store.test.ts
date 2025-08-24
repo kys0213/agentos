@@ -27,5 +27,38 @@ describe('GraphStore', () => {
     expect(after[0].canonicalKey).toBe(before[0].canonicalKey);
     expect(after[0].text).toBe(before[0].text);
   });
-});
 
+  test('graph snapshot structure is stable (sanitized) [snapshot]', () => {
+    const g = new GraphStore(cfg, new SimpleEmbedding());
+    const texts = [
+      '테스트 케이스 작성',
+      '테스트케이스 작성',
+      '리그레이션 테스트 수행',
+      '작성된 테스트케이스 조회',
+      '제품A 테스트케이스 검색',
+      '제품B 리팩토링 회귀 테스트 계획',
+    ];
+    for (const t of texts) {
+      const id = g.upsertQuery(t);
+      if (t.includes('작성')) g.recordFeedback(id, 'up');
+    }
+    const snap = g.toSnapshot();
+    const nodes = snap.graph.nodes
+      .filter((n: any) => n.type === 'query')
+      .map((n: any) => ({
+        text: n.text,
+        canonicalKey: n.canonicalKey,
+        degree: n.degree,
+        weights: {
+          repeat: Number((n.weights?.repeat ?? 0).toFixed(2)),
+          feedback: Number((n.weights?.feedback ?? 0).toFixed(2)),
+        },
+      }))
+      .sort((a: any, b: any) => (a.text || '').localeCompare(b.text || ''));
+    const edgeTypeCounts = snap.graph.edges.reduce((acc: any, e: any) => {
+      acc[e.type] = (acc[e.type] ?? 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    expect({ nodes, edgeTypeCounts }).toMatchSnapshot();
+  });
+});

@@ -19,6 +19,12 @@ describe('MemoryOrchestrator', () => {
     // same canonicalKey should collapse to a single entry
     const keys = new Set(res.map(r => r.canonicalKey ?? r.id));
     expect(keys.size).toBe(res.length);
+
+    // Snapshot of sanitized search results (deterministic ordering by text)
+    const sanitized = res
+      .map(r => ({ from: r.from, text: r.text, canonicalKey: r.canonicalKey, score: Number(r.score.toFixed(2)) }))
+      .sort((a, b) => (a.text || '').localeCompare(b.text || ''));
+    expect(sanitized).toMatchSnapshot();
   });
 
   test('finalizeSession promotes hotspots to agent store', async () => {
@@ -32,4 +38,3 @@ describe('MemoryOrchestrator', () => {
     expect(after).toBeGreaterThanOrEqual(before);
   });
 });
-
