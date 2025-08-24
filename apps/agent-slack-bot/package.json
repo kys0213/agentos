@@ -14,11 +14,11 @@
   },
   "dependencies": {
     "@agentos/core": "workspace:*",
-    "llm-bridge-loader": "^0.0.3",
-    "llm-bridge-spec": "^1.0.2",
     "@slack/bolt": "^3.15.0",
-    "slack-block-builder": "^2.8.0",
-    "@slack/types": "^2.14.0"
+    "@slack/types": "^2.14.0",
+    "llm-bridge-loader": "0.0.6",
+    "llm-bridge-spec": "^1.0.2",
+    "slack-block-builder": "^2.8.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.19",

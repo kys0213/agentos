@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.19",
-    "typescript": "^5.3.3",
-    "llm-bridge-spec": "^1.0.2"
+    "llm-bridge-spec": "^1.0.6",
+    "typescript": "^5.3.3"
   }
 }
