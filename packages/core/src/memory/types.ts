@@ -1,5 +1,5 @@
-export type NodeType = 'query'|'answer'|'feedback'|'entity';
-export type EdgeType = 'similar_to'|'responded_with'|'has_feedback'|'refers_to_entity';
+export type NodeType = 'query' | 'answer' | 'feedback' | 'entity';
+export type EdgeType = 'similar_to' | 'responded_with' | 'has_feedback' | 'refers_to_entity';
 
 export interface BaseNode {
   id: string;
@@ -39,4 +39,3 @@ export interface EmbeddingProvider {
   exportState?(): any;
   importState?(s: any): void;
 }
-
