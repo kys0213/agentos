@@ -1,5 +1,4 @@
 import { Preset } from '@agentos/core';
-import { deletePreset } from '../services/fetchers/presets';
 import { PresetStore } from '../stores/preset-store';
 
 const sample: Preset = {
