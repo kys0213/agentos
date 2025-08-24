@@ -1,0 +1,117 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`QA agent large simulation (~100 queries) graph forms clusters and promotions carry weights [snapshot] 1`] = `
+{
+  "sStats": {
+    "edges": 102,
+    "nodes": 103,
+  },
+  "topTexts": [
+    {
+      "degree": 5,
+      "fb": 2.9,
+      "text": "제품A 테스트 시나리오 작성",
+    },
+    {
+      "degree": 5,
+      "fb": 2.9,
+      "text": "제품A 작성된 테스트케이스 조회",
+    },
+    {
+      "degree": 5,
+      "fb": 2.9,
+      "text": "제품A 테스트 증적 검증 요청",
+    },
+    {
+      "degree": 5,
+      "fb": 2.9,
+      "text": "제품B 테스트 시나리오 작성",
+    },
+    {
+      "degree": 5,
+      "fb": 2.9,
+      "text": "제품B 작성된 테스트케이스 조회",
+    },
+    {
+      "degree": 5,
+      "fb": 2.9,
+      "text": "제품B 테스트 증적 검증 요청",
+    },
+    {
+      "degree": 5,
+      "fb": 2.9,
+      "text": "제품C 테스트 시나리오 작성",
+    },
+    {
+      "degree": 5,
+      "fb": 2.9,
+      "text": "제품C 작성된 테스트케이스 조회",
+    },
+    {
+      "degree": 5,
+      "fb": 2.9,
+      "text": "제품C 테스트 증적 검증 요청",
+    },
+    {
+      "degree": 5,
+      "fb": 2.9,
+      "text": "제품D 테스트 시나리오 작성",
+    },
+  ],
+  "typeCounts": {
+    "has_feedback": 50,
+    "similar_to": 52,
+  },
+}
+`;
+
+exports[`QA agent large simulation (~100 queries) graph forms clusters and promotions carry weights [snapshot] 2`] = `
+{
+  "aStats": {
+    "edges": 17,
+    "nodes": 40,
+  },
+  "res": [
+    {
+      "score": 0.62,
+      "text": "제품A 리그레이션 테스트 수행",
+    },
+    {
+      "score": 0.59,
+      "text": "제품B 리그레이션 테스트 수행",
+    },
+    {
+      "score": 0.78,
+      "text": "제품C 리그레이션 테스트 수행",
+    },
+    {
+      "score": 0.31,
+      "text": "제품C 작성된 테스트케이스 조회",
+    },
+    {
+      "score": 0.31,
+      "text": "제품C 테스트 시나리오 작성",
+    },
+    {
+      "score": 0.31,
+      "text": "제품C 테스트 증적 검증 요청",
+    },
+    {
+      "score": 0.29,
+      "text": "제품C 테스트 케이스 검색",
+    },
+    {
+      "score": 0.31,
+      "text": "제품C 테스트 케이스 작성",
+    },
+    {
+      "score": 0.31,
+      "text": "제품C 테스트케이스 작성",
+    },
+    {
+      "score": 0.59,
+      "text": "제품D 리그레이션 테스트 수행",
+    },
+  ],
+}
+`;
