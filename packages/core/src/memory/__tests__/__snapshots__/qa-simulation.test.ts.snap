@@ -213,6 +213,7 @@ exports[`QA agent scenario simulation builds a meaningful graph and promotions w
         "text": "회귀 테스트 실행",
       },
     ],
+    "similarRatio": 0.059,
   },
 }
 `;
