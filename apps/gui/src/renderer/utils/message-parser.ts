@@ -5,18 +5,15 @@ import type { MessageHistory } from '@agentos/core';
  * @param message MessageHistory 또는 MessageRecord
  * @returns 파싱된 텍스트 문자열
  */
-type TextLike = { contentType: string; value: string };
-
-function isTextLike(obj: unknown): obj is TextLike {
-  return !!obj && typeof obj === 'object' && 'contentType' in obj && 'value' in obj;
-}
-
 export function parseMessageContent(message: MessageHistory): string {
-  if (!Array.isArray(message.content)) return '';
-  const arr = message.content as any[];
+  if (!Array.isArray(message.content)) {
+    return '';
+  }
+
+  const arr = message.content;
   return arr
-    .filter((c) => c && (c as any).contentType === 'text')
-    .map((c) => (c as any).value)
+    .filter((c) => c && c.contentType === 'text')
+    .map((c) => c.value)
     .join('\n');
 }
 
@@ -53,7 +50,9 @@ export function parseMessagePreview(message: MessageHistory, maxLength: number =
  * @returns content에 텍스트가 포함되어 있으면 true
  */
 export function hasTextContent(message: MessageHistory): boolean {
-  if (!Array.isArray(message.content)) return false;
-  const arr = message.content as any[];
-  return arr.some((c) => c && (c as any).contentType === 'text');
+  if (!Array.isArray(message.content)) {
+    return false;
+  }
+  const arr = message.content;
+  return arr.some((c) => c && c.contentType === 'text');
 }

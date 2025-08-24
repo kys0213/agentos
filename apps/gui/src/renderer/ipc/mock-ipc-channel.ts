@@ -59,11 +59,7 @@ export class MockIpcChannel implements IpcChannel {
         }
 
         if (Array.isArray(c)) {
-          return c
-            .map((it) =>
-              typeof it === 'string' ? it : ((it as any)?.value ?? (it as any)?.text ?? '')
-            )
-            .join('\n');
+          return c.map((it) => (typeof it === 'string' ? it : (it?.value ?? ''))).join('\n');
         }
 
         if (c && typeof c === 'object') {
