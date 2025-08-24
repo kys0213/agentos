@@ -136,8 +136,10 @@ Resolves: GUI_CYCLIC_UX_REDESIGN_PLAN.md Phase 1 Task 1"
 3. **TODO 단위 작업**: 각 TODO 완료 시마다 커밋
 4. **테스트 실행**: `pnpm lint` && `pnpm test` 통과 확인
 5. **문서 업데이트**: 완료된 TODO 체크 후 커밋
+   - Plan→Docs 승격을 PR 생성 전에 완료합니다. 승격된 문서 경로를 PR 본문에 기재하세요.
 6. **Pull Request 생성**: PR 템플릿 기반으로 생성하고, 본문은 "Plan 중심 요약"으로 작성
    - Context: Plan 링크(`plan/<file>.md` 또는 승격 후 `docs/<file>.md`), Scope
+   - Docs: Plan→Docs 승격이 완료되었는지 확인(필수). 경로를 명시하세요.
    - Requirements: 계획서의 성공조건 요약(3~5줄)
    - TODO Status: 계획서의 TODO 목록 복사 + 완료 체크 표시
    - Changes: 핵심 변경사항 불릿(3~7개)
@@ -181,7 +183,7 @@ gh pr create --web
 - **브랜치별 리뷰**: 전체 기능 단위로 종합 검토
 - **커밋별 리뷰**: TODO 단위의 세부 변경사항 검토
 - **문서 동기화**: 계획서의 TODO 체크와 실제 구현 일치 확인
-- **Plan→Docs 승격**: 모든 TODO 완료 시 `plan/` 문서를 `docs/`로 승격하고 원본 삭제(Deprecated 디렉토리 금지). 유사 문서는 병합/확장.
+- **Plan→Docs 승격**: 모든 TODO 완료 시(= PR 생성 전) `plan/` 문서를 `docs/`로 승격하고 원본 삭제(Deprecated 디렉토리 금지). 유사 문서는 병합/확장.
 - **Interface-first 문서**: 최종 문서는 인터페이스/계약/시나리오를 우선하며, 내부 구현 세부는 문서 대상이 아님.
 
 > Tip

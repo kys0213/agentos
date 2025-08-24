@@ -1,0 +1,66 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Inverted index on/off yields consistent results top-k results overlap and look consistent (snapshot) 1`] = `
+{
+  "off": [
+    {
+      "score": 0.31,
+      "text": "제품A 리그레이션 테스트",
+    },
+    {
+      "score": 0.5,
+      "text": "제품A 테스트 케이스 작성",
+    },
+    {
+      "score": 0.73,
+      "text": "제품A 테스트케이스 작성",
+    },
+    {
+      "score": 0.3,
+      "text": "제품B 테스트 케이스 작성",
+    },
+    {
+      "score": 0.52,
+      "text": "제품B 테스트케이스 조회",
+    },
+    {
+      "score": 0.43,
+      "text": "제품C 테스트 케이스 검색",
+    },
+    {
+      "score": 0.26,
+      "text": "테스트 케이스 초안 만들기",
+    },
+    {
+      "score": 0.45,
+      "text": "테스트케이스 템플릿 생성",
+    },
+  ],
+  "on": [
+    {
+      "score": 0.31,
+      "text": "제품A 리그레이션 테스트",
+    },
+    {
+      "score": 0.5,
+      "text": "제품A 테스트 케이스 작성",
+    },
+    {
+      "score": 0.73,
+      "text": "제품A 테스트케이스 작성",
+    },
+    {
+      "score": 0.52,
+      "text": "제품B 테스트케이스 조회",
+    },
+    {
+      "score": 0.43,
+      "text": "제품C 테스트 케이스 검색",
+    },
+    {
+      "score": 0.45,
+      "text": "테스트케이스 템플릿 생성",
+    },
+  ],
+}
+`;

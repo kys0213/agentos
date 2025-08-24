@@ -1,0 +1,65 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GraphStore graph snapshot structure is stable (sanitized) [snapshot] 1`] = `
+{
+  "edgeTypeCounts": {
+    "has_feedback": 3,
+  },
+  "nodes": [
+    {
+      "canonicalKey": "ck:nfc_v1:fnv1a64_demo:lu63c",
+      "degree": 0,
+      "text": "리그레이션 테스트 수행",
+      "weights": {
+        "feedback": 0,
+        "repeat": 0,
+      },
+    },
+    {
+      "canonicalKey": "ck:nfc_v1:fnv1a64_demo:1ko3nin",
+      "degree": 1,
+      "text": "작성된 테스트케이스 조회",
+      "weights": {
+        "feedback": 1,
+        "repeat": 0,
+      },
+    },
+    {
+      "canonicalKey": "ck:nfc_v1:fnv1a64_demo:8gtlil",
+      "degree": 0,
+      "text": "제품A 테스트케이스 검색",
+      "weights": {
+        "feedback": 0,
+        "repeat": 0,
+      },
+    },
+    {
+      "canonicalKey": "ck:nfc_v1:fnv1a64_demo:1habwlu",
+      "degree": 0,
+      "text": "제품B 리팩토링 회귀 테스트 계획",
+      "weights": {
+        "feedback": 0,
+        "repeat": 0,
+      },
+    },
+    {
+      "canonicalKey": "ck:nfc_v1:fnv1a64_demo:1ixda0d",
+      "degree": 1,
+      "text": "테스트 케이스 작성",
+      "weights": {
+        "feedback": 1,
+        "repeat": 0,
+      },
+    },
+    {
+      "canonicalKey": "ck:nfc_v1:fnv1a64_demo:1ypkx2j",
+      "degree": 1,
+      "text": "테스트케이스 작성",
+      "weights": {
+        "feedback": 1,
+        "repeat": 0,
+      },
+    },
+  ],
+}
+`;
