@@ -49,3 +49,5 @@ apps/gui/design/current/image.png
 # Playwright
 **/**/playwright-report/
 **/**/test-results/
+
+.agentos
