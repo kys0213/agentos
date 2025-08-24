@@ -1,7 +1,17 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { createElectronBridge, createRpc } from './electron/preload-api';
+import type { RpcFrame } from '../shared/rpc/rpc-frame';
 
-contextBridge.exposeInMainWorld('electronBridge', createElectronBridge(ipcRenderer));
-
-// Generic RPC surface over frame bus for convenience (req/res)
-contextBridge.exposeInMainWorld('rpc', createRpc(ipcRenderer));
+/**
+ * Electron bridge for RPC communication
+ */
+contextBridge.exposeInMainWorld('electronBridge', {
+  start: (onFrame: (f: RpcFrame) => void) => {
+    ipcRenderer.on('bridge:frame', (_e, f) => onFrame(f));
+  },
+  post: (frame: RpcFrame) => {
+    ipcRenderer.send('bridge:post', frame);
+  },
+  stop: () => {
+    ipcRenderer.removeAllListeners('bridge:frame');
+  },
+});

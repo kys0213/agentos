@@ -39,10 +39,12 @@ describe('FileBasedSessionStorage E2E', () => {
         messageId: '1',
         createdAt: new Date(),
         role: 'user',
-        content: {
-          contentType: 'text',
-          value: 'test message',
-        },
+        content: [
+          {
+            contentType: 'text',
+            value: 'test message',
+          },
+        ],
       };
 
       await initMetadata(sessionId);
@@ -59,19 +61,23 @@ describe('FileBasedSessionStorage E2E', () => {
           messageId: '1',
           createdAt: new Date(),
           role: 'user',
-          content: {
-            contentType: 'text',
-            value: 'test message 1',
-          },
+          content: [
+            {
+              contentType: 'text',
+              value: 'test message 1',
+            },
+          ],
         },
         {
           messageId: '2',
           createdAt: new Date(),
           role: 'assistant',
-          content: {
-            contentType: 'text',
-            value: 'test message 2',
-          },
+          content: [
+            {
+              contentType: 'text',
+              value: 'test message 2',
+            },
+          ],
         },
       ];
 
@@ -124,10 +130,12 @@ describe('FileBasedSessionStorage E2E', () => {
           messageId: '1',
           createdAt: new Date(),
           role: 'assistant',
-          content: {
-            contentType: 'text',
-            value: 'compressed message',
-          },
+          content: [
+            {
+              contentType: 'text',
+              value: 'compressed message',
+            },
+          ],
         },
         createdAt: new Date(),
         coveringUpTo: new Date(),
@@ -166,20 +174,24 @@ describe('FileBasedSessionStorage E2E', () => {
         messageId: '1',
         createdAt: new Date(),
         role: 'user',
-        content: {
-          contentType: 'text',
-          value: 'test message',
-        },
+        content: [
+          {
+            contentType: 'text',
+            value: 'test message',
+          },
+        ],
       },
       recentMessages: [
         {
           messageId: '1',
           createdAt: new Date(),
           role: 'user',
-          content: {
-            contentType: 'text',
-            value: 'test message',
-          },
+          content: [
+            {
+              contentType: 'text',
+              value: 'test message',
+            },
+          ],
         },
       ],
       joinedAgents: [],

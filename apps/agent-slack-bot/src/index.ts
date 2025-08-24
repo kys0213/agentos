@@ -64,7 +64,7 @@ app.message(async ({ message, say }) => {
   const messages: Message[] = [
     {
       role: 'user',
-      content: { contentType: 'text', value: text },
+      content: [{ contentType: 'text', value: text }],
     },
   ];
   // TODO: Use agent from core with llmBridgeRegistry to process messages

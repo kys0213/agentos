@@ -18,7 +18,10 @@ describe('AgentEventBridge', () => {
       }
     });
 
-    const msg: Message = { role: 'assistant', content: { contentType: 'text', value: 'hello' } };
+    const msg: Message = {
+      role: 'assistant',
+      content: [{ contentType: 'text', value: 'hello' }],
+    };
     bridge.publishSessionMessage('s1', msg);
   });
 });

@@ -6,9 +6,8 @@ export async function waitForRpcReady(timeoutMs = 5000): Promise<void> {
       window.electronBridge &&
       typeof window.electronBridge.start === 'function' &&
       typeof window.electronBridge.post === 'function';
-    const hasRpc = typeof window.rpc?.request === 'function';
 
-    if (hasBridge && hasRpc) {
+    if (hasBridge) {
       return;
     }
     await new Promise((r) => setTimeout(r, 100));

@@ -5,36 +5,16 @@ import type { MessageHistory } from '@agentos/core';
  * @param message MessageHistory 또는 MessageRecord
  * @returns 파싱된 텍스트 문자열
  */
-type TextLike = { contentType: string; value: string };
-
-function isTextLike(obj: unknown): obj is TextLike {
-  return !!obj && typeof obj === 'object' && 'contentType' in obj && 'value' in obj;
-}
-
 export function parseMessageContent(message: MessageHistory): string {
-  if (!message.content) {
+  if (!Array.isArray(message.content)) {
     return '';
   }
 
-  // MessageRecord 타입 (IPC 통신용)
-  if (typeof message.content === 'string') {
-    return message.content;
-  }
-
-  // MessageHistory 타입 (Core 표준: 배열)
-  if (Array.isArray(message.content)) {
-    return message.content
-      .filter((c) => c.contentType === 'text')
-      .map((c) => c.value)
-      .join('\n');
-  }
-
-  // 단일 콘텐츠(레거시) 호환 처리
-  if (isTextLike(message.content)) {
-    return message.content.contentType === 'text' ? message.content.value : '';
-  }
-
-  return '';
+  const arr = message.content;
+  return arr
+    .filter((c) => c && c.contentType === 'text')
+    .map((c) => c.value)
+    .join('\n');
 }
 
 /**
@@ -70,21 +50,9 @@ export function parseMessagePreview(message: MessageHistory, maxLength: number =
  * @returns content에 텍스트가 포함되어 있으면 true
  */
 export function hasTextContent(message: MessageHistory): boolean {
-  if (!message.content) {
+  if (!Array.isArray(message.content)) {
     return false;
   }
-
-  if (typeof message.content === 'string') {
-    return true;
-  }
-
-  if (Array.isArray(message.content)) {
-    return message.content.some((c) => c.contentType === 'text');
-  }
-
-  if (isTextLike(message.content)) {
-    return message.content.contentType === 'text';
-  }
-
-  return false;
+  const arr = message.content;
+  return arr.some((c) => c && c.contentType === 'text');
 }

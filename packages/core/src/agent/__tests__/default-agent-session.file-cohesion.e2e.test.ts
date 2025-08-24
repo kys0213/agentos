@@ -58,7 +58,7 @@ describe('DefaultAgentSession + FileBasedChatManager cohesion', () => {
         return {
           summary: {
             role: 'system',
-            content: { contentType: 'text', value: `summary(${messages.length})` },
+            content: [{ contentType: 'text', value: `summary(${messages.length})` }],
           },
           compressedCount: messages.length,
         };
@@ -103,7 +103,7 @@ describe('DefaultAgentSession + FileBasedChatManager cohesion', () => {
 
     const user: UserMessage = {
       role: 'user',
-      content: { contentType: 'text', value: 'hello' },
+      content: [{ contentType: 'text', value: 'hello' }],
     };
 
     // Auto-accept tool consent

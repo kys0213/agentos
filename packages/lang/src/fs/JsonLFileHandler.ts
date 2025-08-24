@@ -74,7 +74,9 @@ export class JsonLFileHandler<T> {
 
         // 빈 라인 처리
         if (!trimmedLine) {
-          if (skipEmptyLines) continue;
+          if (skipEmptyLines) {
+            continue;
+          }
           yield { success: false, reason: new Error(`Empty line at ${lineNumber}`) };
           continue;
         }
@@ -82,7 +84,9 @@ export class JsonLFileHandler<T> {
         // JSON 파싱
         const parseResult = jsonUtils.safeJsonParse<T>(trimmedLine);
         if (!parseResult.success) {
-          if (skipInvalidJson) continue;
+          if (skipInvalidJson) {
+            continue;
+          }
           yield {
             success: false,
             reason: new Error(`Invalid JSON at line ${lineNumber}: ${String(parseResult.reason)}`),
@@ -92,7 +96,9 @@ export class JsonLFileHandler<T> {
 
         // 타입 가드 검증
         if (this.typeGuard && !this.typeGuard(parseResult.result)) {
-          if (skipInvalidJson) continue;
+          if (skipInvalidJson) {
+            continue;
+          }
           yield {
             success: false,
             reason: new Error(`Type validation failed at line ${lineNumber}`),

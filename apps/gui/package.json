@@ -99,7 +99,7 @@
     "cmdk": "^1.1.1",
     "electron": "^37.2.4",
     "input-otp": "^1.4.2",
-    "llm-bridge-loader": "^0.0.3",
+    "llm-bridge-loader": "0.0.6",
     "llm-bridge-spec": "^1.0.2",
     "lucide-react": "^0.536.0",
     "react": "^18.2.0",

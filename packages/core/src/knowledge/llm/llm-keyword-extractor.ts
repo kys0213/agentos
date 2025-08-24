@@ -23,7 +23,9 @@ export class LlmBridgeKeywordExtractor implements KeywordExtractor {
   }
 
   async extractKeywords(text: string, maxKeywords?: number): Promise<string[]> {
-    if (!text) return [];
+    if (!text) {
+      return [];
+    }
     const limit = Math.max(1, Math.min(maxKeywords ?? this.defaultMax, 64));
 
     const combinedText =
@@ -35,7 +37,7 @@ export class LlmBridgeKeywordExtractor implements KeywordExtractor {
     const messages: UserMessage[] = [
       {
         role: 'user',
-        content: { contentType: 'text', value: combinedText },
+        content: [{ contentType: 'text', value: combinedText }],
       },
     ];
 
@@ -47,9 +49,13 @@ export class LlmBridgeKeywordExtractor implements KeywordExtractor {
     const result: string[] = [];
     for (const kw of keywords) {
       const k = String(kw).trim();
-      if (!k) continue;
+      if (!k) {
+        continue;
+      }
       const dedupKey = k.toLowerCase();
-      if (seen.has(dedupKey)) continue;
+      if (seen.has(dedupKey)) {
+        continue;
+      }
       seen.add(dedupKey);
       result.push(k);
     }

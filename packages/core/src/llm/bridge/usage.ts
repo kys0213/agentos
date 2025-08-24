@@ -1,4 +1,4 @@
-import type { LlmUsage } from 'llm-bridge-spec/dist/esm/bridge/types';
+import type { LlmUsage } from 'llm-bridge-spec';
 
 export type LlmUsageStatus = 'success' | 'error';
 
@@ -39,11 +39,15 @@ export class InMemoryLlmUsageTracker implements LlmBridgeUsageTracker {
       ...log,
     };
     this.logs.push(entry);
-    if (this.logs.length > 10000) this.logs = this.logs.slice(-10000);
+    if (this.logs.length > 10000) {
+      this.logs = this.logs.slice(-10000);
+    }
   }
 
   getUsageLogs(bridgeId?: string): LlmBridgeUsageLog[] {
-    if (!bridgeId) return [...this.logs];
+    if (!bridgeId) {
+      return [...this.logs];
+    }
     return this.logs.filter((l) => l.bridgeId === bridgeId);
   }
 

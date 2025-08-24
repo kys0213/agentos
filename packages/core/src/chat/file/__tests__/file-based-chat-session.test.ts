@@ -18,10 +18,12 @@ describe('FileBasedChatSession', () => {
     mockTitleCompressor.compress.mockResolvedValue({
       summary: {
         role: 'system',
-        content: {
-          contentType: 'text',
-          value: 'compressed message',
-        },
+        content: [
+          {
+            contentType: 'text',
+            value: 'compressed message',
+          },
+        ],
       },
       compressedCount: 1,
     });
@@ -30,10 +32,12 @@ describe('FileBasedChatSession', () => {
     mockHistoryCompressor.compress.mockResolvedValue({
       summary: {
         role: 'system',
-        content: {
-          contentType: 'text',
-          value: 'compressed message',
-        },
+        content: [
+          {
+            contentType: 'text',
+            value: 'compressed message',
+          },
+        ],
       },
       compressedCount: 1,
     });
@@ -69,10 +73,12 @@ describe('FileBasedChatSession', () => {
     it('세션 메타데이터와 메시지 히스토리를 저장해야 한다', async () => {
       const testMessage: Message = {
         role: 'user',
-        content: {
-          contentType: 'text',
-          value: 'test message',
-        },
+        content: [
+          {
+            contentType: 'text',
+            value: 'test message',
+          },
+        ],
       };
 
       await session.appendMessage(testMessage);
@@ -110,10 +116,12 @@ describe('FileBasedChatSession', () => {
     it('메시지 히스토리를 압축하고 체크포인트를 생성해야 한다', async () => {
       const testMessage: Message = {
         role: 'user',
-        content: {
-          contentType: 'text',
-          value: 'test message',
-        },
+        content: [
+          {
+            contentType: 'text',
+            value: 'test message',
+          },
+        ],
       };
 
       await session.appendMessage(testMessage);
@@ -126,8 +134,8 @@ describe('FileBasedChatSession', () => {
     it('커밋 시 체크포인트 메타데이터가 정확해야 한다', async () => {
       const firstCreatedAt = new Date();
       const testMessages: Message[] = [
-        { role: 'user', content: { contentType: 'text', value: 'm1' } },
-        { role: 'assistant', content: { contentType: 'text', value: 'm2' } },
+        { role: 'user', content: [{ contentType: 'text', value: 'm1' }] },
+        { role: 'assistant', content: [{ contentType: 'text', value: 'm2' }] },
         {
           role: 'tool',
           name: 'dummy',
@@ -154,7 +162,9 @@ describe('FileBasedChatSession', () => {
           checkpointId: expect.any(String),
           message: expect.objectContaining({
             role: 'system',
-            content: expect.objectContaining({ contentType: 'text', value: 'compressed message' }),
+            content: expect.arrayContaining([
+              expect.objectContaining({ contentType: 'text', value: 'compressed message' }),
+            ]),
           }),
           coveringUpTo: firstCreatedAt,
         })
@@ -199,10 +209,12 @@ describe('FileBasedChatSession', () => {
         messageId: '1',
         createdAt: new Date(),
         role: 'user',
-        content: {
-          contentType: 'text',
-          value: 'test message',
-        },
+        content: [
+          {
+            contentType: 'text',
+            value: 'test message',
+          },
+        ],
       };
 
       mockStorage.read.mockReturnValue(
@@ -221,25 +233,25 @@ describe('FileBasedChatSession', () => {
           messageId: '1',
           createdAt: new Date(),
           role: 'user',
-          content: { contentType: 'text', value: 'm1' },
+          content: [{ contentType: 'text', value: 'm1' }],
         },
         {
           messageId: '2',
           createdAt: new Date(),
           role: 'assistant',
-          content: { contentType: 'text', value: 'm2' },
+          content: [{ contentType: 'text', value: 'm2' }],
         },
         {
           messageId: '3',
           createdAt: new Date(),
           role: 'user',
-          content: { contentType: 'text', value: 'm3' },
+          content: [{ contentType: 'text', value: 'm3' }],
         },
         {
           messageId: '4',
           createdAt: new Date(),
           role: 'assistant',
-          content: { contentType: 'text', value: 'm4' },
+          content: [{ contentType: 'text', value: 'm4' }],
         },
       ];
 
@@ -304,10 +316,12 @@ describe('FileBasedChatSession', () => {
           messageId: '1',
           createdAt: new Date(),
           role: 'assistant',
-          content: {
-            contentType: 'text',
-            value: 'compressed message',
-          },
+          content: [
+            {
+              contentType: 'text',
+              value: 'compressed message',
+            },
+          ],
         },
         createdAt: new Date(),
         coveringUpTo: new Date(),

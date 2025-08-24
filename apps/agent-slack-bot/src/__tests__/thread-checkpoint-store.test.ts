@@ -13,7 +13,7 @@ describe('FileBasedThreadCheckpointStore', () => {
       messageId: '1',
       createdAt: new Date(),
       role: 'user',
-      content: { contentType: 'text', value: 'hi' },
+      content: [{ contentType: 'text', value: 'hi' }],
     },
     createdAt: new Date(),
     coveringUpTo: new Date(),

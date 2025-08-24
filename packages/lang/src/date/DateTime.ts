@@ -73,9 +73,15 @@ export class ZonedDateTime {
     const b = end.utcDate.getTime();
     const lo = Math.min(a, b);
     const hi = Math.max(a, b);
-    if (inclusive === '[]') return t >= lo && t <= hi;
-    if (inclusive === '()') return t > lo && t < hi;
-    if (inclusive === '[)') return t >= lo && t < hi;
+    if (inclusive === '[]') {
+      return t >= lo && t <= hi;
+    }
+    if (inclusive === '()') {
+      return t > lo && t < hi;
+    }
+    if (inclusive === '[)') {
+      return t >= lo && t < hi;
+    }
     return t > lo && t <= hi; // '(]'
   }
 
@@ -184,8 +190,12 @@ function hasExplicitOffset(iso: string): boolean {
 }
 
 function ensureDate(input: Date | string | number, timeZoneForNaive: TimeZone): Date {
-  if (input instanceof Date) return new Date(input.getTime());
-  if (typeof input === 'number') return new Date(input);
+  if (input instanceof Date) {
+    return new Date(input.getTime());
+  }
+  if (typeof input === 'number') {
+    return new Date(input);
+  }
   const str = String(input);
   if (hasExplicitOffset(str)) {
     return parseISO(str);

@@ -1,7 +1,8 @@
 import type { LlmManifest } from 'llm-bridge-spec';
-import { LlmBridgeLoader } from 'llm-bridge-loader';
+import z from 'zod';
 import { FileBasedLlmBridgeRegistry } from '../file-based-llm-bridge-registry';
 import path from 'node:path';
+import { LlmBridgeLoader } from './__mocks__/llm-bridge-loader';
 
 // In-memory file store to mock @agentos/lang fs layer deterministically
 const store = new Map<string, string>();
@@ -88,7 +89,7 @@ const makeManifest = (name: string): LlmManifest => ({
   name,
   language: 'node',
   entry: 'index.js',
-  configSchema: { type: 'object', properties: {} },
+  configSchema: z.object({}),
   capabilities: {
     modalities: ['text'],
     supportsToolCall: true,
@@ -97,6 +98,7 @@ const makeManifest = (name: string): LlmManifest => ({
     supportsStreaming: true,
     supportsVision: true,
   },
+  models: [],
   description: `Manifest for ${name}`,
 });
 

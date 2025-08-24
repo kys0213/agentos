@@ -74,7 +74,9 @@ export class McpMetadataRegistry {
    * 레지스트리 초기화
    */
   async initialize(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {
+      return;
+    }
 
     // Repository에서 기존 메타데이터 로드
     const allTools = await this.repository.list();
@@ -349,7 +351,9 @@ export class McpMetadataRegistry {
    * 메타데이터로부터 MCP 재연결
    */
   private async reconnectMcp(metadata: McpToolMetadata): Promise<void> {
-    if (!metadata.config) return;
+    if (!metadata.config) {
+      return;
+    }
 
     const config = metadata.config as McpConfig;
 

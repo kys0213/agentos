@@ -1,7 +1,7 @@
 import { ChatManager } from '@agentos/core';
 import { createManager } from './chat-manager';
 import { DependencyBridgeLoader } from 'llm-bridge-loader';
-import { LlmBridge, LlmManifest } from 'llm-bridge-spec';
+import { LlmBridge } from 'llm-bridge-spec';
 
 export interface AppContext {
   chatManager: ChatManager;
@@ -11,7 +11,9 @@ export interface AppContext {
 let context: AppContext | null = null;
 
 function safeParseJson<T>(input: string | undefined): T | undefined {
-  if (!input) return undefined;
+  if (!input) {
+    return undefined;
+  }
   try {
     return JSON.parse(input) as T;
   } catch (err) {
@@ -25,10 +27,10 @@ async function createBridge(): Promise<LlmBridge> {
     throw new Error('LLM_BRIDGE env var is required to bootstrap the CLI');
   }
 
-  const config = safeParseJson<LlmManifest>(process.env.LLM_BRIDGE_CONFIG) ?? ({} as LlmManifest);
+  const config = safeParseJson<Record<string, unknown>>(process.env.LLM_BRIDGE_CONFIG) ?? {};
   const loader = new DependencyBridgeLoader();
-  const bootstrap = await loader.load(moduleName);
-  return bootstrap.create(config);
+  const { ctor, manifest } = await loader.load(moduleName);
+  return new ctor((manifest.configSchema as any).parse(config));
 }
 
 export async function bootstrap(): Promise<AppContext> {

@@ -1,5 +1,5 @@
 import { fs } from '@agentos/lang';
-import type { BridgeLoadResult, LlmBridgeLoader } from 'llm-bridge-loader';
+import type { BridgeLoadResult, BridgeLoader } from 'llm-bridge-loader';
 import type { LlmBridge, LlmManifest } from 'llm-bridge-spec';
 import path from 'path';
 import z from 'zod/v4/classic/external.cjs';
@@ -24,12 +24,12 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
   private readonly bridgesDir: string;
   private readonly activePath: string;
 
-  private readonly loadedBridges = new Map<string, BridgeLoadResult>();
+  private readonly loadedBridges = new Map<string, BridgeLoadResult<LlmManifest>>();
   private readonly createdBridges = new Map<BridgeId, LlmBridge>();
 
   constructor(
     baseDir: string,
-    private readonly llmBridgeLoader: LlmBridgeLoader
+    private readonly llmBridgeLoader: BridgeLoader
   ) {
     this.bridgesDir = path.join(baseDir, 'bridges');
     this.activePath = path.join(this.bridgesDir, '_active.json');
@@ -50,7 +50,9 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
 
     const summary = summaries.find((s) => s.name === name);
 
-    if (!summary) return null;
+    if (!summary) {
+      return null;
+    }
 
     const bridge = this.createdBridges.get(summary.id);
 
@@ -61,19 +63,19 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
     return bridge;
   }
 
-  async loadBridge(name: string): Promise<BridgeLoadResult> {
+  async loadBridge(name: string): Promise<BridgeLoadResult<LlmManifest>> {
     const result = await this.llmBridgeLoader.load(name);
-
     // Store raw result keyed by manifest name
-    this.loadedBridges.set(result.mainfest.name, result);
-
+    this.loadedBridges.set(result.manifest.name, result);
     return result;
   }
 
   async listIds(): Promise<BridgeId[]> {
     await fs.FileUtils.ensureDir(this.bridgesDir);
     const entries = await fs.FileUtils.readDir(this.bridgesDir);
-    if (!entries.success) return [];
+    if (!entries.success) {
+      return [];
+    }
     return entries.result
       .filter((f) => f.endsWith('.json') && !f.startsWith('_active'))
       .map((f) => f.replace(/\.json$/, ''));
@@ -84,7 +86,9 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
     const items: InstalledBridgeSummary[] = [];
     for (const id of ids) {
       const rec = await this.readRecord(id);
-      if (!rec) continue;
+      if (!rec) {
+        continue;
+      }
       items.push({
         id: rec.id,
         name: rec.manifest.name,
@@ -103,7 +107,9 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
   async getBridge(id: BridgeId): Promise<LlmBridge | null> {
     const rec = await this.readRecord(id);
 
-    if (!rec) return null;
+    if (!rec) {
+      return null;
+    }
 
     return this.createdBridges.get(id) ?? null;
   }
@@ -121,9 +127,8 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
       throw Errors.notFound('llm_bridge', `Bridge ${manifest.name} not found`);
     }
 
-    const { ctor, mainfest } = loadedResult;
-
-    const bridge = new ctor(mainfest.configSchema.parse(config));
+    const { ctor, manifest: loadedManifest } = loadedResult;
+    const bridge = new ctor(loadedManifest.configSchema.parse(config));
 
     this.createdBridges.set(id, bridge);
 
@@ -138,7 +143,9 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
     // If no active id yet, set to this id
     const active = await this.getActiveId();
 
-    if (!active) await this.setActiveId(id);
+    if (!active) {
+      await this.setActiveId(id);
+    }
 
     return id;
   }
@@ -173,7 +180,9 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
     );
     const data: ActiveBridgeState = { activeId: id, updatedAt: new Date() };
     const res = await handler.write(data, { prettyPrint: true, indent: 2, ensureDir: true });
-    if (!res.success) throw new Error(`Failed to set active bridge: ${String(res.reason)}`);
+    if (!res.success) {
+      throw new Error(`Failed to set active bridge: ${String(res.reason)}`);
+    }
   }
 
   // ---------- helpers ----------
@@ -187,7 +196,9 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
       isInstalledBridgeRecord
     );
     const res = await handler.read({ useDefaultOnError: false, reviveDates: true });
-    if (!res.success) return null;
+    if (!res.success) {
+      return null;
+    }
     const rec = res.result;
     // Ensure Date object
     return { ...rec, installedAt: new Date(rec.installedAt) };
@@ -199,6 +210,8 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
       isInstalledBridgeRecord
     );
     const res = await handler.write(record, { prettyPrint: true, indent: 2, ensureDir: true });
-    if (!res.success) throw new Error(`Failed to save bridge record: ${String(res.reason)}`);
+    if (!res.success) {
+      throw new Error(`Failed to save bridge record: ${String(res.reason)}`);
+    }
   }
 }

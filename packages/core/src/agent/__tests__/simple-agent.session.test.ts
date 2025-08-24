@@ -72,7 +72,7 @@ describe('SimpleAgent.createSession', () => {
     expect(session.sessionId).toBe('s-1');
 
     const messages: UserMessage[] = [
-      { role: 'user', content: { contentType: 'text', value: 'hello' } },
+      { role: 'user', content: [{ contentType: 'text', value: 'hello' }] },
     ];
     const events: Array<['status', string] | ['message', string]> = [];
     const offStatus = session.on('status', (p) => events.push(['status', p.state]));

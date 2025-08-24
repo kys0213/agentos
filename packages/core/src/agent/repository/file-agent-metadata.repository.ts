@@ -32,7 +32,9 @@ export class FileAgentMetadataRepository implements AgentMetadataRepository {
   async get(id: string): Promise<AgentMetadata | null> {
     const p = this.filePath(id);
     const exists = await langFs.FileUtils.exists(p);
-    if (!exists) return null;
+    if (!exists) {
+      return null;
+    }
     const handler = langFs.JsonFileHandler.create<AgentMetadata>(p);
     return await handler.readOrThrow({ reviveDates: true });
   }
@@ -113,7 +115,9 @@ export class FileAgentMetadataRepository implements AgentMetadataRepository {
         typeof reason === 'object' && reason && 'message' in reason
           ? String((reason as { message?: unknown }).message)
           : String(reason ?? 'unknown');
-      if (msg.includes('ENOENT')) return;
+      if (msg.includes('ENOENT')) {
+        return;
+      }
       throw Errors.internal('agent_metadata_repository', 'Failed to delete metadata file', {
         id,
         cause: msg,
@@ -166,7 +170,9 @@ export class FileAgentMetadataRepository implements AgentMetadataRepository {
   private async readAll(): Promise<AgentMetadata[]> {
     await this.ensureDir();
     const dirRes = await langFs.FileUtils.readDir(this.rootDir);
-    if (!dirRes.success) return [];
+    if (!dirRes.success) {
+      return [];
+    }
     const files = dirRes.result.filter((name) => name.endsWith('.json'));
     const items: AgentMetadata[] = [];
     for (const name of files) {
@@ -184,14 +190,21 @@ export class FileAgentMetadataRepository implements AgentMetadataRepository {
   // pagination handled by paginateByCursor
 
   private matches(meta: ReadonlyAgentMetadata, q: AgentSearchQuery): boolean {
-    if (q.status && meta.status !== q.status) return false;
-    if (q.name && !meta.name.toLowerCase().includes(q.name.toLowerCase())) return false;
-    if (q.description && !meta.description.toLowerCase().includes(q.description.toLowerCase()))
+    if (q.status && meta.status !== q.status) {
       return false;
+    }
+    if (q.name && !meta.name.toLowerCase().includes(q.name.toLowerCase())) {
+      return false;
+    }
+    if (q.description && !meta.description.toLowerCase().includes(q.description.toLowerCase())) {
+      return false;
+    }
     if (Array.isArray(q.keywords) && q.keywords.length > 0) {
       const kw = new Set(q.keywords.map((k) => k.toLowerCase()));
       const has = meta.keywords.some((k) => kw.has(k.toLowerCase()));
-      if (!has) return false;
+      if (!has) {
+        return false;
+      }
     }
     return true;
   }
@@ -202,7 +215,9 @@ export class FileAgentMetadataRepository implements AgentMetadataRepository {
 
   private nextVersion(current?: string): string {
     const n = current ? Number(current) : 0;
-    if (Number.isFinite(n)) return String(n + 1);
+    if (Number.isFinite(n)) {
+      return String(n + 1);
+    }
     return Date.now().toString(36);
   }
 
