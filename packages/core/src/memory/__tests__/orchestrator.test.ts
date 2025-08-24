@@ -10,6 +10,9 @@ const baseCfg = {
 
 describe('MemoryOrchestrator', () => {
   test('hybrid search dedupes by canonicalKey across session and agent', () => {
+    // Fix time for deterministic ranking
+    let tick = 1_700_000_000_000;
+    const nowSpy = jest.spyOn(Date, 'now').mockImplementation(() => (tick += 1000));
     const o = new MemoryOrchestrator('agent-1', baseCfg);
     const sid = 's-1';
     o.upsertQuery(sid, 'AgentOS MVP 설계');
@@ -25,6 +28,7 @@ describe('MemoryOrchestrator', () => {
       .map(r => ({ from: r.from, text: r.text, canonicalKey: r.canonicalKey, score: Number(r.score.toFixed(2)) }))
       .sort((a, b) => (a.text || '').localeCompare(b.text || ''));
     expect(sanitized).toMatchSnapshot();
+    nowSpy.mockRestore();
   });
 
   test('finalizeSession promotes hotspots to agent store', async () => {

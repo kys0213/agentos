@@ -13,6 +13,9 @@ function buildQueries(): string[] {
 
 describe('Inverted index on/off yields consistent results', () => {
   test('top-k results overlap and look consistent (snapshot)', () => {
+    // Fix time for deterministic ranking
+    let tick = 1_700_000_000_000;
+    const nowSpy = jest.spyOn(Date, 'now').mockImplementation(() => (tick += 1000));
     const base = { maxNodes: 1000, maxEdges: 4000, halfLifeMin: 240, tauDup: 0.96, tauSim: 0.75, protectMinDegree: 3 };
     const gOff = new GraphStore({ ...base, enableInvertedIndex: false }, new SimpleEmbedding());
     const gOn  = new GraphStore({ ...base, enableInvertedIndex: true }, new SimpleEmbedding());
@@ -32,5 +35,6 @@ describe('Inverted index on/off yields consistent results', () => {
     const sOn = gOn.searchSimilarQueries(q, 8).map(r => ({ text: r.text, score: Number(r.score.toFixed(2)) }))
       .sort((a, b) => (a.text || '').localeCompare(b.text || ''));
     expect({ off: sOff, on: sOn }).toMatchSnapshot();
+    nowSpy.mockRestore();
   });
 });

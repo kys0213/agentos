@@ -175,17 +175,17 @@ exports[`QA agent large simulation (~100 queries) graph forms clusters and promo
     {
       "degree": 0,
       "fb": 3.1,
-      "text": "제품C 테스트 시나리오 작성",
-    },
-    {
-      "degree": 0,
-      "fb": 3.1,
       "text": "제품C 테스트 증적 검증 요청",
     },
     {
       "degree": 0,
       "fb": 3.1,
-      "text": "제품A 테스트 증적 검증 요청",
+      "text": "제품C 테스트 시나리오 작성",
+    },
+    {
+      "degree": 0,
+      "fb": 3.1,
+      "text": "제품B 테스트 증적 검증 요청",
     },
     {
       "degree": 0,
@@ -195,7 +195,7 @@ exports[`QA agent large simulation (~100 queries) graph forms clusters and promo
     {
       "degree": 0,
       "fb": 3.1,
-      "text": "제품B 테스트 증적 검증 요청",
+      "text": "제품A 테스트 증적 검증 요청",
     },
     {
       "degree": 0,
