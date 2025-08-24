@@ -171,11 +171,7 @@ export class RpcEndpoint implements RpcClient {
 
     const stream$ = from(this.$inboundFrames).pipe(filter((f) => f.cid === cid));
 
-    // Post the request on the microtask queue so stream() callers that don't
-    // immediately consume with next() can still observe the outbound req.
-    Promise.resolve().then(() =>
-      this.transport.post({ kind: 'req', cid, method, payload, meta })
-    );
+    this.transport.post({ kind: 'req', cid, method, payload, meta });
 
     let normallyCompleted = false;
 
