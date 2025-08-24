@@ -1,8 +1,7 @@
 import React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { SubAgentCreate } from './SubAgentCreate';
-import { fetchPresets } from '../../services/fetchers/presets';
-import { createAgent } from '../../services/fetchers/subagents';
+import { ServiceContainer } from '../../ipc/service-container';
 import type { CreateAgentMetadata } from '@agentos/core';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -23,13 +22,18 @@ export const SubAgentCreateContainer: React.FC<SubAgentCreateContainerProps> = (
     status,
     error,
     refetch,
-  } = useQuery({ queryKey: ['presets'], queryFn: fetchPresets, staleTime: 5 * 60 * 1000 });
+  } = useQuery({
+    queryKey: ['presets'],
+    queryFn: async () => ServiceContainer.getOrThrow('preset').getAllPresets(),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const mutation = useMutation({
-    mutationFn: (data: CreateAgentMetadata) => createAgent(data),
+    mutationFn: async (data: CreateAgentMetadata) =>
+      ServiceContainer.getOrThrow('agent').createAgent(data),
     onSuccess: (agent) => {
       queryClient.invalidateQueries({ queryKey: ['agents'] });
-      onCreated?.(agent.id);
+      onCreated?.((agent as unknown as { id: string }).id);
       onBack();
     },
   });

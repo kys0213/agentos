@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { PresetDetail } from './PresetDetail';
-import { fetchPresetById, updatePreset, deletePreset } from '../../services/fetchers/presets';
+import { ServiceContainer } from '../../ipc/service-container';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
@@ -25,12 +25,18 @@ export const PresetDetailContainer: React.FC<PresetDetailContainerProps> = ({
     refetch,
   } = useQuery({
     queryKey: ['preset', presetId],
-    queryFn: () => fetchPresetById(presetId),
+    queryFn: async () => {
+      const svc = ServiceContainer.getOrThrow('preset');
+      return svc.getPreset(presetId);
+    },
     staleTime: 60_000,
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: Partial<Preset>) => updatePreset(presetId, data),
+    mutationFn: async (data: Partial<Preset>) => {
+      const svc = ServiceContainer.getOrThrow('preset');
+      return svc.updatePreset(presetId, data);
+    },
     onSuccess: (updated) => {
       queryClient.setQueryData(['preset', presetId], updated);
       queryClient.invalidateQueries({ queryKey: ['presets'] });
@@ -38,7 +44,10 @@ export const PresetDetailContainer: React.FC<PresetDetailContainerProps> = ({
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => deletePreset(presetId),
+    mutationFn: async () => {
+      const svc = ServiceContainer.getOrThrow('preset');
+      await svc.deletePreset(presetId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['presets'] });
       onBack();

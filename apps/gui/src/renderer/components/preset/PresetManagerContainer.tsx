@@ -2,13 +2,7 @@ import React, { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CreatePreset, Preset } from '@agentos/core';
 import { PresetManager } from './PresetManager';
-import {
-  fetchPresets,
-  deletePreset,
-  createPreset,
-  updatePreset,
-  duplicatePresetById,
-} from '../../services/fetchers/presets';
+import { ServiceContainer } from '../../ipc/service-container';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
@@ -25,28 +19,49 @@ export const PresetManagerContainer: React.FC<{ onStartCreatePreset?: () => void
     refetch,
   } = useQuery({
     queryKey: ['presets'],
-    queryFn: fetchPresets,
+    queryFn: async () => {
+      const svc = ServiceContainer.getOrThrow('preset');
+      return svc.getAllPresets();
+    },
     staleTime: 5 * 60 * 1000,
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => deletePreset(id),
+    mutationFn: async (id: string) => {
+      const svc = ServiceContainer.getOrThrow('preset');
+      await svc.deletePreset(id);
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['presets'] }),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: CreatePreset) => createPreset(data),
+    mutationFn: async (data: CreatePreset) => {
+      const svc = ServiceContainer.getOrThrow('preset');
+      return svc.createPreset(data);
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['presets'] }),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Omit<Preset, 'id'>> }) =>
-      updatePreset(id, data),
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Omit<Preset, 'id'>> }) => {
+      const svc = ServiceContainer.getOrThrow('preset');
+      return svc.updatePreset(id, data);
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['presets'] }),
   });
 
   const duplicateMutation = useMutation({
-    mutationFn: (id: string) => duplicatePresetById(id),
+    mutationFn: async (id: string) => {
+      const svc = ServiceContainer.getOrThrow('preset');
+      const src = await svc.getPreset(id);
+      if (!src) throw new Error('Preset not found');
+      const created = await svc.createPreset({
+        ...src,
+        id: undefined as unknown as string,
+        name: `${src.name} (copy)`,
+      } as unknown as CreatePreset);
+      return created;
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['presets'] }),
   });
 
