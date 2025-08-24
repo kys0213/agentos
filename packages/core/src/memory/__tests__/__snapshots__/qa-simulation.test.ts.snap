@@ -16,11 +16,6 @@ exports[`QA agent scenario simulation builds a meaningful graph and promotions w
     {
       "from": "session",
       "score": 0.39,
-      "text": "제품A 테스트 증적 검토",
-    },
-    {
-      "from": "session",
-      "score": 0.39,
       "text": "제품B 결제 테스트 케이스 생성",
     },
     {
@@ -32,6 +27,11 @@ exports[`QA agent scenario simulation builds a meaningful graph and promotions w
       "from": "session",
       "score": 0.39,
       "text": "제품B 리팩토링 리그레이션 필요",
+    },
+    {
+      "from": "session",
+      "score": 0.39,
+      "text": "제품B 테스트 증적 확인",
     },
     {
       "from": "session",

@@ -16,6 +16,9 @@ function repeat<T>(arr: T[], times = 1): T[] {
 
 describe('QA agent scenario simulation', () => {
   test('builds a meaningful graph and promotions work', async () => {
+    // Fix time to ensure deterministic ranks/scores
+    let tick = 1_700_000_000_000;
+    const nowSpy = jest.spyOn(Date, 'now').mockImplementation(() => (tick += 1000));
     const o = new MemoryOrchestrator('qa-agent', cfg);
     const sid = 's-qa-1';
 
@@ -80,17 +83,15 @@ describe('QA agent scenario simulation', () => {
     // 세션 종료 → 승격 + 체크포인트
     // Snapshot session state (sanitized) before finalize
     const snap = o.getSessionStore(sid).toSnapshot();
+    const edges = snap.graph.edges as any[];
+    const nodes = (snap.graph.nodes as any[]).filter(n => n.type === 'query');
+    const typeCounts = edges.reduce((acc: any, e: any) => { acc[e.type] = (acc[e.type] ?? 0) + 1; return acc; }, {} as Record<string, number>);
     const sessionSummary = {
-      nodes: snap.graph.nodes
-        .filter((n: any) => n.type === 'query')
-        .map((n: any) => ({
-          text: n.text,
-          degree: n.degree,
-          feedback: Number((n.weights?.feedback ?? 0).toFixed(2)),
-          repeat: Number((n.weights?.repeat ?? 0).toFixed(2)),
-        }))
+      nodes: nodes
+        .map((n: any) => ({ text: n.text, degree: n.degree, feedback: Number((n.weights?.feedback ?? 0).toFixed(2)), repeat: Number((n.weights?.repeat ?? 0).toFixed(2)) }))
         .sort((a: any, b: any) => (a.text || '').localeCompare(b.text || '')),
-      edges: snap.graph.edges.reduce((acc: any, e: any) => { acc[e.type] = (acc[e.type] ?? 0) + 1; return acc; }, {} as Record<string, number>),
+      edges: typeCounts,
+      similarRatio: Number(((typeCounts['similar_to'] ?? 0) / Math.max(1, edges.length)).toFixed(3)),
     };
     const sResSanitized = sRes
       .map(r => ({ from: r.from, text: r.text, score: Number(r.score.toFixed(2)) }))
@@ -108,5 +109,6 @@ describe('QA agent scenario simulation', () => {
       .map(r => ({ text: r.text, score: Number(r.score.toFixed(2)) }))
       .sort((a, b) => (a.text || '').localeCompare(b.text || ''));
     expect({ agentStats, aRes: aResSanitized }).toMatchSnapshot();
+    nowSpy.mockRestore();
   });
 });
