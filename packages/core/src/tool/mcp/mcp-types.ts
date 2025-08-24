@@ -25,7 +25,7 @@ export interface McpToolMetadata {
   /** 총 사용 횟수 */
   usageCount: number;
   /** 도구별 설정 (옵셔널) */
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
 }
 
 /**
@@ -51,7 +51,7 @@ export interface McpUsageLog {
   /** 실행 결과 상태 */
   status: McpUsageStatus;
   /** 입력 파라미터 (옵셔널) */
-  parameters?: Record<string, any>;
+  parameters?: Record<string, unknown>;
   /** 에러 메시지 (옵셔널) */
   error?: string;
   /** 실행 결과 (옵셔널) */
@@ -113,9 +113,9 @@ export interface McpUsageStats {
 }
 
 export interface McpTool extends McpToolDescription {
-  input?: Record<string, any>;
-  output?: Record<string, any>;
-  annotations?: Record<string, any>;
+  input?: Record<string, unknown>;
+  output?: Record<string, unknown>;
+  annotations?: Record<string, unknown>;
 }
 
 export interface McpToolDescription {

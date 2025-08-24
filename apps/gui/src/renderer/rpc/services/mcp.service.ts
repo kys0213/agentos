@@ -26,10 +26,11 @@ export class McpRpcService {
     args: McpToolMetadata
   ): Promise<ToolExecutionResponse> {
     const res = await this.transport.request<
-      | { success: true; result: unknown }
-      | { success: false; error: string }
+      { success: true; result: unknown } | { success: false; error: string }
     >('mcp.invokeTool', { name: toolName, input: args });
-    if (!res.success) throw new Error(res.error || 'mcp.invokeTool failed');
+    if (!res.success) {
+      throw new Error(res.error || 'mcp.invokeTool failed');
+    }
     return { success: true, result: res.result } as unknown as ToolExecutionResponse;
   }
   getMcpResources(clientName: string): Promise<ResourceListResponse> {

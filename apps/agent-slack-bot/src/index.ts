@@ -1,8 +1,6 @@
 import { App, GenericMessageEvent, StaticSelectAction } from '@slack/bolt';
 import path from 'path';
-import { McpRegistry, FileBasedPresetRepository } from '@agentos/core';
-import { DependencyBridgeLoader } from 'llm-bridge-loader';
-import { Message } from 'llm-bridge-spec';
+import { FileBasedPresetRepository } from '@agentos/core';
 import { getSettingsBlocks } from './settings-block';
 import { PresetService } from './preset-service';
 import { FileBasedChannelPresetStore } from './channel-preset-store';
@@ -59,14 +57,15 @@ app.message(async ({ message, say }) => {
   }
 
   // Placeholder: initialize AgentOS components
-  const mcpRegistry = new McpRegistry();
-  const llmBridgeLoader = new DependencyBridgeLoader();
-  const messages: Message[] = [
-    {
-      role: 'user',
-      content: [{ contentType: 'text', value: text }],
-    },
-  ];
+  // (reserved for future integration)
+  // const mcpRegistry = new McpRegistry();
+  // const llmBridgeLoader = new DependencyBridgeLoader();
+  // const messages: Message[] = [
+  //   {
+  //     role: 'user',
+  //     content: [{ contentType: 'text', value: text }],
+  //   },
+  // ];
   // TODO: Use agent from core with llmBridgeRegistry to process messages
 
   await say(`Echo: ${text} (preset: ${preset})`);

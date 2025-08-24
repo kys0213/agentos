@@ -1,9 +1,9 @@
 export interface BuiltinTool {
   name: string;
   description: string;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
 }
 
-export interface BuiltinToolFunction<Param extends Record<string, any>, Result> {
+export interface BuiltinToolFunction<Param extends Record<string, unknown>, Result> {
   (args: Param): Promise<Result> | Result;
 }

@@ -64,7 +64,7 @@ export function toAsyncIterable<T>(source: Observable<T>): AsyncIterable<T> {
           return { value: undefined, done: true };
         },
 
-        async throw(e: any): Promise<IteratorResult<T>> {
+        async throw(e: unknown): Promise<IteratorResult<T>> {
           if (subscribed) {
             sub.unsubscribe();
             subscribed = false;

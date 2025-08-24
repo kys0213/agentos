@@ -47,10 +47,10 @@ export class CoreError extends Error {
     this.details = options?.details;
     this.retryable = options?.retryable;
     this.transient = options?.transient;
-    if (options?.cause && typeof (options.cause as any) === 'object') {
+    if (options?.cause && typeof options.cause === 'object') {
       try {
         // Node 16+: Error has cause option but keep compatibility
-        (this as any).cause = options.cause;
+        (this as unknown as Record<string, unknown>).cause = options.cause;
       } catch {
         // ignore
       }

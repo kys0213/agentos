@@ -80,7 +80,7 @@ export class FileBasedChatSession implements ChatSession {
         const { summary } = await this.titleCompressor.compress([userMessage]);
         const first = Array.isArray(summary.content)
           ? summary.content[0]
-          : (summary.content as any);
+          : (summary.content as unknown as import('llm-bridge-spec').MultiModalContent);
         this.metadata.title = first && first.contentType === 'text' ? first.value : undefined;
       }
     }

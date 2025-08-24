@@ -54,7 +54,9 @@ export const PresetManagerContainer: React.FC<{ onStartCreatePreset?: () => void
     mutationFn: async (id: string) => {
       const svc = ServiceContainer.getOrThrow('preset');
       const src = await svc.getPreset(id);
-      if (!src) throw new Error('Preset not found');
+      if (!src) {
+        throw new Error('Preset not found');
+      }
       const created = await svc.createPreset({
         ...src,
         id: undefined as unknown as string,

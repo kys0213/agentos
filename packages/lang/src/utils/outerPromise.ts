@@ -30,7 +30,7 @@ export interface OuterPromise<T> {
   /** Promise를 성공으로 완료하는 함수 */
   resolve: (value: T | PromiseLike<T>) => void;
   /** Promise를 실패로 완료하는 함수 */
-  reject: (reason?: any) => void;
+  reject: (reason?: unknown) => void;
 }
 
 /**
@@ -40,7 +40,7 @@ export interface OuterPromise<T> {
  */
 export function outerPromise<T = void>(): OuterPromise<T> {
   let resolve: (value: T | PromiseLike<T>) => void;
-  let reject: (reason?: any) => void;
+  let reject: (reason?: unknown) => void;
 
   const promise = new Promise<T>((res, rej) => {
     resolve = res;
