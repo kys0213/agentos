@@ -62,7 +62,7 @@ function createRpc(
   } as const;
 }
 
-contextBridge.exposeInMainWorld('electronBridge', createElectronBridge(ipcRenderer as unknown as IpcLike));
+contextBridge.exposeInMainWorld('electronBridge', createElectronBridge(ipcRenderer));
 
 // Generic RPC surface over frame bus for convenience (req/res)
-contextBridge.exposeInMainWorld('rpc', createRpc(ipcRenderer as unknown as IpcLike));
+contextBridge.exposeInMainWorld('rpc', createRpc(ipcRenderer));

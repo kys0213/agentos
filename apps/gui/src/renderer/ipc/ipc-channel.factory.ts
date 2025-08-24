@@ -89,16 +89,21 @@ export class RpcTransportFactory {
       // window.electronAPI가 존재하는지 확인
       const hasElectronAPI =
         typeof window !== 'undefined' &&
-        window.electronAPI !== undefined &&
-        typeof window.electronAPI === 'object';
+        window.electronBridge !== undefined &&
+        typeof window.electronBridge === 'object';
+
+      const hasRpc =
+        typeof window !== 'undefined' && window.rpc !== undefined && typeof window.rpc === 'object';
 
       // 추가 검증: process.type이 'renderer'인지 확인
       const isRenderer = typeof process !== 'undefined' && process.type === 'renderer';
 
-      const result = hasElectronAPI || isRenderer;
+      const result = hasElectronAPI || hasRpc || isRenderer;
+
       console.log('Electron environment check:', {
         hasElectronAPI,
         isRenderer,
+        hasRpc,
         result,
         userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
       });
