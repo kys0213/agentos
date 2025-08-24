@@ -75,14 +75,14 @@ describe('RpcEndpoint', () => {
     ep.start();
 
     const gen = ep.stream<number>('tick');
-    
+
     // Start the async generator to trigger subscription and request sending
     const it = gen[Symbol.asyncIterator]();
     const firstPromise = it.next();
-    
+
     // Wait a bit for the async generator to set up subscription and send request
-    await new Promise(resolve => setTimeout(resolve, 0));
-    
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
     const req = tr.sent.find((f) => f.kind === 'req')! as any;
 
     tr.onFrame?.({ kind: 'nxt', cid: req.cid, data: 1 });
@@ -92,7 +92,7 @@ describe('RpcEndpoint', () => {
     const out: number[] = [];
     const first = await firstPromise;
     if (!first.done) out.push(first.value);
-    
+
     let next = await it.next();
     while (!next.done) {
       out.push(next.value);
@@ -108,14 +108,14 @@ describe('RpcEndpoint', () => {
     ep.start();
 
     const gen = ep.stream<number>('tick');
-    
+
     // consume one and break
     const it = gen[Symbol.asyncIterator]();
     const firstPromise = it.next();
-    
+
     // Wait a bit for the async generator to set up subscription and send request
-    await new Promise(resolve => setTimeout(resolve, 0));
-    
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
     const req = tr.sent.find((f) => f.kind === 'req')! as any;
     tr.onFrame?.({ kind: 'nxt', cid: req.cid, data: 1 });
 
@@ -126,6 +126,49 @@ describe('RpcEndpoint', () => {
     // endpoint should post a cancel frame
     const hasCancel = tr.sent.some((f) => f.kind === 'can' && (f as any).cid === req.cid);
     expect(hasCancel).toBe(true);
+  });
+
+  test('stream does NOT send can on normal completion (end frame)', async () => {
+    const tr = new MockTransport();
+    const ep = new RpcEndpoint(tr);
+    ep.start();
+
+    const gen = ep.stream<number>('tick');
+
+    // Start the async generator to trigger subscription and request sending
+    const it = gen[Symbol.asyncIterator]();
+    const firstPromise = it.next();
+
+    // Wait a bit for the async generator to set up subscription and send request
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const req = tr.sent.find((f) => f.kind === 'req')! as any;
+    const initialCancelCount = tr.sent.filter(
+      (f) => f.kind === 'can' && (f as any).cid === req.cid
+    ).length;
+
+    // Send normal stream completion
+    tr.onFrame?.({ kind: 'nxt', cid: req.cid, data: 1 });
+    tr.onFrame?.({ kind: 'nxt', cid: req.cid, data: 2 });
+    tr.onFrame?.({ kind: 'end', cid: req.cid });
+
+    const out: number[] = [];
+    const first = await firstPromise;
+    if (!first.done) out.push(first.value);
+
+    let next = await it.next();
+    while (!next.done) {
+      out.push(next.value);
+      next = await it.next();
+    }
+
+    expect(out).toEqual([1, 2]);
+
+    // No additional cancel frame should be sent after normal completion
+    const finalCancelCount = tr.sent.filter(
+      (f) => f.kind === 'can' && (f as any).cid === req.cid
+    ).length;
+    expect(finalCancelCount).toBe(initialCancelCount);
   });
 
   test('acts as server: register handler and respond', async () => {
