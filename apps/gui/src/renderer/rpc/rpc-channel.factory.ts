@@ -1,6 +1,6 @@
 import type { RpcFrame } from '../../shared/rpc/rpc-frame';
 import type { FrameTransport, RpcClient } from '../../shared/rpc/transport';
-import { RpcEndpoint } from '../rpc/rpc-endpoint';
+import { RpcEndpoint } from './rpc-endpoint';
 
 /**
  * 환경별 IpcChannel 구현체를 생성하는 팩토리 클래스

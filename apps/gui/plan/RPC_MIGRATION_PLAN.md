@@ -2,7 +2,7 @@
 
 > 공용 용어/채널 정의: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`
 
-## Requirements
+## Requirements (v0.3 업데이트)
 
 ### 성공 조건
 
@@ -11,6 +11,8 @@
 - [ ] 이벤트 채널은 core 스펙(`agent/status`, `agent/session/<sid>/message` 등)과 가드로 타입 안전하게 구독된다.
 - [ ] 고빈도 스트림(토큰/usage)은 취소(`can`)와 배치/샘플링 정책을 적용한다.
 - [ ] 기존 `electronAPI` 기반 IPC 호출은 호환 어댑터(`RpcTransport`) 뒤로 캡슐화된다.
+- [ ] 렌더러 서비스 레이어는 `shared/types/ipc-channel.ts`의 `IpcChannel` 의존을 제거하고, `renderer/rpc/rpc-endpoint.ts`(RpcEndpoint/RpcClient) 기반으로 동작한다.
+- [ ] 컨트롤러 채널 네이밍은 도트 표기(`agent.chat`, `bridge.register`, `preset.list` 등)로 일관화하고, 렌더러 서비스에서 이를 호출한다.
 
 ### 사용 시나리오
 
@@ -73,7 +75,7 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 });
 ```
 
-## Todo (업데이트: 08/23)
+## Todo (업데이트: 08/24)
 
 - [x] Preload에 이벤트 구독 API 추가: `electronBridge.on(channel, handler): () => void`
 - [x] Preload에 generic invoke 추가: `rpc.request(channel, payload)`
@@ -100,32 +102,48 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 - [ ] E2E: snapshot+watch 시나리오, 취소/타임아웃, CoreError 전파 확인
 - [x] 데모 스트림 경로 연결: `demo.streamTicks` (Frame-level prototype)
 
-## 작업 순서
+### 신규 이관 작업(렌더러 서비스 → RpcEndpoint)
+
+- [ ] 렌더러 서비스의 채널 네이밍 colon → dot 전환(컨트롤러와 1:1 매핑)
+  - [ ] `renderer/rpc/services/agent.service.ts`: `agent:chat` 등 → `agent.chat` 등
+  - [ ] `renderer/rpc/services/bridge.service.ts`: 도트 표기 일관화 재검증
+  - [ ] `renderer/rpc/services/preset.service.ts`: 도트 표기 일관화 재검증
+  - [ ] `renderer/rpc/services/mcp.service.ts`: `mcp:*` → `mcp.*`
+  - [ ] `renderer/rpc/services/conversation.service.ts`: 채널 정의/매핑 명시
+- [ ] `renderer/services/*` 레거시 경로에서 `IpcChannel` 의존 제거
+  - [ ] `ipc-agent.ts` 제거 또는 Rpc 서비스 대체
+  - [ ] `fetchers/*` 임시 호출부를 Rpc 서비스로 교체
+- [ ] 훅/컨테이너 이관: 기존 호출부를 Rpc 서비스로 교체
+  - [ ] Chat 관련 훅 우선 이관(전달 타입 가드 적용)
+  - [ ] Preset 관련 훅/컨테이너 이관, `ServiceContainer` 등록/해제 확인
+- [ ] 통합 테스트: 요청/응답 및 스트림(cancel 포함) 경로 점검
+- [ ] 문서/가이드: 채널 표기 전환/사용 예시/마이그레이션 노트 반영
+
+## 작업 순서 (실행 계획)
 
 1. [완료] **Preload 확장**: `electronBridge.on` + `rpc.request` 추가
 2. [완료] **Renderer 전송**: 채널 기반 `ElectronIpcTransport` 구현
 3. [완료] **서비스 추가 1차**: Agent/Bridge/Preset/MCP/MCPUsage/Conversation RPC 서비스 추가 및 등록
-4. [진행] **호출부 이관**: 기존 훅/컨테이너를 RPC 서비스로 점진 이관
-5. [완료] **Main 트랜스포트**: `ElectronEventTransport` 연결 및 cancel 처리
-   - [완료] cancel 처리 구현
-   - [완료] Nest Microservice 전략으로 실제 라우팅 연결
-6. **코어 이벤트 연동**: `AgentEventBridge` 브로드캐스트, 렌더러 `subscribeJson` 수신
-7. **검증/테스트**: 계약/통합/E2E 추가, 회귀 방지
-8. **문서/정리**: 스펙 반영 최종 점검, 로드맵 체크박스 갱신
+4. **채널 표기 정리**: 렌더러 Rpc 서비스 colon → dot 전환, 컨트롤러와 매핑 테이블 확정
+5. **호출부 이관**: 기존 훅/컨테이너를 Rpc 서비스로 점진 이관(Chat/Preset 우선)
+6. **레거시 제거**: `IpcChannel` 의존 및 mock 경로 제거
+7. **코어 이벤트 연동**: `AgentEventBridge` 브로드캐스트 수신 훅 구현
+8. **검증/테스트**: 계약/통합/E2E 보강, 회귀 방지
+9. **문서/정리**: 스펙 반영 최종 점검, 로드맵 체크박스 갱신
 
 ## 비고
 
 - 안전한 점진 도입을 위해 기존 `ipcMain.handle` 경로는 유지하면서 내부를 `RpcEndpoint` 호출로 이행하는 호환 레이어를 추천합니다.
 - MessagePort 최적화는 2차(퍼포먼스) 작업으로 분리합니다.
 
-## 현 상태 요약 (08/23 기준)
+## 현 상태 요약 (08/24 기준)
 
-- Preload: `electronBridge.on`/`rpc.request` 노출(문서/스펙 정렬 완료).
+- Preload: `electronBridge.on`/`rpc.request` 노출.
 - Main: `ElectronEventTransport` + Nest Microservice 연결, `can` 취소 프레임/에러 매핑 동작.
-- Renderer: `RpcEndpoint` + `ElectronIpcTransport` 사용, request/stream 처리 및 타입 정합 보강.
-- 이벤트: `AgentEventBridge` 경유 브로드캐스트 가능(구독 가드 적용 경로 준비).
-- Lint/스타일: GUI 전역 curly/no-nested-ternary/multiline-ternary 강화, 주요 컴포넌트 정리 완료.
-  - 오류 0, 경고는 mock IPC/any 및 일부 잔여 삼항에 한정(후속 브랜치에서 처리).
+- Renderer: `RpcEndpoint` 사용, request/stream 처리 및 타입 정합 보강. 스트림 취소 테스트 통과.
+- 채널: 컨트롤러 도트 표기 정착(Agent 전환 완료), 렌더러 서비스 전환 필요.
+- 이벤트: `AgentEventBridge` 브로드캐스트 수신 훅 준비.
+- Lint/스타일: 오류 0(경고 일부), 후속 패스에서 any/no-unused 정리 예정.
 - 문서: `apps/gui/docs/GUI_CODE_STYLE.md` 추가(가드 블록/삼항 분리 가이드, PR 체크리스트 포함).
 
 ## Lint/Style 하드닝 (추가 섹션)
