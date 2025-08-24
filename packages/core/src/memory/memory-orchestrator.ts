@@ -125,6 +125,7 @@ export class MemoryOrchestrator {
         carryWeights: this.cfg.promotion.carryWeights,
       });
       if (promoted > 0) {
+        await fs.mkdir(this.cfg.checkpoint.outDir, { recursive: true });
         await this.agentStore.saveToFile(this.cpFile(`agent-${this.agentId}.json`), {
           onlyIfDirty: true,
         });
