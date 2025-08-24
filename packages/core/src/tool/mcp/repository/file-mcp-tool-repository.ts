@@ -350,8 +350,8 @@ export class FileMcpToolRepository implements McpToolRepository {
   /**
    * 민감한 정보 제거한 설정 저장
    */
-  private sanitizeConfig(config: McpConfig): Record<string, unknown> {
-    const result: Record<string, unknown> = {
+  private sanitizeConfig(config: McpConfig): McpConfig {
+    const result: Pick<McpConfig, 'type' | 'name' | 'version' | 'network'> = {
       type: config.type,
       name: config.name,
       version: config.version,
@@ -365,43 +365,50 @@ export class FileMcpToolRepository implements McpToolRepository {
     // 타입별 전용 필드들
     switch (config.type) {
       case 'stdio':
-        result.command = config.command;
-        if (config.args) {
-          result.args = config.args;
-        }
-        if (config.cwd) {
-          result.cwd = config.cwd;
-        }
-        if (config.env) {
-          result.env = this.sanitizeEnv(config.env);
-        }
-        break;
-
+        return {
+          type: 'stdio',
+          name: config.name,
+          version: config.version,
+          network: config.network,
+          command: config.command,
+          args: config.args,
+          cwd: config.cwd,
+          env: config.env ? this.sanitizeEnv(config.env) : undefined,
+        };
       case 'streamableHttp':
-        result.url = config.url;
-        if (config.headers) {
-          result.headers = this.sanitizeHeaders(config.headers);
-        }
-        if (config.reconnectionOptions) {
-          result.reconnectionOptions = config.reconnectionOptions;
-        }
         // authProvider는 민감한 정보이므로 저장하지 않음
-        break;
+        return {
+          type: 'streamableHttp',
+          name: config.name,
+          version: config.version,
+          network: config.network,
+          url: config.url,
+          headers: config.headers ? this.sanitizeHeaders(config.headers) : undefined,
+          reconnectionOptions: config.reconnectionOptions,
+        };
 
       case 'websocket':
-        result.url = config.url;
-        break;
+        return {
+          type: 'websocket',
+          name: config.name,
+          version: config.version,
+          network: config.network,
+          url: config.url,
+        };
 
       case 'sse':
-        result.url = config.url;
-        if (config.headers) {
-          result.headers = this.sanitizeHeaders(config.headers);
-        }
         // authProvider는 민감한 정보이므로 저장하지 않음
-        break;
+        return {
+          type: 'sse',
+          name: config.name,
+          version: config.version,
+          network: config.network,
+          url: config.url,
+          headers: config.headers ? this.sanitizeHeaders(config.headers) : undefined,
+        };
+      default:
+        throw new Error(`Unsupported MCP config type: ${JSON.stringify(config)}`);
     }
-
-    return result;
   }
 
   /**

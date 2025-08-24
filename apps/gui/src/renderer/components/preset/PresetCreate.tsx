@@ -562,11 +562,11 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                           <div className="flex items-center justify-between mb-2">
                             <Label>Temperature</Label>
                             <span className="text-sm font-medium">
-                              {formData.llmBridgeConfig.temperature}
+                              {formData.llmBridgeConfig.temperature as number}
                             </span>
                           </div>
                           <Slider
-                            value={[formData.llmBridgeConfig.temperature]}
+                            value={[formData.llmBridgeConfig.temperature as number]}
                             onValueChange={([value]) =>
                               updateFormData({
                                 llmBridgeConfig: {
@@ -588,11 +588,11 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                           <div className="flex items-center justify-between mb-2">
                             <Label>Max Tokens</Label>
                             <span className="text-sm font-medium">
-                              {formData.llmBridgeConfig.maxTokens}
+                              {formData.llmBridgeConfig.maxTokens as number}
                             </span>
                           </div>
                           <Slider
-                            value={[formData.llmBridgeConfig.maxTokens]}
+                            value={[formData.llmBridgeConfig.maxTokens as number]}
                             onValueChange={([value]) =>
                               updateFormData({
                                 llmBridgeConfig: { ...formData.llmBridgeConfig, maxTokens: value },
@@ -611,11 +611,11 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                           <div className="flex items-center justify-between mb-2">
                             <Label>Top P</Label>
                             <span className="text-sm font-medium">
-                              {formData.llmBridgeConfig.topP}
+                              {formData.llmBridgeConfig.topP as number}
                             </span>
                           </div>
                           <Slider
-                            value={[formData.llmBridgeConfig.topP]}
+                            value={[formData.llmBridgeConfig.topP as number]}
                             onValueChange={([value]) =>
                               updateFormData({
                                 llmBridgeConfig: { ...formData.llmBridgeConfig, topP: value },
@@ -731,33 +731,26 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                         </Button>
                       </div>
 
-                      {(() => {
-                        const none = (formData.enabledMcps?.length ?? 0) === 0;
-                        if (none) {
-                          return (
-                            <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
-                              <Settings className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-                              <h4 className="font-medium text-foreground mb-2">
-                                No MCP Tools Added
-                              </h4>
-                              <p className="text-sm text-muted-foreground mb-4">
-                                MCP tools provide external functionality through standardized
-                                protocols.
-                              </p>
-                              <Button
-                                variant="outline"
-                                onClick={() => setShowMCPDialog(true)}
-                                className="gap-2"
-                              >
-                                <Plus className="w-4 h-4" />
-                                Add Your First MCP Tool
-                              </Button>
-                            </div>
-                          );
-                        }
-                        return (
-                          <div className="space-y-3">
-                            {formData.enabledMcps?.map((mcpTool, index) => (
+                      {formData.enabledMcps && formData.enabledMcps.length === 0 ? (
+                        <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
+                          <Settings className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+                          <h4 className="font-medium text-foreground mb-2">No MCP Tools Added</h4>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            MCP tools provide external functionality through standardized protocols.
+                          </p>
+                          <Button
+                            variant="outline"
+                            onClick={() => setShowMCPDialog(true)}
+                            className="gap-2"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Add Your First MCP Tool
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {formData.enabledMcps &&
+                            formData.enabledMcps.map((mcpTool, index) => (
                               <Card key={index} className="p-4">
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-3">
@@ -774,20 +767,12 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                                         </Badge>
                                         <span>v{mcpTool.version}</span>
                                         {mcpTool.name === 'stdio' && (
-                                          <span className="font-mono text-xs">
-                                            {'command' in mcpTool
-                                              ? String(mcpTool.command ?? '')
-                                              : ''}
-                                          </span>
+                                          <span className="font-mono text-xs">{mcpTool.name}</span>
                                         )}
                                         {(mcpTool.name === 'streamableHttp' ||
                                           mcpTool.name === 'websocket' ||
                                           mcpTool.name === 'sse') && (
-                                          <span className="font-mono text-xs">
-                                            {'url' in mcpTool
-                                              ? String((mcpTool as { url?: unknown }).url ?? '')
-                                              : ''}
-                                          </span>
+                                          <span className="font-mono text-xs">{mcpTool.name}</span>
                                         )}
                                       </div>
                                     </div>
@@ -804,9 +789,8 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                                 </div>
                               </Card>
                             ))}
-                          </div>
-                        );
-                      })()}
+                        </div>
+                      )}
                     </Card>
 
                     {/* Navigation */}

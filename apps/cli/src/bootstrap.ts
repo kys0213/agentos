@@ -30,7 +30,10 @@ async function createBridge(): Promise<LlmBridge> {
   const config = safeParseJson<Record<string, unknown>>(process.env.LLM_BRIDGE_CONFIG) ?? {};
   const loader = new DependencyBridgeLoader();
   const { ctor, manifest } = await loader.load(moduleName);
-  return new ctor((manifest.configSchema as any).parse(config));
+  const schema = (manifest as unknown as { configSchema: { parse: (x: unknown) => unknown } })
+    .configSchema;
+
+  return new ctor(schema.parse(config) as Record<string, unknown>);
 }
 
 export async function bootstrap(): Promise<AppContext> {

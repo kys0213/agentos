@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import { ChatManager, MessageHistory } from '@agentos/core';
+import type { MultiModalContent } from 'llm-bridge-spec';
 import { Page } from './pagination';
 import { PageCache } from './page-cache';
 import { createUserInputStream } from './utils/user-input-stream';
@@ -72,7 +73,9 @@ export async function browseHistory(manager: ChatManager, sessionId: string): Pr
       return;
     }
     for (const message of page.items) {
-      const first = Array.isArray(message.content) ? message.content[0] : (message.content as any);
+      const first = Array.isArray(message.content)
+        ? message.content[0]
+        : (message.content as unknown as MultiModalContent);
       const content = first && first.contentType === 'text' ? first.value : '[non-text]';
       const time = message.createdAt.toISOString();
       console.log(`${chalk.gray('[' + time + ']')} ${chalk.cyan(message.role)}: ${content}`);

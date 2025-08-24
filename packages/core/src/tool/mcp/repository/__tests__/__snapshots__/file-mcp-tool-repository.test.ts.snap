@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FileMcpToolRepository create should create a new MCP tool metadata 1`] = `
+{
+  "args": [
+    "script.js",
+  ],
+  "command": "node",
+  "cwd": undefined,
+  "env": {
+    "API_KEY": "***masked***",
+  },
+  "name": "test-tool",
+  "network": undefined,
+  "type": "stdio",
+  "version": "1.0.0",
+}
+`;

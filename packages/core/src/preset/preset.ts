@@ -13,7 +13,7 @@ export interface Preset {
   systemPrompt: string;
   enabledMcps?: EnabledMcp[];
   llmBridgeName: string;
-  llmBridgeConfig: Record<string, any>;
+  llmBridgeConfig: Record<string, unknown>;
   status: PresetStatus;
   usageCount: number;
   knowledgeDocuments: number;

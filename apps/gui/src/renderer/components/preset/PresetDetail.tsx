@@ -165,7 +165,7 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
               </div>
               <div>
                 <p className="text-lg font-semibold text-foreground">
-                  {editedPreset.llmBridgeConfig?.model}
+                  {editedPreset.llmBridgeConfig?.model as string}
                 </p>
                 <p className="text-xs text-muted-foreground">Model</p>
               </div>

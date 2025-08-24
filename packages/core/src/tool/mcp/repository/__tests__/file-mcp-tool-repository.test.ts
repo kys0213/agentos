@@ -1,9 +1,8 @@
 import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
 import * as os from 'node:os';
-import { FileMcpToolRepository } from '../file-mcp-tool-repository';
+import * as path from 'node:path';
 import { McpConfig } from '../../mcp-config';
-import { McpToolMetadata } from '../../mcp-types';
+import { FileMcpToolRepository } from '../file-mcp-tool-repository';
 
 describe('FileMcpToolRepository', () => {
   let repository: FileMcpToolRepository;
@@ -54,7 +53,8 @@ describe('FileMcpToolRepository', () => {
 
       expect(metadata.id).toMatch(/^mcp_test_tool_\d+_[a-z0-9]+$/);
       expect(metadata.endpoint).toBe('node script.js');
-      expect(metadata.config?.env?.API_KEY).toBe('***masked***'); // 민감한 정보 마스킹
+
+      expect(metadata.config).toMatchSnapshot();
     });
 
     it('should infer category from tool name', async () => {

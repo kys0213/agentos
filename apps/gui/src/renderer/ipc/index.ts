@@ -6,8 +6,4 @@ export {
   RpcTransportFactory as IpcChannelFactory,
   createRpcTransport as createIpcChannel,
   getEnvironmentInfo,
-} from './ipc-channel.factory';
-
-// 기본 export는 팩토리 함수
-import { createRpcTransport } from './ipc-channel.factory';
-export default createRpcTransport;
+} from '../rpc/rpc-channel.factory';

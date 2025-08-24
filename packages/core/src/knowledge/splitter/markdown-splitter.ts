@@ -64,7 +64,7 @@ export class MarkdownSplitter implements DocumentSplitter {
       const end = Math.min(section.length, start + maxChars);
       const text = section.slice(start, end).trim();
       if (isNonEmptyString(text)) {
-        const chunkId = `${meta.id}:${sectionStartOffset + start}:${chunkSeq++}` as any;
+        const chunkId = `${meta.id}:${sectionStartOffset + start}:${chunkSeq++}`;
         out.push({
           docId: meta.id,
           chunkId,

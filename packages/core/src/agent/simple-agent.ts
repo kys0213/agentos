@@ -160,7 +160,7 @@ export class SimpleAgent implements Agent {
 
     const metadata = await this.getMetadata();
 
-    const enabledMcps = (metadata as any).preset?.enabledMcps as
+    const enabledMcps = metadata.preset?.enabledMcps as
       | Array<{ name: string; enabledTools?: Array<{ name: string }> }>
       | undefined;
 
@@ -203,7 +203,7 @@ export class SimpleAgent implements Agent {
     const assistantMessage: AssistantMessage = {
       role: 'assistant',
       content: [response.content],
-    } as any;
+    };
 
     await chatSession.appendMessage(assistantMessage);
 
@@ -247,9 +247,7 @@ export class SimpleAgent implements Agent {
         const { contents, isError } = await mcp.invokeTool(tool, { input: toolCall.arguments });
 
         if (isError) {
-          throw Errors.operationFailed('mcp', 'Tool call failed', {
-            reason: contents && contents[0] && (contents[0] as any).text,
-          });
+          throw Errors.operationFailed('mcp', 'Tool call failed');
         }
 
         const toolMessage: ToolMessage = {

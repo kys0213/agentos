@@ -53,15 +53,15 @@ git push origin feature/ux-command-palette
 
 # 5. GitHub에서 Pull Request 생성 (PR 템플릿 기반)
 
-권장: GitHub 웹 UI에서 PR을 생성하면 `.github/pull_request_template.md`가 자동 적용됩니다. PR 본문은 반드시 "계획서(Plan) 기반"으로 작성합니다.
+반드시: GitHub 웹 UI에서 PR을 생성하여 `.github/pull_request_template.md`가 자동 적용되도록 합니다. PR 본문은 반드시 "계획서(Plan) 기반"으로 작성합니다.
 
-CLI를 선호한다면 아래 중 하나를 사용하고, 생성 후 본문을 템플릿 구조에 맞추어 편집하세요.
+CLI를 사용할 경우에도 템플릿을 강제 적용해야 합니다. 생성 시 `--body-file .github/pull_request_template.md`를 사용하고, 본문을 계획서 중심으로 즉시 채워 넣습니다.
 
 ```bash
-# 기본 PR 생성 (브라우저에서 템플릿 자동 적용 권장)
+# 기본 PR 생성 (브라우저에서 템플릿 자동 적용)
 gh pr create --title "Add Command Palette system" --web
 
-# 또는 템플릿 파일을 본문으로 채우고 수정을 위해 브라우저 열기
+# 또는 템플릿 파일을 본문으로 채우고 수정을 위해 브라우저 열기(필수)
 gh pr create --title "Add Command Palette system" \
   --body-file .github/pull_request_template.md --web
 ````

@@ -1,4 +1,4 @@
-import { UserMessage, LlmBridge } from 'llm-bridge-spec';
+import { UserMessage, LlmBridge, MultiModalContent } from 'llm-bridge-spec';
 import {
   ChatManager,
   McpRegistry,
@@ -58,7 +58,9 @@ export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge
       const session = await manager.load({ sessionId: 'default', agentId: 'cli-agent' });
       const { items } = await session.getHistories();
       for (const msg of items) {
-        const first = Array.isArray(msg.content) ? msg.content[0] : (msg.content as any);
+        const first = Array.isArray(msg.content)
+          ? msg.content[0]
+          : (msg.content as unknown as MultiModalContent);
         const text = first && first.contentType === 'text' ? first.value : '[non-text]';
         console.log(`${msg.role}: ${text}`);
       }
@@ -73,7 +75,7 @@ export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge
       const assistantMessage = messages[messages.length - 1];
       const first = Array.isArray(assistantMessage.content)
         ? assistantMessage.content[0]
-        : (assistantMessage.content as any);
+        : (assistantMessage.content as unknown as MultiModalContent);
       const text = first && first.contentType === 'text' ? first.value : '[non-text]';
       console.log('Assistant:', text);
     });

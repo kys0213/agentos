@@ -1,4 +1,4 @@
-import { LlmBridge, UserMessage } from 'llm-bridge-spec';
+import { LlmBridge, UserMessage, MultiModalContent } from 'llm-bridge-spec';
 import { CompressStrategy, CompressionResult, MessageHistory } from '@agentos/core';
 
 /**
@@ -10,7 +10,9 @@ export class LlmCompressor implements CompressStrategy {
   async compress(messages: MessageHistory[]): Promise<CompressionResult> {
     const text = messages
       .map((m) => {
-        const first = Array.isArray(m.content) ? m.content[0] : (m.content as any);
+        const first = Array.isArray(m.content)
+          ? m.content[0]
+          : (m.content as unknown as MultiModalContent);
         if (first && first.contentType === 'text') {
           return `${m.role}: ${first.value}`;
         }

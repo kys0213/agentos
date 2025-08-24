@@ -42,13 +42,12 @@ export class AgentEventBridge {
       return;
     }
 
-    const supportsEvents = (agent as any as Partial<EventfulAgent>).on;
-    if (!supportsEvents) {
+    if (!isEventfulAgent(agent)) {
       return;
     }
 
     const unsubs: Unsub[] = [];
-    const off = (agent as any as EventfulAgent).on((e) => this.onAgentEvent(agent.id, e));
+    const off = agent.on((e) => this.onAgentEvent(agent.id, e));
     unsubs.push(off);
     this.unsubs.set(agent.id, unsubs);
   }
@@ -148,4 +147,8 @@ export class AgentEventBridge {
     }
     this.unsubs.delete(key);
   }
+}
+
+function isEventfulAgent(obj: unknown): obj is EventfulAgent {
+  return !!obj && typeof (obj as { on?: unknown }).on === 'function';
 }

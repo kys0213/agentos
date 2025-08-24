@@ -8,8 +8,6 @@ import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usa
 import { McpRpcService as McpService } from './rpc/services/mcp.service';
 import { PresetRpcService as PresetService } from './rpc/services/preset.service';
 
-import { BuiltinToolService } from './services/builtin-tool.service';
-
 /**
  * Bootstrap 결과 타입
  */
@@ -35,7 +33,6 @@ export async function bootstrap(rpcTransport: RpcClient): Promise<BootstrapResul
   const mcpService = new McpService(rpcTransport);
   const presetService = new PresetService(rpcTransport);
   const agentService = new AgentService(rpcTransport);
-  const builtinToolService = new BuiltinToolService(rpcTransport);
   const conversationService = new ConversationService(rpcTransport);
   const mcpUsageLogService = new McpUsageLogService(rpcTransport);
 
@@ -46,7 +43,6 @@ export async function bootstrap(rpcTransport: RpcClient): Promise<BootstrapResul
   ServiceContainer.register('mcp', mcpService);
   ServiceContainer.register('preset', presetService);
   ServiceContainer.register('agent', agentService);
-  ServiceContainer.register('builtinTool', builtinToolService);
   ServiceContainer.register('mcpUsageLog', mcpUsageLogService);
   ServiceContainer.register('conversation', conversationService);
 

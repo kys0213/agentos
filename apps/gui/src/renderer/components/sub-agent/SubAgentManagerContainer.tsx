@@ -1,7 +1,7 @@
 import React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { SubAgentManager } from './SubAgentManager';
-import { fetchAgentMetadatas, updateAgentStatus } from '../../services/fetchers/subagents';
+import { ServiceContainer } from '../../ipc/service-container';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import type { AgentStatus } from '@agentos/core';
@@ -21,13 +21,13 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
     refetch,
   } = useQuery({
     queryKey: ['agents'],
-    queryFn: fetchAgentMetadatas,
+    queryFn: async () => ServiceContainer.getOrThrow('agent').getAllAgentMetadatas(),
     staleTime: 5 * 60 * 1000,
   });
 
   const mutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: AgentStatus }) =>
-      updateAgentStatus(id, status),
+      ServiceContainer.getOrThrow('agent').updateAgent(id, { status }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['agents'] }),
   });
 
