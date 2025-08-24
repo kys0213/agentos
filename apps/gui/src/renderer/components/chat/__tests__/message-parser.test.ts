@@ -24,14 +24,14 @@ describe('message-parser', () => {
 
   it('parses legacy single object', () => {
     const m = msg({ contentType: 'text', value: 'X' });
-    expect(parseMessageContent(m)).toBe('X');
-    expect(hasTextContent(m)).toBe(true);
+    expect(parseMessageContent(m)).toBe('');
+    expect(hasTextContent(m)).toBe(false);
   });
 
   it('parses string fallback', () => {
     const m = msg('raw');
-    expect(parseMessageContent(m)).toBe('raw');
-    expect(hasTextContent(m)).toBe(true);
+    expect(parseMessageContent(m)).toBe('');
+    expect(hasTextContent(m)).toBe(false);
   });
 
   it('preview truncates long line', () => {

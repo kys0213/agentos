@@ -25,7 +25,6 @@ export interface RpcClientOptions {
 
 export class RpcEndpoint implements RpcClient {
   private readonly $inboundFrames = new Subject<RpcFrame>();
-  private readonly $outboundChannel = new Subject<RpcFrame>();
 
   private handlers: RpcHandlers = {};
   private seq = 0;
@@ -39,11 +38,6 @@ export class RpcEndpoint implements RpcClient {
     this.transport.start((frame) => {
       this.options.onLog?.(frame);
       this.$inboundFrames.next(frame);
-    });
-
-    // Outbound 채널 구독
-    this.$outboundChannel.subscribe({
-      next: (f) => this.transport.post(f),
     });
   }
 
@@ -110,8 +104,17 @@ export class RpcEndpoint implements RpcClient {
   }
 
   stop() {
-    this.$outboundChannel.complete();
+    if (!this.started) {
+      return;
+    }
+
     this.clear();
+    this.$inboundFrames.complete();
+    this.started = false;
+
+    if (this.transport.stop) {
+      this.transport.stop();
+    }
   }
 
   clear() {
@@ -168,8 +171,11 @@ export class RpcEndpoint implements RpcClient {
 
     const stream$ = from(this.$inboundFrames).pipe(filter((f) => f.cid === cid));
 
-    // 2. 구독 완료 후 요청 전송
-    this.transport.post({ kind: 'req', cid, method, payload, meta });
+    // Post the request on the microtask queue so stream() callers that don't
+    // immediately consume with next() can still observe the outbound req.
+    Promise.resolve().then(() =>
+      this.transport.post({ kind: 'req', cid, method, payload, meta })
+    );
 
     let normallyCompleted = false;
 

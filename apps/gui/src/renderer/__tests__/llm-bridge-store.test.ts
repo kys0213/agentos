@@ -1,17 +1,15 @@
 import { LlmManifest } from 'llm-bridge-spec';
 import { LlmBridgeStore } from '../stores/llm-bridge-store';
+import z from 'zod';
 
 const sample: LlmManifest = {
   schemaVersion: '1.0.0',
   name: 'Echo',
   language: 'typescript',
   entry: 'echo.ts',
-  configSchema: {
-    type: 'object',
-    properties: {
-      message: { type: 'string' },
-    },
-  },
+  configSchema: z.object({
+    message: z.string(),
+  }),
   capabilities: {
     modalities: ['text'],
     supportsToolCall: true,
@@ -21,6 +19,7 @@ const sample: LlmManifest = {
     supportsVision: true,
   },
   description: 'Echo',
+  models: [],
 };
 
 test('save and list bridges', () => {
