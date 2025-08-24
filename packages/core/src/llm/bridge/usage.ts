@@ -1,4 +1,4 @@
-import type { LlmUsage } from 'llm-bridge-spec/dist/esm/bridge/types';
+import type { LlmUsage } from 'llm-bridge-spec';
 
 export type LlmUsageStatus = 'success' | 'error';
 

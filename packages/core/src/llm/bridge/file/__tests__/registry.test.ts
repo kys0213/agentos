@@ -1,8 +1,8 @@
 import type { LlmManifest } from 'llm-bridge-spec';
 import z from 'zod';
-import { DependencyBridgeLoader } from 'llm-bridge-loader';
 import { FileBasedLlmBridgeRegistry } from '../file-based-llm-bridge-registry';
 import path from 'node:path';
+import { LlmBridgeLoader } from './__mocks__/llm-bridge-loader';
 
 // In-memory file store to mock @agentos/lang fs layer deterministically
 const store = new Map<string, string>();
@@ -110,7 +110,7 @@ describe('FileBasedLlmBridgeRegistry (mocked FS)', () => {
 
   it('register/list/get/active/unregister lifecycle', async () => {
     const baseDir = '/tmp/agentos-core-test';
-    const reg = new FileBasedLlmBridgeRegistry(baseDir, new DependencyBridgeLoader());
+    const reg = new FileBasedLlmBridgeRegistry(baseDir, new LlmBridgeLoader());
     await reg.loadBridge('test-bridge');
 
     expect(await reg.listIds()).toEqual([]);
