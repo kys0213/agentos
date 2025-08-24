@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  llm-bridge-loader: link:packages/llm-bridge-loader
-
 importers:
 
   .:
@@ -70,8 +67,8 @@ importers:
         specifier: ^2.14.0
         version: 2.16.0
       llm-bridge-loader:
-        specifier: link:../../packages/llm-bridge-loader
-        version: link:../../packages/llm-bridge-loader
+        specifier: ^0.0.3
+        version: 0.0.3(llm-bridge-spec@1.0.5(zod@4.1.0))(zod@4.1.0)
       llm-bridge-spec:
         specifier: ^1.0.2
         version: 1.0.5(zod@4.1.0)
@@ -101,8 +98,8 @@ importers:
         specifier: ^11.1.0
         version: 11.1.0
       llm-bridge-loader:
-        specifier: link:../../packages/llm-bridge-loader
-        version: link:../../packages/llm-bridge-loader
+        specifier: ^0.0.3
+        version: 0.0.3(llm-bridge-spec@1.0.5(zod@4.1.0))(zod@4.1.0)
     devDependencies:
       '@types/node':
         specifier: ^20.11.19
@@ -243,8 +240,8 @@ importers:
         specifier: ^1.4.2
         version: 1.4.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       llm-bridge-loader:
-        specifier: link:../../packages/llm-bridge-loader
-        version: link:../../packages/llm-bridge-loader
+        specifier: ^0.0.3
+        version: 0.0.3(llm-bridge-spec@1.0.5(zod@4.1.0))(zod@4.1.0)
       llm-bridge-spec:
         specifier: ^1.0.2
         version: 1.0.5(zod@4.1.0)
@@ -343,8 +340,8 @@ importers:
         specifier: ^1.17.0
         version: 1.17.4
       llm-bridge-loader:
-        specifier: link:../llm-bridge-loader
-        version: link:../llm-bridge-loader
+        specifier: 0.0.6
+        version: 0.0.6(llm-bridge-spec@1.0.5(zod@4.1.0))(zod@4.1.0)
       zod:
         specifier: ^4.0.17
         version: 4.1.0
@@ -416,8 +413,6 @@ importers:
       typescript:
         specifier: ^5.3.3
         version: 5.9.2
-
-  packages/llm-bridge-loader: {}
 
 packages:
 
@@ -4225,6 +4220,18 @@ packages:
 
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
+
+  llm-bridge-loader@0.0.3:
+    resolution: {integrity: sha512-CVabAQjmarj4g2XHKP9nJKAkuUxbOjqg9/678NSGdNQNeX9sCjVXS8DE/0yEG4hQu/tuh8WUj0niuUcAu9lkvQ==}
+    peerDependencies:
+      llm-bridge-spec: 1.0.4
+      zod: ^4.0.5
+
+  llm-bridge-loader@0.0.6:
+    resolution: {integrity: sha512-LQK9ey4toBFpV4dMyYOHwRU8DlF1dKLmATNRazJwNwcCnT+0z6VFXEwMSXqragccyT9E2aJtO8GcqfQy1cOieg==}
+    peerDependencies:
+      llm-bridge-spec: 1.0.5
+      zod: ^4.0.5
 
   llm-bridge-spec@1.0.5:
     resolution: {integrity: sha512-JFBqsme5YJByEPSXsWeBoU1AREe6Q0RjAwg+aI52zklvM2Us0vpa7jKtWbDNK4BUuYsYtiP2ySWm0PeNW2eoKA==}
@@ -8142,7 +8149,7 @@ snapshots:
 
   agent-base@6.0.2:
     dependencies:
-      debug: 4.4.1
+      debug: 4.4.0
     transitivePeerDependencies:
       - supports-color
 
@@ -9789,7 +9796,7 @@ snapshots:
     dependencies:
       '@tootallnate/once': 2.0.0
       agent-base: 6.0.2
-      debug: 4.4.1
+      debug: 4.4.0
     transitivePeerDependencies:
       - supports-color
 
@@ -9808,7 +9815,7 @@ snapshots:
   https-proxy-agent@5.0.1:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.4.1
+      debug: 4.4.0
     transitivePeerDependencies:
       - supports-color
 
@@ -10665,6 +10672,16 @@ snapshots:
       lightningcss-win32-x64-msvc: 1.30.1
 
   lines-and-columns@1.2.4: {}
+
+  llm-bridge-loader@0.0.3(llm-bridge-spec@1.0.5(zod@4.1.0))(zod@4.1.0):
+    dependencies:
+      llm-bridge-spec: 1.0.5(zod@4.1.0)
+      zod: 4.1.0
+
+  llm-bridge-loader@0.0.6(llm-bridge-spec@1.0.5(zod@4.1.0))(zod@4.1.0):
+    dependencies:
+      llm-bridge-spec: 1.0.5(zod@4.1.0)
+      zod: 4.1.0
 
   llm-bridge-spec@1.0.5(zod@4.1.0):
     dependencies:
@@ -11605,7 +11622,7 @@ snapshots:
   socks-proxy-agent@7.0.0:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.4.1
+      debug: 4.4.0
       socks: 2.8.7
     transitivePeerDependencies:
       - supports-color

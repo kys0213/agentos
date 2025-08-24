@@ -21,7 +21,7 @@ export interface LlmBridgeRegistry {
 
   getBridgeByName(name: string): Promise<LlmBridge | null>;
 
-  loadBridge(name: string): Promise<BridgeLoadResult>;
+  loadBridge(name: string): Promise<BridgeLoadResult<LlmManifest>>;
 
   /** Register a manifest. Returns the persisted id. */
   register(

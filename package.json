@@ -11,9 +11,6 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "pnpm": {
-    "overrides": {
-      "llm-bridge-loader": "link:packages/llm-bridge-loader"
-    },
     "ignoredBuiltDependencies": [
       "electron"
     ]

@@ -1,5 +1,5 @@
 import { fs } from '@agentos/lang';
-import type { BridgeLoadResult, LlmBridgeLoader } from 'llm-bridge-loader';
+import type { BridgeLoadResult, BridgeLoader } from 'llm-bridge-loader';
 import type { LlmBridge, LlmManifest } from 'llm-bridge-spec';
 import path from 'path';
 import z from 'zod/v4/classic/external.cjs';
@@ -24,12 +24,12 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
   private readonly bridgesDir: string;
   private readonly activePath: string;
 
-  private readonly loadedBridges = new Map<string, BridgeLoadResult>();
+  private readonly loadedBridges = new Map<string, BridgeLoadResult<LlmManifest>>();
   private readonly createdBridges = new Map<BridgeId, LlmBridge>();
 
   constructor(
     baseDir: string,
-    private readonly llmBridgeLoader: LlmBridgeLoader
+    private readonly llmBridgeLoader: BridgeLoader
   ) {
     this.bridgesDir = path.join(baseDir, 'bridges');
     this.activePath = path.join(this.bridgesDir, '_active.json');
@@ -61,7 +61,7 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
     return bridge;
   }
 
-  async loadBridge(name: string): Promise<BridgeLoadResult> {
+  async loadBridge(name: string): Promise<BridgeLoadResult<LlmManifest>> {
     const result = await this.llmBridgeLoader.load(name);
     // Store raw result keyed by manifest name
     this.loadedBridges.set(result.manifest.name, result);
