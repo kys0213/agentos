@@ -75,6 +75,14 @@ describe('RpcEndpoint', () => {
     ep.start();
 
     const gen = ep.stream<number>('tick');
+    
+    // Start the async generator to trigger subscription and request sending
+    const it = gen[Symbol.asyncIterator]();
+    const firstPromise = it.next();
+    
+    // Wait a bit for the async generator to set up subscription and send request
+    await new Promise(resolve => setTimeout(resolve, 0));
+    
     const req = tr.sent.find((f) => f.kind === 'req')! as any;
 
     tr.onFrame?.({ kind: 'nxt', cid: req.cid, data: 1 });
@@ -82,7 +90,14 @@ describe('RpcEndpoint', () => {
     tr.onFrame?.({ kind: 'end', cid: req.cid });
 
     const out: number[] = [];
-    for await (const v of gen) out.push(v);
+    const first = await firstPromise;
+    if (!first.done) out.push(first.value);
+    
+    let next = await it.next();
+    while (!next.done) {
+      out.push(next.value);
+      next = await it.next();
+    }
 
     expect(out).toEqual([1, 2]);
   });
@@ -93,12 +108,18 @@ describe('RpcEndpoint', () => {
     ep.start();
 
     const gen = ep.stream<number>('tick');
+    
+    // consume one and break
+    const it = gen[Symbol.asyncIterator]();
+    const firstPromise = it.next();
+    
+    // Wait a bit for the async generator to set up subscription and send request
+    await new Promise(resolve => setTimeout(resolve, 0));
+    
     const req = tr.sent.find((f) => f.kind === 'req')! as any;
     tr.onFrame?.({ kind: 'nxt', cid: req.cid, data: 1 });
 
-    // consume one and break
-    const it = gen[Symbol.asyncIterator]();
-    const first = await it.next();
+    const first = await firstPromise;
     expect(first.value).toBe(1);
     await it.return?.();
 

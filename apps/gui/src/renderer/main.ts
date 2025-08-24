@@ -22,7 +22,7 @@ async function initializeApp() {
   const rpcTransport = createRpcTransport();
   console.log('📡 IpcChannel created:', rpcTransport.constructor.name);
 
-  await bootstrap(rpcTransport);
+  await bootstrap(rpcTransport as any);
 
   const container = document.getElementById('root');
   if (container) {

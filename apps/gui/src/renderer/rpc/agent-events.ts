@@ -2,15 +2,15 @@ import type { Observable, Subscription } from 'rxjs';
 import { map, filter } from 'rxjs/operators';
 import type { RpcFrame } from '../../shared/rpc/rpc-frame';
 import { selectDataByMethod } from './frame-channel';
-import { AgentOutboundEvent } from '../../main/common/event/events';
+import {
+  AgentOutboundEvent,
+  AgentSessionMessageEvent,
+  AgentSessionEndedEvent,
+} from '../../main/common/event/events';
 import { z } from 'zod';
 
-type AgentSessionMessagePayload = z.infer<
-  typeof import('../../main/common/event/events').AgentSessionMessageEvent
->['payload'];
-type AgentSessionEndedPayload = z.infer<
-  typeof import('../../main/common/event/events').AgentSessionEndedEvent
->['payload'];
+type AgentSessionMessagePayload = z.infer<typeof AgentSessionMessageEvent>['payload'];
+type AgentSessionEndedPayload = z.infer<typeof AgentSessionEndedEvent>['payload'];
 
 export type AgentEventHandlers = {
   onMessage?: (p: AgentSessionMessagePayload) => void;

@@ -1,8 +1,6 @@
 import type { RpcClient } from '../shared/rpc/transport';
 import { AgentOsServiceNames } from '../shared/types/agentos-api';
 import { ServiceContainer } from './ipc/service-container';
-import { wireAgentEvents } from './rpc/agent-events';
-import { fromBridge$, startStream } from './rpc/frame-channel';
 import { AgentRpcService as AgentService } from './rpc/services/agent.service';
 import { BridgeRpcService as BridgeService } from './rpc/services/bridge.service';
 import { ConversationRpcService as ConversationService } from './rpc/services/conversation.service';
@@ -58,20 +56,9 @@ export async function bootstrap(rpcTransport: RpcClient): Promise<BootstrapResul
   // 등록된 서비스 정보 로깅
   console.log('📋 Container info:', ServiceContainer.getInfo());
 
-  // --- Agent events stream bootstrap (frame-based) ---
-  try {
-    const bridge = window.electronBridge;
+  const bridge = window.electronBridge;
 
-    startStream(bridge, 'agent.events');
-    // Wire parsed events (replace handlers with store updates as needed)
-    const frames$ = fromBridge$(bridge);
-    wireAgentEvents(frames$, {
-      onMessage: () => {},
-      onEnded: () => {},
-    });
-  } catch (e) {
-    console.warn('Agent events bootstrap skipped:', e);
-  }
+  // Wire parsed events (replace handlers with store updates as needed)
 
   return {
     rpcTransport,

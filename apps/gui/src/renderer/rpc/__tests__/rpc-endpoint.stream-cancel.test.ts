@@ -3,7 +3,7 @@ import type { FrameTransport } from '../../../shared/rpc/transport';
 import type { RpcFrame } from '../../../shared/rpc/rpc-frame';
 
 describe('RpcEndpoint stream cancel posts can frame', () => {
-  it.skip('posts can when iterator is returned early (skipped due to memory on CI)', async () => {
+  it('posts can when iterator is returned early', async () => {
     const posted: RpcFrame[] = [];
     let onFrame: ((f: RpcFrame) => void) | null = null;
 

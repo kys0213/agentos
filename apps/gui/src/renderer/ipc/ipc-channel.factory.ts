@@ -92,18 +92,14 @@ export class RpcTransportFactory {
         window.electronBridge !== undefined &&
         typeof window.electronBridge === 'object';
 
-      const hasRpc =
-        typeof window !== 'undefined' && window.rpc !== undefined && typeof window.rpc === 'object';
-
       // 추가 검증: process.type이 'renderer'인지 확인
       const isRenderer = typeof process !== 'undefined' && process.type === 'renderer';
 
-      const result = hasElectronAPI || hasRpc || isRenderer;
+      const result = hasElectronAPI || isRenderer;
 
       console.log('Electron environment check:', {
         hasElectronAPI,
         isRenderer,
-        hasRpc,
         result,
         userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
       });

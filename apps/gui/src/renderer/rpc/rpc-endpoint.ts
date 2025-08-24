@@ -1,8 +1,17 @@
-// rpc/engine.ts
-import type { CloseFn, FrameTransport, RpcClient } from '../../shared/rpc/transport';
+import {
+  filter,
+  first,
+  firstValueFrom,
+  isObservable,
+  map,
+  Observable,
+  race,
+  Subject,
+  takeUntil,
+  timer,
+} from 'rxjs';
 import { Cid, RpcFrame, RpcMetadata } from '../../shared/rpc/rpc-frame';
-import { isObservable, Observable } from 'rxjs';
-import { createNotifier, type Notifier } from './notifier';
+import type { CloseFn, FrameTransport, RpcClient } from '../../shared/rpc/transport';
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 
@@ -14,142 +23,160 @@ export interface RpcClientOptions {
   onLog?: (ev: RpcFrame) => void;
 }
 
-type RpcObserver = {
-  resolve: (v: unknown) => void;
-  reject: (e: unknown) => void;
-  timer?: number | NodeJS.Timeout;
-  // streaming
-  next?: (v: unknown) => void;
-  complete?: () => void;
-  error?: (e: unknown) => void;
-};
-
-type StreamContext<T> = {
-  queue: T[];
-  done: boolean;
-  err: unknown;
-  wake: Notifier;
-  cid: Cid;
-};
-
 export class RpcEndpoint implements RpcClient {
-  private pending = new Map<Cid, RpcObserver>();
-  private cancelListeners = new Set<(f: RpcFrame) => void>();
+  private readonly $inboundFrames = new Subject<RpcFrame>();
+  private readonly $outboundChannel = new Subject<RpcFrame>();
+
   private handlers: RpcHandlers = {};
   private seq = 0;
+  private started = false;
 
   constructor(
     private transport: FrameTransport,
     private opts: RpcClientOptions = {}
-  ) {}
+  ) {
+    // Transport 프레임을 Subject로 전달
+    this.transport.start((frame) => {
+      this.opts.onLog?.(frame);
+      this.$inboundFrames.next(frame);
+    });
+
+    // Outbound 채널 구독
+    this.$outboundChannel.subscribe({
+      next: (f) => this.transport.post(f),
+    });
+  }
 
   on<T = unknown>(
     channel: string,
     handler: (payload: T) => void,
     onError?: (e: unknown) => void
   ): CloseFn {
-    const context: StreamContext<T> = {
-      queue: [],
-      done: false,
-      err: null,
-      wake: createNotifier(),
-      cid: this.cid(),
-    };
+    const cid = this.generateId();
 
-    const observer: RpcObserver = {
-      resolve: () => {},
-      reject: (e) => {
-        context.err = e;
-        context.wake.notify();
-      },
-      next: (v) => {
-        context.queue.push(v as T);
-        context.wake.notify();
-      },
-      complete: () => {
-        context.done = true;
-        context.wake.notify();
-      },
-      error: (e) => {
-        context.err = e;
-        context.done = true;
-        context.wake.notify();
-      },
-    };
+    // 1. 먼저 구독 설정
+    const subscription = this.$inboundFrames
+      .pipe(
+        filter((f) => f.cid === cid && (f.kind === 'nxt' || f.kind === 'end' || f.kind === 'err'))
+      )
+      .subscribe({
+        next: (frame) => {
+          if (frame.kind === 'nxt') {
+            handler(frame.data as T);
+          } else if (frame.kind === 'end') {
+            // Stream completed naturally
+          } else if (frame.kind === 'err') {
+            onError?.(new Error(frame.message));
+          }
+        },
+        error: (e) => onError?.(e),
+        complete: () => {
+          // Observable completed
+        },
+      });
 
-    this.pending.set(context.cid, observer);
-
-    // Post request synchronously so callers can observe it immediately
-    this.transport.post({
+    // 2. 구독 완료 후 요청 전송
+    this.post({
       kind: 'req',
-      cid: context.cid,
+      cid,
       method: channel,
     });
 
-    const generator = this.iterator(context);
-
     const close = async () => {
-      this.transport.post({
+      subscription.unsubscribe();
+      this.post({
         kind: 'can',
-        cid: context.cid,
+        cid,
       });
     };
-
-    (async () => {
-      try {
-        for await (const payload of generator) {
-          if (context.done) {
-            break;
-          }
-          handler(payload);
-        }
-      } catch (e) {
-        onError?.(e);
-      }
-    })();
 
     return close;
   }
 
-  start() {
-    this.transport.start(this.onFrame);
+  start(onFrame?: (f: RpcFrame) => void) {
+    if (this.started) {
+      return;
+    }
+    this.started = true;
+
+    if (onFrame) {
+      // FrameTransport 인터페이스 구현 - 외부 콜백 등록
+      this.$inboundFrames.subscribe(onFrame);
+    } else {
+      // 내부 서버 기능 시작 (request 핸들러)
+      this.$inboundFrames
+        .pipe(filter((f) => f.kind === 'req'))
+        .subscribe((frame) => this.handleRequest(frame));
+    }
   }
+
   stop() {
-    this.transport.stop?.();
+    this.$outboundChannel.complete();
     this.clear();
   }
 
   clear() {
-    this.pending.clear();
     this.handlers = {};
     this.seq = 0;
   }
 
+  // FrameTransport 인터페이스 구현
+  post(frame: RpcFrame) {
+    this.$outboundChannel.next(frame);
+  }
+
   register(method: string, fn: RpcHandler) {
+    if (this.handlers[method]) {
+      throw new Error(`Method ${method} already registered`);
+    }
+
     this.handlers[method] = fn;
   }
 
-  request<T = unknown>(
+  async request<T = unknown>(
     method: string,
     payload?: unknown,
     meta?: RpcMetadata,
     timeoutMs = this.opts.timeoutMs ?? 30000
   ): Promise<T> {
-    const cid = this.cid();
+    const cid = this.generateId();
 
-    return new Promise<T>((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this.pending.delete(cid);
-        reject(new Error(`RPC_TIMEOUT ${method}`));
-      }, timeoutMs);
+    // 1. 먼저 응답 구독 설정
+    const response$ = this.$inboundFrames.pipe(
+      filter((f) => f.cid === cid && (f.kind === 'res' || f.kind === 'err')),
+      first()
+    );
 
-      this.pending.set(cid, {
-        resolve: (v: unknown) => resolve(v as T),
-        reject,
-        timer,
-      });
-      this.transport.post({ kind: 'req', cid, method, payload, meta });
-    });
+    const timeout$ = this.createTimer(timeoutMs, method, cid);
+
+    // 2. 구독 완료 후 요청 전송
+    this.post({ kind: 'req', cid, method, payload, meta });
+
+    const frame = await firstValueFrom(race(response$, timeout$));
+
+    if (frame.kind === 'err') {
+      throw new Error(frame.message);
+    }
+
+    if (frame.kind !== 'res') {
+      throw new Error('Unexpected frame kind');
+    }
+
+    return frame.result as T;
+  }
+
+  private createTimer(timeoutMs: number, method: string, cid: string) {
+    return timer(timeoutMs).pipe(
+      map(
+        (): RpcFrame => ({
+          kind: 'err',
+          message: `RPC_TIMEOUT ${method}`,
+          cid,
+          ok: false,
+          code: 'TIMEOUT',
+        })
+      )
+    );
   }
 
   stream<T>(
@@ -157,165 +184,154 @@ export class RpcEndpoint implements RpcClient {
     payload?: unknown,
     meta?: RpcMetadata
   ): AsyncGenerator<T, void, unknown> {
-    const context: StreamContext<T> = {
-      queue: [],
-      done: false,
-      err: null,
-      wake: createNotifier(),
-      cid: this.cid(),
-    };
+    const cid = this.generateId();
 
-    this.pending.set(context.cid, {
-      resolve: () => {},
-      reject: (e) => {
-        context.err = e;
-        context.wake.notify();
-      },
-      next: (v) => {
-        context.queue.push(v as T);
-        context.wake.notify();
-      },
-      complete: () => {
-        context.done = true;
-        context.wake.notify();
-      },
-      error: (e) => {
-        context.err = e;
-        context.done = true;
-        context.wake.notify();
-      },
-    });
-
-    // Post request synchronously so callers can observe it immediately
-    this.transport.post({ kind: 'req', cid: context.cid, method, payload, meta });
-
-    return this.iterator(context);
+    return this.createStreamGenerator<T>(cid, { method, payload, meta });
   }
 
-  private async *iterator<T>(context: StreamContext<T>): AsyncGenerator<T, void, unknown> {
+  private async *createStreamGenerator<T>(
+    cid: Cid, 
+    requestData: { method: string; payload?: unknown; meta?: RpcMetadata }
+  ): AsyncGenerator<T, void, unknown> {
+    const values: T[] = [];
+    let completed = false;
+    let error: unknown = null;
+    let pendingResolve: (() => void) | null = null;
+
+    // 1. 먼저 해당 CID의 스트림 데이터 구독 설정
+    const subscription = this.$inboundFrames
+      .pipe(
+        filter((f) => f.cid === cid && (f.kind === 'nxt' || f.kind === 'end' || f.kind === 'err'))
+      )
+      .subscribe({
+        next: (frame) => {
+          if (frame.kind === 'nxt') {
+            values.push(frame.data as T);
+          } else if (frame.kind === 'end') {
+            completed = true;
+          } else if (frame.kind === 'err') {
+            error = new Error(frame.message);
+            completed = true;
+          }
+
+          if (pendingResolve) {
+            const resolve = pendingResolve;
+            pendingResolve = null;
+            resolve();
+          }
+        },
+        error: (err) => {
+          error = err;
+          completed = true;
+          if (pendingResolve) {
+            const resolve = pendingResolve;
+            pendingResolve = null;
+            resolve();
+          }
+        },
+      });
+
+    // 2. 구독 완료 후 요청 전송
+    this.post({ 
+      kind: 'req', 
+      cid, 
+      method: requestData.method, 
+      payload: requestData.payload, 
+      meta: requestData.meta 
+    });
+
     try {
-      while (!context.done || context.queue.length) {
-        if (context.queue.length) {
-          yield context.queue.shift()!;
-        } else {
-          await context.wake.wait();
+      while (!completed || values.length > 0) {
+        if (values.length > 0) {
+          yield values.shift()!;
+        } else if (!completed) {
+          await new Promise<void>((resolve) => {
+            pendingResolve = resolve;
+          });
         }
-        if (context.err) {
-          throw context.err;
+
+        if (error) {
+          throw error;
         }
       }
     } finally {
-      if (!context.done) {
-        this.transport.post({ kind: 'can', cid: context.cid });
+      subscription.unsubscribe();
+      if (!completed) {
+        this.post({ kind: 'can', cid });
       }
-      this.pending.delete(context.cid);
     }
   }
 
   cancel(cid: Cid) {
-    this.transport.post({ kind: 'can', cid });
+    this.post({ kind: 'can', cid });
   }
 
-  private onFrame = async (f: RpcFrame) => {
-    this.opts.onLog?.(f);
+  private async handleRequest(f: RpcFrame) {
+    if (f.kind !== 'req') {
+      return; // 타입 가드
+    }
 
-    if (f.kind === 'req') {
-      const fn = this.handlers[f.method];
+    const fn = this.handlers[f.method];
 
-      if (!fn) {
-        this.transport.post({
-          kind: 'err',
-          cid: f.cid,
-          ok: false,
-          message: `NO_HANDLER ${f.method}`,
-          code: 'NOT_FOUND',
-        });
-        return;
-      }
+    if (!fn) {
+      this.post({
+        kind: 'err',
+        cid: f.cid,
+        ok: false,
+        message: `NO_HANDLER ${f.method}`,
+        code: 'NOT_FOUND',
+      });
+      return;
+    }
 
-      try {
-        const out = fn(f.payload, f.meta);
+    try {
+      const out = fn(f.payload, f.meta);
 
-        if (isAsyncGen(out)) {
-          for await (const chunk of out) {
-            this.transport.post({ kind: 'nxt', cid: f.cid, data: chunk });
-          }
-          this.transport.post({ kind: 'end', cid: f.cid });
-        } else if (isObservableLike(out)) {
-          const sub = out.subscribe({
-            next: (v) => this.transport.post({ kind: 'nxt', cid: f.cid, data: v }),
+      if (isAsyncGen(out)) {
+        for await (const chunk of out) {
+          this.post({ kind: 'nxt', cid: f.cid, data: chunk });
+        }
+        this.post({ kind: 'end', cid: f.cid });
+      } else if (isObservableLike(out)) {
+        // Cancel 스트림 생성
+        const cancel$ = this.$inboundFrames.pipe(
+          filter((cf) => cf.kind === 'can' && cf.cid === f.cid)
+        );
+
+        out
+          .pipe(takeUntil(cancel$)) // cancel 신호가 오면 자동 완료
+          .subscribe({
+            next: (v) => this.post({ kind: 'nxt', cid: f.cid, data: v }),
             error: (e) =>
-              this.transport.post({
+              this.post({
                 kind: 'err',
                 cid: f.cid,
                 ok: false,
                 message: e instanceof Error ? e.message : String(e),
                 code: 'OPERATION_FAILED',
               }),
-            complete: () => this.transport.post({ kind: 'end', cid: f.cid }),
+            complete: () => this.post({ kind: 'end', cid: f.cid }),
           });
-
-          const cancel = (cf: RpcFrame) => {
-            if (cf.kind === 'can' && cf.cid === f.cid) {
-              sub.unsubscribe?.();
-              this.offCancel(cancel);
-              this.transport.post({ kind: 'end', cid: f.cid });
-            }
-          };
-
-          this.onCancel(cancel);
+      } else {
+        if (isPromiseLike(out)) {
+          const result = await out;
+          this.post({ kind: 'res', cid: f.cid, ok: true, result });
         } else {
-          if (isPromiseLike(out)) {
-            const result = await out;
-            this.transport.post({ kind: 'res', cid: f.cid, ok: true, result });
-          } else {
-            this.transport.post({ kind: 'res', cid: f.cid, ok: true, result: out });
-          }
+          this.post({ kind: 'res', cid: f.cid, ok: true, result: out });
         }
-      } catch (e: unknown) {
-        this.transport.post({
-          kind: 'err',
-          cid: f.cid,
-          ok: false,
-          message: String(e),
-          code: 'INTERNAL',
-        });
       }
-      return;
+    } catch (e: unknown) {
+      this.post({
+        kind: 'err',
+        cid: f.cid,
+        ok: false,
+        message: String(e),
+        code: 'INTERNAL',
+      });
     }
-
-    const waiter = this.pending.get(f.cid);
-
-    if (!waiter) {
-      return;
-    }
-
-    if (f.kind === 'res') {
-      clearTimeout(waiter.timer);
-      this.pending.delete(f.cid);
-      waiter.resolve(f.result);
-    } else if (f.kind === 'err') {
-      clearTimeout(waiter.timer);
-      this.pending.delete(f.cid);
-      waiter.reject(new Error(f.message));
-      waiter.error?.(new Error(f.message));
-    } else if (f.kind === 'nxt') {
-      waiter.next?.(f.data);
-    } else if (f.kind === 'end') {
-      this.pending.delete(f.cid);
-      waiter.complete?.();
-    }
-  };
-
-  private onCancel(cb: (f: RpcFrame) => void) {
-    this.cancelListeners.add(cb);
   }
 
-  private offCancel(cb: (f: RpcFrame) => void) {
-    this.cancelListeners.delete(cb);
-  }
-
-  private cid(): Cid {
+  private generateId(): Cid {
     return `${Date.now()}-${++this.seq}-${Math.random().toString(16).slice(2)}`;
   }
 }
