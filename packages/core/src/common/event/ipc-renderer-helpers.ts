@@ -12,7 +12,10 @@ export function subscribeJson<T>(
 ) {
   return sub.on(channel, (raw) => {
     const v = parseMaybeJson(raw);
-    if (guard(v)) handler(v);
-    else onInvalid?.(raw);
+    if (guard(v)) {
+      handler(v);
+    } else {
+      onInvalid?.(raw);
+    }
   });
 }

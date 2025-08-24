@@ -53,7 +53,9 @@ export class McpService {
    * Repository와 Registry를 모두 초기화합니다.
    */
   async initialize(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {
+      return;
+    }
 
     this.emitOperationEvent('initialize', 'started');
 

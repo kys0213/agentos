@@ -11,7 +11,9 @@ export interface AppContext {
 let context: AppContext | null = null;
 
 function safeParseJson<T>(input: string | undefined): T | undefined {
-  if (!input) return undefined;
+  if (!input) {
+    return undefined;
+  }
   try {
     return JSON.parse(input) as T;
   } catch (err) {

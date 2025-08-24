@@ -20,8 +20,12 @@ export interface DateFormatOptions {
 }
 
 function toDate(input: Date | string | number): Date {
-  if (input instanceof Date) return input;
-  if (typeof input === 'string') return parseISO(input);
+  if (input instanceof Date) {
+    return input;
+  }
+  if (typeof input === 'string') {
+    return parseISO(input);
+  }
   return new Date(input);
 }
 

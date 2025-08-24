@@ -34,7 +34,9 @@ export class FileBasedChannelPresetStore implements ChannelPresetStore {
     const entries = await fs.readdir(this.baseDir);
     const result: { channelId: string; presetId: string }[] = [];
     for (const entry of entries) {
-      if (!entry.endsWith('.json')) continue;
+      if (!entry.endsWith('.json')) {
+        continue;
+      }
       const channelId = entry.replace(/\.json$/, '');
       const presetId = (await this.getPreset(channelId)) ?? '';
       result.push({ channelId, presetId });

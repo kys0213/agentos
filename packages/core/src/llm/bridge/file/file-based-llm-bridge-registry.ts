@@ -50,7 +50,9 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
 
     const summary = summaries.find((s) => s.name === name);
 
-    if (!summary) return null;
+    if (!summary) {
+      return null;
+    }
 
     const bridge = this.createdBridges.get(summary.id);
 
@@ -71,7 +73,9 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
   async listIds(): Promise<BridgeId[]> {
     await fs.FileUtils.ensureDir(this.bridgesDir);
     const entries = await fs.FileUtils.readDir(this.bridgesDir);
-    if (!entries.success) return [];
+    if (!entries.success) {
+      return [];
+    }
     return entries.result
       .filter((f) => f.endsWith('.json') && !f.startsWith('_active'))
       .map((f) => f.replace(/\.json$/, ''));
@@ -82,7 +86,9 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
     const items: InstalledBridgeSummary[] = [];
     for (const id of ids) {
       const rec = await this.readRecord(id);
-      if (!rec) continue;
+      if (!rec) {
+        continue;
+      }
       items.push({
         id: rec.id,
         name: rec.manifest.name,
@@ -101,7 +107,9 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
   async getBridge(id: BridgeId): Promise<LlmBridge | null> {
     const rec = await this.readRecord(id);
 
-    if (!rec) return null;
+    if (!rec) {
+      return null;
+    }
 
     return this.createdBridges.get(id) ?? null;
   }
@@ -135,7 +143,9 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
     // If no active id yet, set to this id
     const active = await this.getActiveId();
 
-    if (!active) await this.setActiveId(id);
+    if (!active) {
+      await this.setActiveId(id);
+    }
 
     return id;
   }
@@ -170,7 +180,9 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
     );
     const data: ActiveBridgeState = { activeId: id, updatedAt: new Date() };
     const res = await handler.write(data, { prettyPrint: true, indent: 2, ensureDir: true });
-    if (!res.success) throw new Error(`Failed to set active bridge: ${String(res.reason)}`);
+    if (!res.success) {
+      throw new Error(`Failed to set active bridge: ${String(res.reason)}`);
+    }
   }
 
   // ---------- helpers ----------
@@ -184,7 +196,9 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
       isInstalledBridgeRecord
     );
     const res = await handler.read({ useDefaultOnError: false, reviveDates: true });
-    if (!res.success) return null;
+    if (!res.success) {
+      return null;
+    }
     const rec = res.result;
     // Ensure Date object
     return { ...rec, installedAt: new Date(rec.installedAt) };
@@ -196,6 +210,8 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
       isInstalledBridgeRecord
     );
     const res = await handler.write(record, { prettyPrint: true, indent: 2, ensureDir: true });
-    if (!res.success) throw new Error(`Failed to save bridge record: ${String(res.reason)}`);
+    if (!res.success) {
+      throw new Error(`Failed to save bridge record: ${String(res.reason)}`);
+    }
   }
 }

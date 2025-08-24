@@ -14,7 +14,9 @@ export class SimpleEventEmitter<E extends EventMap> {
 
   emit<K extends keyof E>(event: K, payload: E[K]): void {
     const set = this.handlers[event];
-    if (!set) return;
+    if (!set) {
+      return;
+    }
     for (const h of set) {
       try {
         h(payload);

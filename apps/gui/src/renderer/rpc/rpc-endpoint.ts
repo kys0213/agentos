@@ -64,6 +64,8 @@ export class RpcEndpoint implements RpcClient {
           if (frame.kind === 'nxt') {
             handler(frame.data as T);
           } else if (frame.kind === 'end') {
+            // end of stream
+            return;
           } else if (frame.kind === 'err') {
             onError?.(new Error(frame.message));
           }

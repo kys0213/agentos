@@ -13,7 +13,9 @@ export function paginateByCursor<T extends { id: string }>(
 
     if (cursor) {
       const idx = items.findIndex((i) => i.id === cursor);
-      if (idx >= 0) list = items.slice(0, idx);
+      if (idx >= 0) {
+        list = items.slice(0, idx);
+      }
     }
 
     const start = Math.max(0, list.length - limit);
@@ -25,7 +27,9 @@ export function paginateByCursor<T extends { id: string }>(
 
     if (cursor) {
       const idx = items.findIndex((i) => i.id === cursor);
-      if (idx >= 0) list = items.slice(idx + 1);
+      if (idx >= 0) {
+        list = items.slice(idx + 1);
+      }
     }
 
     const page = list.slice(0, limit);

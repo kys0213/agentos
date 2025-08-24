@@ -224,7 +224,9 @@ export class FileMcpToolRepository implements McpToolRepository {
    * Repository 초기화 (저장소 디렉토리 생성 등)
    */
   private async ensureInitialized(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {
+      return;
+    }
 
     try {
       await fs.mkdir(path.dirname(this.storagePath), { recursive: true });
@@ -291,11 +293,21 @@ export class FileMcpToolRepository implements McpToolRepository {
   private inferCategory(config: McpConfig): string {
     const name = config.name.toLowerCase();
 
-    if (name.includes('search') || name.includes('web')) return 'search';
-    if (name.includes('code') || name.includes('dev')) return 'development';
-    if (name.includes('data') || name.includes('db')) return 'data';
-    if (name.includes('file') || name.includes('doc')) return 'productivity';
-    if (name.includes('api') || name.includes('service')) return 'api';
+    if (name.includes('search') || name.includes('web')) {
+      return 'search';
+    }
+    if (name.includes('code') || name.includes('dev')) {
+      return 'development';
+    }
+    if (name.includes('data') || name.includes('db')) {
+      return 'data';
+    }
+    if (name.includes('file') || name.includes('doc')) {
+      return 'productivity';
+    }
+    if (name.includes('api') || name.includes('service')) {
+      return 'api';
+    }
 
     return 'general';
   }
@@ -354,8 +366,12 @@ export class FileMcpToolRepository implements McpToolRepository {
     switch (config.type) {
       case 'stdio':
         result.command = config.command;
-        if (config.args) result.args = config.args;
-        if (config.cwd) result.cwd = config.cwd;
+        if (config.args) {
+          result.args = config.args;
+        }
+        if (config.cwd) {
+          result.cwd = config.cwd;
+        }
         if (config.env) {
           result.env = this.sanitizeEnv(config.env);
         }

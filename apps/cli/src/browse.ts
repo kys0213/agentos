@@ -182,7 +182,9 @@ export async function browseHistory(manager: ChatManager, sessionId: string): Pr
   const showPage = async () => {
     console.log(chalk.yellow(`\nHistory (page ${pageIndex + 1})`));
     const page = await ensurePage(pageIndex);
-    if (!page) return;
+    if (!page) {
+      return;
+    }
     for (const message of page.items) {
       const first = Array.isArray(message.content) ? message.content[0] : (message.content as any);
       const content = first && first.contentType === 'text' ? first.value : '[non-text]';

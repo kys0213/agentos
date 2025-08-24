@@ -25,7 +25,9 @@ export interface CoreMessage {
 export function toCoreContentArray(
   input: CoreContent | CoreContent[] | null | undefined
 ): CoreContent[] {
-  if (!input) return [];
+  if (!input) {
+    return [];
+  }
   return Array.isArray(input) ? input : [input];
 }
 
@@ -36,7 +38,9 @@ export function toCoreContentArray(
  * - 객체: contentType/value 형태면 그대로, 아니면 JSON 문자열로 강제
  */
 export function normalizeToCoreContentArray(input: unknown): CoreContent[] {
-  if (input == null) return [];
+  if (input == null) {
+    return [];
+  }
 
   // Buffer / Readable은 바이너리 데이터로 간주하여 file 기본 타입으로 처리
   // (구체 타입이 필요하면 호출 측에서 { contentType, value } 형태로 전달해야 함)

@@ -50,9 +50,13 @@ export class SimpleAgentService implements AgentService {
       return this.agents.get(agentId)!;
     }
     const meta = await this.agentMetadataRepository.get(agentId);
-    if (!meta) return null;
+    if (!meta) {
+      return null;
+    }
     const llmBridge = await this.llmBridgeRegistry.getBridgeByName(meta.preset.llmBridgeName);
-    if (!llmBridge) return null;
+    if (!llmBridge) {
+      return null;
+    }
     const agent = new SimpleAgent(
       meta.id,
       llmBridge,
@@ -69,7 +73,9 @@ export class SimpleAgentService implements AgentService {
     const items: Agent[] = [];
     for (const m of metas.items) {
       const maybe = await this.getAgent(m.id);
-      if (maybe) items.push(maybe);
+      if (maybe) {
+        items.push(maybe);
+      }
     }
     return { items, nextCursor: metas.nextCursor, hasMore: metas.hasMore };
   }
@@ -82,7 +88,9 @@ export class SimpleAgentService implements AgentService {
     const items: Agent[] = [];
     for (const m of metas.items) {
       const maybe = await this.getAgent(m.id);
-      if (maybe) items.push(maybe);
+      if (maybe) {
+        items.push(maybe);
+      }
     }
     return { items, nextCursor: metas.nextCursor, hasMore: metas.hasMore };
   }
@@ -143,7 +151,9 @@ export class SimpleAgentService implements AgentService {
     let list = items;
     if (cursor) {
       const idx = items.findIndex((i) => i.id === cursor);
-      if (idx >= 0) list = items.slice(idx + 1);
+      if (idx >= 0) {
+        list = items.slice(idx + 1);
+      }
     }
     const page = list.slice(0, limit);
     const nextCursor = page.length === limit ? page[page.length - 1].id : '';

@@ -63,21 +63,39 @@ export class FileMcpUsageRepository implements McpUsageRepository {
 
   // ---------- helpers ----------
   private filter(items: McpUsageLog[], q?: McpUsageQuery): McpUsageLog[] {
-    if (!q) return items;
+    if (!q) {
+      return items;
+    }
     return items.filter((l) => {
-      if (q.toolId && l.toolId !== q.toolId) return false;
-      if (q.toolName && l.toolName !== q.toolName) return false;
-      if (q.agentId && l.agentId !== q.agentId) return false;
-      if (q.sessionId && l.sessionId !== q.sessionId) return false;
-      if (q.status && l.status !== q.status) return false;
-      if (q.from && new Date(l.timestamp).getTime() < q.from.getTime()) return false;
-      if (q.to && new Date(l.timestamp).getTime() > q.to.getTime()) return false;
+      if (q.toolId && l.toolId !== q.toolId) {
+        return false;
+      }
+      if (q.toolName && l.toolName !== q.toolName) {
+        return false;
+      }
+      if (q.agentId && l.agentId !== q.agentId) {
+        return false;
+      }
+      if (q.sessionId && l.sessionId !== q.sessionId) {
+        return false;
+      }
+      if (q.status && l.status !== q.status) {
+        return false;
+      }
+      if (q.from && new Date(l.timestamp).getTime() < q.from.getTime()) {
+        return false;
+      }
+      if (q.to && new Date(l.timestamp).getTime() > q.to.getTime()) {
+        return false;
+      }
       return true;
     });
   }
 
   private async ensureInitialized(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {
+      return;
+    }
     await fs.mkdir(path.dirname(this.storagePath), { recursive: true });
     try {
       await fs.access(this.storagePath);
@@ -96,7 +114,9 @@ export class FileMcpUsageRepository implements McpUsageRepository {
         return { ...l, timestamp: new Date(l.timestamp) } as McpUsageLog;
       });
     } catch (e) {
-      if ((e as NodeJS.ErrnoException).code === 'ENOENT') return [];
+      if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
+        return [];
+      }
       throw e;
     }
   }

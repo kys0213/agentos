@@ -10,7 +10,7 @@ export function toAsyncIterable<T>(source: Observable<T>): AsyncIterable<T> {
     [Symbol.asyncIterator](): AsyncIterator<T> {
       const values: T[] = [];
       let done = false;
-      let err: any = null;
+      let err: unknown = null;
       let wake: (() => void) | null = null;
       let subscribed = false;
 
@@ -34,13 +34,14 @@ export function toAsyncIterable<T>(source: Observable<T>): AsyncIterable<T> {
 
       return {
         async next(): Promise<IteratorResult<T>> {
+          // eslint-disable-next-line no-constant-condition
           while (true) {
             if (values.length > 0) {
               return { value: values.shift()!, done: false };
             }
 
             if (err) {
-              throw err;
+              throw err as unknown;
             }
 
             if (done) {

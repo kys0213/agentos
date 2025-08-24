@@ -79,7 +79,9 @@ export function hasProperties<T extends Record<string, unknown>>(
   value: unknown,
   properties: (keyof T)[]
 ): value is T {
-  if (!isPlainObject(value)) return false;
+  if (!isPlainObject(value)) {
+    return false;
+  }
   return properties.every((prop) => typeof prop === 'string' && prop in value);
 }
 

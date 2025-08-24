@@ -75,7 +75,9 @@ export class MarkdownSplitter implements DocumentSplitter {
           source: { offsetStart: sectionStartOffset + start, offsetEnd: sectionStartOffset + end },
         });
       }
-      if (end >= section.length) break;
+      if (end >= section.length) {
+        break;
+      }
       start = Math.max(0, end - overlap);
     }
   }

@@ -38,10 +38,14 @@ export class AgentEventBridge {
   async attachAgent(agentOrId: Agent | string) {
     const agent =
       typeof agentOrId === 'string' ? await this.service.getAgent(agentOrId) : agentOrId;
-    if (!agent) return;
+    if (!agent) {
+      return;
+    }
 
     const supportsEvents = (agent as any as Partial<EventfulAgent>).on;
-    if (!supportsEvents) return;
+    if (!supportsEvents) {
+      return;
+    }
 
     const unsubs: Unsub[] = [];
     const off = (agent as any as EventfulAgent).on((e) => this.onAgentEvent(agent.id, e));
@@ -51,7 +55,9 @@ export class AgentEventBridge {
 
   detachAgent(agentId: string) {
     const list = this.unsubs.get(agentId);
-    if (list) list.forEach((u) => u());
+    if (list) {
+      list.forEach((u) => u());
+    }
     this.unsubs.delete(agentId);
   }
 
@@ -137,7 +143,9 @@ export class AgentEventBridge {
   detachSession(agentId: string, sessionId: string) {
     const key = `${agentId}:${sessionId}`;
     const list = this.unsubs.get(key);
-    if (list) list.forEach((u) => u());
+    if (list) {
+      list.forEach((u) => u());
+    }
     this.unsubs.delete(key);
   }
 }

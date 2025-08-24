@@ -37,7 +37,9 @@ export class InMemoryBM25Index<TChunkId extends string = string> {
 
     const tfMap = new Map<string, number>();
 
-    for (const t of tokens) tfMap.set(t, (tfMap.get(t) ?? 0) + 1);
+    for (const t of tokens) {
+      tfMap.set(t, (tfMap.get(t) ?? 0) + 1);
+    }
 
     for (const [term, tf] of tfMap) {
       const postings = this.index.get(term) ?? [];
@@ -53,8 +55,11 @@ export class InMemoryBM25Index<TChunkId extends string = string> {
   async remove(docId: TChunkId): Promise<void> {
     for (const [term, postings] of this.index) {
       const next = postings.filter((p) => p.id !== docId);
-      if (next.length === 0) this.index.delete(term);
-      else this.index.set(term, next);
+      if (next.length === 0) {
+        this.index.delete(term);
+      } else {
+        this.index.set(term, next);
+      }
     }
     this.docLength.delete(docId);
     this.docCount.delete(docId);
@@ -63,7 +68,9 @@ export class InMemoryBM25Index<TChunkId extends string = string> {
 
   private recomputeAvgLen() {
     let sum = 0;
-    for (const len of this.docLength.values()) sum += len;
+    for (const len of this.docLength.values()) {
+      sum += len;
+    }
     this.avgDocLength = this.docLength.size ? sum / this.docLength.size : 0;
   }
 
@@ -79,7 +86,9 @@ export class InMemoryBM25Index<TChunkId extends string = string> {
 
     for (const q of qTokens) {
       const postings = this.index.get(q);
-      if (!postings) continue;
+      if (!postings) {
+        continue;
+      }
       const df = postings.length;
       const idf = this.idf(df);
       for (const { id, tf } of postings) {
