@@ -1,3 +1,5 @@
+import { McpConfig } from './mcp-config';
+
 /**
  * MCP 도구의 메타데이터 정보
  */
@@ -25,7 +27,7 @@ export interface McpToolMetadata {
   /** 총 사용 횟수 */
   usageCount: number;
   /** 도구별 설정 (옵셔널) */
-  config?: Record<string, unknown>;
+  config?: McpConfig;
 }
 
 /**
@@ -51,7 +53,7 @@ export interface McpUsageLog {
   /** 실행 결과 상태 */
   status: McpUsageStatus;
   /** 입력 파라미터 (옵셔널) */
-  parameters?: Record<string, unknown>;
+  parameters?: Record<string, any>;
   /** 에러 메시지 (옵셔널) */
   error?: string;
   /** 실행 결과 (옵셔널) */

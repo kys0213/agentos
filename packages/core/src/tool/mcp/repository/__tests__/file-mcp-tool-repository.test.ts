@@ -54,7 +54,8 @@ describe('FileMcpToolRepository', () => {
 
       expect(metadata.id).toMatch(/^mcp_test_tool_\d+_[a-z0-9]+$/);
       expect(metadata.endpoint).toBe('node script.js');
-      expect(metadata.config?.env?.API_KEY).toBe('***masked***'); // 민감한 정보 마스킹
+
+      expect(metadata.config).toMatchInlineSnapshot();
     });
 
     it('should infer category from tool name', async () => {

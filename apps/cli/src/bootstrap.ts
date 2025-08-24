@@ -32,7 +32,8 @@ async function createBridge(): Promise<LlmBridge> {
   const { ctor, manifest } = await loader.load(moduleName);
   const schema = (manifest as unknown as { configSchema: { parse: (x: unknown) => unknown } })
     .configSchema;
-  return new ctor(schema.parse(config));
+
+  return new ctor(schema.parse(config) as Record<string, unknown>);
 }
 
 export async function bootstrap(): Promise<AppContext> {

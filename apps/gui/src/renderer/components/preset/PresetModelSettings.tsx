@@ -24,7 +24,7 @@ export const PresetModelSettings: React.FC<PresetModelSettingsProps> = ({
         <div className="space-y-2">
           <Label>Model</Label>
           <Select
-            value={cfg.model ?? ''}
+            value={cfg.model as string}
             onValueChange={(value) => onChange({ llmBridgeConfig: { ...cfg, model: value } })}
           >
             <SelectTrigger>
@@ -46,10 +46,10 @@ export const PresetModelSettings: React.FC<PresetModelSettingsProps> = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Temperature</Label>
-              <span className="text-sm text-muted-foreground">{cfg.temperature}</span>
+              <span className="text-sm text-muted-foreground">{cfg.temperature as number}</span>
             </div>
             <Slider
-              value={[cfg.temperature ?? 0.7]}
+              value={[cfg.temperature as number]}
               onValueChange={([value]) =>
                 onChange({ llmBridgeConfig: { ...cfg, temperature: value } })
               }
@@ -62,10 +62,10 @@ export const PresetModelSettings: React.FC<PresetModelSettingsProps> = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Max Tokens</Label>
-              <span className="text-sm text-muted-foreground">{cfg.maxTokens}</span>
+              <span className="text-sm text-muted-foreground">{cfg.maxTokens as number}</span>
             </div>
             <Slider
-              value={[cfg.maxTokens ?? 2048]}
+              value={[cfg.maxTokens as number]}
               onValueChange={([value]) =>
                 onChange({ llmBridgeConfig: { ...cfg, maxTokens: value } })
               }
@@ -78,10 +78,10 @@ export const PresetModelSettings: React.FC<PresetModelSettingsProps> = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Top P</Label>
-              <span className="text-sm text-muted-foreground">{cfg.topP}</span>
+              <span className="text-sm text-muted-foreground">{cfg.topP as number}</span>
             </div>
             <Slider
-              value={[cfg.topP ?? 1.0]}
+              value={[cfg.topP as number]}
               onValueChange={([value]) => onChange({ llmBridgeConfig: { ...cfg, topP: value } })}
               max={1}
               min={0}

@@ -355,7 +355,7 @@ export class McpMetadataRegistry {
       return;
     }
 
-    const config = metadata.config as McpConfig;
+    const config = metadata.config;
 
     // 모든 MCP 타입 지원
     await this.mcpRegistry.register(config);

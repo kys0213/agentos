@@ -42,7 +42,7 @@ export class MockMcpToolRepository implements McpToolRepository {
       status: 'disconnected',
       usageCount: 0,
       permissions: [],
-      config: {},
+      config,
     };
 
     this.tools.set(tool.id, tool);
