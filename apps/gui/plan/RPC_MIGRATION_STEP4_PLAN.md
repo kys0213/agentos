@@ -49,7 +49,7 @@ rpc.stream<unknown>('agent.session.messages', (raw) => {
   - [ ] `apps/gui/src/renderer/rpc/services/bridge.service.ts`
   - [ ] `apps/gui/src/renderer/rpc/services/preset.service.ts`
   - [ ] `apps/gui/src/renderer/rpc/services/mcp.service.ts`
-  - [ ] `apps/gui/src/renderer/rpc/services/conversation.service.ts`
+  - [x] `apps/gui/src/renderer/rpc/services/conversation.service.ts`
 - [ ] 레거시 제거/치환:
   - [ ] `apps/gui/src/renderer/services/ipc-agent.ts` 제거 또는 RPC 대체
   - [ ] `apps/gui/src/renderer/services/fetchers/*`를 RPC 서비스 호출로 교체
