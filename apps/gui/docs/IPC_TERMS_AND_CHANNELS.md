@@ -21,6 +21,11 @@
 - mcp.usage.\*: `mcp.usage.getLogs`, `mcp.usage.getStats`, `mcp.usage.getHourlyStats`, `mcp.usage.clear`
 - chat.\*: `chat.list-sessions`, `chat.get-messages`, `chat.delete-session`
 - conversation.\*: (TBD) 컨트롤러 네임스페이스 확정 시 정리
+
+## 메시지 콘텐츠 규칙
+
+- llm-bridge-spec에 따라 모든 메시지의 `content`는 `MultiModalContent[]` 배열로 전송/수신한다.
+- 단일 문자열/오브젝트 사용 금지. 예: `{ role: 'user', content: [{ contentType: 'text', value: 'hello' }] }`.
 - bridge.\*: `bridge.register`, `bridge.unregister`, `bridge.switch`, `bridge.get-current`, `bridge.list`
 - builtin.\*: `builtin.install`, `builtin.list`, `builtin.invoke`, `builtin.remove`
 

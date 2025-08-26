@@ -62,6 +62,25 @@ Renderer 서비스 메서드명은 내부 편의를 위한 래퍼이며, 실제 
 - 가변 작업 응답: bridge 등록/해지/스위치, `mcp.invokeTool` 등은 `{ success, result? | error }` 래퍼를 사용한다.
 - 목록/조회 응답: 기존 타입(예: `CursorPaginationResult<T>`, 구체 엔티티)을 직접 반환한다.
 
+#### 2.1.1.a 메시지 콘텐츠 규칙 (llm-bridge-spec)
+
+- 모든 메시지의 `content`는 `MultiModalContent[]` 배열을 사용한다. 단일 문자열/오브젝트는 허용되지 않는다.
+- 텍스트 예시:
+
+```ts
+// user → assistant 대화 예시
+{ role: 'user', content: [{ contentType: 'text', value: 'Hello' }] }
+{ role: 'assistant', content: [{ contentType: 'text', value: 'Hi! How can I help?' }] }
+```
+
+- tool 메시지 예시:
+
+```ts
+{ role: 'tool', name: 'web.search', toolCallId: 'call-1', content: [
+  { contentType: 'text', value: 'Top result: ...' }
+] }
+```
+
 ## 3. 디렉터리 레이아웃 (권장)
 
 ```
