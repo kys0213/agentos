@@ -58,6 +58,7 @@ rpc.stream<unknown>('agent.session.messages', (raw) => {
   - [ ] Preset 관련 훅/컨테이너 이관, ServiceContainer 등록 확인
 - [ ] 통합 테스트: 요청/응답 및 스트림(cancel 포함) 경로 점검
 - [ ] 문서 업데이트: 표기 전환/마이그레이션 노트(IPC 스펙/용어 문서 반영)
+  - [x] IPC_TERMS_AND_CHANNELS.md의 chat.\* 채널 도트/하이픈 표기로 정리
 
 ## 작업 순서
 

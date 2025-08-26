@@ -19,8 +19,8 @@
 - preset.\*: `preset.list`, `preset.get`, `preset.create`, `preset.update`, `preset.delete`
 - mcp.\*: `mcp.getTool`(payload: `{ name: string }`), `mcp.invokeTool`(payload: `{ name: string; input?: object; resumptionToken?: string }`)
 - mcp.usage.\*: `mcp.usage.getLogs`, `mcp.usage.getStats`, `mcp.usage.getHourlyStats`, `mcp.usage.clear`
-- chat.\*: `chat.listSessions`, `chat.getSession`, `chat.removeSession`
-- conversation.\*: `conversation.list`, `conversation.get`
+- chat.\*: `chat.list-sessions`, `chat.get-messages`, `chat.delete-session`
+- conversation.\*: (TBD) 컨트롤러 네임스페이스 확정 시 정리
 - bridge.\*: `bridge.register`, `bridge.unregister`, `bridge.switch`, `bridge.get-current`, `bridge.list`
 - builtin.\*: `builtin.install`, `builtin.list`, `builtin.invoke`, `builtin.remove`
 
