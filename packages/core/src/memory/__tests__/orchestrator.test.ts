@@ -1,10 +1,26 @@
 import { MemoryOrchestrator } from '../../memory/memory-orchestrator';
 
 const baseCfg = {
-  sessionGraph: { maxNodes: 1000, maxEdges: 4000, halfLifeMin: 240, tauDup: 0.96, tauSim: 0.75, protectMinDegree: 3, enableInvertedIndex: false },
-  agentGraph:   { maxNodes: 1000, maxEdges: 12000, halfLifeMin: 1440, tauDup: 0.96, tauSim: 0.78, protectMinDegree: 4, enableInvertedIndex: true },
-  promotion:    { minRank: 0.55, maxPromotions: 10, minDegree: 1, carryWeights: true },
-  checkpoint:   { outDir: './.agentos/checkpoints', topK: 10, pretty: false },
+  sessionGraph: {
+    maxNodes: 1000,
+    maxEdges: 4000,
+    halfLifeMin: 240,
+    tauDup: 0.96,
+    tauSim: 0.75,
+    protectMinDegree: 3,
+    enableInvertedIndex: false,
+  },
+  agentGraph: {
+    maxNodes: 1000,
+    maxEdges: 12000,
+    halfLifeMin: 1440,
+    tauDup: 0.96,
+    tauSim: 0.78,
+    protectMinDegree: 4,
+    enableInvertedIndex: true,
+  },
+  promotion: { minRank: 0.55, maxPromotions: 10, minDegree: 1, carryWeights: true },
+  checkpoint: { outDir: './.agentos/checkpoints', topK: 10, pretty: false },
   searchBiasSessionFirst: 0.05,
 };
 
@@ -20,12 +36,17 @@ describe('MemoryOrchestrator', () => {
     const res = o.search(sid, 'mvp 설계', 8);
     expect(res.length).toBeGreaterThan(0);
     // same canonicalKey should collapse to a single entry
-    const keys = new Set(res.map(r => r.canonicalKey ?? r.id));
+    const keys = new Set(res.map((r) => r.canonicalKey ?? r.id));
     expect(keys.size).toBe(res.length);
 
     // Snapshot of sanitized search results (deterministic ordering by text)
     const sanitized = res
-      .map(r => ({ from: r.from, text: r.text, canonicalKey: r.canonicalKey, score: Number(r.score.toFixed(2)) }))
+      .map((r) => ({
+        from: r.from,
+        text: r.text,
+        canonicalKey: r.canonicalKey,
+        score: Number(r.score.toFixed(2)),
+      }))
       .sort((a, b) => (a.text || '').localeCompare(b.text || ''));
     expect(sanitized).toMatchSnapshot();
     nowSpy.mockRestore();

@@ -71,6 +71,7 @@ class GraphStore {
 ```
 
 Notes:
+
 - Embeddings are serialized as `[[i,v],...]` for sparse preservation.
 - `canonicalMeta` and `embedderState` are included to guarantee reproducibility.
 
@@ -105,11 +106,13 @@ class MemoryOrchestrator {
 ```
 
 ## Embedding & canonicalKey
+
 - Embedding default: character n‑gram hashing(3–5) into 16k dims, L2, cosine.
 - Canonical key: `hash(normalize(text))` (store meta `{ normVersion, hashAlgo, seed }`).
 - Recommended thresholds: `tauDup ~ 0.96`, `tauSim ~ 0.75` (tune per data).
 
 ## Checkpoint/Snapshot Format
+
 ```
 {
   graph: {
@@ -122,7 +125,7 @@ class MemoryOrchestrator {
 ```
 
 ## Quality & Tuning
+
 - Use `enableInvertedIndex` only when node counts warrant it.
 - Protect nodes with high degree to preserve hubs.
 - Consider feedback diffusion to similar neighbors for personalization.
-
