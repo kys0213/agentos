@@ -37,7 +37,7 @@
 
 - `git mv packages/<scope>/plan/<file>.md <docs-target>/<NewName>.md`
 - 계획서의 TODO/실험 섹션은 필요 시 별도 `notes/`로 분리하거나 PR 본문에만 남깁니다.
-- 승격 후 plan 파일은 삭제합니다.
+- 승격 후 같은 PR에서 plan 파일을 반드시 삭제합니다(SSOT: 단일 진실 소스 유지).
 
 5. 커밋/PR 생성
 
@@ -78,3 +78,4 @@
 - 직접 병합 금지. 반드시 PR로 리뷰/승인 후 머지합니다.
 - Plan→Docs 승격은 PR 생성 전 완료되어야 하며, PR 검토 항목에 포함됩니다.
 - 승격 과정에서 Plan과 Docs의 내용이 불일치하지 않도록 마지막에 상호 참조를 제거하고, Docs만 단일 진실 소스로 남깁니다.
+- (권장) CI/Danger 가드: FEATURE/Docs 변경이 있는 PR에서 `plan/` 파일이 남아있거나, 동일 주제를 Plan/Docs 양쪽이 중복 기술하는 경우 실패 처리합니다.
