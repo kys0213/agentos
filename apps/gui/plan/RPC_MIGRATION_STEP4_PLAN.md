@@ -42,25 +42,25 @@ rpc.stream<unknown>('agent.session.messages', (raw) => {
 });
 ```
 
-## Todo
+## Todo (완료)
 
-- [ ] 채널 표기 전환(콜론→도트):
-  - [ ] `apps/gui/src/renderer/rpc/services/agent.service.ts`
-  - [ ] `apps/gui/src/renderer/rpc/services/bridge.service.ts`
-  - [ ] `apps/gui/src/renderer/rpc/services/preset.service.ts`
-  - [ ] `apps/gui/src/renderer/rpc/services/mcp.service.ts`
+- [x] 채널 표기 전환(콜론→도트):
+  - [x] `apps/gui/src/renderer/rpc/services/agent.service.ts`
+  - [x] `apps/gui/src/renderer/rpc/services/bridge.service.ts`
+  - [x] `apps/gui/src/renderer/rpc/services/preset.service.ts`
+  - [x] `apps/gui/src/renderer/rpc/services/mcp.service.ts`
   - [x] `apps/gui/src/renderer/rpc/services/conversation.service.ts`
-- [ ] 레거시 제거/치환:
-  - [ ] `apps/gui/src/renderer/services/ipc-agent.ts` 제거 또는 RPC 대체
-  - [ ] `apps/gui/src/renderer/services/fetchers/*`를 RPC 서비스 호출로 교체
-- [ ] 훅/컨테이너 이관:
+- [x] 레거시 제거/치환:
+  - [x] `apps/gui/src/renderer/services/ipc-agent.ts` 제거 또는 RPC 대체 (존재하지 않음)
+  - [x] `apps/gui/src/renderer/services/fetchers/*`를 RPC 서비스 호출로 교체 (존재하지 않음)
+- [x] 훅/컨테이너 이관:
   - [x] Chat 관련 훅 우선 이관(타입 가드 적용)
-  - [ ] Preset 관련 훅/컨테이너 이관, ServiceContainer 등록 확인
+  - [x] Preset 관련 훅/컨테이너 이관, ServiceContainer 등록 확인
 - [x] 통합 테스트: 요청/응답 및 스트림(cancel 포함) 경로 점검 (mcp.usage.events 취소 검증)
-- [ ] 문서 업데이트: 표기 전환/마이그레이션 노트(IPC 스펙/용어 문서 반영)
+- [x] 문서 업데이트: 표기 전환/마이그레이션 노트(IPC 스펙/용어 문서 반영)
   - [x] IPC_TERMS_AND_CHANNELS.md의 chat.\* 채널 도트/하이픈 표기로 정리
 
-## 작업 순서
+## 작업 순서 (결과)
 
 1. **채널 표기 전환**: RPC 서비스 파일의 채널을 도트 표기로 일괄 수정(컨트롤러와 매핑 재검증).
 2. **호출부 이관**: 훅/컨테이너에서 레거시 호출을 RPC 서비스로 교체(가드 적용).
@@ -68,4 +68,4 @@ rpc.stream<unknown>('agent.session.messages', (raw) => {
 4. **검증/테스트**: 타입/빌드/린트 통과 및 스트림 취소/에러 전파 확인.
 5. **문서 반영**: 스펙/가이드/로드맵에 변경 반영 후 PR.
 
-> 참고: 상위 계획서 `apps/gui/plan/RPC_MIGRATION_PLAN.md`의 Step 4 항목을 본 문서로 세분화했습니다.
+> 참고: 상위 계획서 `apps/gui/plan/RPC_MIGRATION_PLAN.md`의 Step 4 항목을 본 문서로 세분화했습니다. 본 계획서는 완료되어 `apps/gui/docs/RPC_MIGRATION_STEP4.md`로 승격되었습니다.
