@@ -54,7 +54,7 @@ rpc.stream<unknown>('agent.session.messages', (raw) => {
   - [ ] `apps/gui/src/renderer/services/ipc-agent.ts` 제거 또는 RPC 대체
   - [ ] `apps/gui/src/renderer/services/fetchers/*`를 RPC 서비스 호출로 교체
 - [ ] 훅/컨테이너 이관:
-  - [ ] Chat 관련 훅 우선 이관(타입 가드 적용)
+  - [x] Chat 관련 훅 우선 이관(타입 가드 적용)
   - [ ] Preset 관련 훅/컨테이너 이관, ServiceContainer 등록 확인
 - [ ] 통합 테스트: 요청/응답 및 스트림(cancel 포함) 경로 점검
 - [ ] 문서 업데이트: 표기 전환/마이그레이션 노트(IPC 스펙/용어 문서 반영)

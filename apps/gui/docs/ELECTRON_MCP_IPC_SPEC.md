@@ -50,6 +50,12 @@ Note: This spec is interface-first. It defines contracts (methods, payloads, fra
 
 Renderer 서비스 메서드명은 내부 편의를 위한 래퍼이며, 실제 전송 채널/페이로드는 위 규약을 따른다.
 
+### 2.1.x Migration Notes (colon → dot)
+
+- 기존 콜론 표기 예: `chat:list-sessions`, `chat:get-messages`, `chat:delete-session`
+- 현재 도트/하이픈 표기: `chat.list-sessions`, `chat.get-messages`, `chat.delete-session`
+- 컨트롤러/서비스 네임스페이스 간 1:1 매핑 유지가 원칙이며, 표기 전환은 렌더러 서비스부터 우선 적용 후 문서/테스트 순으로 반영합니다.
+
 ### 2.1.1 페이로드/응답 규칙(요약)
 
 - DTO: 컨트롤러는 `class-validator` DTO를 사용하여 payload를 검증한다. 예: `mcp.getTool` → `{ name: string }`.

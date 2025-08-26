@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { MessageHistory, ReadonlyAgentMetadata } from '@agentos/core';
 import { normalizeToArrayContent } from './normalize';
+import { z } from 'zod';
 import { ServiceContainer } from '../../ipc/service-container';
 
 export const CHAT_QUERY_KEYS = {
@@ -93,33 +94,51 @@ export const useSendChatMessage = (
         }
       );
 
-      // 응답 메시지들을 MessageHistory로 매핑 (배열 콘텐츠로 정규화)
-      const assistantMessages: MessageHistory[] = result.messages.map((m, idx): MessageHistory => {
-        const content = normalizeToArrayContent(m);
-
-        if (m.role === 'tool') {
-          return {
-            messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
-            role: m.role,
-            content,
-            createdAt: new Date(),
-            name: m.role === 'tool' ? m.name : '',
-            toolCallId: m.role === 'tool' ? m.toolCallId : '',
-            isCompressed: false,
-            agentMetadata: undefined,
-          };
-        } else {
-          return {
-            messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
-            role: m.role,
-            content,
-            createdAt: new Date(),
-          };
-        }
+      // 런타임 가드: 최소 필드 검증으로 UI 안정성 보강
+      const ChatMessageSchema = z.object({
+        role: z.string(),
+        content: z.any(),
+        name: z.string().optional(),
+        toolCallId: z.string().optional(),
       });
+      const ChatResultSchema = z.object({
+        sessionId: z.string(),
+        messages: z.array(ChatMessageSchema),
+      });
+      const safe = ChatResultSchema.safeParse(result);
+      if (!safe.success) {
+        throw new Error('Invalid chat result payload');
+      }
+
+      // 응답 메시지들을 MessageHistory로 매핑 (배열 콘텐츠로 정규화)
+      const assistantMessages: MessageHistory[] = safe.data.messages.map(
+        (m, idx): MessageHistory => {
+          const content = normalizeToArrayContent(m);
+
+          if (m.role === 'tool') {
+            return {
+              messageId: `assistant-${safe.data.sessionId}-${Date.now()}-${idx}`,
+              role: m.role,
+              content,
+              createdAt: new Date(),
+              name: m.role === 'tool' ? m.name : '',
+              toolCallId: m.role === 'tool' ? m.toolCallId : '',
+              isCompressed: false,
+              agentMetadata: undefined,
+            };
+          } else {
+            return {
+              messageId: `assistant-${safe.data.sessionId}-${Date.now()}-${idx}`,
+              role: m.role,
+              content,
+              createdAt: new Date(),
+            };
+          }
+        }
+      );
 
       // 세션 ID 갱신 콜백 (서버에서 새 세션 발급 시 반영)
-      options?.onSessionId?.(result.sessionId);
+      options?.onSessionId?.(safe.data.sessionId);
 
       return { userMessage, assistantMessages } as const;
     },
