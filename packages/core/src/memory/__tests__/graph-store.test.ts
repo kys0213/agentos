@@ -1,7 +1,15 @@
 import { GraphStore } from '../../memory/graph-store';
 import { SimpleEmbedding } from '../../memory/embedding/simple-embedding';
 
-const cfg = { maxNodes: 1000, maxEdges: 4000, halfLifeMin: 240, tauDup: 0.96, tauSim: 0.75, protectMinDegree: 3, enableInvertedIndex: false };
+const cfg = {
+  maxNodes: 1000,
+  maxEdges: 4000,
+  halfLifeMin: 240,
+  tauDup: 0.96,
+  tauSim: 0.75,
+  protectMinDegree: 3,
+  enableInvertedIndex: false,
+};
 
 describe('GraphStore', () => {
   test('upsertQuery deduplicates by canonicalKey (exact duplicate under normalization)', () => {
@@ -55,10 +63,13 @@ describe('GraphStore', () => {
         },
       }))
       .sort((a: any, b: any) => (a.text || '').localeCompare(b.text || ''));
-    const edgeTypeCounts = snap.graph.edges.reduce((acc: any, e: any) => {
-      acc[e.type] = (acc[e.type] ?? 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const edgeTypeCounts = snap.graph.edges.reduce(
+      (acc: any, e: any) => {
+        acc[e.type] = (acc[e.type] ?? 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
     expect({ nodes, edgeTypeCounts }).toMatchSnapshot();
   });
 });

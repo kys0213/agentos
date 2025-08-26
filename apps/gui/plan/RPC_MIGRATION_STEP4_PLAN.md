@@ -68,4 +68,3 @@ rpc.stream<unknown>('agent.session.messages', (raw) => {
 5. **문서 반영**: 스펙/가이드/로드맵에 변경 반영 후 PR.
 
 > 참고: 상위 계획서 `apps/gui/plan/RPC_MIGRATION_PLAN.md`의 Step 4 항목을 본 문서로 세분화했습니다.
-
