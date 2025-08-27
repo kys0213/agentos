@@ -26,7 +26,7 @@ function extractSpec(filePath) {
   const nsMatch = text.match(/namespace:\s*'([^']+)'/);
   const namespace = nsMatch ? nsMatch[1] : path.basename(filePath).replace(/\.contract\.ts$/, '');
   // naive method parser: name and channel
-  const blockRegex = /(\w+)\s*:\s*{([\s\S]*?)}/g;
+  const blockRegex = /(\w+)\s*:\s*{([\s\S]*?)}/g
   const methods = {};
   let m;
   while ((m = blockRegex.exec(text))) {
@@ -36,7 +36,8 @@ function extractSpec(filePath) {
     if (!ch) continue;
     const hasPayload = /payload\s*:/.test(block);
     const hasResponse = /response\s*:/.test(block);
-    methods[name] = { channel: ch[1], hasPayload, hasResponse };
+    const isStream = /stream\s*:\s*true/.test(block) || /\.events'\s*[,}]/.test(block) || name.includes('events');
+    methods[name] = { channel: ch[1], hasPayload, hasResponse, isStream };
   }
   return { namespace, methods };
 }
@@ -85,13 +86,17 @@ function writeChannelsFile(specs, outFile) {
   writeFileGenerated(outFile, lines.join('\n') + '\n');
 }
 
+function safeName(name) {
+  return name.replace(/[^a-zA-Z0-9_]/g, '_');
+}
+
 function writeRendererClient(spec, outDir) {
   const className = `${capitalize(spec.namespace)}Client`;
   const contractConst = `${capitalize(spec.namespace)}Contract`;
   const contractImportPath = `../../../shared/rpc/contracts/${spec.namespace}.contract`;
   const lines = [];
   lines.push(HEADER);
-  lines.push(`import type { RpcClient } from '../../../shared/rpc/transport';`);
+  lines.push(`import type { RpcClient, CloseFn } from '../../../shared/rpc/transport';`);
   lines.push(`import type { z } from 'zod';`);
   lines.push(`import { ${contractConst} as C } from '${contractImportPath}';`);
   lines.push('');
