@@ -1,6 +1,10 @@
 /*
   RPC Codegen (Phase A skeleton, JS version)
-  - Scans contracts for channel literals and writes shared/rpc/gen/channels.ts
+  - Scans contracts (*.contract.ts)
+  - Writes:
+    * shared/rpc/gen/channels.ts (channel constants)
+    * renderer/rpc/gen/<ns>.client.ts (typed-unknown client)
+    * main/<ns>/gen/<ns>.controller.ts (Nest controller stubs)
 */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -58,19 +62,72 @@ function writeChannelsFile(specs, outFile) {
   fs.writeFileSync(outFile, lines.join('\n') + '\n', 'utf8');
 }
 
+function writeRendererClient(spec, outDir) {
+  const className = `${capitalize(spec.namespace)}Client`;
+  const lines = [];
+  lines.push(`import type { RpcClient } from '../../../shared/rpc/transport';`);
+  lines.push(`import { Channels } from '../../../shared/rpc/gen/channels';`);
+  lines.push('');
+  lines.push(`// AUTO-GENERATED FILE. DO NOT EDIT.`);
+  lines.push(`export class ${className} {`);
+  lines.push(`  constructor(private readonly transport: RpcClient) {}`);
+  for (const [name] of Object.entries(spec.methods)) {
+    const chanExpr = `Channels.${spec.namespace}.${name}`;
+    lines.push('');
+    lines.push(`  ${name}(payload) {`);
+    lines.push(`    return this.transport.request(${chanExpr}, payload);`);
+    lines.push(`  }`);
+  }
+  lines.push('}');
+  const file = path.join(outDir, `${spec.namespace}.client.ts`);
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(file, lines.join('\n') + '\n', 'utf8');
+}
+
+function writeMainController(spec, outDir) {
+  const className = `Generated${capitalize(spec.namespace)}Controller`;
+  const lines = [];
+  lines.push(`import { Controller } from '@nestjs/common';`);
+  lines.push(`import { EventPattern, Payload } from '@nestjs/microservices';`);
+  lines.push('');
+  lines.push(`// AUTO-GENERATED FILE. DO NOT EDIT.`);
+  lines.push(`@Controller()`);
+  lines.push(`export class ${className} {`);
+  for (const [name, info] of Object.entries(spec.methods)) {
+    lines.push('');
+    lines.push(`  @EventPattern('${info.channel}')`);
+    lines.push(`  async ${name}(@Payload() payload: unknown) {`);
+    lines.push(`    // TODO: delegate to concrete service`);
+    lines.push(`    throw new Error('NotImplemented: wire ${spec.namespace}.${name} to service');`);
+    lines.push(`  }`);
+  }
+  lines.push('}');
+  const file = path.join(outDir, `${spec.namespace}.controller.ts`);
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(file, lines.join('\n') + '\n', 'utf8');
+}
+
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
 function main() {
   const repoRoot = path.resolve(__dirname, '..');
   const contractsRoot = path.resolve(repoRoot, 'apps/gui/src/shared/rpc/contracts');
-  const outFile = path.resolve(repoRoot, 'apps/gui/src/shared/rpc/gen/channels.ts');
+  const channelsOut = path.resolve(repoRoot, 'apps/gui/src/shared/rpc/gen/channels.ts');
   if (!fs.existsSync(contractsRoot)) {
     console.error('No contracts folder:', contractsRoot);
     process.exit(1);
   }
   const files = findContractFiles(contractsRoot);
   const specs = files.map(extractSpec);
-  writeChannelsFile(specs, outFile);
-  console.log(`[rpc-codegen] Wrote ${path.relative(repoRoot, outFile)} from ${files.length} contract(s).`);
+  writeChannelsFile(specs, channelsOut);
+  console.log(`[rpc-codegen] Wrote ${path.relative(repoRoot, channelsOut)} from ${files.length} contract(s).`);
+
+  for (const spec of specs) {
+    const rendererOut = path.resolve(repoRoot, `apps/gui/src/renderer/rpc/gen`);
+    writeRendererClient(spec, rendererOut);
+    const mainOut = path.resolve(repoRoot, `apps/gui/src/main/${spec.namespace}/gen`);
+    writeMainController(spec, mainOut);
+  }
 }
 
 main();
-

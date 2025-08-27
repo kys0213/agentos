@@ -77,10 +77,11 @@ export const ChatContract = defineContract({
 - [ ] 공용 스키마 준비: CursorPagination, MessageHistory, MultiModalContent[] 등(zod)
 
 2) 코드 생성기(Phase A) 구현
-- [ ] `scripts/rpc-codegen.ts`: ts-morph로 Contract AST 파싱 → 템플릿으로 gen 파일 출력
-- [ ] Renderer 클라이언트 템플릿: `createClient(contract): class ChatClient { listSessions(...) { return rpc.request('chat.list-sessions', ...) } }`
-- [ ] Main 컨트롤러 템플릿: `@EventPattern('chat.list-sessions') handler(dto) { return svc.list(...); }` (+ DTO class 스텁)
-- [ ] 채널 상수 템플릿: 리터럴 문자열 집합/Enum
+- [x] `scripts/rpc-codegen.js`: 계약 스캔 → 채널 상수, renderer 클라이언트, main 컨트롤러 스텁 생성(초안)
+- [ ] ts-morph로 타입 메타 확장 및 주석/헤더/가드 보강
+- [x] Renderer 클라이언트 템플릿: `class ChatClient { listSessions(payload) { return rpc.request(Channels.chat.listSessions, payload) } }`
+- [x] Main 컨트롤러 템플릿: `@EventPattern('chat.list-sessions') async listSessions(@Payload() payload) { throw new Error('NotImplemented') }`
+- [x] 채널 상수 템플릿: `shared/rpc/gen/channels.ts`
 
 3) 파일 배치/의존 교체
 - [ ] `renderer/rpc/services/*` → `renderer/rpc/gen/*`로 교체(얇은 Facade 유지 선택)
@@ -116,4 +117,3 @@ export const ChatContract = defineContract({
 
 - chat 도메인에 대해 계약→생성→적용→레거시 제거 완료, 테스트/문서 통과.
 - 다음 도메인 확대 로드맵/일정 초안 포함.
-
