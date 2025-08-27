@@ -25,7 +25,19 @@ describe('McpUsageRpcService.subscribeToUsageUpdates cancel semantics', () => {
           resolveReq?.(cid);
           let n = 0;
           interval = setInterval(() => {
-            onFrame?.({ kind: 'nxt', cid, data: { seq: n++ } } as RpcFrame);
+            const ev = {
+              type: 'usage-logged',
+              clientName: 'demo-client',
+              newLog: {
+                id: `log-${n}`,
+                timestamp: new Date(),
+                operation: 'tool.call',
+                status: 'success',
+              },
+              timestamp: new Date(),
+            } as const;
+            onFrame?.({ kind: 'nxt', cid, data: ev } as RpcFrame);
+            n++;
           }, 20);
         }
         if (frame.kind === 'can') {
