@@ -2,17 +2,7 @@ import type { Message, MultiModalContent } from 'llm-bridge-spec';
 import type { LlmManifest, LlmBridgeCapabilities } from 'llm-bridge-spec';
 
 export function normalizeToArrayContent(m: Message): MultiModalContent[] {
-  const c: unknown = (m as unknown as { content?: unknown }).content;
-  if (Array.isArray(c)) {
-    return c as MultiModalContent[];
-  }
-  if (typeof c === 'string') {
-    return [{ contentType: 'text', value: c }];
-  }
-  if (c && typeof c === 'object' && 'contentType' in c) {
-    return [c as MultiModalContent];
-  }
-  return [{ contentType: 'text', value: String(c ?? '') }];
+  return m.content;
 }
 
 export function toCapabilityLabels(manifest: LlmManifest): string[] {

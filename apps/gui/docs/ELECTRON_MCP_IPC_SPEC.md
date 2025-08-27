@@ -46,14 +46,40 @@ Note: This spec is interface-first. It defines contracts (methods, payloads, fra
 - preset.\*: `preset.list`, `preset.get`, `preset.create`, `preset.update`, `preset.delete`
 - mcp.usage.\*: `mcp.usage.getLogs`, `mcp.usage.getStats`, `mcp.usage.getHourlyStats` (payload: `{ date: ISOString }`, resp: `{ hourlyData: Array<[number, number]> }`), `mcp.usage.clear`
 - mcp.usage.events: usage 업데이트 스트림 채널. `AsyncGenerator<McpUsageUpdateEvent>` 형태로 이벤트를 전송하며, 클라이언트는 iterator `return()` 호출로 취소할 수 있다.
+- chat.\*: `chat.list-sessions`, `chat.get-messages`, `chat.delete-session`
 
 Renderer 서비스 메서드명은 내부 편의를 위한 래퍼이며, 실제 전송 채널/페이로드는 위 규약을 따른다.
+
+### 2.1.x Migration Notes (colon → dot)
+
+- 기존 콜론 표기 예: `chat:list-sessions`, `chat:get-messages`, `chat:delete-session`
+- 현재 도트/하이픈 표기: `chat.list-sessions`, `chat.get-messages`, `chat.delete-session`
+- 컨트롤러/서비스 네임스페이스 간 1:1 매핑 유지가 원칙이며, 표기 전환은 렌더러 서비스부터 우선 적용 후 문서/테스트 순으로 반영합니다.
 
 ### 2.1.1 페이로드/응답 규칙(요약)
 
 - DTO: 컨트롤러는 `class-validator` DTO를 사용하여 payload를 검증한다. 예: `mcp.getTool` → `{ name: string }`.
 - 가변 작업 응답: bridge 등록/해지/스위치, `mcp.invokeTool` 등은 `{ success, result? | error }` 래퍼를 사용한다.
 - 목록/조회 응답: 기존 타입(예: `CursorPaginationResult<T>`, 구체 엔티티)을 직접 반환한다.
+
+#### 2.1.1.a 메시지 콘텐츠 규칙 (llm-bridge-spec)
+
+- 모든 메시지의 `content`는 `MultiModalContent[]` 배열을 사용한다. 단일 문자열/오브젝트는 허용되지 않는다.
+- 텍스트 예시:
+
+```ts
+// user → assistant 대화 예시
+{ role: 'user', content: [{ contentType: 'text', value: 'Hello' }] }
+{ role: 'assistant', content: [{ contentType: 'text', value: 'Hi! How can I help?' }] }
+```
+
+- tool 메시지 예시:
+
+```ts
+{ role: 'tool', name: 'web.search', toolCallId: 'call-1', content: [
+  { contentType: 'text', value: 'Top result: ...' }
+] }
+```
 
 ## 3. 디렉터리 레이아웃 (권장)
 

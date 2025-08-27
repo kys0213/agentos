@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { MessageHistory, ReadonlyAgentMetadata } from '@agentos/core';
 import { normalizeToArrayContent } from './normalize';
+import { z } from 'zod';
 import { ServiceContainer } from '../../ipc/service-container';
 
 export const CHAT_QUERY_KEYS = {
@@ -95,16 +96,14 @@ export const useSendChatMessage = (
 
       // 응답 메시지들을 MessageHistory로 매핑 (배열 콘텐츠로 정규화)
       const assistantMessages: MessageHistory[] = result.messages.map((m, idx): MessageHistory => {
-        const content = normalizeToArrayContent(m);
-
         if (m.role === 'tool') {
           return {
             messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
             role: m.role,
-            content,
+            content: m.content,
             createdAt: new Date(),
-            name: m.role === 'tool' ? m.name : '',
-            toolCallId: m.role === 'tool' ? m.toolCallId : '',
+            name: m.name ?? '',
+            toolCallId: m.toolCallId ?? '',
             isCompressed: false,
             agentMetadata: undefined,
           };
@@ -112,7 +111,7 @@ export const useSendChatMessage = (
           return {
             messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
             role: m.role,
-            content,
+            content: m.content,
             createdAt: new Date(),
           };
         }
