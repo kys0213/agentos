@@ -579,3 +579,9 @@ wireAgentEvents(frames$, {
 - Preload에 안전 구독 API 추가: `window.electronBridge.on(channel, handler)`
 - 다음 단계: Main 프레임 기반 `ElectronEventTransport` 프로토타입 및 cancel 처리
 ```
+### 6.3 Contracts → Codegen (Renderer/Main 동시 생성)
+
+- 계약 소스: `apps/gui/src/shared/rpc/contracts/*.contract.ts` (TS+Zod, namespace/method/channel/payload/response 정의)
+- 코드생성(Phase A): `scripts/rpc-codegen.js` → 채널 상수(`shared/rpc/gen/channels.ts`)와 PoC 클라이언트/컨트롤러 스텁 생성
+- 사용 패턴: Renderer는 생성된 클라이언트(`renderer/rpc/gen/*.client.ts`)만 사용, Main은 생성된 컨트롤러 스텁을 서비스에 위임
+- 원칙: 계약이 단일 진실 소스(SSOT). 수작업 채널 문자열 금지. content는 항상 MultiModalContent[] 배열
