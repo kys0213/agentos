@@ -16,4 +16,3 @@ export interface ContractSpec {
 export function defineContract<T extends ContractSpec>(spec: T): T {
   return spec;
 }
-

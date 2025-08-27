@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { defineContract } from './defineContract';
 
+export const ToolInvokeResponseSchema = z.discriminatedUnion('success', [
+  z.object({ success: z.literal(true), result: z.unknown().optional() }),
+  z.object({ success: z.literal(false), error: z.string() }),
+]);
+
 export const McpContract = defineContract({
   namespace: 'mcp',
   methods: {
@@ -18,18 +23,20 @@ export const McpContract = defineContract({
         agentName: z.string().optional(),
         resumptionToken: z.string().optional(),
       }),
-      response: z.unknown(),
+      response: ToolInvokeResponseSchema,
     },
     // Usage API
     'usage.getLogs': {
       channel: 'mcp.usage.getLogs',
-      payload: z.object({ query: z.record(z.unknown()).optional(), pg: z.record(z.unknown()).optional() }).optional(),
-      response: z.array(z.unknown()),
+      payload: z
+        .object({ query: z.record(z.unknown()).optional(), pg: z.record(z.unknown()).optional() })
+        .optional(),
+      response: z.array(z.unknown()), // TODO: McpUsageLog schema
     },
     'usage.getStats': {
       channel: 'mcp.usage.getStats',
       payload: z.object({ query: z.record(z.unknown()).optional() }).optional(),
-      response: z.unknown(),
+      response: z.unknown(), // TODO: McpUsageStats schema
     },
     'usage.getHourlyStats': {
       channel: 'mcp.usage.getHourlyStats',

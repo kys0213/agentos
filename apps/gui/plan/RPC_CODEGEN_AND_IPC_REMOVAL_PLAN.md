@@ -64,7 +64,9 @@ export const ChatContract = defineContract({
     deleteSession: {
       channel: 'chat.delete-session',
       payload: z.string(),
-      response: z.object({ success: z.literal(true) }).or(z.object({ success: z.literal(false), error: z.string() })),
+      response: z
+        .object({ success: z.literal(true) })
+        .or(z.object({ success: z.literal(false), error: z.string() })),
     },
   },
 });
@@ -72,27 +74,32 @@ export const ChatContract = defineContract({
 
 ## 마이그레이션 계획
 
-1) 계약 소스 도입
+1. 계약 소스 도입
+
 - [ ] `shared/rpc/contracts/` 디렉토리 신설: chat/agent/bridge/preset/mcp/mcp-usage/conversation 등
 - [ ] 공용 스키마 준비: CursorPagination, MessageHistory, MultiModalContent[] 등(zod)
 
-2) 코드 생성기(Phase A) 구현
+2. 코드 생성기(Phase A) 구현
+
 - [x] `scripts/rpc-codegen.js`: 계약 스캔 → 채널 상수, renderer 클라이언트, main 컨트롤러 스텁 생성(초안)
 - [ ] ts-morph로 타입 메타 확장 및 주석/헤더/가드 보강
 - [x] Renderer 클라이언트 템플릿: `class ChatClient { listSessions(payload) { return rpc.request(Channels.chat.listSessions, payload) } }`
 - [x] Main 컨트롤러 템플릿: `@EventPattern('chat.list-sessions') async listSessions(@Payload() payload) { throw new Error('NotImplemented') }`
 - [x] 채널 상수 템플릿: `shared/rpc/gen/channels.ts`
 
-3) 파일 배치/의존 교체
+3. 파일 배치/의존 교체
+
 - [ ] `renderer/rpc/services/*` → `renderer/rpc/gen/*`로 교체(얇은 Facade 유지 선택)
 - [ ] `renderer/ipc/service-container.ts` → `renderer/providers/service-container.ts`로 이전(또는 shared/di.ts로 이동)
 - [ ] hooks/containers의 import 경로를 gen 클라이언트로 교체
 
-4) 레거시 제거
+4. 레거시 제거
+
 - [ ] `apps/gui/src/renderer/ipc/` 전체 삭제(electron-ipc-channel.ts, mock-ipc-channel.ts, index.ts 포함)
 - [ ] `ipc-channel` 타입/유틸 남아있는 import 제거
 
-5) 검증/문서/PR
+5. 검증/문서/PR
+
 - [ ] 타입/린트/테스트/빌드 통과
 - [ ] 문서 갱신: ELECTRON_MCP_IPC_SPEC.md, IPC_TERMS_AND_CHANNELS.md에 "계약→코드생성" 플로우 추가
 - [ ] Plan→Docs 승격 및 plan 삭제, PR 생성

@@ -9,8 +9,16 @@ export const BridgeContract = defineContract({
   methods: {
     register: {
       channel: 'bridge.register',
-      payload: z.object({ manifest: LlmManifestSchema, config: z.record(z.unknown()).optional(), id: z.string().optional() }),
-      response: z.object({ success: z.boolean(), id: z.string().optional(), error: z.string().optional() }),
+      payload: z.object({
+        manifest: LlmManifestSchema,
+        config: z.record(z.unknown()).optional(),
+        id: z.string().optional(),
+      }),
+      response: z.object({
+        success: z.boolean(),
+        id: z.string().optional(),
+        error: z.string().optional(),
+      }),
     },
     unregister: {
       channel: 'bridge.unregister',
@@ -37,4 +45,3 @@ export const BridgeContract = defineContract({
     },
   },
 });
-

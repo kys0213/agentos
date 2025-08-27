@@ -30,4 +30,3 @@ export class ChatClient {
     return this.transport.request('chat.delete-session', sessionId);
   }
 }
-

@@ -579,6 +579,7 @@ wireAgentEvents(frames$, {
 - Preload에 안전 구독 API 추가: `window.electronBridge.on(channel, handler)`
 - 다음 단계: Main 프레임 기반 `ElectronEventTransport` 프로토타입 및 cancel 처리
 ```
+
 ### 6.3 Contracts → Codegen (Renderer/Main 동시 생성)
 
 - 계약 소스: `apps/gui/src/shared/rpc/contracts/*.contract.ts` (TS+Zod, namespace/method/channel/payload/response 정의)

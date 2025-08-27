@@ -141,9 +141,7 @@ function writeMainController(spec, outDir) {
       lines.push(`  async ${name}() {`);
     }
     if (info.hasResponse) {
-      lines.push(
-        `    // Expected return: z.output<typeof C.methods['${name}'].response>`
-      );
+      lines.push(`    // Expected return: z.output<typeof C.methods['${name}'].response>`);
     }
     lines.push(`    throw new Error('NotImplemented: wire ${spec.namespace}.${name}');`);
     lines.push('  }');
@@ -168,7 +166,9 @@ function main() {
   const files = findContractFiles(contractsRoot);
   const specs = files.map(extractSpec);
   writeChannelsFile(specs, channelsOut);
-  console.log(`[rpc-codegen] Wrote ${path.relative(repoRoot, channelsOut)} from ${files.length} contract(s).`);
+  console.log(
+    `[rpc-codegen] Wrote ${path.relative(repoRoot, channelsOut)} from ${files.length} contract(s).`
+  );
   for (const spec of specs) {
     writeRendererClient(spec, path.resolve(repoRoot, 'apps/gui/src/renderer/rpc/gen'));
     writeMainController(spec, path.resolve(repoRoot, `apps/gui/src/main/${spec.namespace}/gen`));

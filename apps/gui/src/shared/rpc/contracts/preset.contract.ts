@@ -17,7 +17,11 @@ export const PresetSchema = z.object({
   updatedAt: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()).optional(),
 });
 
-export const CreatePresetSchema = PresetSchema.omit({ id: true, createdAt: true, updatedAt: true }).partial({
+export const CreatePresetSchema = PresetSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).partial({
   name: false,
   llmBridgeName: false,
   systemPrompt: false,
@@ -30,7 +34,11 @@ export const PresetContract = defineContract({
   methods: {
     list: {
       channel: 'preset.list',
-      response: z.object({ items: z.array(PresetSummarySchema), nextCursor: z.string().default(''), hasMore: z.boolean().default(false) }),
+      response: z.object({
+        items: z.array(PresetSummarySchema),
+        nextCursor: z.string().default(''),
+        hasMore: z.boolean().default(false),
+      }),
     },
     get: {
       channel: 'preset.get',
@@ -40,12 +48,20 @@ export const PresetContract = defineContract({
     create: {
       channel: 'preset.create',
       payload: CreatePresetSchema,
-      response: z.object({ success: z.boolean(), result: PresetSchema.optional(), error: z.string().optional() }),
+      response: z.object({
+        success: z.boolean(),
+        result: PresetSchema.optional(),
+        error: z.string().optional(),
+      }),
     },
     update: {
       channel: 'preset.update',
       payload: z.object({ id: z.string(), preset: PresetSchema }),
-      response: z.object({ success: z.boolean(), result: PresetSchema.optional(), error: z.string().optional() }),
+      response: z.object({
+        success: z.boolean(),
+        result: PresetSchema.optional(),
+        error: z.string().optional(),
+      }),
     },
     delete: {
       channel: 'preset.delete',
@@ -54,4 +70,3 @@ export const PresetContract = defineContract({
     },
   },
 });
-

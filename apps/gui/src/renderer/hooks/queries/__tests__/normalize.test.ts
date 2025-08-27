@@ -13,5 +13,4 @@ describe('normalizeToArrayContent', () => {
     expect(Array.isArray(out)).toBe(true);
     expect(out.length).toBe(2);
   });
-
 });

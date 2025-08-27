@@ -25,9 +25,7 @@ export class GeneratedPresetController {
   }
 
   @EventPattern('preset.update')
-  async update(
-    @Payload() _payload: { id: string; preset: z.infer<typeof PresetSchema> }
-  ) {
+  async update(@Payload() _payload: { id: string; preset: z.infer<typeof PresetSchema> }) {
     throw new Error('NotImplemented: wire preset.update to service');
   }
 
