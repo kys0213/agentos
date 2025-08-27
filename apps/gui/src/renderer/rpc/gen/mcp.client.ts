@@ -2,7 +2,7 @@ import type { RpcClient } from '../../../shared/rpc/transport';
 import type { z } from 'zod';
 import { McpContract as C } from '../../../shared/rpc/contracts/mcp.contract';
 
-/** AUTO-GENERATED FILE. DO NOT EDIT. */
+// AUTO-GENERATED FILE. DO NOT EDIT.
 export class McpClient {
   constructor(private readonly transport: RpcClient) {}
 

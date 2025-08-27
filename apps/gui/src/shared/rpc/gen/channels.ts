@@ -1,4 +1,4 @@
-// AUTO-GENERATED FILE (seeded). Update via scripts/rpc-codegen.js
+// AUTO-GENERATED FILE. DO NOT EDIT.
 export const Channels = {
   chat: {
     listSessions: 'chat.list-sessions',

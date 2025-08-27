@@ -12,7 +12,7 @@ type Preset = z.infer<typeof PresetSchema>;
 type PresetSummary = z.infer<typeof PresetSummarySchema>;
 type CreatePreset = z.infer<typeof CreatePresetSchema>;
 
-/** AUTO-GENERATED FILE. DO NOT EDIT. */
+// AUTO-GENERATED FILE. DO NOT EDIT.
 export class PresetClient {
   constructor(private readonly transport: RpcClient) {}
 

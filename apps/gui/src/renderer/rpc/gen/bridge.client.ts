@@ -1,7 +1,7 @@
 import type { RpcClient } from '../../../shared/rpc/transport';
 import { Channels } from '../../../shared/rpc/gen/channels';
 
-/** AUTO-GENERATED FILE. DO NOT EDIT. */
+// AUTO-GENERATED FILE. DO NOT EDIT.
 export class BridgeClient {
   constructor(private readonly transport: RpcClient) {}
 
