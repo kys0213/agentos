@@ -3,7 +3,7 @@ import { AgentOsServiceNames } from '../shared/types/agentos-api';
 import { ServiceContainer } from '../shared/di/service-container';
 import { AgentRpcService as AgentService } from './rpc/services/agent.service';
 import { BridgeRpcService as BridgeService } from './rpc/services/bridge.service';
-import { ConversationRpcService as ConversationService } from './rpc/services/conversation.service';
+import { ChatClient as ConversationService } from './rpc/gen/chat.client';
 import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usage.service';
 import { McpRpcService as McpService } from './rpc/services/mcp.service';
 import { PresetRpcService as PresetService } from './rpc/services/preset.service';
