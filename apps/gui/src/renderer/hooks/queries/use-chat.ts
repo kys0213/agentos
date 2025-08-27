@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { MessageHistory, ReadonlyAgentMetadata } from '@agentos/core';
 import { normalizeToArrayContent } from './normalize';
 import { z } from 'zod';
-import { ServiceContainer } from '../../ipc/service-container';
+import { ServiceContainer } from '../../../shared/di/service-container';
 
 export const CHAT_QUERY_KEYS = {
   mentionableAgents: ['chat', 'mentionableAgents'] as const,

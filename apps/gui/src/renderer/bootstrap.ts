@@ -1,6 +1,6 @@
 import type { RpcClient } from '../shared/rpc/transport';
 import { AgentOsServiceNames } from '../shared/types/agentos-api';
-import { ServiceContainer } from './ipc/service-container';
+import { ServiceContainer } from '../shared/di/service-container';
 import { AgentRpcService as AgentService } from './rpc/services/agent.service';
 import { BridgeRpcService as BridgeService } from './rpc/services/bridge.service';
 import { ConversationRpcService as ConversationService } from './rpc/services/conversation.service';
