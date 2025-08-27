@@ -2,7 +2,7 @@ import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import type { z } from 'zod';
-import { CreatePresetSchema, PresetSchema } from '../../../src/shared/rpc/contracts/preset.contract';
+import { CreatePresetSchema, PresetSchema } from '../../../shared/rpc/contracts/preset.contract';
 
 // AUTO-GENERATED FILE. DO NOT EDIT.
 @Controller()
