@@ -1,5 +1,14 @@
 // AUTO-GENERATED FILE. DO NOT EDIT.
 export const Channels = {
+  agent: {
+    chat: 'agent.chat',
+    end_session: 'agent.end-session',
+    get_metadata: 'agent.get-metadata',
+    get_all_metadatas: 'agent.get-all-metadatas',
+    update: 'agent.update',
+    create: 'agent.create',
+    delete: 'agent.delete',
+  },
   chat: {
     listSessions: 'chat.list-sessions',
     getMessages: 'chat.get-messages',
@@ -52,3 +61,11 @@ export const mcp_usage_getStats = 'mcp.usage.getStats' as const;
 export const mcp_usage_getHourlyStats = 'mcp.usage.getHourlyStats' as const;
 export const mcp_usage_clear = 'mcp.usage.clear' as const;
 export const mcp_usage_events = 'mcp.usage.events' as const;
+
+export const agent_chat = 'agent.chat' as const;
+export const agent_end_session = 'agent.end-session' as const;
+export const agent_get_metadata = 'agent.get-metadata' as const;
+export const agent_get_all_metadatas = 'agent.get-all-metadatas' as const;
+export const agent_update = 'agent.update' as const;
+export const agent_create = 'agent.create' as const;
+export const agent_delete = 'agent.delete' as const;
