@@ -1,12 +1,12 @@
 import type { RpcClient } from '../shared/rpc/transport';
 import { AgentOsServiceNames } from '../shared/types/agentos-api';
 import { ServiceContainer } from '../shared/di/service-container';
-import { AgentRpcService as AgentService } from './rpc/services/agent.service';
-import { BridgeRpcService as BridgeService } from './rpc/services/bridge.service';
+import { AgentClient as AgentService } from './rpc/gen/agent.client';
+import { BridgeClient as BridgeService } from './rpc/gen/bridge.client';
 import { ChatClient as ConversationService } from './rpc/gen/chat.client';
+import { McpClient as McpService } from './rpc/gen/mcp.client';
+import { PresetClient as PresetService } from './rpc/gen/preset.client';
 import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usage.service';
-import { McpRpcService as McpService } from './rpc/services/mcp.service';
-import { PresetRpcService as PresetService } from './rpc/services/preset.service';
 
 /**
  * Bootstrap 결과 타입
