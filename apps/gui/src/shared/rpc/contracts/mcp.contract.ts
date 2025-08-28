@@ -72,7 +72,7 @@ export const McpContract = defineContract({
     },
     'usage.events': {
       channel: 'mcp.usage.events',
-      response: z.unknown(), // stream channel; used for on/stream
+      streamResponse: z.unknown(),
     },
   },
 });

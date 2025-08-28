@@ -34,10 +34,12 @@ function extractSpec(filePath) {
     const block = m[2];
     const ch = /channel:\s*'([^']+)'/.exec(block);
     if (!ch) continue;
-    const hasPayload = /payload\s*:/.test(block);
-    const hasResponse = /response\s*:/.test(block);
-    const isStream = /stream\s*:\s*true/.test(block) || /\.events'\s*[,}]/.test(block) || name.includes('events');
-    methods[name] = { channel: ch[1], hasPayload, hasResponse, isStream };
+    const hasPayload = /\bpayload\s*:/.test(block);
+    const hasResponse = /\bresponse\s*:/.test(block);
+    const hasStreamResponse = /\bstreamResponse\s*:/.test(block);
+    // Explicit is best: only treat as stream when streamResponse is present
+    const isStream = hasStreamResponse;
+    methods[name] = { channel: ch[1], hasPayload, hasResponse, hasStreamResponse, isStream };
   }
   return { namespace, methods };
 }
@@ -104,7 +106,9 @@ function writeRendererClient(spec, outDir) {
   lines.push(`  constructor(private readonly transport: RpcClient) {}`);
   for (const [name, info] of Object.entries(spec.methods)) {
     const payloadType = info.hasPayload ? `z.input<typeof C.methods['${name}'].payload>` : 'void';
-    const resultType = info.hasResponse ? `z.output<typeof C.methods['${name}'].response>` : 'void';
+    const resultType = info.hasResponse
+      ? `z.output<typeof C.methods['${name}'].response>`
+      : (info.hasStreamResponse ? `z.output<typeof C.methods['${name}'].streamResponse>` : 'void');
     lines.push('');
     if (info.hasPayload) {
       lines.push(`  ${name}(payload: ${payloadType}): Promise<${resultType}> {`);
