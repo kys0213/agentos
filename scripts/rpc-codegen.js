@@ -239,21 +239,21 @@ function writeMainController(spec, outDir) {
     lines.push('');
     lines.push(`  @EventPattern('${info.channel}')`);
     const payloadType = info.hasPayload
-      ? `z.input<typeof C.methods['${name}'].payload>`
+      ? `z.input<typeof C.methods['${name}']['payload']>`
       : 'void';
     const returnType = info.hasResponse
-      ? `z.output<typeof C.methods['${name}'].response>`
+      ? `z.output<typeof C.methods['${name}']['response']>`
       : 'void';
     if (info.hasPayload) {
       lines.push(
-        `  async ${mname}(@Payload(new ZodValidationPipe(C.methods['${name}'].payload)) payload: ${payloadType}): Promise<${returnType}> {`
+        `  async ${mname}(@Payload(new ZodValidationPipe(C.methods['${name}']['payload'])) payload: ${payloadType}): Promise<${returnType}> {`
       );
     } else {
       lines.push(`  async ${mname}(): Promise<${returnType}> {`);
     }
     if (info.hasResponse) {
       lines.push(
-        `    // Expected return: z.output<typeof C.methods['${name}'].response>`
+        `    // Expected return: z.output<typeof C.methods['${name}']['response']>`
       );
     }
     lines.push(`    throw new Error('NotImplemented: wire ${spec.namespace}.${name}');`);
