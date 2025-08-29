@@ -103,7 +103,8 @@ export const ChatContract = defineContract({
 5. 검증/문서/PR
 
 - [ ] 타입/린트/테스트/빌드 통과
-- [ ] 문서 갱신: ELECTRON_MCP_IPC_SPEC.md, IPC_TERMS_AND_CHANNELS.md에 "계약→코드생성" 플로우 추가
+- [x] 문서 갱신: ELECTRON_MCP_IPC_SPEC.md에 "계약→코드생성→어댑터" 플로우/예시 추가
+- [ ] IPC_TERMS_AND_CHANNELS.md 업데이트(필요 시)
 - [ ] Plan→Docs 승격 및 plan 삭제, PR 생성
 
 ## 작업 Todo
