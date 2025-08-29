@@ -120,23 +120,19 @@ function writeRendererClient(spec, outDir) {
   const lines = [];
   lines.push(HEADER);
   lines.push(`import type { RpcClient, CloseFn } from '../../../shared/rpc/transport';`);
-  lines.push(`import type { z } from 'zod';`);
+  lines.push(`import { z } from 'zod';`);
   lines.push(`import { ${contractConst} as C } from '${contractImportPath}';`);
   lines.push('');
   lines.push(`export class ${className} {`);
   lines.push(`  constructor(private readonly transport: RpcClient) {}`);
   for (const [name, info] of Object.entries(spec.methods)) {
-    const payloadType = info.hasPayload ? `z.input<typeof C.methods['${name}'].payload>` : 'void';
-    const resultType = info.hasResponse
-      ? `z.output<typeof C.methods['${name}'].response>`
-      : (info.hasStreamResponse ? `z.output<typeof C.methods['${name}'].streamResponse>` : 'void');
     lines.push('');
     if (info.hasPayload) {
-      lines.push(`  ${name}(payload: ${payloadType}): Promise<${resultType}> {`);
+      lines.push(`  ${name}(payload) {`);
       lines.push(`    return this.transport.request(C.methods['${name}'].channel, payload);`);
       lines.push('  }');
     } else {
-      lines.push(`  ${name}(): Promise<${resultType}> {`);
+      lines.push(`  ${name}() {`);
       lines.push(`    return this.transport.request(C.methods['${name}'].channel);`);
       lines.push('  }');
     }
@@ -154,7 +150,7 @@ function writeMainController(spec, outDir) {
   lines.push(HEADER);
   lines.push(`import { Controller } from '@nestjs/common';`);
   lines.push(`import { EventPattern, Payload } from '@nestjs/microservices';`);
-  lines.push(`import type { z } from 'zod';`);
+  lines.push(`import { z } from 'zod';`);
   lines.push(`import { ZodValidationPipe } from '../../common/zod-validation.pipe';`);
   lines.push(`import { ${contractConst} as C } from '${contractImportPath}';`);
   lines.push('');
@@ -165,13 +161,13 @@ function writeMainController(spec, outDir) {
     lines.push(`  @EventPattern('${info.channel}')`);
     if (info.hasPayload) {
       lines.push(
-        `  async ${name}(@Payload(new ZodValidationPipe(C.methods['${name}'].payload)) payload: z.input<typeof C.methods['${name}'].payload>) {`
+        `  async ${name}(@Payload(new ZodValidationPipe(C.methods['${name}'].payload)) payload) {`
       );
     } else {
       lines.push(`  async ${name}() {`);
     }
     if (info.hasResponse) {
-      lines.push(`    // Expected return: z.output<typeof C.methods['${name}'].response>`);
+      lines.push(`    // Expected return shape matches contract response schema`);
     }
     lines.push(`    throw new Error('NotImplemented: wire ${spec.namespace}.${name}');`);
     lines.push('  }');

@@ -1,24 +1,24 @@
 // AUTO-GENERATED FILE. DO NOT EDIT.
 import type { RpcClient, CloseFn } from '../../../shared/rpc/transport';
-import type { z } from 'zod';
+import { z } from 'zod';
 import { AgentContract as C } from '../../../shared/rpc/contracts/agent.contract';
 
 export class AgentClient {
   constructor(private readonly transport: RpcClient) {}
 
-  chat(payload: z.input<typeof C.methods['chat'].payload>): Promise<void> {
+  chat(payload) {
     return this.transport.request(C.methods['chat'].channel, payload);
   }
 
-  update(payload: z.input<typeof C.methods['update'].payload>): Promise<void> {
+  update(payload) {
     return this.transport.request(C.methods['update'].channel, payload);
   }
 
-  create(payload: z.input<typeof C.methods['create'].payload>): Promise<z.output<typeof C.methods['create'].response>> {
+  create(payload) {
     return this.transport.request(C.methods['create'].channel, payload);
   }
 
-  delete(payload: z.input<typeof C.methods['delete'].payload>): Promise<z.output<typeof C.methods['delete'].response>> {
+  delete(payload) {
     return this.transport.request(C.methods['delete'].channel, payload);
   }
 }

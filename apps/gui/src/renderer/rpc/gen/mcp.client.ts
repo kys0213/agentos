@@ -1,16 +1,16 @@
 // AUTO-GENERATED FILE. DO NOT EDIT.
 import type { RpcClient, CloseFn } from '../../../shared/rpc/transport';
-import type { z } from 'zod';
+import { z } from 'zod';
 import { McpContract as C } from '../../../shared/rpc/contracts/mcp.contract';
 
 export class McpClient {
   constructor(private readonly transport: RpcClient) {}
 
-  getTool(payload: z.input<typeof C.methods['getTool'].payload>): Promise<void> {
+  getTool(payload) {
     return this.transport.request(C.methods['getTool'].channel, payload);
   }
 
-  invokeTool(payload: z.input<typeof C.methods['invokeTool'].payload>): Promise<void> {
+  invokeTool(payload) {
     return this.transport.request(C.methods['invokeTool'].channel, payload);
   }
 }

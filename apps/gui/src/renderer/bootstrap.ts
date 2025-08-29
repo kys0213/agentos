@@ -15,9 +15,9 @@ import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usa
  */
 export interface BootstrapResult {
   rpcTransport: RpcClient;
-  bridgeService: BridgeService;
+  bridgeService: BridgeServiceAdapter;
   mcpService: McpService;
-  presetService: PresetService;
+  presetService: PresetServiceAdapter;
   agentService: AgentService;
   conversationService: ConversationService;
 }

@@ -1,7 +1,7 @@
 // AUTO-GENERATED FILE. DO NOT EDIT.
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
-import type { z } from 'zod';
+import { z } from 'zod';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { ChatContract as C } from '../../../shared/rpc/contracts/chat.contract';
 
@@ -9,19 +9,19 @@ import { ChatContract as C } from '../../../shared/rpc/contracts/chat.contract';
 export class GeneratedChatController {
 
   @EventPattern('chat.list-sessions')
-  async listSessions(@Payload(new ZodValidationPipe(C.methods['listSessions'].payload)) payload: z.input<typeof C.methods['listSessions'].payload>) {
-    // Expected return: z.output<typeof C.methods['listSessions'].response>
+  async listSessions(@Payload(new ZodValidationPipe(C.methods['listSessions'].payload)) payload) {
+    // Expected return shape matches contract response schema
     throw new Error('NotImplemented: wire chat.listSessions');
   }
 
   @EventPattern('chat.get-messages')
-  async getMessages(@Payload(new ZodValidationPipe(C.methods['getMessages'].payload)) payload: z.input<typeof C.methods['getMessages'].payload>) {
+  async getMessages(@Payload(new ZodValidationPipe(C.methods['getMessages'].payload)) payload) {
     throw new Error('NotImplemented: wire chat.getMessages');
   }
 
   @EventPattern('chat.delete-session')
-  async deleteSession(@Payload(new ZodValidationPipe(C.methods['deleteSession'].payload)) payload: z.input<typeof C.methods['deleteSession'].payload>) {
-    // Expected return: z.output<typeof C.methods['deleteSession'].response>
+  async deleteSession(@Payload(new ZodValidationPipe(C.methods['deleteSession'].payload)) payload) {
+    // Expected return shape matches contract response schema
     throw new Error('NotImplemented: wire chat.deleteSession');
   }
 }

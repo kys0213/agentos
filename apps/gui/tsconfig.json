@@ -9,5 +9,11 @@
     "moduleResolution": "node"
   },
   "include": ["src", "src/types.d.ts"],
-  "exclude": ["node_modules", "dist", "src/**/__tests__"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/**/__tests__",
+    "src/main/**/gen/*.ts",
+    "src/renderer/rpc/gen/*.gen.new.ts"
+  ]
 }
