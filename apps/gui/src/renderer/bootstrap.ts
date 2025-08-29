@@ -2,10 +2,12 @@ import type { RpcClient } from '../shared/rpc/transport';
 import { AgentOsServiceNames } from '../shared/types/agentos-api';
 import { ServiceContainer } from '../shared/di/service-container';
 import { AgentClient as AgentService } from './rpc/gen/agent.client';
-import { BridgeClient as BridgeService } from './rpc/gen/bridge.client';
 import { ChatClient as ConversationService } from './rpc/gen/chat.client';
 import { McpClient as McpService } from './rpc/gen/mcp.client';
-import { PresetClient as PresetService } from './rpc/gen/preset.client';
+import { PresetClient } from './rpc/gen/preset.client';
+import { BridgeClient } from './rpc/gen/bridge.client';
+import { PresetServiceAdapter } from './rpc/adapters/preset.adapter';
+import { BridgeServiceAdapter } from './rpc/adapters/bridge.adapter';
 import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usage.service';
 
 /**
@@ -29,9 +31,9 @@ export async function bootstrap(rpcTransport: RpcClient): Promise<BootstrapResul
 
   // 공통 RpcClient(Transport)로 생성된 클라이언트를 주입
   // 새 RPC 서비스(Bridge/Preset/Agent)는 채널 기반 Transport를 사용
-  const bridgeService = new BridgeService(rpcTransport);
+  const bridgeService = new BridgeServiceAdapter(new BridgeClient(rpcTransport));
   const mcpService = new McpService(rpcTransport);
-  const presetService = new PresetService(rpcTransport);
+  const presetService = new PresetServiceAdapter(new PresetClient(rpcTransport));
   const agentService = new AgentService(rpcTransport);
   const conversationService = new ConversationService(rpcTransport);
   const mcpUsageLogService = new McpUsageLogService(rpcTransport);
