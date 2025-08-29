@@ -1,21 +1,20 @@
 import type { PresetProtocol } from '../../../shared/types/proset-protocol';
 import type { Preset, CreatePreset } from '@agentos/core';
 import { PresetClient } from '../gen/preset.client';
+import { PresetContract as C } from '../../../shared/rpc/contracts/preset.contract';
 
 export class PresetServiceAdapter implements PresetProtocol {
   constructor(private readonly client: PresetClient) {}
 
   async getAllPresets(): Promise<Preset[]> {
-    const page = await this.client.list();
-    const items = await Promise.all(
-      page.items.map(async (s) => this.client.get(s.id))
-    );
+    const page = C.methods['list'].response.parse(await this.client.list());
+    const items = await Promise.all(page.items.map(async (s) => this.client.get(s.id)));
     return items.filter((p): p is Preset => !!p);
   }
 
   async createPreset(preset: CreatePreset): Promise<Preset> {
-    const res = await this.client.create(preset as any);
-    if (res.success && res.result) return res.result as Preset;
+    const res = C.methods['create'].response.parse(await this.client.create(preset as any));
+    if (res.success && (res as any).result) return (res as any).result as Preset;
     throw new Error(res.error ?? 'Failed to create preset');
   }
 
@@ -23,8 +22,10 @@ export class PresetServiceAdapter implements PresetProtocol {
     const current = await this.client.get(id);
     if (!current) throw new Error('Preset not found');
     const merged: Preset = { ...current, ...patch, id } as Preset;
-    const res = await this.client.update(id, merged as any);
-    if (res.success && res.result) return res.result as Preset;
+    const res = C.methods['update'].response.parse(
+      await this.client.update({ id, preset: merged as any })
+    );
+    if (res.success && (res as any).result) return (res as any).result as Preset;
     throw new Error(res.error ?? 'Failed to update preset');
   }
 
@@ -42,4 +43,3 @@ export class PresetServiceAdapter implements PresetProtocol {
     return (p as Preset) ?? null;
   }
 }
-

@@ -13,6 +13,23 @@ export class GeneratedAgentController {
     throw new Error('NotImplemented: wire agent.chat');
   }
 
+  @EventPattern('agent.end-session')
+  async end_session(@Payload(new ZodValidationPipe(C.methods['end-session'].payload)) payload) {
+    throw new Error('NotImplemented: wire agent.end-session');
+  }
+
+  @EventPattern('agent.get-metadata')
+  async get_metadata(@Payload(new ZodValidationPipe(C.methods['get-metadata'].payload)) payload) {
+    // Expected return shape matches contract response schema
+    throw new Error('NotImplemented: wire agent.get-metadata');
+  }
+
+  @EventPattern('agent.get-all-metadatas')
+  async get_all_metadatas() {
+    // Expected return shape matches contract response schema
+    throw new Error('NotImplemented: wire agent.get-all-metadatas');
+  }
+
   @EventPattern('agent.update')
   async update(@Payload(new ZodValidationPipe(C.methods['update'].payload)) payload) {
     throw new Error('NotImplemented: wire agent.update');

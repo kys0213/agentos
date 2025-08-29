@@ -18,7 +18,15 @@ export class BridgeClient {
     return this.transport.request(C.methods['switch'].channel, payload);
   }
 
+  get_current() {
+    return this.transport.request(C.methods['get-current'].channel);
+  }
+
   list() {
     return this.transport.request(C.methods['list'].channel);
+  }
+
+  get_config(payload) {
+    return this.transport.request(C.methods['get-config'].channel, payload);
   }
 }

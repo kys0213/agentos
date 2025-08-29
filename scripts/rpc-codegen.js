@@ -49,11 +49,11 @@ function extractSpec(filePath) {
   }
 
   const methods = {};
-  const blockRegex = /(\w+)\s*:\s*{([\s\S]*?)}/g;
+  const blockRegex = /(['"]?)([A-Za-z0-9_\-]+)\1\s*:\s*{([\s\S]*?)}/g;
   let m;
   while ((m = blockRegex.exec(inner))) {
-    const name = m[1];
-    const block = m[2];
+    const name = m[2];
+    const block = m[3];
     const ch = /channel:\s*'([^']+)'/.exec(block);
     if (!ch) continue;
     const hasPayload = /\bpayload\s*:/.test(block);
@@ -92,7 +92,8 @@ function writeChannelsFile(specs, outFile) {
   for (const spec of specs) {
     lines.push(`  ${spec.namespace}: {`);
     for (const [name, info] of Object.entries(spec.methods)) {
-      lines.push(`    ${name}: '${info.channel}',`);
+      const key = safeName(name);
+      lines.push(`    ${key}: '${info.channel}',`);
     }
     lines.push('  },');
   }
@@ -126,13 +127,14 @@ function writeRendererClient(spec, outDir) {
   lines.push(`export class ${className} {`);
   lines.push(`  constructor(private readonly transport: RpcClient) {}`);
   for (const [name, info] of Object.entries(spec.methods)) {
+    const mname = safeName(name);
     lines.push('');
     if (info.hasPayload) {
-      lines.push(`  ${name}(payload) {`);
+      lines.push(`  ${mname}(payload) {`);
       lines.push(`    return this.transport.request(C.methods['${name}'].channel, payload);`);
       lines.push('  }');
     } else {
-      lines.push(`  ${name}() {`);
+      lines.push(`  ${mname}() {`);
       lines.push(`    return this.transport.request(C.methods['${name}'].channel);`);
       lines.push('  }');
     }
@@ -157,14 +159,15 @@ function writeMainController(spec, outDir) {
   lines.push(`@Controller()`);
   lines.push(`export class ${className} {`);
   for (const [name, info] of Object.entries(spec.methods)) {
+    const mname = safeName(name);
     lines.push('');
     lines.push(`  @EventPattern('${info.channel}')`);
     if (info.hasPayload) {
       lines.push(
-        `  async ${name}(@Payload(new ZodValidationPipe(C.methods['${name}'].payload)) payload) {`
+        `  async ${mname}(@Payload(new ZodValidationPipe(C.methods['${name}'].payload)) payload) {`
       );
     } else {
-      lines.push(`  async ${name}() {`);
+      lines.push(`  async ${mname}() {`);
     }
     if (info.hasResponse) {
       lines.push(`    // Expected return shape matches contract response schema`);

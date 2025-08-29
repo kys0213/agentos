@@ -25,9 +25,21 @@ export class GeneratedBridgeController {
     throw new Error('NotImplemented: wire bridge.switch');
   }
 
+  @EventPattern('bridge.get-current')
+  async get_current() {
+    // Expected return shape matches contract response schema
+    throw new Error('NotImplemented: wire bridge.get-current');
+  }
+
   @EventPattern('bridge.list')
   async list() {
     // Expected return shape matches contract response schema
     throw new Error('NotImplemented: wire bridge.list');
+  }
+
+  @EventPattern('bridge.get-config')
+  async get_config(@Payload(new ZodValidationPipe(C.methods['get-config'].payload)) payload) {
+    // Expected return shape matches contract response schema
+    throw new Error('NotImplemented: wire bridge.get-config');
   }
 }

@@ -8,6 +8,9 @@ import { PresetClient } from './rpc/gen/preset.client';
 import { BridgeClient } from './rpc/gen/bridge.client';
 import { PresetServiceAdapter } from './rpc/adapters/preset.adapter';
 import { BridgeServiceAdapter } from './rpc/adapters/bridge.adapter';
+import { AgentServiceAdapter } from './rpc/adapters/agent.adapter';
+import { ConversationServiceAdapter } from './rpc/adapters/conversation.adapter';
+import { McpServiceAdapter } from './rpc/adapters/mcp.adapter';
 import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usage.service';
 
 /**
@@ -32,10 +35,10 @@ export async function bootstrap(rpcTransport: RpcClient): Promise<BootstrapResul
   // 공통 RpcClient(Transport)로 생성된 클라이언트를 주입
   // 새 RPC 서비스(Bridge/Preset/Agent)는 채널 기반 Transport를 사용
   const bridgeService = new BridgeServiceAdapter(new BridgeClient(rpcTransport));
-  const mcpService = new McpService(rpcTransport);
+  const mcpService = new McpServiceAdapter(new McpService(rpcTransport));
   const presetService = new PresetServiceAdapter(new PresetClient(rpcTransport));
-  const agentService = new AgentService(rpcTransport);
-  const conversationService = new ConversationService(rpcTransport);
+  const agentService = new AgentServiceAdapter(new AgentService(rpcTransport));
+  const conversationService = new ConversationServiceAdapter(new ConversationService(rpcTransport));
   const mcpUsageLogService = new McpUsageLogService(rpcTransport);
 
   console.log('⚙️ All services created with Rpc transport dependency injection');

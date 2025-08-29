@@ -4,6 +4,9 @@
 export const Channels = {
   agent: {
     chat: 'agent.chat',
+    end_session: 'agent.end-session',
+    get_metadata: 'agent.get-metadata',
+    get_all_metadatas: 'agent.get-all-metadatas',
     update: 'agent.update',
     create: 'agent.create',
     delete: 'agent.delete',
@@ -12,7 +15,9 @@ export const Channels = {
     register: 'bridge.register',
     unregister: 'bridge.unregister',
     switch: 'bridge.switch',
+    get_current: 'bridge.get-current',
     list: 'bridge.list',
+    get_config: 'bridge.get-config',
   },
   chat: {
     listSessions: 'chat.list-sessions',
@@ -33,13 +38,18 @@ export const Channels = {
 } as const;
 
 export const agent_chat = 'agent.chat' as const;
+export const agent_end_session = 'agent.end-session' as const;
+export const agent_get_metadata = 'agent.get-metadata' as const;
+export const agent_get_all_metadatas = 'agent.get-all-metadatas' as const;
 export const agent_update = 'agent.update' as const;
 export const agent_create = 'agent.create' as const;
 export const agent_delete = 'agent.delete' as const;
 export const bridge_register = 'bridge.register' as const;
 export const bridge_unregister = 'bridge.unregister' as const;
 export const bridge_switch = 'bridge.switch' as const;
+export const bridge_get_current = 'bridge.get-current' as const;
 export const bridge_list = 'bridge.list' as const;
+export const bridge_get_config = 'bridge.get-config' as const;
 export const chat_listSessions = 'chat.list-sessions' as const;
 export const chat_getMessages = 'chat.get-messages' as const;
 export const chat_deleteSession = 'chat.delete-session' as const;
