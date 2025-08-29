@@ -585,4 +585,36 @@ wireAgentEvents(frames$, {
 - 계약 소스: `apps/gui/src/shared/rpc/contracts/*.contract.ts` (TS+Zod, namespace/method/channel/payload/response 정의)
 - 코드생성(Phase A): `scripts/rpc-codegen.js` → 채널 상수(`shared/rpc/gen/channels.ts`)와 PoC 클라이언트/컨트롤러 스텁 생성
 - 사용 패턴: Renderer는 생성된 클라이언트(`renderer/rpc/gen/*.client.ts`)만 사용, Main은 생성된 컨트롤러 스텁을 서비스에 위임
-- 원칙: 계약이 단일 진실 소스(SSOT). 수작업 채널 문자열 금지. content는 항상 MultiModalContent[] 배열
+ - 원칙: 계약이 단일 진실 소스(SSOT). 수작업 채널 문자열 금지. content는 항상 MultiModalContent[] 배열
+
+---
+
+## 20. Contracts → Codegen → Adapter Quickstart (현행)
+
+1) 계약 정의/수정: `apps/gui/src/shared/rpc/contracts/*.contract.ts`
+   - `namespace`, `methods`, 각 메서드의 `channel`/`payload`/`response`/`streamResponse(zod)` 지정
+
+2) 코드 생성: `pnpm rpc:codegen`
+   - 공유 채널: `apps/gui/src/shared/rpc/gen/channels.ts`
+   - 렌더러 클라이언트: `apps/gui/src/renderer/rpc/gen/*.client.ts`
+   - 메인 컨트롤러 스텁: `apps/gui/src/main/<ns>/gen/*.controller.ts`
+   - 안전 덮어쓰기: 헤더 없는 기존 파일은 `*.gen.new.ts`로 생성(수동 머지)
+
+3) 렌더러 사용(직접 혹은 어댑터 경유)
+   - Preset: `apps/gui/src/renderer/rpc/adapters/preset.adapter.ts`
+   - Bridge: `apps/gui/src/renderer/rpc/adapters/bridge.adapter.ts`
+   - Bootstrap 등록: `apps/gui/src/renderer/bootstrap.ts`
+
+예시:
+
+```ts
+import { PresetClient } from '@/renderer/rpc/gen/preset.client';
+import { PresetServiceAdapter } from '@/renderer/rpc/adapters/preset.adapter';
+import { createRpcTransport } from '@/renderer/rpc/rpc-channel.factory';
+
+const transport = createRpcTransport();
+const preset = new PresetServiceAdapter(new PresetClient(transport));
+const list = await preset.getAllPresets();
+```
+
+Note (ESM): `scripts/rpc-codegen.js`는 ESM 구문을 사용. 루트 `package.json`에 `"type": "module"`을 추가하면 모듈 경고를 제거할 수 있다(선택).
