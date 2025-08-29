@@ -8,6 +8,7 @@
 */
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const HEADER = '// AUTO-GENERATED FILE. DO NOT EDIT.';
 
@@ -165,6 +166,7 @@ function capitalize(s) {
 }
 
 function main() {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const repoRoot = path.resolve(__dirname, '..');
   const contractsRoot = path.resolve(repoRoot, 'apps/gui/src/shared/rpc/contracts');
   const channelsOut = path.resolve(repoRoot, 'apps/gui/src/shared/rpc/gen/channels.ts');
