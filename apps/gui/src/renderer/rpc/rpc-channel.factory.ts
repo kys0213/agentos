@@ -183,9 +183,9 @@ export class RpcTransportFactory {
   }
 }
 
-  /**
-   * 간편한 RpcClient 인스턴스 접근을 위한 헬퍼 함수
-   */
+/**
+ * 간편한 RpcClient 인스턴스 접근을 위한 헬퍼 함수
+ */
 export function createRpcTransport(): RpcClient {
   return RpcTransportFactory.create();
 }
