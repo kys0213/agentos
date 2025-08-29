@@ -1,20 +1,20 @@
 // AUTO-GENERATED FILE. DO NOT EDIT.
 import type { RpcClient, CloseFn } from '../../../shared/rpc/transport';
 import { ChatContract as C } from '../../../shared/rpc/contracts/chat.contract';
-import type * as T from '../../../shared/rpc/gen/chat.types';
+import { z } from 'zod';
 
 export class ChatClient {
   constructor(private readonly transport: RpcClient) {}
 
-  listSessions(payload: T.listSessions_Payload): Promise<T.listSessions_Result> {
+  listSessions(payload: z.input<typeof C.methods['listSessions']['payload']>): Promise<z.output<typeof C.methods['listSessions']['response']>> {
     return this.transport.request(C.methods['listSessions'].channel, payload);
   }
 
-  getMessages(payload: T.getMessages_Payload): Promise<T.getMessages_Result> {
+  getMessages(payload: z.input<typeof C.methods['getMessages']['payload']>): Promise<z.output<typeof C.methods['getMessages']['response']>> {
     return this.transport.request(C.methods['getMessages'].channel, payload);
   }
 
-  deleteSession(payload: T.deleteSession_Payload): Promise<T.deleteSession_Result> {
+  deleteSession(payload: z.input<typeof C.methods['deleteSession']['payload']>): Promise<z.output<typeof C.methods['deleteSession']['response']>> {
     return this.transport.request(C.methods['deleteSession'].channel, payload);
   }
 }

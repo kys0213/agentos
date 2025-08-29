@@ -1,39 +1,39 @@
 // AUTO-GENERATED FILE. DO NOT EDIT.
 import type { RpcClient, CloseFn } from '../../../shared/rpc/transport';
 import { McpContract as C } from '../../../shared/rpc/contracts/mcp.contract';
-import type * as T from '../../../shared/rpc/gen/mcp.types';
+import { z } from 'zod';
 
 export class McpClient {
   constructor(private readonly transport: RpcClient) {}
 
-  getTool(payload: T.getTool_Payload): Promise<T.getTool_Result> {
+  getTool(payload: z.input<typeof C.methods['getTool']['payload']>): Promise<z.output<typeof C.methods['getTool']['response']>> {
     return this.transport.request(C.methods['getTool'].channel, payload);
   }
 
-  invokeTool(payload: T.invokeTool_Payload): Promise<T.invokeTool_Result> {
+  invokeTool(payload: z.input<typeof C.methods['invokeTool']['payload']>): Promise<z.output<typeof C.methods['invokeTool']['response']>> {
     return this.transport.request(C.methods['invokeTool'].channel, payload);
   }
 
-  usage_getLogs(payload: T.usage_getLogs_Payload): Promise<T.usage_getLogs_Result> {
+  usage_getLogs(payload: z.input<typeof C.methods['usage.getLogs']['payload']>): Promise<z.output<typeof C.methods['usage.getLogs']['response']>> {
     return this.transport.request(C.methods['usage.getLogs'].channel, payload);
   }
 
-  usage_getStats(payload: T.usage_getStats_Payload): Promise<T.usage_getStats_Result> {
+  usage_getStats(payload: z.input<typeof C.methods['usage.getStats']['payload']>): Promise<z.output<typeof C.methods['usage.getStats']['response']>> {
     return this.transport.request(C.methods['usage.getStats'].channel, payload);
   }
 
-  usage_getHourlyStats(payload: T.usage_getHourlyStats_Payload): Promise<T.usage_getHourlyStats_Result> {
+  usage_getHourlyStats(payload: z.input<typeof C.methods['usage.getHourlyStats']['payload']>): Promise<z.output<typeof C.methods['usage.getHourlyStats']['response']>> {
     return this.transport.request(C.methods['usage.getHourlyStats'].channel, payload);
   }
 
-  usage_clear(payload: T.usage_clear_Payload): Promise<T.usage_clear_Result> {
+  usage_clear(payload: z.input<typeof C.methods['usage.clear']['payload']>): Promise<z.output<typeof C.methods['usage.clear']['response']>> {
     return this.transport.request(C.methods['usage.clear'].channel, payload);
   }
 
-  usage_eventsStream(): AsyncGenerator<T.usage_events_Stream, void, unknown> {
-    return this.transport.stream ? this.transport.stream<T.usage_events_Stream>(C.methods['usage.events'].channel) : (async function*(){})()
+  usage_eventsStream(): AsyncGenerator<z.output<typeof C.methods['usage.events']['streamResponse']>, void, unknown> {
+    return this.transport.stream ? this.transport.stream<z.output<typeof C.methods['usage.events']['streamResponse']>>(C.methods['usage.events'].channel) : (async function*(){})()
   }
-  usage_eventsOn(handler: (ev: T.usage_events_Stream) => void): CloseFn {
-    return this.transport.on<T.usage_events_Stream>(C.methods['usage.events'].channel, handler);
+  usage_eventsOn(handler: (ev: z.output<typeof C.methods['usage.events']['streamResponse']>) => void): CloseFn {
+    return this.transport.on<z.output<typeof C.methods['usage.events']['streamResponse']>>(C.methods['usage.events'].channel, handler);
   }
 }

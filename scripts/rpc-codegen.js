@@ -164,15 +164,21 @@ function writeRendererClient(spec, outDir) {
   lines.push(HEADER);
   lines.push(`import type { RpcClient, CloseFn } from '../../../shared/rpc/transport';`);
   lines.push(`import { ${contractConst} as C } from '${contractImportPath}';`);
-  lines.push(`import type * as T from '${typesImportPath}';`);
+  lines.push(`import { z } from 'zod';`);
   lines.push('');
   lines.push(`export class ${className} {`);
   lines.push(`  constructor(private readonly transport: RpcClient) {}`);
   for (const [name, info] of Object.entries(spec.methods)) {
     const mname = safeName(name);
-    const payloadType = info.hasPayload ? `T.${mname}_Payload` : 'void';
-    const resultType = info.hasResponse ? `T.${mname}_Result` : 'void';
-    const streamType = info.hasStreamResponse ? `T.${mname}_Stream` : 'void';
+    const payloadType = info.hasPayload
+      ? `z.input<typeof C.methods['${name}']['payload']>`
+      : 'void';
+    const resultType = info.hasResponse
+      ? `z.output<typeof C.methods['${name}']['response']>`
+      : 'void';
+    const streamType = info.hasStreamResponse
+      ? `z.output<typeof C.methods['${name}']['streamResponse']>`
+      : 'void';
     lines.push('');
     // Stream endpoints: provide AsyncGenerator + on(handler) helpers
     if (info.hasStreamResponse) {
