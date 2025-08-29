@@ -93,6 +93,10 @@ function extractSpec(filePath) {
     const body = inner.slice(bodyStart + 1, i - 1);
     const chMatch = /channel:\s*'([^']+)'/.exec(body);
     if (!chMatch) continue;
+    // Fallback: if name is empty, derive from channel suffix after namespace
+    if (!name && chMatch[1].startsWith(namespace + '.')) {
+      name = chMatch[1].slice(namespace.length + 1);
+    }
     const hasPayload = /\bpayload\s*:/.test(body);
     const hasResponse = /\bresponse\s*:/.test(body);
     const hasStreamResponse = /\bstreamResponse\s*:/.test(body);
@@ -234,15 +238,23 @@ function writeMainController(spec, outDir) {
     const mname = safeName(name);
     lines.push('');
     lines.push(`  @EventPattern('${info.channel}')`);
+    const payloadType = info.hasPayload
+      ? `z.input<typeof C.methods['${name}'].payload>`
+      : 'void';
+    const returnType = info.hasResponse
+      ? `z.output<typeof C.methods['${name}'].response>`
+      : 'void';
     if (info.hasPayload) {
       lines.push(
-        `  async ${mname}(@Payload(new ZodValidationPipe(C.methods['${name}'].payload)) payload) {`
+        `  async ${mname}(@Payload(new ZodValidationPipe(C.methods['${name}'].payload)) payload: ${payloadType}): Promise<${returnType}> {`
       );
     } else {
-      lines.push(`  async ${mname}() {`);
+      lines.push(`  async ${mname}(): Promise<${returnType}> {`);
     }
     if (info.hasResponse) {
-      lines.push(`    // Expected return shape matches contract response schema`);
+      lines.push(
+        `    // Expected return: z.output<typeof C.methods['${name}'].response>`
+      );
     }
     lines.push(`    throw new Error('NotImplemented: wire ${spec.namespace}.${name}');`);
     lines.push('  }');
@@ -268,9 +280,7 @@ function main() {
   const files = findContractFiles(contractsRoot);
   const specs = files.map(extractSpec);
   writeChannelsFile(specs, channelsOut);
-  console.log(
-    `[rpc-codegen] Wrote ${path.relative(repoRoot, channelsOut)} from ${files.length} contract(s).`
-  );
+  console.log(`[rpc-codegen] Wrote ${path.relative(repoRoot, channelsOut)} from ${files.length} contract(s).`);
   for (const spec of specs) {
     writeRendererClient(spec, path.resolve(repoRoot, 'apps/gui/src/renderer/rpc/gen'));
     writeMainController(spec, path.resolve(repoRoot, `apps/gui/src/main/${spec.namespace}/gen`));
