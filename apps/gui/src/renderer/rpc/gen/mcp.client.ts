@@ -14,8 +14,8 @@ export class McpClient {
     return this.transport.request(C.methods['invokeTool'].channel, payload);
   }
 
-  (payload: T._Payload): Promise<T._Result> {
-    return this.transport.request(C.methods[''].channel, payload);
+  usage_getLogs(payload: T.usage_getLogs_Payload): Promise<T.usage_getLogs_Result> {
+    return this.transport.request(C.methods['usage.getLogs'].channel, payload);
   }
 
   usage_getStats(payload: T.usage_getStats_Payload): Promise<T.usage_getStats_Result> {

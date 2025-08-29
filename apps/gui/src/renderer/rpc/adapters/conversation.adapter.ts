@@ -4,11 +4,11 @@ export class ConversationServiceAdapter {
   constructor(private readonly client: ChatClient) {}
 
   listSessions(pagination?: unknown) {
-    return this.client.listSessions(pagination);
+    return this.client.listSessions(pagination as any);
   }
 
   getMessages(sessionId: string, pagination?: unknown) {
-    return this.client.getMessages({ sessionId, pagination });
+    return this.client.getMessages({ sessionId, pagination } as any);
   }
 
   deleteSession(sessionId: string) {

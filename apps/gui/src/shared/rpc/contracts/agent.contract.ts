@@ -26,6 +26,12 @@ const AgentExecuteOptionsSchema = z.object({
 const AgentMetadataOutSchema = z
   .object({ id: z.string() })
   .merge(agentMetadataSchema)
+  .extend({
+    sessionCount: z.number().default(0),
+    usageCount: z.number().default(0),
+    lastUsed: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()).optional(),
+    version: z.string().optional(),
+  })
   .passthrough();
 
 export const AgentContract = defineContract({
@@ -55,12 +61,12 @@ export const AgentContract = defineContract({
     },
     update: {
       channel: 'agent.update',
-      payload: z.object({ agentId: z.string(), patch: z.record(z.unknown()) }),
+      payload: z.object({ agentId: z.string(), patch: z.record(z.string(), z.unknown()) }),
       response: AgentMetadataOutSchema,
     },
     create: {
       channel: 'agent.create',
-      payload: z.record(z.unknown()),
+      payload: z.record(z.string(), z.unknown()),
       response: AgentMetadataOutSchema,
     },
     delete: {

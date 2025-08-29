@@ -27,7 +27,7 @@ export const Channels = {
   mcp: {
     getTool: 'mcp.getTool',
     invokeTool: 'mcp.invokeTool',
-    : 'mcp.usage.getLogs',
+    usage_getLogs: 'mcp.usage.getLogs',
     usage_getStats: 'mcp.usage.getStats',
     usage_getHourlyStats: 'mcp.usage.getHourlyStats',
     usage_clear: 'mcp.usage.clear',
@@ -60,7 +60,7 @@ export const chat_getMessages = 'chat.get-messages' as const;
 export const chat_deleteSession = 'chat.delete-session' as const;
 export const mcp_getTool = 'mcp.getTool' as const;
 export const mcp_invokeTool = 'mcp.invokeTool' as const;
-export const mcp_ = 'mcp.usage.getLogs' as const;
+export const mcp_usage_getLogs = 'mcp.usage.getLogs' as const;
 export const mcp_usage_getStats = 'mcp.usage.getStats' as const;
 export const mcp_usage_getHourlyStats = 'mcp.usage.getHourlyStats' as const;
 export const mcp_usage_clear = 'mcp.usage.clear' as const;

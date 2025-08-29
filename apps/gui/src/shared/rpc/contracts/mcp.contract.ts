@@ -2,18 +2,20 @@ import { z } from 'zod';
 import { defineContract } from './defineContract';
 
 // Usage log/summary schemas (flexible but typed)
-export const McpUsageLogSchema = z.object({
-  id: z.string(),
-  toolId: z.string().optional(),
-  toolName: z.string().optional(),
-  timestamp: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
-  operation: z.literal('tool.call'),
-  status: z.union([z.literal('success'), z.literal('error')]),
-  durationMs: z.number().optional(),
-  agentId: z.string().optional(),
-  sessionId: z.string().optional(),
-  errorCode: z.string().optional(),
-}).passthrough();
+export const McpUsageLogSchema = z
+  .object({
+    id: z.string(),
+    toolId: z.string().optional(),
+    toolName: z.string().optional(),
+    timestamp: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
+    operation: z.literal('tool.call'),
+    status: z.union([z.literal('success'), z.literal('error')]),
+    durationMs: z.number().optional(),
+    agentId: z.string().optional(),
+    sessionId: z.string().optional(),
+    errorCode: z.string().optional(),
+  })
+  .passthrough();
 
 export const McpUsageStatsSchema = z
   .object({
@@ -40,7 +42,7 @@ export const McpContract = defineContract({
       channel: 'mcp.invokeTool',
       payload: z.object({
         name: z.string(),
-        input: z.record(z.unknown()).optional(),
+        input: z.record(z.string(), z.unknown()).optional(),
         agentId: z.string().optional(),
         agentName: z.string().optional(),
         resumptionToken: z.string().optional(),
@@ -51,13 +53,16 @@ export const McpContract = defineContract({
     'usage.getLogs': {
       channel: 'mcp.usage.getLogs',
       payload: z
-        .object({ query: z.record(z.unknown()).optional(), pg: z.record(z.unknown()).optional() })
+        .object({
+          query: z.record(z.string(), z.unknown()).optional(),
+          pg: z.record(z.string(), z.unknown()).optional(),
+        })
         .optional(),
       response: z.array(McpUsageLogSchema),
     },
     'usage.getStats': {
       channel: 'mcp.usage.getStats',
-      payload: z.object({ query: z.record(z.unknown()).optional() }).optional(),
+      payload: z.object({ query: z.record(z.string(), z.unknown()).optional() }).optional(),
       response: McpUsageStatsSchema,
     },
     'usage.getHourlyStats': {

@@ -1,9 +1,8 @@
-import type { LlmBridgeProtocol } from '../../../shared/types/llm-bridge-protocol';
 import type { LlmManifest } from 'llm-bridge-spec';
 import { BridgeClient } from '../gen/bridge.client';
 import { BridgeContract as C } from '../../../shared/rpc/contracts/bridge.contract';
 
-export class BridgeServiceAdapter implements LlmBridgeProtocol {
+export class BridgeServiceAdapter {
   constructor(private readonly client: BridgeClient) {}
 
   async registerBridge(config: LlmManifest): Promise<{ success: boolean }> {

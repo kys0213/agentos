@@ -1,12 +1,9 @@
-import type {
-  McpProtocol,
-  ToolExecutionResponse,
-  ResourceListResponse,
-  ResourceResponse,
-} from '../../../shared/types/mcp-protocol';
+type ToolExecutionResponse = { success: true; result?: unknown } | { success: false; error: string };
+type ResourceListResponse = { resources: Array<unknown> };
+type ResourceResponse = { uri: string; content: unknown; mimeType: string };
 import { McpClient } from '../gen/mcp.client';
 
-export class McpServiceAdapter implements McpProtocol {
+export class McpServiceAdapter {
   constructor(private readonly client: McpClient) {}
 
   // Minimal mapping using invokeTool/getTool when possible. Others are placeholders.

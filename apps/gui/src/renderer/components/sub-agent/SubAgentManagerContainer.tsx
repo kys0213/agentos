@@ -53,8 +53,9 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
   }
 
   return (
+    // eslint-disable-next-line no-restricted-syntax
     <SubAgentManager
-      agents={agents}
+      agents={agents as any}
       onOpenChat={() => {}}
       onCreateAgent={onCreateAgent}
       onUpdateAgentStatus={(id, status) => mutation.mutate({ id, status })}

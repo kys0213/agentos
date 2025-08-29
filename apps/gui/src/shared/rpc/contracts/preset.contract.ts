@@ -10,7 +10,7 @@ export const PresetSchema = z.object({
   systemPrompt: z.string().optional().default(''),
   enabledMcps: z.array(z.string()).default([]),
   llmBridgeName: z.string().optional(),
-  llmBridgeConfig: z.record(z.unknown()).default({}),
+  llmBridgeConfig: z.record(z.string(), z.unknown()).default({}),
   status: z.string().optional().default('active'),
   category: z.array(z.string()).default(['general']),
   createdAt: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()).optional(),
@@ -21,11 +21,9 @@ export const CreatePresetSchema = PresetSchema.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-}).partial({
-  name: false,
-  llmBridgeName: false,
-  systemPrompt: false,
-});
+})
+  .partial()
+  .required({ name: true, llmBridgeName: true, systemPrompt: true });
 
 export const PresetSummarySchema = z.object({ id: z.string(), name: z.string() });
 

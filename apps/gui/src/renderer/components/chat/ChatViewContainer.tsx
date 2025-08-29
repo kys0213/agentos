@@ -11,8 +11,16 @@ import type { AppSection } from '../../stores/store-types';
 export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) => void }> = ({
   onNavigate,
 }) => {
-  const { data: mentionableAgents = [], status: mentionableStatus } = useMentionableAgents();
-  const { data: activeAgents = [], status: activeStatus } = useActiveAgents();
+  const {
+    data: mentionableAgents = [],
+    status: mentionableStatus,
+    isPending: isMentionablePending,
+  } = useMentionableAgents();
+  const {
+    data: activeAgents = [],
+    status: activeStatus,
+    isPending: isActivePending,
+  } = useActiveAgents();
 
   const initialAgentId = activeAgents[0]?.id ?? mentionableAgents[0]?.id;
   const [selectedAgentId, setSelectedAgentId] = useState<string | undefined>(initialAgentId);
@@ -45,8 +53,8 @@ export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) =>
   });
 
   const loading = useMemo(
-    () => mentionableStatus === 'pending' || activeStatus === 'pending',
-    [mentionableStatus, activeStatus]
+    () => isMentionablePending || isActivePending,
+    [isMentionablePending, isActivePending]
   );
 
   if (loading) {

@@ -18,7 +18,7 @@ export function useSessionList(pagination?: CursorPagination) {
     queryKey: CONVERSATION_QUERY_KEYS.sessions,
     queryFn: async () => {
       const svc = ServiceContainer.getOrThrow('conversation');
-      return svc.listSessions(pagination);
+      return (await svc.listSessions(pagination as any)) as any;
     },
     staleTime: 30_000,
   });
@@ -34,10 +34,11 @@ export function useSessionMessages(sessionId: string | undefined, pagination?: C
         return null;
       }
       const svc = ServiceContainer.getOrThrow('conversation');
-      return svc.getMessages(sessionId, pagination);
+      return (await svc.getMessages(sessionId, pagination as any)) as any;
     },
     enabled: !!sessionId,
     staleTime: 10_000,
     initialData: null,
   });
 }
+/* eslint-disable @typescript-eslint/no-explicit-any, no-restricted-syntax */

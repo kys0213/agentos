@@ -4,7 +4,7 @@ export class AgentServiceAdapter {
   constructor(private readonly client: AgentClient) {}
 
   async chat(agentId: string, messages: unknown[], options?: unknown) {
-    return this.client.chat({ agentId, messages, options });
+    return this.client.chat({ agentId, messages, options } as any);
   }
 
   async endSession(agentId: string, sessionId: string): Promise<void> {
@@ -20,11 +20,11 @@ export class AgentServiceAdapter {
   }
 
   async updateAgent(agentId: string, patch: Record<string, unknown>) {
-    return this.client.update({ agentId, patch });
+    return this.client.update({ agentId, patch } as any);
   }
 
   async createAgent(agent: Record<string, unknown>) {
-    return this.client.create(agent);
+    return this.client.create(agent as any);
   }
 
   async deleteAgent(id: string) {

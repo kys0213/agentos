@@ -11,7 +11,7 @@ export const BridgeContract = defineContract({
       channel: 'bridge.register',
       payload: z.object({
         manifest: LlmManifestSchema,
-        config: z.record(z.unknown()).optional(),
+        config: z.record(z.string(), z.unknown()).optional(),
         id: z.string().optional(),
       }),
       response: z.object({
