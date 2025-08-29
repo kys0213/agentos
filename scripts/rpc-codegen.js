@@ -26,11 +26,32 @@ function extractSpec(filePath) {
   const text = fs.readFileSync(filePath, 'utf8');
   const nsMatch = text.match(/namespace:\s*'([^']+)'/);
   const namespace = nsMatch ? nsMatch[1] : path.basename(filePath).replace(/\.contract\.ts$/, '');
-  // naive method parser: name and channel
-  const blockRegex = /(\w+)\s*:\s*{([\s\S]*?)}/g
+
+  // Extract only the methods block to avoid matching the top-level "methods" key itself
+  const methodsIdx = text.indexOf('methods');
+  let inner = '';
+  if (methodsIdx >= 0) {
+    const braceStart = text.indexOf('{', methodsIdx);
+    if (braceStart >= 0) {
+      let depth = 0;
+      for (let i = braceStart; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === '{') depth++;
+        else if (ch === '}') {
+          depth--;
+          if (depth === 0) {
+            inner = text.slice(braceStart + 1, i); // without outer braces
+            break;
+          }
+        }
+      }
+    }
+  }
+
   const methods = {};
+  const blockRegex = /(\w+)\s*:\s*{([\s\S]*?)}/g;
   let m;
-  while ((m = blockRegex.exec(text))) {
+  while ((m = blockRegex.exec(inner))) {
     const name = m[1];
     const block = m[2];
     const ch = /channel:\s*'([^']+)'/.exec(block);
@@ -38,7 +59,6 @@ function extractSpec(filePath) {
     const hasPayload = /\bpayload\s*:/.test(block);
     const hasResponse = /\bresponse\s*:/.test(block);
     const hasStreamResponse = /\bstreamResponse\s*:/.test(block);
-    // Explicit is best: only treat as stream when streamResponse is present
     const isStream = hasStreamResponse;
     methods[name] = { channel: ch[1], hasPayload, hasResponse, hasStreamResponse, isStream };
   }

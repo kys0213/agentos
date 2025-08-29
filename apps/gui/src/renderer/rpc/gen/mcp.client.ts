@@ -6,8 +6,8 @@ import { McpContract as C } from '../../../shared/rpc/contracts/mcp.contract';
 export class McpClient {
   constructor(private readonly transport: RpcClient) {}
 
-  methods(payload: z.input<typeof C.methods['methods'].payload>): Promise<void> {
-    return this.transport.request(C.methods['methods'].channel, payload);
+  getTool(payload: z.input<typeof C.methods['getTool'].payload>): Promise<void> {
+    return this.transport.request(C.methods['getTool'].channel, payload);
   }
 
   invokeTool(payload: z.input<typeof C.methods['invokeTool'].payload>): Promise<void> {

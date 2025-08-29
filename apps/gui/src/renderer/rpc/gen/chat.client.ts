@@ -6,8 +6,8 @@ import { ChatContract as C } from '../../../shared/rpc/contracts/chat.contract';
 export class ChatClient {
   constructor(private readonly transport: RpcClient) {}
 
-  methods(payload: z.input<typeof C.methods['methods'].payload>): Promise<z.output<typeof C.methods['methods'].response>> {
-    return this.transport.request(C.methods['methods'].channel, payload);
+  listSessions(payload: z.input<typeof C.methods['listSessions'].payload>): Promise<z.output<typeof C.methods['listSessions'].response>> {
+    return this.transport.request(C.methods['listSessions'].channel, payload);
   }
 
   getMessages(payload: z.input<typeof C.methods['getMessages'].payload>): Promise<void> {

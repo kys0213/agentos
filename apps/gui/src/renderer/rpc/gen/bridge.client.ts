@@ -6,8 +6,8 @@ import { BridgeContract as C } from '../../../shared/rpc/contracts/bridge.contra
 export class BridgeClient {
   constructor(private readonly transport: RpcClient) {}
 
-  methods(payload: z.input<typeof C.methods['methods'].payload>): Promise<void> {
-    return this.transport.request(C.methods['methods'].channel, payload);
+  register(payload: z.input<typeof C.methods['register'].payload>): Promise<void> {
+    return this.transport.request(C.methods['register'].channel, payload);
   }
 
   unregister(payload: z.input<typeof C.methods['unregister'].payload>): Promise<z.output<typeof C.methods['unregister'].response>> {

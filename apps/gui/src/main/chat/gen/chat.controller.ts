@@ -9,9 +9,9 @@ import { ChatContract as C } from '../../../shared/rpc/contracts/chat.contract';
 export class GeneratedChatController {
 
   @EventPattern('chat.list-sessions')
-  async methods(@Payload(new ZodValidationPipe(C.methods['methods'].payload)) payload: z.input<typeof C.methods['methods'].payload>) {
-    // Expected return: z.output<typeof C.methods['methods'].response>
-    throw new Error('NotImplemented: wire chat.methods');
+  async listSessions(@Payload(new ZodValidationPipe(C.methods['listSessions'].payload)) payload: z.input<typeof C.methods['listSessions'].payload>) {
+    // Expected return: z.output<typeof C.methods['listSessions'].response>
+    throw new Error('NotImplemented: wire chat.listSessions');
   }
 
   @EventPattern('chat.get-messages')

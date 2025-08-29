@@ -9,9 +9,9 @@ import { PresetContract as C } from '../../../shared/rpc/contracts/preset.contra
 export class GeneratedPresetController {
 
   @EventPattern('preset.list')
-  async methods() {
-    // Expected return: z.output<typeof C.methods['methods'].response>
-    throw new Error('NotImplemented: wire preset.methods');
+  async list() {
+    // Expected return: z.output<typeof C.methods['list'].response>
+    throw new Error('NotImplemented: wire preset.list');
   }
 
   @EventPattern('preset.get')

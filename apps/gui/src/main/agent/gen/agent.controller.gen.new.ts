@@ -9,8 +9,8 @@ import { AgentContract as C } from '../../../shared/rpc/contracts/agent.contract
 export class GeneratedAgentController {
 
   @EventPattern('agent.chat')
-  async methods(@Payload(new ZodValidationPipe(C.methods['methods'].payload)) payload: z.input<typeof C.methods['methods'].payload>) {
-    throw new Error('NotImplemented: wire agent.methods');
+  async chat(@Payload(new ZodValidationPipe(C.methods['chat'].payload)) payload: z.input<typeof C.methods['chat'].payload>) {
+    throw new Error('NotImplemented: wire agent.chat');
   }
 
   @EventPattern('agent.update')

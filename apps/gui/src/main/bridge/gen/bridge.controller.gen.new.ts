@@ -9,8 +9,8 @@ import { BridgeContract as C } from '../../../shared/rpc/contracts/bridge.contra
 export class GeneratedBridgeController {
 
   @EventPattern('bridge.register')
-  async methods(@Payload(new ZodValidationPipe(C.methods['methods'].payload)) payload: z.input<typeof C.methods['methods'].payload>) {
-    throw new Error('NotImplemented: wire bridge.methods');
+  async register(@Payload(new ZodValidationPipe(C.methods['register'].payload)) payload: z.input<typeof C.methods['register'].payload>) {
+    throw new Error('NotImplemented: wire bridge.register');
   }
 
   @EventPattern('bridge.unregister')

@@ -3,28 +3,28 @@
 
 export const Channels = {
   agent: {
-    methods: 'agent.chat',
+    chat: 'agent.chat',
     update: 'agent.update',
     create: 'agent.create',
     delete: 'agent.delete',
   },
   bridge: {
-    methods: 'bridge.register',
+    register: 'bridge.register',
     unregister: 'bridge.unregister',
     switch: 'bridge.switch',
     list: 'bridge.list',
   },
   chat: {
-    methods: 'chat.list-sessions',
+    listSessions: 'chat.list-sessions',
     getMessages: 'chat.get-messages',
     deleteSession: 'chat.delete-session',
   },
   mcp: {
-    methods: 'mcp.getTool',
+    getTool: 'mcp.getTool',
     invokeTool: 'mcp.invokeTool',
   },
   preset: {
-    methods: 'preset.list',
+    list: 'preset.list',
     get: 'preset.get',
     create: 'preset.create',
     update: 'preset.update',
@@ -32,20 +32,20 @@ export const Channels = {
   },
 } as const;
 
-export const agent_methods = 'agent.chat' as const;
+export const agent_chat = 'agent.chat' as const;
 export const agent_update = 'agent.update' as const;
 export const agent_create = 'agent.create' as const;
 export const agent_delete = 'agent.delete' as const;
-export const bridge_methods = 'bridge.register' as const;
+export const bridge_register = 'bridge.register' as const;
 export const bridge_unregister = 'bridge.unregister' as const;
 export const bridge_switch = 'bridge.switch' as const;
 export const bridge_list = 'bridge.list' as const;
-export const chat_methods = 'chat.list-sessions' as const;
+export const chat_listSessions = 'chat.list-sessions' as const;
 export const chat_getMessages = 'chat.get-messages' as const;
 export const chat_deleteSession = 'chat.delete-session' as const;
-export const mcp_methods = 'mcp.getTool' as const;
+export const mcp_getTool = 'mcp.getTool' as const;
 export const mcp_invokeTool = 'mcp.invokeTool' as const;
-export const preset_methods = 'preset.list' as const;
+export const preset_list = 'preset.list' as const;
 export const preset_get = 'preset.get' as const;
 export const preset_create = 'preset.create' as const;
 export const preset_update = 'preset.update' as const;

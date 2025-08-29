@@ -9,8 +9,8 @@ import { McpContract as C } from '../../../shared/rpc/contracts/mcp.contract';
 export class GeneratedMcpController {
 
   @EventPattern('mcp.getTool')
-  async methods(@Payload(new ZodValidationPipe(C.methods['methods'].payload)) payload: z.input<typeof C.methods['methods'].payload>) {
-    throw new Error('NotImplemented: wire mcp.methods');
+  async getTool(@Payload(new ZodValidationPipe(C.methods['getTool'].payload)) payload: z.input<typeof C.methods['getTool'].payload>) {
+    throw new Error('NotImplemented: wire mcp.getTool');
   }
 
   @EventPattern('mcp.invokeTool')

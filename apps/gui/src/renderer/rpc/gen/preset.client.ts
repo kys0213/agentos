@@ -6,8 +6,8 @@ import { PresetContract as C } from '../../../shared/rpc/contracts/preset.contra
 export class PresetClient {
   constructor(private readonly transport: RpcClient) {}
 
-  methods(): Promise<z.output<typeof C.methods['methods'].response>> {
-    return this.transport.request(C.methods['methods'].channel);
+  list(): Promise<z.output<typeof C.methods['list'].response>> {
+    return this.transport.request(C.methods['list'].channel);
   }
 
   get(payload: z.input<typeof C.methods['get'].payload>): Promise<z.output<typeof C.methods['get'].response>> {
