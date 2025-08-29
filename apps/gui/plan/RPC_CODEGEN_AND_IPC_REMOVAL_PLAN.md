@@ -97,9 +97,8 @@ export const ChatContract = defineContract({
 
 4. 레거시 제거
 
-- [x] `apps/gui/src/renderer/ipc/` 경로 비우기(서비스 컨테이너 제거)
-- [ ] electron-ipc-channel.ts, mock-ipc-channel.ts 등 잔여 파일 확인 후 일괄 삭제
-- [ ] `ipc-channel` 타입/유틸 남아있는 import 제거
+- [x] `apps/gui/src/renderer/ipc/` 경로 정리 완료(서비스 컨테이너/잔여 파일 없음)
+- [x] `ipc-channel` 타입/유틸 제거 및 import 확인(파일 삭제 완료)
 
 5. 검증/문서/PR
 
