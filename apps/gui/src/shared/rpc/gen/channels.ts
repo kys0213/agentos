@@ -27,6 +27,11 @@ export const Channels = {
   mcp: {
     getTool: 'mcp.getTool',
     invokeTool: 'mcp.invokeTool',
+    : 'mcp.usage.getLogs',
+    usage_getStats: 'mcp.usage.getStats',
+    usage_getHourlyStats: 'mcp.usage.getHourlyStats',
+    usage_clear: 'mcp.usage.clear',
+    usage_events: 'mcp.usage.events',
   },
   preset: {
     list: 'preset.list',
@@ -55,6 +60,11 @@ export const chat_getMessages = 'chat.get-messages' as const;
 export const chat_deleteSession = 'chat.delete-session' as const;
 export const mcp_getTool = 'mcp.getTool' as const;
 export const mcp_invokeTool = 'mcp.invokeTool' as const;
+export const mcp_ = 'mcp.usage.getLogs' as const;
+export const mcp_usage_getStats = 'mcp.usage.getStats' as const;
+export const mcp_usage_getHourlyStats = 'mcp.usage.getHourlyStats' as const;
+export const mcp_usage_clear = 'mcp.usage.clear' as const;
+export const mcp_usage_events = 'mcp.usage.events' as const;
 export const preset_list = 'preset.list' as const;
 export const preset_get = 'preset.get' as const;
 export const preset_create = 'preset.create' as const;

@@ -24,6 +24,17 @@ export const MessageHistorySchema = z.object({
   ),
 });
 
+// Common content/message schemas (llm-bridge-spec alignment)
+export const MultiModalContentSchema = z.object({
+  contentType: z.string(),
+  value: z.unknown(),
+});
+
+export const UserMessageSchema = z.object({
+  role: z.literal('user'),
+  content: z.array(MultiModalContentSchema),
+});
+
 export const PageOf = <T extends z.ZodTypeAny>(item: T) =>
   z.object({
     items: z.array(item),

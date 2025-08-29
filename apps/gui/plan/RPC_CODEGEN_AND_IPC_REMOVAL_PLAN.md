@@ -76,8 +76,8 @@ export const ChatContract = defineContract({
 
 1. 계약 소스 도입
 
-- [ ] `shared/rpc/contracts/` 디렉토리 신설: chat/agent/bridge/preset/mcp/mcp-usage/conversation 등
-- [ ] 공용 스키마 준비: CursorPagination, MessageHistory, MultiModalContent[] 등(zod)
+- [x] `shared/rpc/contracts/` 디렉토리 신설: chat/agent/bridge/preset/mcp/mcp-usage/conversation 등
+- [x] 공용 스키마 준비: CursorPagination, MessageHistory, MultiModalContent[] 등(zod)
 
 2. 코드 생성기(Phase A) 구현
 
@@ -97,7 +97,7 @@ export const ChatContract = defineContract({
 
 4. 레거시 제거
 
-- [x] `apps/gui/src/renderer/ipc/` 경로 정리 완료(서비스 컨테이너/잔여 파일 없음)
+- [x] `apps/gui/src/renderer/ipc/` 경로 정리 완료(폴더만 잔존, 파일 제거)
 - [x] `ipc-channel` 타입/유틸 제거 및 import 확인(파일 삭제 완료)
 
 5. 검증/문서/PR
@@ -109,12 +109,12 @@ export const ChatContract = defineContract({
 
 ## 작업 Todo
 
-- [ ] 계약 스캐폴드 추가(shared/rpc/contracts + schemas)
-- [ ] 코드 생성기 초안(scripts/rpc-codegen.ts) + 샘플(chat)
+- [x] 계약 스캐폴드 추가(shared/rpc/contracts + schemas)
+- [x] 코드 생성기 초안(scripts/rpc-codegen.ts) + 샘플(chat)
 - [x] Renderer chat 클라이언트 gen 적용 → 훅 교체
 - [ ] Main chat 컨트롤러 gen 적용(PoC: 기존 컨트롤러 내부 위임으로 시작)
 - [x] ServiceContainer 이전 및 import 정리
-- [ ] renderer/ipc 제거
+- [x] renderer/ipc 제거
 - [ ] 문서/가이드 업데이트 + 승격
 
 ## 리스크/완화

@@ -48,19 +48,56 @@ function extractSpec(filePath) {
     }
   }
 
+  // Parse methods with brace-depth to allow nested z.object({...}) safely
   const methods = {};
-  const blockRegex = /(['"]?)([A-Za-z0-9_\-]+)\1\s*:\s*{([\s\S]*?)}/g;
-  let m;
-  while ((m = blockRegex.exec(inner))) {
-    const name = m[2];
-    const block = m[3];
-    const ch = /channel:\s*'([^']+)'/.exec(block);
-    if (!ch) continue;
-    const hasPayload = /\bpayload\s*:/.test(block);
-    const hasResponse = /\bresponse\s*:/.test(block);
-    const hasStreamResponse = /\bstreamResponse\s*:/.test(block);
+  let i = 0;
+  while (i < inner.length) {
+    // skip whitespace and commas
+    while (i < inner.length && /[\s,]/.test(inner[i])) i++;
+    if (i >= inner.length) break;
+    // parse method name: quoted string or identifier
+    let name = '';
+    if (inner[i] === "'" || inner[i] === '"') {
+      const quote = inner[i++];
+      const start = i;
+      while (i < inner.length && inner[i] !== quote) i++;
+      name = inner.slice(start, i);
+      i++; // skip closing quote
+    } else {
+      const start = i;
+      while (i < inner.length && /[A-Za-z0-9_\-]/.test(inner[i])) i++;
+      name = inner.slice(start, i);
+    }
+    // skip spaces
+    while (i < inner.length && /\s/.test(inner[i])) i++;
+    if (inner[i] !== ':') {
+      i++;
+      continue;
+    }
+    i++; // skip ':'
+    while (i < inner.length && /\s/.test(inner[i])) i++;
+    if (inner[i] !== '{') {
+      continue;
+    }
+    const bodyStart = i;
+    // scan balanced braces to find end of this method body
+    let depth = 0;
+    while (i < inner.length) {
+      const ch = inner[i++];
+      if (ch === '{') depth++;
+      else if (ch === '}') {
+        depth--;
+        if (depth === 0) break;
+      }
+    }
+    const body = inner.slice(bodyStart + 1, i - 1);
+    const chMatch = /channel:\s*'([^']+)'/.exec(body);
+    if (!chMatch) continue;
+    const hasPayload = /\bpayload\s*:/.test(body);
+    const hasResponse = /\bresponse\s*:/.test(body);
+    const hasStreamResponse = /\bstreamResponse\s*:/.test(body);
     const isStream = hasStreamResponse;
-    methods[name] = { channel: ch[1], hasPayload, hasResponse, hasStreamResponse, isStream };
+    methods[name] = { channel: chMatch[1], hasPayload, hasResponse, hasStreamResponse, isStream };
   }
   return { namespace, methods };
 }
@@ -118,29 +155,64 @@ function writeRendererClient(spec, outDir) {
   const className = `${capitalize(spec.namespace)}Client`;
   const contractConst = `${capitalize(spec.namespace)}Contract`;
   const contractImportPath = `../../../shared/rpc/contracts/${spec.namespace}.contract`;
+  const typesImportPath = `../../../shared/rpc/gen/${spec.namespace}.types`;
   const lines = [];
   lines.push(HEADER);
   lines.push(`import type { RpcClient, CloseFn } from '../../../shared/rpc/transport';`);
-  lines.push(`import { z } from 'zod';`);
   lines.push(`import { ${contractConst} as C } from '${contractImportPath}';`);
+  lines.push(`import type * as T from '${typesImportPath}';`);
   lines.push('');
   lines.push(`export class ${className} {`);
   lines.push(`  constructor(private readonly transport: RpcClient) {}`);
   for (const [name, info] of Object.entries(spec.methods)) {
     const mname = safeName(name);
+    const payloadType = info.hasPayload ? `T.${mname}_Payload` : 'void';
+    const resultType = info.hasResponse
+      ? `T.${mname}_Result`
+      : info.hasStreamResponse
+        ? `T.${mname}_Stream`
+        : 'void';
     lines.push('');
     if (info.hasPayload) {
-      lines.push(`  ${mname}(payload) {`);
+      lines.push(`  ${mname}(payload: ${payloadType}): Promise<${resultType}> {`);
       lines.push(`    return this.transport.request(C.methods['${name}'].channel, payload);`);
       lines.push('  }');
     } else {
-      lines.push(`  ${mname}() {`);
+      lines.push(`  ${mname}(): Promise<${resultType}> {`);
       lines.push(`    return this.transport.request(C.methods['${name}'].channel);`);
       lines.push('  }');
     }
   }
   lines.push('}');
   const file = path.join(outDir, `${spec.namespace}.client.ts`);
+  writeFileGenerated(file, lines.join('\n') + '\n');
+}
+
+function writeSharedTypes(spec, outDir) {
+  const contractPath = `../contracts/${spec.namespace}.contract`;
+  const lines = [];
+  lines.push(HEADER);
+  lines.push('// Declaration-only types for generated RPC clients');
+  lines.push('');
+  for (const [name, info] of Object.entries(spec.methods)) {
+    const mname = safeName(name);
+    const base = `typeof import('${contractPath}').${capitalize(spec.namespace)}Contract['methods']['${name}']`;
+    if (info.hasPayload) {
+      lines.push(`export type ${mname}_Payload = import('zod').infer<${base}['payload']>;`);
+    } else {
+      lines.push(`export type ${mname}_Payload = void;`);
+    }
+    if (info.hasResponse) {
+      lines.push(`export type ${mname}_Result = import('zod').infer<${base}['response']>;`);
+    } else {
+      lines.push(`export type ${mname}_Result = void;`);
+    }
+    if (info.hasStreamResponse) {
+      lines.push(`export type ${mname}_Stream = import('zod').infer<${base}['streamResponse']>;`);
+    }
+    lines.push('');
+  }
+  const file = path.join(outDir, `${spec.namespace}.types.d.ts`);
   writeFileGenerated(file, lines.join('\n') + '\n');
 }
 
@@ -202,6 +274,7 @@ function main() {
   for (const spec of specs) {
     writeRendererClient(spec, path.resolve(repoRoot, 'apps/gui/src/renderer/rpc/gen'));
     writeMainController(spec, path.resolve(repoRoot, `apps/gui/src/main/${spec.namespace}/gen`));
+    writeSharedTypes(spec, path.resolve(repoRoot, 'apps/gui/src/shared/rpc/gen'));
   }
 }
 
