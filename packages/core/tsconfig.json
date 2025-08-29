@@ -1,7 +1,12 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@agentos/lang": ["../lang/dist/index"],
+      "@agentos/lang/*": ["../lang/dist/*"]
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "esm"]

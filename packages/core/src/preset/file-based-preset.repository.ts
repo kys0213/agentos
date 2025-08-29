@@ -1,5 +1,5 @@
 import path from 'path';
-import { fs } from '@agentos/lang';
+import * as fs from '@agentos/lang/fs';
 import { CursorPaginationResult } from '../common/pagination/cursor-pagination';
 import { CreatePreset, Preset } from './preset';
 import { PresetRepository, PresetSummary } from './preset.repository';

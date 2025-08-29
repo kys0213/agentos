@@ -1,5 +1,5 @@
 import path from 'path';
-import { fs } from '@agentos/lang';
+import * as fs from '@agentos/lang/fs';
 import { FileBasedSessionMetadata } from './file-based-session.metadata';
 
 export class FileBasedChatSessionMetadataFile {

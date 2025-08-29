@@ -1,4 +1,4 @@
-import { fs } from '@agentos/lang';
+import * as fs from '@agentos/lang/fs';
 import type { BridgeLoadResult, BridgeLoader } from 'llm-bridge-loader';
 import type { LlmBridge, LlmManifest } from 'llm-bridge-spec';
 import path from 'path';

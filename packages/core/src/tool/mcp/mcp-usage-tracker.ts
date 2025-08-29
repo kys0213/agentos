@@ -1,7 +1,5 @@
 import { McpUsageLog, McpUsageStats, McpUsageTracker } from './mcp-types';
-import { validation } from '@agentos/lang';
-
-const { isNonEmptyArray } = validation;
+import { isNonEmptyArray } from '@agentos/lang/validation';
 
 /**
  * 메모리 기반 MCP 사용량 추적기 구현

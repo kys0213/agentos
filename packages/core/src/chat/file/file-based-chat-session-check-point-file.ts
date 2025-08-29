@@ -1,9 +1,8 @@
 import path from 'path';
 import fs from 'fs/promises';
 import { Checkpoint } from '../chat-session';
-import { json, validation } from '@agentos/lang';
-
-const { isPlainObject } = validation;
+import { parseJsonWithFallback } from '@agentos/lang/json';
+import { isPlainObject } from '@agentos/lang/validation';
 
 export class FileBasedChatSessionCheckpointFile {
   private readonly fileName = 'checkpoint.json';
@@ -35,7 +34,7 @@ export class FileBasedChatSessionCheckpointFile {
 
     try {
       const content = await fs.readFile(this.fullPath, 'utf-8');
-      const parsed = json.parseJsonWithFallback(content, null, {
+      const parsed = parseJsonWithFallback(content, null, {
         validator: isPlainObject,
       });
 

@@ -6,7 +6,8 @@
     "jsx": "react-jsx",
     "lib": ["ES2020", "DOM"],
     "module": "commonjs",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "baseUrl": "."
   },
   "include": ["src", "src/types.d.ts"],
   "exclude": ["node_modules", "dist", "src/**/__tests__"]

@@ -13,13 +13,12 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import EventEmitter from 'node:events';
 import { Scheduler } from '../../common/scheduler/scheduler';
-import { utils } from '@agentos/lang';
+import { safeZone } from '@agentos/lang/utils';
 
 // 타입 가드 함수들
 const isString = (value: unknown): value is string => typeof value === 'string';
 const isArray = (value: unknown): value is unknown[] => Array.isArray(value);
 
-const { safeZone } = utils;
 import { McpConfig } from './mcp-config';
 import { McpEvent, McpEventMap } from './mcp-event';
 import { McpTransportFactory } from './mcp-transport.factory';

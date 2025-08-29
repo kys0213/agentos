@@ -1,8 +1,7 @@
 import path from 'path';
 import { MessageHistory } from '../chat-session';
-import { fs, validation } from '@agentos/lang';
-
-const { isNonEmptyArray } = validation;
+import * as fs from '@agentos/lang/fs';
+import { isNonEmptyArray } from '@agentos/lang/validation';
 
 export class FileBasedChatSessionMessageHistoryFile {
   private readonly fileName = 'histories.jsonl';
