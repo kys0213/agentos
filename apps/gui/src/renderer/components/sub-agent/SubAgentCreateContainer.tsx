@@ -1,7 +1,7 @@
 import React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { SubAgentCreate } from './SubAgentCreate';
-import { ServiceContainer } from '../../ipc/service-container';
+import { ServiceContainer } from '../../../shared/di/service-container';
 import type { CreateAgentMetadata } from '@agentos/core';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';

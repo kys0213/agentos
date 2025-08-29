@@ -1,18 +1,18 @@
-import { AgentProtocol, ConversationProtocol } from './agent-protocol';
-import { BuiltinToolProtocol } from './builtin-protocol';
-import { LlmBridgeProtocol } from './llm-bridge-protocol';
-import { McpProtocol } from './mcp-protocol';
-import { McpUsageLogProtocol } from './mcp-usage-log-protocol';
-import { PresetProtocol } from './proset-protocol';
+import { AgentServiceAdapter } from '../../renderer/rpc/adapters/agent.adapter';
+import { ConversationServiceAdapter } from '../../renderer/rpc/adapters/conversation.adapter';
+import { BridgeServiceAdapter } from '../../renderer/rpc/adapters/bridge.adapter';
+import { McpServiceAdapter } from '../../renderer/rpc/adapters/mcp.adapter';
+import { PresetServiceAdapter } from '../../renderer/rpc/adapters/preset.adapter';
+import { McpUsageRpcService } from '../../renderer/rpc/services/mcp-usage.service';
 
 export interface AgentOsAPI {
-  agent: AgentProtocol;
-  conversation: ConversationProtocol;
-  bridge: LlmBridgeProtocol;
-  builtinTool: BuiltinToolProtocol;
-  mcp: McpProtocol;
-  preset: PresetProtocol;
-  mcpUsageLog: McpUsageLogProtocol;
+  agent: AgentServiceAdapter;
+  conversation: ConversationServiceAdapter;
+  bridge: BridgeServiceAdapter;
+  // builtinTool intentionally dropped until migrated to contracts
+  mcp: McpServiceAdapter;
+  preset: PresetServiceAdapter;
+  mcpUsageLog: McpUsageRpcService;
 }
 
 export type AgentOsServiceName = keyof AgentOsAPI;
@@ -22,7 +22,6 @@ export const AgentOsServiceNames: AgentOsServiceName[] = [
   'agent',
   'conversation',
   'bridge',
-  'builtinTool',
   'mcp',
   'preset',
   'mcpUsageLog',

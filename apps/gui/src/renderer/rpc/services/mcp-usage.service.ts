@@ -1,16 +1,21 @@
-import type { RpcClient } from '../../../shared/rpc/transport';
 import type { McpUsageLog, McpUsageStats } from '@agentos/core';
+import type { RpcClient } from '../../../shared/rpc/transport';
 import {
-  UsageLogQueryOptions,
-  HourlyStatsResponse,
   ClearUsageLogsResponse,
-  SetUsageTrackingResponse,
+  HourlyStatsResponse,
   McpUsageUpdateEvent,
   McpUsageUpdateEventSchema,
+  SetUsageTrackingResponse,
+  UsageLogQueryOptions,
 } from '../../../shared/types/mcp-usage-types';
+import { McpClient } from '../gen/mcp.client';
 
 export class McpUsageRpcService {
-  constructor(private readonly transport: RpcClient) {}
+  private readonly client: McpClient;
+
+  constructor(private readonly transport: RpcClient) {
+    this.client = new McpClient(transport);
+  }
 
   async getUsageLogs(clientName?: string, _options?: UsageLogQueryOptions): Promise<McpUsageLog[]> {
     // Map to core shape: { query, pg }
@@ -61,18 +66,13 @@ export class McpUsageRpcService {
   async subscribeToUsageUpdates(
     callback: (event: McpUsageUpdateEvent) => void
   ): Promise<() => void> {
-    if (!this.transport.stream) {
-      return async () => {};
-    }
-
-    const close = this.transport.on<McpUsageUpdateEvent>('mcp.usage.events', (ev) => {
-      const { success } = McpUsageUpdateEventSchema.safeParse(ev);
-
-      if (success) {
-        callback(ev);
+    // Prefer generated client's subscription helper for stream endpoints
+    const close = this.client.usage_eventsOn((ev) => {
+      const parsed = McpUsageUpdateEventSchema.safeParse(ev);
+      if (parsed.success) {
+        callback(parsed.data);
       }
     });
-
     return close;
   }
 }

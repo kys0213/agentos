@@ -51,3 +51,6 @@ apps/gui/design/current/image.png
 **/**/test-results/
 
 .agentos
+
+# Generated runtime type helpers (use .d.ts instead)
+apps/gui/src/shared/rpc/gen/*.types.ts

@@ -1,42 +1,47 @@
 import type { RpcClient } from '../shared/rpc/transport';
 import { AgentOsServiceNames } from '../shared/types/agentos-api';
-import { ServiceContainer } from './ipc/service-container';
-import { AgentRpcService as AgentService } from './rpc/services/agent.service';
-import { BridgeRpcService as BridgeService } from './rpc/services/bridge.service';
-import { ConversationRpcService as ConversationService } from './rpc/services/conversation.service';
+import { ServiceContainer } from '../shared/di/service-container';
+import { AgentClient as AgentService } from './rpc/gen/agent.client';
+import { ChatClient as ConversationService } from './rpc/gen/chat.client';
+import { McpClient as McpService } from './rpc/gen/mcp.client';
+import { PresetClient } from './rpc/gen/preset.client';
+import { BridgeClient } from './rpc/gen/bridge.client';
+import { PresetServiceAdapter } from './rpc/adapters/preset.adapter';
+import { BridgeServiceAdapter } from './rpc/adapters/bridge.adapter';
+import { AgentServiceAdapter } from './rpc/adapters/agent.adapter';
+import { ConversationServiceAdapter } from './rpc/adapters/conversation.adapter';
+import { McpServiceAdapter } from './rpc/adapters/mcp.adapter';
 import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usage.service';
-import { McpRpcService as McpService } from './rpc/services/mcp.service';
-import { PresetRpcService as PresetService } from './rpc/services/preset.service';
 
 /**
  * Bootstrap 결과 타입
  */
 export interface BootstrapResult {
   rpcTransport: RpcClient;
-  bridgeService: BridgeService;
-  mcpService: McpService;
-  presetService: PresetService;
-  agentService: AgentService;
-  conversationService: ConversationService;
+  bridgeService: BridgeServiceAdapter;
+  mcpService: McpServiceAdapter;
+  presetService: PresetServiceAdapter;
+  agentService: AgentServiceAdapter;
+  conversationService: ConversationServiceAdapter;
 }
 
 /**
  * 애플리케이션 Bootstrap 함수
- * IpcChannel을 주입받아 모든 서비스를 초기화하고 ServiceContainer에 등록
+ * RpcClient를 주입받아 모든 서비스를 초기화하고 ServiceContainer에 등록
  */
 export async function bootstrap(rpcTransport: RpcClient): Promise<BootstrapResult> {
   console.log('🚀 Starting application bootstrap...');
 
-  // 모든 서비스에 동일한 IpcChannel 주입하여 생성
+  // 공통 RpcClient(Transport)로 생성된 클라이언트를 주입
   // 새 RPC 서비스(Bridge/Preset/Agent)는 채널 기반 Transport를 사용
-  const bridgeService = new BridgeService(rpcTransport);
-  const mcpService = new McpService(rpcTransport);
-  const presetService = new PresetService(rpcTransport);
-  const agentService = new AgentService(rpcTransport);
-  const conversationService = new ConversationService(rpcTransport);
+  const bridgeService = new BridgeServiceAdapter(new BridgeClient(rpcTransport));
+  const mcpService = new McpServiceAdapter(new McpService(rpcTransport));
+  const presetService = new PresetServiceAdapter(new PresetClient(rpcTransport));
+  const agentService = new AgentServiceAdapter(new AgentService(rpcTransport));
+  const conversationService = new ConversationServiceAdapter(new ConversationService(rpcTransport));
   const mcpUsageLogService = new McpUsageLogService(rpcTransport);
 
-  console.log('⚙️ All services created with IpcChannel dependency injection');
+  console.log('⚙️ All services created with Rpc transport dependency injection');
 
   // 서비스들을 ServiceContainer에 등록
   ServiceContainer.register('bridge', bridgeService);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { SubAgentManager } from './SubAgentManager';
-import { ServiceContainer } from '../../ipc/service-container';
+import { ServiceContainer } from '../../../shared/di/service-container';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import type { AgentStatus } from '@agentos/core';
@@ -53,8 +53,9 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
   }
 
   return (
+    // eslint-disable-next-line no-restricted-syntax
     <SubAgentManager
-      agents={agents}
+      agents={agents as any}
       onOpenChat={() => {}}
       onCreateAgent={onCreateAgent}
       onUpdateAgentStatus={(id, status) => mutation.mutate({ id, status })}

@@ -1,6 +1,6 @@
 /**
  * AgentOS 통합 진입점
- * 환경을 자동 감지하여 적절한 IpcChannel로 bootstrap 실행
+ * 환경을 자동 감지하여 적절한 RpcClient(전송)로 bootstrap 실행
  */
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -20,7 +20,7 @@ async function initializeApp() {
   console.log('Environment details:', envInfo);
 
   const rpcTransport = createRpcTransport();
-  console.log('📡 IpcChannel created:', rpcTransport.constructor.name);
+  console.log('📡 Rpc transport created:', rpcTransport.constructor.name);
 
   await bootstrap(rpcTransport);
 

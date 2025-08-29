@@ -3,7 +3,7 @@ import type { FrameTransport, RpcClient } from '../../shared/rpc/transport';
 import { RpcEndpoint } from './rpc-endpoint';
 
 /**
- * 환경별 IpcChannel 구현체를 생성하는 팩토리 클래스
+ * 환경별 RpcClient(Frame transport) 구현체를 생성하는 팩토리
  * 런타임에 현재 환경을 감지하여 적절한 구현체를 반환
  */
 export class RpcTransportFactory {
@@ -13,8 +13,7 @@ export class RpcTransportFactory {
   }
 
   /**
-   * 현재 환경에 맞는 IpcChannel 구현체를 생성하여 반환
-   * 싱글톤 패턴으로 한 번 생성된 인스턴스를 재사용
+   * 현재 환경에 맞는 RpcClient 구현체를 생성하여 반환(싱글톤)
    */
   static create(): RpcClient {
     if (RpcTransportFactory._instance) {
@@ -185,7 +184,7 @@ export class RpcTransportFactory {
 }
 
 /**
- * 간편한 IpcChannel 인스턴스 접근을 위한 헬퍼 함수
+ * 간편한 RpcClient 인스턴스 접근을 위한 헬퍼 함수
  */
 export function createRpcTransport(): RpcClient {
   return RpcTransportFactory.create();

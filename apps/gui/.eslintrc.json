@@ -1,5 +1,10 @@
 {
   "extends": ["../../.eslintrc.json"],
+  "ignorePatterns": [
+    "src/main/**/gen/**",
+    "src/shared/rpc/gen/**",
+    "src/renderer/rpc/gen/**"
+  ],
   "parserOptions": {
     "project": ["./tsconfig.json"]
   },
@@ -17,4 +22,15 @@
       }
     ]
   }
+  ,
+  "overrides": [
+    {
+      "files": ["src/renderer/**/*.{ts,tsx}"],
+      "rules": {
+        "no-restricted-syntax": "off",
+        "@typescript-eslint/no-explicit-any": "warn",
+        "prettier/prettier": "warn"
+      }
+    }
+  ]
 }

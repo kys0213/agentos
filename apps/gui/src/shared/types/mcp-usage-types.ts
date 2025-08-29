@@ -23,20 +23,7 @@ export interface UsageLogQueryOptions {
  * 사용량 업데이트 이벤트
  * Main Process에서 Renderer Process로 전송되는 실시간 이벤트
  */
-export interface McpUsageUpdateEvent {
-  /** 이벤트 타입 */
-  type: 'usage-logged' | 'metadata-updated' | 'connection-changed';
-  /** 관련 MCP 클라이언트 이름 */
-  clientName: string;
-  /** 새로운 사용량 로그 (usage-logged 타입일 때) */
-  newLog?: McpUsageLog;
-  /** 업데이트된 메타데이터 (metadata-updated 타입일 때) */
-  metadata?: McpToolMetadata;
-  /** 연결 상태 (connection-changed 타입일 때) */
-  connectionStatus?: 'connected' | 'disconnected' | 'error' | 'pending';
-  /** 이벤트 발생 시간 */
-  timestamp: Date;
-}
+export type McpUsageUpdateEvent = z.infer<typeof McpUsageUpdateEventSchema>;
 
 export const McpUsageUpdateEventSchema = z.object({
   type: z.union([

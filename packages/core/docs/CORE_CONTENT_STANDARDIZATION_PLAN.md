@@ -54,11 +54,11 @@ export function toCoreContentArray(
 
 ## TODO (Phase 1)
 
-- [ ] TODO 1: packages/core/src/chat/content.ts 신설(CoreContent, CoreMessage, toCoreContentArray)
-- [ ] TODO 2: (옵션) normalizeContent 유틸 추가 - 느슨한 입력 정규화
+- [x] TODO 1: packages/core/src/chat/content.ts 신설(CoreContent, CoreMessage, toCoreContentArray)
+- [x] TODO 2: (옵션) normalizeContent 유틸 추가 - 느슨한 입력 정규화
 - [ ] TODO 3: 코어 사용처 점검(MessageHistory 등) → CoreMessage 호환 표 작성
 - [ ] TODO 4: 문서/가이드 업데이트 및 샘플 추가
-- [ ] TODO 5: 단위 테스트(정규화/단일/배열)
+- [x] TODO 5: 단위 테스트(정규화/단일/배열)
 
 ## TODO (Phase 2)
 
