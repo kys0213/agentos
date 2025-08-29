@@ -22,12 +22,12 @@ export interface BootstrapResult {
 
 /**
  * 애플리케이션 Bootstrap 함수
- * IpcChannel을 주입받아 모든 서비스를 초기화하고 ServiceContainer에 등록
+ * RpcClient를 주입받아 모든 서비스를 초기화하고 ServiceContainer에 등록
  */
 export async function bootstrap(rpcTransport: RpcClient): Promise<BootstrapResult> {
   console.log('🚀 Starting application bootstrap...');
 
-  // 모든 서비스에 동일한 IpcChannel 주입하여 생성
+  // 공통 RpcClient(Transport)로 생성된 클라이언트를 주입
   // 새 RPC 서비스(Bridge/Preset/Agent)는 채널 기반 Transport를 사용
   const bridgeService = new BridgeService(rpcTransport);
   const mcpService = new McpService(rpcTransport);
@@ -36,7 +36,7 @@ export async function bootstrap(rpcTransport: RpcClient): Promise<BootstrapResul
   const conversationService = new ConversationService(rpcTransport);
   const mcpUsageLogService = new McpUsageLogService(rpcTransport);
 
-  console.log('⚙️ All services created with IpcChannel dependency injection');
+  console.log('⚙️ All services created with Rpc transport dependency injection');
 
   // 서비스들을 ServiceContainer에 등록
   ServiceContainer.register('bridge', bridgeService);
