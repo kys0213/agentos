@@ -1,5 +1,7 @@
 # GUI Code Style — Curly Blocks & Ternary Guidelines
 
+> 이동 안내: 본 문서는 `apps/gui/docs/frontend/code-style.md`로 이동 예정입니다. 인덱스: `apps/gui/docs/frontend/README.md`
+
 Purpose: keep TS/TSX readable and consistent, and avoid Prettier×ESLint conflicts seen in GUI code.
 
 ## Principles

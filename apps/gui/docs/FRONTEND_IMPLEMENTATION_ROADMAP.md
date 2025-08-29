@@ -1,5 +1,7 @@
 # Frontend Implementation Roadmap — GUI
 
+> 이동 안내: 본 문서는 `apps/gui/docs/frontend/roadmap.md`로 이동 예정입니다. 인덱스: `apps/gui/docs/frontend/README.md`
+
 This roadmap tracks the design alignment work for the GUI against the Figma mock.
 
 ## Phase: Mock Alignment (Week N)

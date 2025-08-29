@@ -1,5 +1,7 @@
 # GUI Testing Guide (IPC + Mock)
 
+> 이동 안내: 본 문서는 `apps/gui/docs/frontend/testing.md`로 이동 예정입니다. 인덱스: `apps/gui/docs/frontend/README.md`
+
 본 문서는 GUI 테스트에서 IPC 경계를 다루고, MockIpcChannel을 통해 결정적 테스트를 구성하는 방법을 안내합니다.
 
 ## IpcChannel 주입

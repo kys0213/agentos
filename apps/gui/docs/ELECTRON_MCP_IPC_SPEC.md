@@ -1,5 +1,7 @@
 # Electron Reactive RPC 아키텍처 문서 (v0.2)
 
+> 이동 안내: 본 스펙 문서는 `apps/gui/docs/rpc/SPEC.md`로 이동 예정입니다. 인덱스: `apps/gui/docs/rpc/README.md`
+
 Note: This spec is interface-first. It defines contracts (methods, payloads, frames, error policies). Code-level implementation details are non‑normative and provided only as examples. Canonical types live under `apps/gui/src/shared/types/*`.
 
 > 공용 용어/채널 정의: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`

@@ -1,5 +1,7 @@
 # GUI Implementation Patterns (Required)
 
+> 이동 안내: 본 문서는 `apps/gui/docs/frontend/patterns.md`로 이동 예정입니다. 인덱스: `apps/gui/docs/frontend/README.md`
+
 This document defines mandatory patterns for GUI implementation to keep the codebase consistent, testable, and type-safe.
 
 ## 1) Container vs Presentational Components
