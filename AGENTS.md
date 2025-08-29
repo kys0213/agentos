@@ -21,6 +21,7 @@ Welcome to the AgentOS repository. This file summarizes key resources and comman
 6. **[Frontend Architect Guide](.claude/agents/frontend-architect.md)** ⭐ **프론트엔드 작업 필수**
 7. [AI Collaboration Guide](docs/AI_COLLABORATION_GUIDE.md)
 8. **[Git Workflow Guide](docs/GIT_WORKFLOW_GUIDE.md)** - 브랜치 전략 및 TODO별 커밋 필수
+9. [Docs & Plan Management](docs/DOCS_AND_PLAN_MANAGEMENT.md) - 문서/계획서 구조·운영 지침
 
 ## Quick Commands
 
