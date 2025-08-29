@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CreatePreset, Preset } from '@agentos/core';
 import { PresetManager } from './PresetManager';
-import { ServiceContainer } from '../../ipc/service-container';
+import { ServiceContainer } from '../../../shared/di/service-container';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';

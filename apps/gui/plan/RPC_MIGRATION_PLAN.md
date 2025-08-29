@@ -105,11 +105,11 @@ subscribeJson(sub, 'agent/session/123/message', isSessionMessagePayload, (p) => 
 ### 신규 이관 작업(렌더러 서비스 → RpcEndpoint)
 
 - [ ] 렌더러 서비스의 채널 네이밍 colon → dot 전환(컨트롤러와 1:1 매핑)
-  - [ ] `renderer/rpc/services/agent.service.ts`: `agent:chat` 등 → `agent.chat` 등
-  - [ ] `renderer/rpc/services/bridge.service.ts`: 도트 표기 일관화 재검증
-  - [ ] `renderer/rpc/services/preset.service.ts`: 도트 표기 일관화 재검증
-  - [ ] `renderer/rpc/services/mcp.service.ts`: `mcp:*` → `mcp.*`
-  - [ ] `renderer/rpc/services/conversation.service.ts`: 채널 정의/매핑 명시
+  - [x] `renderer/rpc/services/agent.service.ts`: 생성 클라이언트로 대체(도트 채널)
+  - [x] `renderer/rpc/services/bridge.service.ts`: 생성 클라이언트로 대체(도트 채널)
+  - [x] `renderer/rpc/services/preset.service.ts`: 생성 클라이언트로 대체(도트 채널)
+  - [x] `renderer/rpc/services/mcp.service.ts`: 생성 클라이언트로 대체(도트 채널)
+  - [x] `renderer/rpc/services/conversation.service.ts`: Chat 생성 클라이언트로 대체
 - [ ] `renderer/services/*` 레거시 경로에서 `IpcChannel` 의존 제거
   - [ ] `ipc-agent.ts` 제거 또는 Rpc 서비스 대체
   - [ ] `fetchers/*` 임시 호출부를 Rpc 서비스로 교체

@@ -89,8 +89,9 @@ export const ChatContract = defineContract({
 
 3. 파일 배치/의존 교체
 
-- [ ] `renderer/rpc/services/*` → `renderer/rpc/gen/*`로 교체(얇은 Facade 유지 선택)
-- [ ] `renderer/ipc/service-container.ts` → `renderer/providers/service-container.ts`로 이전(또는 shared/di.ts로 이동)
+- [x] `renderer/rpc/services/*` → `renderer/rpc/gen/*`로 교체(얇은 Facade 유지 선택)
+  - (완료) agent/bridge/preset/chat 수작업 서비스 제거, `bootstrap`에서 생성 클라이언트 사용
+- [x] `renderer/ipc/service-container.ts` → `renderer/providers/service-container.ts`로 이전(또는 shared/di.ts로 이동)
 - [ ] hooks/containers의 import 경로를 gen 클라이언트로 교체
 
 4. 레거시 제거

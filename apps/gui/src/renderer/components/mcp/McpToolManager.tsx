@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { McpConfig } from '@agentos/core';
-import { ServiceContainer } from '../../ipc/service-container';
+import { ServiceContainer } from '../../../shared/di/service-container';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
