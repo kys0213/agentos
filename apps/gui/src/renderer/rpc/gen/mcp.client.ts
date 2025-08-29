@@ -30,7 +30,10 @@ export class McpClient {
     return this.transport.request(C.methods['usage.clear'].channel, payload);
   }
 
-  usage_events(): Promise<T.usage_events_Stream> {
-    return this.transport.request(C.methods['usage.events'].channel);
+  usage_eventsStream(): AsyncGenerator<T.usage_events_Stream, void, unknown> {
+    return this.transport.stream ? this.transport.stream<T.usage_events_Stream>(C.methods['usage.events'].channel) : (async function*(){})()
+  }
+  usage_eventsOn(handler: (ev: T.usage_events_Stream) => void): CloseFn {
+    return this.transport.on<T.usage_events_Stream>(C.methods['usage.events'].channel, handler);
   }
 }

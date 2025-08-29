@@ -171,12 +171,38 @@ function writeRendererClient(spec, outDir) {
   for (const [name, info] of Object.entries(spec.methods)) {
     const mname = safeName(name);
     const payloadType = info.hasPayload ? `T.${mname}_Payload` : 'void';
-    const resultType = info.hasResponse
-      ? `T.${mname}_Result`
-      : info.hasStreamResponse
-        ? `T.${mname}_Stream`
-        : 'void';
+    const resultType = info.hasResponse ? `T.${mname}_Result` : 'void';
+    const streamType = info.hasStreamResponse ? `T.${mname}_Stream` : 'void';
     lines.push('');
+    // Stream endpoints: provide AsyncGenerator + on(handler) helpers
+    if (info.hasStreamResponse) {
+      if (info.hasPayload) {
+        lines.push(
+          `  ${mname}Stream(payload: ${payloadType}): AsyncGenerator<${streamType}, void, unknown> {`
+        );
+        lines.push(
+          `    return this.transport.stream ? this.transport.stream<${streamType}>(C.methods['${name}'].channel, payload) : (async function*(){})()`
+        );
+        lines.push('  }');
+      } else {
+        lines.push(
+          `  ${mname}Stream(): AsyncGenerator<${streamType}, void, unknown> {`
+        );
+        lines.push(
+          `    return this.transport.stream ? this.transport.stream<${streamType}>(C.methods['${name}'].channel) : (async function*(){})()`
+        );
+        lines.push('  }');
+      }
+      // Also expose a simple subscription helper via on(channel, handler)
+      lines.push(
+        `  ${mname}On(handler: (ev: ${streamType}) => void): CloseFn {`
+      );
+      lines.push(`    return this.transport.on<${streamType}>(C.methods['${name}'].channel, handler);`);
+      lines.push('  }');
+      continue;
+    }
+
+    // Request/response endpoints
     if (info.hasPayload) {
       lines.push(`  ${mname}(payload: ${payloadType}): Promise<${resultType}> {`);
       lines.push(`    return this.transport.request(C.methods['${name}'].channel, payload);`);
