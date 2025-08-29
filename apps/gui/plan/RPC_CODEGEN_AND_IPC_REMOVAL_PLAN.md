@@ -92,11 +92,13 @@ export const ChatContract = defineContract({
 - [x] `renderer/rpc/services/*` → `renderer/rpc/gen/*`로 교체(얇은 Facade 유지 선택)
   - (완료) agent/bridge/preset/chat 수작업 서비스 제거, `bootstrap`에서 생성 클라이언트 사용
 - [x] `renderer/ipc/service-container.ts` → `renderer/providers/service-container.ts`로 이전(또는 shared/di.ts로 이동)
-- [ ] hooks/containers의 import 경로를 gen 클라이언트로 교체
+- [x] hooks/containers의 import 경로를 gen 클라이언트로 교체
+  - (완료) 훅/스토어/컨테이너가 shared/di ServiceContainer를 통해 생성 클라이언트 사용
 
 4. 레거시 제거
 
-- [ ] `apps/gui/src/renderer/ipc/` 전체 삭제(electron-ipc-channel.ts, mock-ipc-channel.ts, index.ts 포함)
+- [x] `apps/gui/src/renderer/ipc/` 경로 비우기(서비스 컨테이너 제거)
+- [ ] electron-ipc-channel.ts, mock-ipc-channel.ts 등 잔여 파일 확인 후 일괄 삭제
 - [ ] `ipc-channel` 타입/유틸 남아있는 import 제거
 
 5. 검증/문서/PR
@@ -109,9 +111,9 @@ export const ChatContract = defineContract({
 
 - [ ] 계약 스캐폴드 추가(shared/rpc/contracts + schemas)
 - [ ] 코드 생성기 초안(scripts/rpc-codegen.ts) + 샘플(chat)
-- [ ] Renderer chat 클라이언트 gen 적용 → 훅 교체
+- [x] Renderer chat 클라이언트 gen 적용 → 훅 교체
 - [ ] Main chat 컨트롤러 gen 적용(PoC: 기존 컨트롤러 내부 위임으로 시작)
-- [ ] ServiceContainer 이전 및 import 정리
+- [x] ServiceContainer 이전 및 import 정리
 - [ ] renderer/ipc 제거
 - [ ] 문서/가이드 업데이트 + 승격
 
