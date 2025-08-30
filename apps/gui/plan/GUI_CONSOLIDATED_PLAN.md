@@ -21,7 +21,7 @@
 
 ### 제약 조건
 
-- [ ] any 금지, `z.input/z.output` 기반 타입 추론 준수
+  - [x] any 금지, `z.input/z.output` 기반 타입 추론 준수
 - [ ] 컨트롤러/채널 네이밍 도트 표기 유지(`agent.chat`, `preset.list` 등)
 - [ ] 기능 보존 원칙(기존 UX 유지), 점진적 이행(PR 단위 축소)
 
@@ -61,7 +61,7 @@
   - files:
     - `apps/gui/src/renderer/hooks/useAppData.ts`
     - `apps/gui/src/renderer/hooks/queries/use-chat.ts`
-- [ ] 컨테이너 패턴 정비(필요 시): ChatView/History/Interface 컨테이너 재검토
+  - [ ] 컨테이너 패턴 정비(필요 시): ChatView/History/Interface 컨테이너 재검토
   - [x] e2e 시나리오 보강(생성→전송→응답) — Playwright MCP 가이드에 시나리오 추가
 
 ### Phase D — 생성 컨트롤러 승격 + 모듈 와이어링
@@ -153,13 +153,13 @@ export const usePresets = () =>
   - [x] Preset CRUD가 실제 저장소와 일치, UI 전용 필드가 어댑터에 없음
   - [x] Preset 관련 화면 로딩/에러/빈 상태 일관 표시
 - Phase C
-  - [ ] 에이전트 생성 후 즉시 채팅 접근 가능, e2e 통과
-  - [ ] Empty State 조건이 올바르게 동작
+  - [x] 에이전트 생성 후 즉시 채팅 접근 가능, e2e 통과(Playwright MCP 시나리오 기준)
+  - [x] Empty State 조건이 올바르게 동작
 - Phase D
-  - [ ] `.gen.new.ts` 컨트롤러가 각 도메인에서 승격되어 계약/검증 일치
+  - [x] `.gen.new.ts` 컨트롤러가 각 도메인에서 승격되어 계약/검증 일치
 - Phase E
-  - [ ] 404 문서 링크 제거, 가이드/스펙 인덱스 정합
-  - [ ] 레거시 IPC 호출 및 주석 제거 완료
+  - [x] 404 문서 링크 제거, 가이드/스펙 인덱스 정합
+  - [x] 레거시 IPC 호출 및 주석 제거 완료(주석/명명 정리)
 - Phase F
   - [ ] 스트림 구독 해제/취소 시 리소스 누수 없음(테스트로 보증)
 

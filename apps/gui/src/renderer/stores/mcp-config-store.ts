@@ -2,7 +2,8 @@ import type { McpConfig } from '@agentos/core';
 import { McpServiceAdapter } from '../rpc/adapters/mcp.adapter';
 import { ServiceContainer } from '../../shared/di/service-container';
 
-// IPC 기반 MCP 설정 스토어 (브라우저 호환)
+// RPC 기반 MCP 설정 스토어 (브라우저 호환)
+// ServiceContainer에 등록된 McpServiceAdapter를 사용합니다.
 export class McpConfigStore {
   private cachedConfig: McpConfig | undefined;
   private get mcpService(): McpServiceAdapter {
