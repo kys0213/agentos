@@ -9,6 +9,5 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
   moduleNameMapper: {
     '^electron-store$': '<rootDir>/__mocks__/electron-store.ts',
-    '^@agentos/core(.*)$': '<rootDir>/../../packages/core/src$1',
   },
 };

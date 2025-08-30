@@ -17,13 +17,10 @@ import { McpRegistry } from '../tool/mcp/mcp.registery';
 import { Agent, AgentChatResult, AgentExecuteOptions } from './agent';
 import { DefaultAgentSession } from './simple-agent-session';
 import { AgentMetadata, ReadonlyAgentMetadata } from './agent-metadata';
-import { validation } from '@agentos/lang';
 import { Errors } from '../common/error/core-error';
 import type { AgentEvent } from './agent-events';
 import type { Unsubscribe } from '../common/event/event-subscriber';
 import { AgentMetadataRepository } from './agent-metadata.repository';
-
-const { isNonEmptyArray } = validation;
 
 export class SimpleAgent implements Agent {
   private readonly activeSessions = new Map<string, ChatSession>();
@@ -160,11 +157,9 @@ export class SimpleAgent implements Agent {
 
     const metadata = await this.getMetadata();
 
-    const enabledMcps = metadata.preset?.enabledMcps as
-      | Array<{ name: string; enabledTools?: Array<{ name: string }> }>
-      | undefined;
+    const enabledMcps = metadata.preset?.enabledMcps;
 
-    if (!isNonEmptyArray(enabledMcps)) {
+    if (!enabledMcps || enabledMcps.length === 0) {
       const tools = await Promise.all(mcps.map(async (mcp) => await mcp.getTools()));
 
       return tools.flat().map(this.toLlmBridgeTool);
@@ -175,11 +170,10 @@ export class SimpleAgent implements Agent {
         const mcp = await this.mcpRegistry.getOrThrow(enabledMcp.name);
         const tools = await mcp.getTools();
 
-        if (!isNonEmptyArray(enabledMcp.enabledTools)) {
+        const enabledTools = enabledMcp.enabledTools;
+        if (!enabledTools || enabledTools.length === 0) {
           return tools;
         }
-
-        const enabledTools = enabledMcp.enabledTools;
 
         const filteredTools = tools.filter((tool) =>
           enabledTools.some((enabledTool) => enabledTool.name === tool.name)
@@ -211,13 +205,14 @@ export class SimpleAgent implements Agent {
       await chatSession.sumUsage(response.usage);
     }
 
-    if (!isNonEmptyArray(response.toolCalls)) {
+    const toolCalls = response.toolCalls;
+    if (!toolCalls || toolCalls.length === 0) {
       return response;
     }
 
     messages.push(assistantMessage);
 
-    return await this.invokeWithTool(messages, response.toolCalls, tools, chatSession, options);
+    return await this.invokeWithTool(messages, toolCalls, tools, chatSession, options);
   }
 
   private async invokeWithTool(
@@ -233,7 +228,7 @@ export class SimpleAgent implements Agent {
       }
 
       const mcpAndTools = await Promise.all(
-        toolCalls!.map(async (toolCall) => {
+        toolCalls.map(async (toolCall) => {
           const mcpAndTool = await this.mcpRegistry.getToolOrThrow(toolCall.name);
           return { toolCall, mcpAndTool };
         })
@@ -266,9 +261,12 @@ export class SimpleAgent implements Agent {
 
       const llmResponse = await this.llmBridge.invoke({ messages: messages }, { tools });
 
-      if (!isNonEmptyArray(llmResponse.toolCalls)) {
+      const newToolCalls = llmResponse.toolCalls;
+      if (!newToolCalls || newToolCalls.length === 0) {
         return llmResponse;
       }
+
+      toolCalls = newToolCalls;
     }
 
     throw Errors.operationFailed('mcp', 'Tool call count exceeded');

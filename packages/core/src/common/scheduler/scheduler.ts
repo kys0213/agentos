@@ -1,6 +1,4 @@
-import { utils } from '@agentos/lang';
-
-const { safeZone } = utils;
+import { safeZone } from '@agentos/lang/utils';
 
 export class Scheduler {
   private constructor(private readonly ms: number) {}

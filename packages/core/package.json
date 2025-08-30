@@ -8,7 +8,48 @@
       "import": "./esm/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./agent": {
+      "import": "./esm/agent/index.js",
+      "require": "./dist/agent/index.js",
+      "types": "./dist/agent/index.d.ts"
+    },
+    "./chat": {
+      "import": "./esm/chat/index.js",
+      "require": "./dist/chat/index.js",
+      "types": "./dist/chat/index.d.ts"
+    },
+    "./common": {
+      "import": "./esm/common/index.js",
+      "require": "./dist/common/index.js",
+      "types": "./dist/common/index.d.ts"
+    },
+    "./knowledge": {
+      "import": "./esm/knowledge/index.js",
+      "require": "./dist/knowledge/index.js",
+      "types": "./dist/knowledge/index.d.ts"
+    },
+    "./llm": {
+      "import": "./esm/llm/index.js",
+      "require": "./dist/llm/index.js",
+      "types": "./dist/llm/index.d.ts"
+    },
+    "./memory": {
+      "import": "./esm/memory/index.js",
+      "require": "./dist/memory/index.js",
+      "types": "./dist/memory/index.d.ts"
+    },
+    "./preset": {
+      "import": "./esm/preset/index.js",
+      "require": "./dist/preset/index.js",
+      "types": "./dist/preset/index.d.ts"
+    },
+    "./tool": {
+      "import": "./esm/tool/index.js",
+      "require": "./dist/tool/index.js",
+      "types": "./dist/tool/index.d.ts"
+    },
+    "./package.json": "./package.json"
   },
   "sideEffects": false,
   "publishConfig": {

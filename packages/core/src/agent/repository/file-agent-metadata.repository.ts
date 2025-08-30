@@ -1,5 +1,5 @@
 import path from 'path';
-import { fs as langFs } from '@agentos/lang';
+import * as langFs from '@agentos/lang/fs';
 import type { AgentStatus } from '../agent';
 import type { AgentMetadata, CreateAgentMetadata, ReadonlyAgentMetadata } from '../agent-metadata';
 import type { AgentMetadataRepository } from '../agent-metadata.repository';

@@ -4,13 +4,13 @@ import { FileBasedLlmBridgeRegistry } from '../file-based-llm-bridge-registry';
 import path from 'node:path';
 import { LlmBridgeLoader } from './__mocks__/llm-bridge-loader';
 
-// In-memory file store to mock @agentos/lang fs layer deterministically
+// In-memory file store to mock @agentos/lang/fs layer deterministically
 const store = new Map<string, string>();
 
 // Helper to extract filename from path
 const filenameOf = (p: string) => path.basename(p);
 
-jest.mock('@agentos/lang', () => {
+jest.mock('@agentos/lang/fs', () => {
   const ok = <T>(result: T) => ({ success: true, result });
   const fail = (reason: unknown) => ({ success: false, reason });
 
@@ -81,7 +81,7 @@ jest.mock('@agentos/lang', () => {
     },
   };
 
-  return { fs: { FileUtils, JsonFileHandler: MockJsonFileHandler } };
+  return { FileUtils, JsonFileHandler: MockJsonFileHandler };
 });
 
 const makeManifest = (name: string): LlmManifest => ({

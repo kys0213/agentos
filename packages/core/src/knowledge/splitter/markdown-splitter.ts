@@ -1,8 +1,7 @@
 import { DocumentSplitter, SplitterOptions } from './document-splitter';
 import { KnowledgeChunk, KnowledgeDocumentMeta, BreadcrumbNode } from '../types';
-import { str, validation } from '@agentos/lang';
-
-const { isNonEmptyArray, isNonEmptyString } = validation;
+import { slugify } from '@agentos/lang/string';
+import { isNonEmptyArray, isNonEmptyString } from '@agentos/lang/validation';
 
 interface Heading {
   level: number; // 1..6
@@ -93,7 +92,7 @@ export class MarkdownSplitter implements DocumentSplitter {
         const level = Math.min(m[1].length, maxDepth);
         if (level <= maxDepth) {
           const rawTitle = m[2].trim();
-          const anchor = str.slugify(rawTitle);
+          const anchor = slugify(rawTitle);
           // maintain one breadcrumb per level using a stack
           while (stack.length > 0 && stack[stack.length - 1].level >= level) {
             stack.pop();

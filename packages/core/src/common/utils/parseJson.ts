@@ -1,7 +1,7 @@
 // Re-export from Lang package for backward compatibility
-import { json } from '@agentos/lang';
+import { parseJson as parseJsonCore } from '@agentos/lang/json';
 
 /**
- * @deprecated Use json.safeJsonParse or json.parseJsonWithFallback from @agentos/lang for better error handling
+ * @deprecated Use parseJson or parseJsonWithFallback from @agentos/lang/json for better error handling
  */
-export const parseJson = json.parseJson;
+export const parseJson = parseJsonCore;
