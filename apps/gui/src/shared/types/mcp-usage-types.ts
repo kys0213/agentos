@@ -46,7 +46,7 @@ export const McpUsageUpdateEventSchema = z.object({
       errorCode: z.string().optional(),
     })
     .optional(),
-  metadata: z.any().optional(),
+  metadata: z.unknown().optional(),
   connectionStatus: z
     .union([
       z.literal('connected'),
@@ -100,7 +100,7 @@ export interface McpUsageDashboard {
 
 /**
  * 시간별 통계 조회 응답
- * Map을 직렬화할 수 없으므로 IPC 통신용으로 배열 형태로 변환
+ * Map을 직렬화할 수 없으므로 RPC 전송용으로 배열 형태로 변환
  */
 export interface HourlyStatsResponse {
   /** 시간별 사용량 데이터 [시간, 사용량] 배열 */
@@ -125,7 +125,7 @@ export interface SetUsageTrackingResponse {
 }
 
 /**
- * IPC 통신용 기본 응답 타입
+ * RPC 통신용 기본 응답 타입
  */
 export interface BaseIpcResponse {
   success: boolean;
