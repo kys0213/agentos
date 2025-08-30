@@ -6,9 +6,8 @@ export class BridgeServiceAdapter {
   constructor(private readonly client: BridgeClient) {}
 
   async registerBridge(config: LlmManifest): Promise<{ success: boolean }> {
-    const res = C.methods['register'].response.parse(
-      await this.client.register({ manifest: config })
-    );
+    const payload = C.methods['register'].payload.parse({ manifest: config });
+    const res = C.methods['register'].response.parse(await this.client.register(payload));
     return { success: !!res.success };
   }
 
