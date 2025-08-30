@@ -2,6 +2,8 @@
 
 This guide explains how to verify GUI UX flows using Playwright MCP (Model Context Protocol tool).
 
+Scenario: Agent creation → enter chat → send message → receive response
+
 ## Goals
 
 - Launch the dev web server and drive the browser via Playwright MCP.
@@ -35,6 +37,34 @@ Other form elements use accessible labels (e.g., “Agent Name”, “Descriptio
    - `pnpm dev:web`
 
 2. In MCP tool, open the browser to `http://localhost:5173`.
+   - Alternatively, run a script (pseudo):
+     ```ts
+     // Pseudo-only. Keep as documentation; don't commit runnable tests per policy.
+     import { chromium } from '@playwright/test';
+     
+     async function run() {
+       const browser = await chromium.launch();
+       const page = await browser.newPage();
+       await page.goto('http://localhost:5173');
+       // 1) Create preset
+       await page.getByTestId('btn-create-project').click();
+       await page.getByLabel('Preset Name').fill('Test Preset');
+       await page.getByRole('button', { name: 'Create' }).click();
+       // 2) Create agent & enter chat
+       await page.getByTestId('nav-subagents').click();
+       await page.getByTestId('btn-create-agent').click();
+       await page.getByLabel('Agent Name').fill('Test Agent');
+       await page.getByRole('button', { name: 'Next' }).click();
+       await page.getByRole('button', { name: 'Create Agent' }).click();
+       // 3) Send a message
+       await page.getByPlaceholder('Type a message').fill('Hello');
+       await page.keyboard.press('Enter');
+       // 4) Expect a response bubble
+       await page.getByTestId('chat-assistant-bubble').first().waitFor();
+       await browser.close();
+     }
+     run();
+     ```
 
 3. Preset → Agent creation flow:
    - Click `nav-presets`

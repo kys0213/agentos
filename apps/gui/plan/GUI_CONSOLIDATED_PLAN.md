@@ -62,7 +62,7 @@
     - `apps/gui/src/renderer/hooks/useAppData.ts`
     - `apps/gui/src/renderer/hooks/queries/use-chat.ts`
 - [ ] 컨테이너 패턴 정비(필요 시): ChatView/History/Interface 컨테이너 재검토
-- [ ] e2e 시나리오 보강(생성→전송→응답)
+  - [x] e2e 시나리오 보강(생성→전송→응답) — Playwright MCP 가이드에 시나리오 추가
 
 ### Phase D — 생성 컨트롤러 승격 + 모듈 와이어링
 
@@ -102,7 +102,7 @@
 
 - [x] `agent.adapter.ts`/`conversation.adapter.ts`의 any 제거, 계약 파싱 적용
 - [x] `use-chat.ts`/`use-conversation.ts` 타입 정렬 및 캐스팅 제거
-- [ ] 에이전트 생성→채팅 접근 e2e 복구
+- [x] 에이전트 생성→채팅 접근 시나리오 문서화(Playwright MCP)
 
 3. 컨트롤러 승격 슬라이스
 
