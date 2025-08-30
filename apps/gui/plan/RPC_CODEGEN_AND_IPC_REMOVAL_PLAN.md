@@ -1,6 +1,8 @@
-# GUI RPC 자동생성 + renderer/ipc 제거 계획서
+# Moved
 
-> 관련: apps/gui/docs/ELECTRON_MCP_IPC_SPEC.md, apps/gui/docs/IPC_TERMS_AND_CHANNELS.md, apps/gui/docs/RPC_MIGRATION_STEP4.md, apps/gui/plan/RPC_MIGRATION_PLAN.md
+This plan is archived at `apps/gui/docs/archive/RPC_CODEGEN_AND_IPC_REMOVAL_PLAN.md`.
+Latest tracking: `apps/gui/plan/RPC_AND_STREAMING_CONSOLIDATED_PLAN.md`.
+Index: `apps/gui/docs/rpc/README.md`.
 
 ## 목적(Goals)
 

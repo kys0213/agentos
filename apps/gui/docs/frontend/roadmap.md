@@ -1,5 +1,7 @@
 # Frontend Implementation Roadmap — GUI
 
+Canonical location. Index: `apps/gui/docs/frontend/README.md`
+
 This roadmap tracks the design alignment work for the GUI against the Figma mock.
 
 ## Phase: Mock Alignment (Week N)

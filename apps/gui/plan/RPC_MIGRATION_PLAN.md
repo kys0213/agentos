@@ -1,6 +1,8 @@
-# Electron RPC/이벤트 수렴 계획서 (v0.2)
+# Moved
 
-> 공용 용어/채널 정의: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`
+This plan is archived at `apps/gui/docs/archive/RPC_MIGRATION_PLAN.md`.
+Latest tracking: `apps/gui/plan/RPC_AND_STREAMING_CONSOLIDATED_PLAN.md` (Phases 2–4).
+Index: `apps/gui/docs/rpc/README.md`.
 
 ## Requirements (v0.3 업데이트)
 

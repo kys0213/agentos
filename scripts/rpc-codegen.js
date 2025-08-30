@@ -6,6 +6,10 @@
     * renderer/rpc/gen/<ns>.client.ts (typed client via z.input/z.output)
     * main/<ns>/gen/<ns>.controller.ts (Nest controller stubs with ZodValidationPipe)
 */
+// Codegen rule summary:
+// - Dot-separated channels map to client method names with underscores.
+//   e.g. `mcp.usage.getStats` -> `usage_getStats()`; `mcp.usage.events` -> `usage_eventsStream()` / `usage_eventsOn()`
+// - Stream endpoints generate both AsyncGenerator `<name>Stream()` and subscription `<name>On()` helpers.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

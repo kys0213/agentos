@@ -1,5 +1,7 @@
 # GUI Code Style — Curly Blocks & Ternary Guidelines
 
+Canonical location. Index: `apps/gui/docs/frontend/README.md`
+
 Purpose: keep TS/TSX readable and consistent, and avoid Prettier×ESLint conflicts seen in GUI code.
 
 ## Principles
