@@ -5,48 +5,56 @@ import { PresetContract as C } from '../../../shared/rpc/contracts/preset.contra
 export class PresetServiceAdapter {
   constructor(private readonly client: PresetClient) {}
 
-  private toPreset(p: any): Preset {
+  private toPreset(p: Partial<Preset> | null): Preset {
+    const base = (p ?? {}) as Partial<Preset>;
     return {
-      usageCount: 0,
-      knowledgeDocuments: 0 as any,
-      knowledgeStats: {} as any,
-      ...(p as any),
-    } as Preset;
+      id: base.id ?? `preset-${Date.now()}`,
+      name: base.name ?? '',
+      description: base.description ?? '',
+      author: base.author ?? '',
+      version: base.version ?? '1.0.0',
+      systemPrompt: base.systemPrompt ?? '',
+      enabledMcps: base.enabledMcps ?? [],
+      llmBridgeName: base.llmBridgeName ?? 'default',
+      llmBridgeConfig: base.llmBridgeConfig ?? {},
+      createdAt: base.createdAt ?? new Date(),
+      updatedAt: base.updatedAt ?? new Date(),
+      status: base.status ?? 'active',
+      category: base.category ?? ['general'],
+      // UI/analytics friendly defaults (domain 타입 내 정의됨)
+      usageCount: base.usageCount ?? 0,
+      knowledgeDocuments: base.knowledgeDocuments ?? 0,
+      knowledgeStats:
+        base.knowledgeStats ?? ({ indexed: 0, vectorized: 0, totalSize: 0 } as const),
+    } satisfies Preset;
   }
 
   async getAllPresets(): Promise<Preset[]> {
     const page = C.methods['list'].response.parse(await this.client.list());
-    const items = await Promise.all(page.items.map(async (s) => this.client.get(s.id)));
-    return items.filter(Boolean).map((p) => this.toPreset(p));
+    const items = await Promise.all(
+      page.items.map(async (s) => C.methods['get'].response.parse(await this.client.get(s.id)))
+    );
+    return items.filter((p): p is NonNullable<typeof p> => Boolean(p)).map((p) => this.toPreset(p as any));
   }
 
   async createPreset(preset: CreatePreset): Promise<Preset> {
-    const res = C.methods['create'].response.parse(await this.client.create(preset as any));
-    if (res.success && (res as any).result) return this.toPreset((res as any).result);
+    const res = C.methods['create'].response.parse(await this.client.create(preset));
+    if (res.success && res.result) return this.toPreset(res.result as any);
     throw new Error(res.error ?? 'Failed to create preset');
   }
 
   async updatePreset(id: string, patch: Partial<Omit<Preset, 'id'>>): Promise<Preset> {
-    const current = await this.client.get(id);
+    const current = C.methods['get'].response.parse(await this.client.get(id));
     if (!current) throw new Error('Preset not found');
-    const merged: Preset = {
-      usageCount: 0,
-      knowledgeDocuments: [],
-      knowledgeStats: {},
-      ...(current as any),
-      ...(patch as any),
-      id,
-    } as Preset;
-    const res = C.methods['update'].response.parse(
-      await this.client.update({ id, preset: merged as any })
-    );
-    if (res.success && (res as any).result) return this.toPreset((res as any).result);
+    const merged: Preset = this.toPreset({ ...current, ...patch, id });
+    const res = C.methods['update'].response.parse(await this.client.update({ id, preset: merged }));
+    if (res.success && res.result) return this.toPreset(res.result as any);
     throw new Error(res.error ?? 'Failed to update preset');
   }
 
   async deletePreset(id: string): Promise<Preset> {
     // Best-effort: fetch then delete to satisfy return type
-    const before = await this.client.get(id);
+    const before = C.methods['get'].response.parse(await this.client.get(id));
     await this.client.delete(id);
     // If not found, throw to respect API contract
     if (!before) throw new Error('Preset not found');
@@ -54,7 +62,7 @@ export class PresetServiceAdapter {
   }
 
   async getPreset(id: string): Promise<Preset | null> {
-    const p = await this.client.get(id);
+    const p = C.methods['get'].response.parse(await this.client.get(id));
     return p ? this.toPreset(p) : null;
   }
 }
