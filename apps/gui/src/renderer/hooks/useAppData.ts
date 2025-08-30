@@ -28,9 +28,9 @@ export function useAppData(): UseAppDataReturn {
 
       if (ServiceContainer.has('agent')) {
         const agentService = ServiceContainer.getOrThrow('agent');
-        const coreAgents = (await agentService.getAllAgentMetadatas()) as any;
+        const coreAgents = await agentService.getAllAgentMetadatas();
         console.log('✅ Agents reloaded:', coreAgents);
-        setCurrentAgents(coreAgents as any);
+        setCurrentAgents(coreAgents);
       }
     } catch (error) {
       console.error('❌ Failed to reload agents:', error);
@@ -63,10 +63,10 @@ export function useAppData(): UseAppDataReturn {
           const agentService = ServiceContainer.getOrThrow('agent');
           console.log('📦 AgentService found, calling getAllAgentMetadatas()...');
 
-          const coreAgents = (await agentService.getAllAgentMetadatas()) as any;
+          const coreAgents = await agentService.getAllAgentMetadatas();
           console.log('✅ Agents loaded from service:', coreAgents);
 
-          setCurrentAgents(coreAgents as any);
+          setCurrentAgents(coreAgents);
         } else {
           console.warn('⚠️ AgentService not found in ServiceContainer');
           setCurrentAgents([]);
@@ -99,9 +99,7 @@ export function useAppData(): UseAppDataReturn {
 
       // 로컬 상태 업데이트
       setCurrentAgents((prev) =>
-        ((prev as any).map((agent: any) =>
-          agent.id === agentId ? { ...agent, status: newStatus } : agent
-        ) as any)
+        prev.map((agent) => (agent.id === agentId ? { ...agent, status: newStatus } : agent))
       );
     } catch (error) {
       console.error('Failed to update agent status:', error);
@@ -128,8 +126,8 @@ export function useAppData(): UseAppDataReturn {
           llmBridgeName: newPresetData.llmBridgeName ?? 'default',
           llmBridgeConfig: newPresetData.llmBridgeConfig ?? {},
           // 도메인 기본값: status/category는 코어/레포 기본값에 위임
-          status: (newPresetData as any).status ?? 'active',
-          category: (newPresetData as any).category ?? ['general'],
+          status: (newPresetData.status as Preset['status']) ?? 'active',
+          category: newPresetData.category ?? ['general'],
         } as CreatePreset;
 
         console.log('📤 Sending preset to service:', create);
@@ -184,12 +182,12 @@ export function useAppData(): UseAppDataReturn {
       });
 
       // 즉시 로컬 상태 업데이트 + 전체 데이터 재로드로 이중 보장
-      setCurrentAgents((prev) => ([...(prev as any), agent as any] as any));
+      setCurrentAgents((prev) => [...prev, agent as ReadonlyAgentMetadata]);
 
       // 추가 안전장치: 전체 Agent 데이터 재로드
       setTimeout(() => reloadAgents(), 100);
 
-      return agent as any;
+      return agent as ReadonlyAgentMetadata;
     } catch (error) {
       console.error('Failed to create agent:', error);
       throw error;

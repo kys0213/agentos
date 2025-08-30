@@ -47,7 +47,7 @@ export class PresetServiceAdapter {
     const items = await Promise.all(
       page.items.map(async (s) => C.methods['get'].response.parse(await this.client.get(s.id)))
     );
-    return items.filter((p): p is NonNullable<typeof p> => Boolean(p)).map((p) => this.toPreset(p as any));
+    return items.filter((p): p is NonNullable<typeof p> => Boolean(p)).map((p) => this.toPreset(p));
   }
 
   async createPreset(preset: CreatePreset): Promise<Preset> {
@@ -65,7 +65,7 @@ export class PresetServiceAdapter {
       category: preset.category as string[] | undefined,
     });
     const res = C.methods['create'].response.parse(await this.client.create(payload));
-    if (res.success && res.result) return this.toPreset(res.result as any);
+    if (res.success && res.result) return this.toPreset(res.result);
     throw new Error(res.error ?? 'Failed to create preset');
   }
 
@@ -93,7 +93,7 @@ export class PresetServiceAdapter {
       },
     });
     const res = C.methods['update'].response.parse(await this.client.update(updatePayload));
-    if (res.success && res.result) return this.toPreset(res.result as any);
+    if (res.success && res.result) return this.toPreset(res.result);
     throw new Error(res.error ?? 'Failed to update preset');
   }
 

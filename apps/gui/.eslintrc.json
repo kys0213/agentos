@@ -27,9 +27,25 @@
     {
       "files": ["src/renderer/**/*.{ts,tsx}"],
       "rules": {
-        "no-restricted-syntax": "off",
+        "no-restricted-syntax": "error",
         "@typescript-eslint/no-explicit-any": "warn",
         "prettier/prettier": "warn"
+      }
+    },
+    {
+      "files": [
+        "src/**/*.__tests__.*",
+        "src/**/__tests__/**/*.{ts,tsx}",
+        "src/**/?(*.)+(spec|test).{ts,tsx}"
+      ],
+      "rules": {
+        "no-restricted-syntax": [
+          "warn",
+          {
+            "selector": "TSAsExpression > TSAnyKeyword",
+            "message": "Avoid 'as any' in tests unless strictly necessary."
+          }
+        ]
       }
     }
   ]
