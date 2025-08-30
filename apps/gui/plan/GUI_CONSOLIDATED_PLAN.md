@@ -87,6 +87,7 @@
 
 - 스트림 취소/해제 테스트(누수 방지) 및 레시피 추가
   - files: `apps/gui/src/renderer/rpc/services/mcp-usage.service.ts`
+  - [x] 구독 해제 테스트 추가 및 recipes에 예시 추가
 - 타입/빌드/린트/테스트 파이프라인 그린 유지
 - 성능/메시지 포트는 별도 문서로 분리 계획
 
@@ -161,7 +162,7 @@ export const usePresets = () =>
   - [ ] 404 문서 링크 제거, 가이드/스펙 인덱스 정합
   - [ ] 레거시 IPC 호출 및 주석 제거 완료
 - Phase F
-  - [ ] 스트림 구독 해제/취소 시 리소스 누수 없음(테스트로 보증)
+  - [x] 스트림 구독 해제/취소 시 리소스 누수 없음(테스트로 보증)
 
 ## Git Workflow
 
