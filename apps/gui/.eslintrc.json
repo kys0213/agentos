@@ -9,7 +9,7 @@
     "brace-style": ["error", "1tbs", { "allowSingleLine": false }],
     "no-nested-ternary": "warn",
     "multiline-ternary": ["warn", "always-multiline"],
-    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-explicit-any": "error",
     "no-restricted-syntax": [
       "error",
       {
@@ -23,7 +23,7 @@
       "files": ["src/renderer/**/*.{ts,tsx}"],
       "rules": {
         "no-restricted-syntax": "error",
-        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/no-explicit-any": "error",
         "prettier/prettier": "warn"
       }
     },
@@ -40,7 +40,8 @@
             "selector": "TSAsExpression > TSAnyKeyword",
             "message": "Avoid 'as any' in tests unless strictly necessary."
           }
-        ]
+        ],
+        "@typescript-eslint/no-explicit-any": "warn"
       }
     }
   ]

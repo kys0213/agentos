@@ -34,14 +34,14 @@ export class GeneratedMcpController {
         payload.name,
         payload.input,
         {
-          agentId: (payload as any)?.agentId,
-          sessionId: (payload as any)?.resumptionToken,
+          agentId: payload.agentId,
+          sessionId: payload.resumptionToken,
         }
       );
-      return { success: true, result: res } as any;
+      return { success: true, result: res };
     } catch (e) {
       const msg = (e as Error)?.message ?? 'Tool invocation failed';
-      return { success: false, error: msg } as any;
+      return { success: false, error: msg };
     }
   }
 
