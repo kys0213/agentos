@@ -80,7 +80,7 @@
 - 렌더러의 레거시 IPC 호출/주석/테스트 유틸 제거 또는 Rpc로 대체
   - files: `apps/gui/src/renderer/bootstrap.ts`(서비스 등록/DI 일원화 검증)
 - 문서 링크 정상화 및 가이드 스텁 추가
-  - 누락 가이드: `apps/gui/docs/RPC_AND_STREAMING_GUIDE.md`(또는 `apps/gui/docs/rpc/GUIDE.md`로 정리)
+  - 누락 가이드: `apps/gui/docs/RPC_AND_STREAMING_GUIDE.md`(→ `apps/gui/docs/rpc/GUIDE.md` 연결 스텁 추가 완료)
   - 표준화 계획서 스텁: `apps/gui/plan/DOCS_AND_PLANS_STANDARDIZATION_PLAN.md`
 
 ### Phase F — 품질/테스트/성능
@@ -112,8 +112,8 @@
 
 4. 레거시/문서 슬라이스
 
-- [ ] 레거시 IPC 잔여 경로/주석/유틸 제거
-- [ ] 문서 인덱스/가이드 경로 정리 및 누락 파일 생성
+- [x] 레거시 IPC 잔여 경로/주석/유틸 제거(참조 주석 정리)
+- [x] 문서 인덱스/가이드 경로 정리 및 누락 파일 생성
 
 ## 작업 순서
 
