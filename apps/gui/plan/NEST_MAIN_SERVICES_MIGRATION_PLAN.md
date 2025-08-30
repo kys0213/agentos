@@ -1,6 +1,8 @@
-# GUI Main Services → NestJS 모듈/컨트롤러 이관 계획서 (v1)
+# Moved
 
-> 공용 용어/채널 정의: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`
+This plan is archived at `apps/gui/docs/archive/NEST_MAIN_SERVICES_MIGRATION_PLAN.md`.
+Latest tracking: `apps/gui/plan/RPC_AND_STREAMING_CONSOLIDATED_PLAN.md` (Phase 3).
+Index: `apps/gui/docs/rpc/README.md`.
 
 본 문서는 `apps/gui/src/main/services/*`에 존재하는 IPC 핸들러 로직을 NestJS 모듈/컨트롤러 구조로 점진 이관하기 위한 상세 계획입니다. 커밋 `e959ef03d6d7c5a814d3e43548b6487317701237`에서 정리된 LLM 브릿지 레지스트리 초기화와, 현재 추가된 모듈(PresetModule, McpUsageModule, AgentCoreModule 등)을 기반으로 진행합니다.
 

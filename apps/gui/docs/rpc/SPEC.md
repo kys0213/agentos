@@ -1,5 +1,7 @@
 # RPC Spec (Single Source of Truth)
 
+See also: `GUIDE.md`, `TERMS.md`, `recipes.md`.
+
 본 문서는 GUI RPC의 규약(프레임/에러/취소/네이밍)을 단일 출처로 요약합니다. 자세한 배경과 예시는 기존 스펙 문서를 참조하세요.
 
 - 상세 스펙(배경/예시 포함): `apps/gui/docs/ELECTRON_MCP_IPC_SPEC.md`
@@ -25,4 +27,3 @@
 - 구독형(On): `const close = ...On(handler); await close()`
 
 > 구현/배경 세부: `apps/gui/docs/ELECTRON_MCP_IPC_SPEC.md`
-

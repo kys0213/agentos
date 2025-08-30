@@ -2,6 +2,7 @@
 
 Canonical location. Index: `apps/gui/docs/rpc/README.md`
 
+See also: `SPEC.md`, `TERMS.md`, `recipes.md`.
 본 문서는 GUI의 계약(contracts) → 코드 생성(codegen) → 어댑터(adapters) → 스트리밍(streaming)까지의 최신/안정 가이드를 통합합니다. 세부 구현 계획과 진행 관리는 `apps/gui/plan/RPC_AND_STREAMING_CONSOLIDATED_PLAN.md`를 참고하세요.
 
 ## 1) 계약(Contracts) → 코드 생성(Codegen)

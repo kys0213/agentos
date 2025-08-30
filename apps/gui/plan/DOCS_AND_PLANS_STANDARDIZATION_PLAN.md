@@ -66,20 +66,20 @@ apps/gui/docs/
 
 - 기록/아카이브 이동
   - [x] `docs/archive/` 인덱스 생성 + STEP3/STEP4 상단 Archived 배너 추가(이동 전 단계)
-  - [ ] Superseded 계획서 4종을 `docs/archive/`로 이동하고 본문을 3~5줄 요약으로 축약
-    - [ ] `apps/gui/plan/RPC_MIGRATION_PLAN.md`
-    - [ ] `apps/gui/plan/RPC_CODEGEN_AND_IPC_REMOVAL_PLAN.md`
-    - [ ] `apps/gui/plan/NEST_MAIN_SERVICES_MIGRATION_PLAN.md`
-    - [ ] `apps/gui/plan/AGENT_API_ALIGNMENT_PLAN.md`
-  - [ ] `PLAN_INDEX.md`에서 Archived 섹션 링크를 `docs/archive/` 경로로 갱신
+  - [x] Superseded 계획서 4종을 `docs/archive/`로 이동(요약 배너 추가)
+    - [x] `apps/gui/plan/RPC_MIGRATION_PLAN.md`
+    - [x] `apps/gui/plan/RPC_CODEGEN_AND_IPC_REMOVAL_PLAN.md`
+    - [x] `apps/gui/plan/NEST_MAIN_SERVICES_MIGRATION_PLAN.md`
+    - [x] `apps/gui/plan/AGENT_API_ALIGNMENT_PLAN.md`
+  - [x] `PLAN_INDEX.md`에서 Archived 섹션 링크를 `docs/archive/` 경로로 갱신
 
 - 네이밍/규칙 명문화
 - [x] dot→underscore 규칙을 `docs/rpc/SPEC.md`에 단일 출처로 명문화(요약)
   - [ ] `scripts/rpc-codegen.js` 생성 헤더에 규칙 1줄 주석 추가(문서-툴 일치)
 
 - 교차 링크/배너 정리
-- [x] 기존 위치 파일 상단에 “이 문서는 이동됩니다/이동 예정” 안내 및 새 경로 링크(가이드/스펙/용어/프론트 문서 적용)
-  - [ ] GUIDE ↔ SPEC ↔ TERMS ↔ recipes 간 상호 링크 정리
+  - [x] 기존 위치 파일 상단에 “이 문서는 이동됩니다/이동 예정” 안내 및 새 경로 링크(가이드/스펙/용어/프론트 문서 적용)
+  - [x] GUIDE ↔ SPEC ↔ TERMS ↔ recipes 간 상호 링크 정리
 
 - 인덱스/내비게이션
   - [ ] `PLAN_INDEX.md`에 본 계획서 링크 추가 및 Active 섹션 업데이트

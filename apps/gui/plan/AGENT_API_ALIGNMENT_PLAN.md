@@ -1,6 +1,8 @@
-# 작업계획서: GUI Agent API 정합화 및 리팩토링
+# Moved
 
-> 공용 용어/채널 정의: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`
+This plan is archived at `apps/gui/docs/archive/AGENT_API_ALIGNMENT_PLAN.md`.
+Latest tracking: `apps/gui/plan/RPC_AND_STREAMING_CONSOLIDATED_PLAN.md` (Phase 2).
+Terms/index: `apps/gui/docs/rpc/README.md`.
 
 ## Requirements
 
