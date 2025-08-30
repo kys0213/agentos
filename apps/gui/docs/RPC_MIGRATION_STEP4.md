@@ -1,5 +1,7 @@
 # GUI RPC Migration — Step 4 완료 보고
 
+> Archived: 본 문서는 역사 기록용입니다. 최신 가이드/단일 출처는 `apps/gui/docs/rpc/README.md` 및 `apps/gui/docs/rpc/GUIDE.md`를 참고하세요. 진행 관리는 `apps/gui/plan/RPC_AND_STREAMING_CONSOLIDATED_PLAN.md`에서 추적합니다.
+
 상위 문서: apps/gui/plan/RPC_MIGRATION_PLAN.md
 
 ## 완료 항목 요약

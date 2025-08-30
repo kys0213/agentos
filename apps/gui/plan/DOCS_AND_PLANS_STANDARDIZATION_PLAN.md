@@ -54,7 +54,7 @@ apps/gui/docs/
 - RPC 문서 통합
   - [ ] `ELECTRON_MCP_IPC_SPEC.md` → `docs/rpc/SPEC.md`로 이동 및 개념 중심 축약
   - [ ] `RPC_AND_STREAMING_GUIDE.md` → `docs/rpc/GUIDE.md`로 이동(요약 중심), 상세 코드는 `recipes.md`로 분리
-  - [ ] `IPC_TERMS_AND_CHANNELS.md` → `docs/rpc/TERMS.md`로 이동(단일 출처)
+  - [x] `IPC_TERMS_AND_CHANNELS.md` → `docs/rpc/TERMS.md` 단일 출처 앵커 생성(현 문서 링크 유지)
 - [x] `docs/rpc/recipes.md` 신설: 취소(return/close), dot→underscore 네이밍, z.input/z.output 추론 예시
 
 - Frontend 문서 응집
@@ -65,7 +65,7 @@ apps/gui/docs/
   - [ ] `DESIGN_HOOKS_IMPROVEMENT_PLAN.md`: 내용이 가이드에 부합하면 `frontend/patterns.md`에 편입, 아니면 plan으로 이동
 
 - 기록/아카이브 이동
-  - [ ] `RPC_MIGRATION_STEP3.md`, `RPC_MIGRATION_STEP4.md` → `docs/archive/`로 이동 + 상단 배너(최신 가이드 링크)
+  - [x] `docs/archive/` 인덱스 생성 + STEP3/STEP4 상단 Archived 배너 추가(이동 전 단계)
   - [ ] Superseded 계획서 4종을 `docs/archive/`로 이동하고 본문을 3~5줄 요약으로 축약
     - [ ] `apps/gui/plan/RPC_MIGRATION_PLAN.md`
     - [ ] `apps/gui/plan/RPC_CODEGEN_AND_IPC_REMOVAL_PLAN.md`
@@ -74,7 +74,7 @@ apps/gui/docs/
   - [ ] `PLAN_INDEX.md`에서 Archived 섹션 링크를 `docs/archive/` 경로로 갱신
 
 - 네이밍/규칙 명문화
-- [ ] dot→underscore 규칙을 `docs/rpc/SPEC.md`에 단일 출처로 명문화
+- [x] dot→underscore 규칙을 `docs/rpc/SPEC.md`에 단일 출처로 명문화(요약)
   - [ ] `scripts/rpc-codegen.js` 생성 헤더에 규칙 1줄 주석 추가(문서-툴 일치)
 
 - 교차 링크/배너 정리
