@@ -6,12 +6,9 @@ export class ConversationServiceAdapter {
 
   listSessions(pagination?: unknown) {
     const payload = pagination ? C.methods['listSessions'].payload.parse(pagination) : undefined;
-    if (payload) {
-      return this.client
-        .listSessions(payload)
-        .then((res) => C.methods['listSessions'].response.parse(res));
-    }
-    return this.client.listSessions().then((res) => C.methods['listSessions'].response.parse(res));
+    return this.client
+      .listSessions(payload)
+      .then((res) => C.methods['listSessions'].response.parse(res));
   }
 
   getMessages(sessionId: string, pagination?: unknown) {

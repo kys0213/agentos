@@ -43,11 +43,11 @@ export class McpServiceAdapter {
     return { connected: false };
   }
 
-  async getToolMetadata(_clientName: string): Promise<unknown> {
-    return {};
+  async getToolMetadata(_clientName: string): Promise<Record<string, unknown>> {
+    return {} as Record<string, unknown>;
   }
 
-  async getAllToolMetadata(): Promise<unknown[]> {
-    return [];
+  async getAllToolMetadata(): Promise<Record<string, unknown>[]> {
+    return [] as Record<string, unknown>[];
   }
 }

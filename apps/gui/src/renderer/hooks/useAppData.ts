@@ -181,13 +181,10 @@ export function useAppData(): UseAppDataReturn {
         keywords: newAgentData.keywords || [],
       });
 
-      // 즉시 로컬 상태 업데이트 + 전체 데이터 재로드로 이중 보장
-      setCurrentAgents((prev) => [...prev, agent as ReadonlyAgentMetadata]);
-
-      // 추가 안전장치: 전체 Agent 데이터 재로드
+      // 생성 후 전체 Agent 데이터 재로드로 일관성 보장
       setTimeout(() => reloadAgents(), 100);
 
-      return agent as ReadonlyAgentMetadata;
+      return agent as unknown as ReadonlyAgentMetadata;
     } catch (error) {
       console.error('Failed to create agent:', error);
       throw error;

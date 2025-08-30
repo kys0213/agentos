@@ -32,10 +32,10 @@ export class AgentServiceAdapter {
     return C.methods['update'].response.parse(res);
   }
 
-  async createAgent(agent: Record<string, unknown>) {
+  async createAgent(agent: Record<string, unknown>): Promise<ReadonlyAgentMetadata> {
     const payload = C.methods['create'].payload.parse(agent);
     const res = await this.client.create(payload);
-    return C.methods['create'].response.parse(res);
+    return C.methods['create'].response.parse(res) as unknown as ReadonlyAgentMetadata;
   }
 
   async deleteAgent(id: string) {
