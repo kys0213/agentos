@@ -53,7 +53,7 @@
   - files:
     - `apps/gui/src/renderer/hooks/queries/use-presets.ts`
     - `apps/gui/src/renderer/hooks/useAppData.ts`
-- CRUD 동작/로딩/에러 상태 표준 UI로 통일
+- [x] CRUD 동작/로딩/에러 상태 표준 UI로 통일
 
 ### Phase C — 채팅 ReactQuery + 동기화 복구
 
@@ -96,7 +96,7 @@
 
 - [x] `preset.adapter.ts`에서 any 제거, 계약 파싱 적용, UI 필드 제거
 - [x] `use-presets.ts`로 단일 데이터 소스화, `useAppData` 중복 상태 제거
-- [ ] Preset 관련 컴포넌트 로딩/에러/빈 상태 표준화
+- [x] Preset 관련 컴포넌트 로딩/에러/빈 상태 표준화
 
 2. Agent/Conversation 슬라이스
 
@@ -150,8 +150,8 @@ export const usePresets = () =>
   - [ ] adapters/hooks에서 any 0, 계약 파싱 적용됨
   - [ ] ESLint에서 `as any` 금지 규칙 활성, 경고/오류 최소화
 - Phase B
-  - [ ] Preset CRUD가 실제 저장소와 일치, UI 전용 필드가 어댑터에 없음
-  - [ ] Preset 관련 화면 로딩/에러/빈 상태 일관 표시
+  - [x] Preset CRUD가 실제 저장소와 일치, UI 전용 필드가 어댑터에 없음
+  - [x] Preset 관련 화면 로딩/에러/빈 상태 일관 표시
 - Phase C
   - [ ] 에이전트 생성 후 즉시 채팅 접근 가능, e2e 통과
   - [ ] Empty State 조건이 올바르게 동작

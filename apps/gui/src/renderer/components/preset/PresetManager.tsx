@@ -98,6 +98,8 @@ export function PresetManager({
     const matchesCategory = selectedCategory === 'all' || cats.includes(selectedCategory);
     return matchesSearch && matchesCategory;
   });
+  const isEmptyData = !loading && sourcePresets.length === 0;
+  const isEmptyFilter = !loading && sourcePresets.length > 0 && filteredPresets.length === 0;
 
   const handleEditPreset = (preset: Preset) => {
     setSelectedPreset(preset);
@@ -312,26 +314,65 @@ export function PresetManager({
                 <div className="flex-1 min-h-0">
                   <ScrollArea className="h-full">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
-                      {loading
-                        ? Array.from({ length: 6 }).map((_, i) => (
-                            <Card key={i} className="p-6">
-                              <div className="animate-pulse space-y-4">
-                                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                                <div className="h-3 bg-gray-200 rounded w-full"></div>
-                                <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                              </div>
-                            </Card>
-                          ))
-                        : filteredPresets.map((preset) => (
-                            <PresetCard
-                              key={preset.id}
-                              preset={preset}
-                              onOpenDetail={handleOpenDetail}
-                              onEdit={handleEditPreset}
-                              onDuplicate={duplicatePreset}
-                              onDelete={deletePresetLocal}
-                            />
-                          ))}
+                      {loading &&
+                        Array.from({ length: 6 }).map((_, i) => (
+                          <Card key={i} className="p-6">
+                            <div className="animate-pulse space-y-4">
+                              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                              <div className="h-3 bg-gray-200 rounded w-full"></div>
+                              <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                            </div>
+                          </Card>
+                        ))}
+
+                      {!loading && isEmptyData && (
+                        <Card className="p-6 col-span-full">
+                          <div className="text-center text-muted-foreground py-8">
+                            <FolderOpen className="w-12 h-12 mx-auto mb-4 opacity-60" />
+                            <p className="text-lg font-medium text-foreground">No projects yet</p>
+                            <p className="text-sm mt-2">
+                              Create your first preset to start organizing agent projects.
+                            </p>
+                            <Button
+                              className="mt-4"
+                              onClick={() =>
+                                onStartCreatePreset ? onStartCreatePreset() : setViewMode('create')
+                              }
+                              data-testid="btn-empty-create-project"
+                            >
+                              <Plus className="w-4 h-4 mr-2" /> Create Preset
+                            </Button>
+                          </div>
+                        </Card>
+                      )}
+
+                      {!loading && isEmptyFilter && (
+                        <Card className="p-6 col-span-full">
+                          <div className="text-center text-muted-foreground py-8">
+                            <FolderOpen className="w-12 h-12 mx-auto mb-4 opacity-60" />
+                            <p className="text-lg font-medium text-foreground">No results</p>
+                            <p className="text-sm mt-2">Try adjusting filters or search terms.</p>
+                            <div className="mt-4 flex items-center justify-center gap-2">
+                              <Button variant="outline" onClick={() => setSearchQuery("")}>Clear search</Button>
+                              <Button variant="outline" onClick={() => setSelectedCategory('all')}>
+                                Reset category
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      )}
+
+                      {!loading &&
+                        filteredPresets.map((preset) => (
+                          <PresetCard
+                            key={preset.id}
+                            preset={preset}
+                            onOpenDetail={handleOpenDetail}
+                            onEdit={handleEditPreset}
+                            onDuplicate={duplicatePreset}
+                            onDelete={deletePresetLocal}
+                          />
+                        ))}
                     </div>
                   </ScrollArea>
                 </div>
