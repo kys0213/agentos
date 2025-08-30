@@ -29,8 +29,20 @@ export class GeneratedMcpController {
     @Payload(new ZodValidationPipe(C.methods['invokeTool']['payload']))
     payload: z.input<(typeof C.methods)['invokeTool']['payload']>
   ): Promise<z.output<(typeof C.methods)['invokeTool']['response']>> {
-    const res = await this.mcp.executeTool(payload.name, payload.input, undefined);
-    return { success: true, result: res } as any;
+    try {
+      const res = await this.mcp.executeTool(
+        payload.name,
+        payload.input,
+        {
+          agentId: (payload as any)?.agentId,
+          sessionId: (payload as any)?.resumptionToken,
+        }
+      );
+      return { success: true, result: res } as any;
+    } catch (e) {
+      const msg = (e as Error)?.message ?? 'Tool invocation failed';
+      return { success: false, error: msg } as any;
+    }
   }
 
   @EventPattern('mcp.usage.getLogs')
