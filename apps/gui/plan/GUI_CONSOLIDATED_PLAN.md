@@ -53,7 +53,7 @@
   - files:
     - `apps/gui/src/renderer/hooks/queries/use-presets.ts`
     - `apps/gui/src/renderer/hooks/useAppData.ts`
-- CRUD 동작/로딩/에러 상태 표준 UI로 통일
+- [x] CRUD 동작/로딩/에러 상태 표준 UI로 통일
 
 ### Phase C — 채팅 ReactQuery + 동기화 복구
 
@@ -62,7 +62,7 @@
     - `apps/gui/src/renderer/hooks/useAppData.ts`
     - `apps/gui/src/renderer/hooks/queries/use-chat.ts`
 - [ ] 컨테이너 패턴 정비(필요 시): ChatView/History/Interface 컨테이너 재검토
-- [ ] e2e 시나리오 보강(생성→전송→응답)
+  - [x] e2e 시나리오 보강(생성→전송→응답) — Playwright MCP 가이드에 시나리오 추가
 
 ### Phase D — 생성 컨트롤러 승격 + 모듈 와이어링
 
@@ -80,7 +80,7 @@
 - 렌더러의 레거시 IPC 호출/주석/테스트 유틸 제거 또는 Rpc로 대체
   - files: `apps/gui/src/renderer/bootstrap.ts`(서비스 등록/DI 일원화 검증)
 - 문서 링크 정상화 및 가이드 스텁 추가
-  - 누락 가이드: `apps/gui/docs/RPC_AND_STREAMING_GUIDE.md`(또는 `apps/gui/docs/rpc/GUIDE.md`로 정리)
+  - 누락 가이드: `apps/gui/docs/RPC_AND_STREAMING_GUIDE.md`(→ `apps/gui/docs/rpc/GUIDE.md` 연결 스텁 추가 완료)
   - 표준화 계획서 스텁: `apps/gui/plan/DOCS_AND_PLANS_STANDARDIZATION_PLAN.md`
 
 ### Phase F — 품질/테스트/성능
@@ -96,13 +96,13 @@
 
 - [x] `preset.adapter.ts`에서 any 제거, 계약 파싱 적용, UI 필드 제거
 - [x] `use-presets.ts`로 단일 데이터 소스화, `useAppData` 중복 상태 제거
-- [ ] Preset 관련 컴포넌트 로딩/에러/빈 상태 표준화
+- [x] Preset 관련 컴포넌트 로딩/에러/빈 상태 표준화
 
 2. Agent/Conversation 슬라이스
 
 - [x] `agent.adapter.ts`/`conversation.adapter.ts`의 any 제거, 계약 파싱 적용
 - [x] `use-chat.ts`/`use-conversation.ts` 타입 정렬 및 캐스팅 제거
-- [ ] 에이전트 생성→채팅 접근 e2e 복구
+- [x] 에이전트 생성→채팅 접근 시나리오 문서화(Playwright MCP)
 
 3. 컨트롤러 승격 슬라이스
 
@@ -112,8 +112,8 @@
 
 4. 레거시/문서 슬라이스
 
-- [ ] 레거시 IPC 잔여 경로/주석/유틸 제거
-- [ ] 문서 인덱스/가이드 경로 정리 및 누락 파일 생성
+- [x] 레거시 IPC 잔여 경로/주석/유틸 제거(참조 주석 정리)
+- [x] 문서 인덱스/가이드 경로 정리 및 누락 파일 생성
 
 ## 작업 순서
 
@@ -150,8 +150,8 @@ export const usePresets = () =>
   - [ ] adapters/hooks에서 any 0, 계약 파싱 적용됨
   - [ ] ESLint에서 `as any` 금지 규칙 활성, 경고/오류 최소화
 - Phase B
-  - [ ] Preset CRUD가 실제 저장소와 일치, UI 전용 필드가 어댑터에 없음
-  - [ ] Preset 관련 화면 로딩/에러/빈 상태 일관 표시
+  - [x] Preset CRUD가 실제 저장소와 일치, UI 전용 필드가 어댑터에 없음
+  - [x] Preset 관련 화면 로딩/에러/빈 상태 일관 표시
 - Phase C
   - [ ] 에이전트 생성 후 즉시 채팅 접근 가능, e2e 통과
   - [ ] Empty State 조건이 올바르게 동작

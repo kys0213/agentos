@@ -57,7 +57,7 @@ export async function bootstrap(rpcTransport: RpcClient): Promise<BootstrapResul
   // 등록된 서비스 정보 로깅
   console.log('📋 Container info:', ServiceContainer.getInfo());
 
-  // Optionally access window.electronBridge when wiring events
+  // All transports are wired via RpcTransportFactory; avoid direct window.electronBridge usage in app code.
 
   return {
     rpcTransport,
