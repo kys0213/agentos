@@ -13,7 +13,7 @@ export const useMentionableAgents = () => {
     queryKey: CHAT_QUERY_KEYS.mentionableAgents,
     queryFn: async () => {
       const agentService = ServiceContainer.getOrThrow('agent');
-      const all = (await agentService.getAllAgentMetadatas()) as any as ReadonlyAgentMetadata[];
+      const all = await agentService.getAllAgentMetadatas();
       return all.filter((a) => a.status === 'active' || a.status === 'idle');
     },
     staleTime: 60_000,
@@ -25,7 +25,7 @@ export const useActiveAgents = () => {
     queryKey: CHAT_QUERY_KEYS.activeAgents,
     queryFn: async () => {
       const agentService = ServiceContainer.getOrThrow('agent');
-      const all = (await agentService.getAllAgentMetadatas()) as any as ReadonlyAgentMetadata[];
+      const all = await agentService.getAllAgentMetadatas();
       return all.filter((a) => a.status === 'active');
     },
     staleTime: 30_000,
@@ -93,24 +93,34 @@ export const useSendChatMessage = (
       );
 
       // 응답 메시지들을 MessageHistory로 매핑 (배열 콘텐츠로 정규화)
-      const assistantMessages: Readonly<MessageHistory>[] = result.messages.map((m: any, idx) => {
-        const common = {
-          messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
-          role: m.role as string,
-          content: m.content as { contentType: string; value: unknown }[],
-          createdAt: new Date(),
-        };
-        if (m.role === 'tool') {
-          return {
-            ...common,
-            name: m.name ?? '',
-            toolCallId: m.toolCallId ?? '',
-            isCompressed: false,
-            agentMetadata: undefined,
-          } as Readonly<MessageHistory>;
+      type BridgeMsg = {
+        role: string;
+        content: { contentType: string; value: unknown }[];
+      } & Record<string, unknown>;
+
+      const assistantMessages: Readonly<MessageHistory>[] = result.messages.map(
+        (m: BridgeMsg, idx) => {
+          const common = {
+            messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
+            role: m.role,
+            content: m.content,
+            createdAt: new Date(),
+          };
+          if (m.role === 'tool') {
+            const name = typeof m['name'] === 'string' ? (m['name'] as string) : '';
+            const toolCallId =
+              typeof m['toolCallId'] === 'string' ? (m['toolCallId'] as string) : '';
+            return {
+              ...common,
+              name,
+              toolCallId,
+              isCompressed: false,
+              agentMetadata: undefined,
+            } as Readonly<MessageHistory>;
+          }
+          return common as Readonly<MessageHistory>;
         }
-        return common as Readonly<MessageHistory>;
-      });
+      );
 
       // 세션 ID 갱신 콜백 (서버에서 새 세션 발급 시 반영)
       options?.onSessionId?.(result.sessionId);

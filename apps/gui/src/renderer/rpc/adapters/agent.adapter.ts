@@ -1,5 +1,6 @@
 import { AgentClient } from '../gen/agent.client';
 import { AgentContract as C } from '../../../shared/rpc/contracts/agent.contract';
+import type { ReadonlyAgentMetadata } from '@agentos/core';
 
 export class AgentServiceAdapter {
   constructor(private readonly client: AgentClient) {}
@@ -15,14 +16,14 @@ export class AgentServiceAdapter {
     await this.client.end_session(payload);
   }
 
-  async getAgentMetadata(id: string) {
+  async getAgentMetadata(id: string): Promise<ReadonlyAgentMetadata> {
     const res = await this.client.get_metadata(id);
-    return C.methods['get-metadata'].response.parse(res);
+    return C.methods['get-metadata'].response.parse(res) as unknown as ReadonlyAgentMetadata;
   }
 
-  async getAllAgentMetadatas() {
+  async getAllAgentMetadatas(): Promise<ReadonlyAgentMetadata[]> {
     const res = await this.client.get_all_metadatas();
-    return C.methods['get-all-metadatas'].response.parse(res);
+    return C.methods['get-all-metadatas'].response.parse(res) as unknown as ReadonlyAgentMetadata[];
   }
 
   async updateAgent(agentId: string, patch: Record<string, unknown>) {
