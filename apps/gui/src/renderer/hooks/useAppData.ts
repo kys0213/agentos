@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 import type { UseAppDataReturn } from '../stores/store-types';
-import type { Preset, McpConfig, ReadonlyAgentMetadata, ReadonlyPreset } from '@agentos/core';
+import type {
+  Preset,
+  McpConfig,
+  ReadonlyAgentMetadata,
+  ReadonlyPreset,
+  CreatePreset,
+} from '@agentos/core';
 import { ServiceContainer } from '../../shared/di/service-container';
 
 /**
@@ -44,26 +50,8 @@ export function useAppData(): UseAppDataReturn {
 
           const corePresets = await presetService.getAllPresets();
           console.log('✅ Presets loaded from service:', corePresets);
-
-          // Core Preset을 DesignPreset으로 변환
-          const designPresets: Preset[] = corePresets.map(
-            (preset: Preset): Preset => ({
-              ...preset,
-              usageCount: 0, // UI 전용 필드들 기본값 설정
-              knowledgeDocuments: 0,
-              knowledgeStats: {
-                indexed: 0,
-                vectorized: 0,
-                totalSize: 0,
-              },
-              // 새 디자인 필드들 기본값
-              category: preset.category || ['general'],
-              status: preset.status || 'active',
-            })
-          );
-
-          console.log('🎨 Presets converted for UI:', designPresets);
-          setPresets(designPresets);
+          // Core Preset 그대로 사용 (UI 전용 필드 주입 제거)
+          setPresets(corePresets);
         } else {
           console.warn('⚠️ PresetService not found in ServiceContainer');
         }
@@ -130,32 +118,22 @@ export function useAppData(): UseAppDataReturn {
       if (ServiceContainer.has('preset')) {
         const presetService = ServiceContainer.getOrThrow('preset');
 
-        const presetToCreate: Preset = {
-          id: `preset-${Date.now()}`,
+        const create: CreatePreset = {
           name: newPresetData.name || '',
-          description: newPresetData.description || '',
+          description: newPresetData.description ?? '',
           author: 'User',
           version: '1.0.0',
           systemPrompt: newPresetData.systemPrompt || '',
           enabledMcps: [],
-          llmBridgeName: 'default',
-          llmBridgeConfig: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          // 새 디자인 필드들
-          category: newPresetData.category || ['general'],
-          status: newPresetData.status || 'active',
-          usageCount: 0,
-          knowledgeDocuments: 0,
-          knowledgeStats: {
-            indexed: 0,
-            vectorized: 0,
-            totalSize: 0,
-          },
-        };
+          llmBridgeName: newPresetData.llmBridgeName ?? 'default',
+          llmBridgeConfig: newPresetData.llmBridgeConfig ?? {},
+          // 도메인 기본값: status/category는 코어/레포 기본값에 위임
+          status: (newPresetData as any).status ?? 'active',
+          category: (newPresetData as any).category ?? ['general'],
+        } as CreatePreset;
 
-        console.log('📤 Sending preset to service:', presetToCreate);
-        const result = await presetService.createPreset(presetToCreate);
+        console.log('📤 Sending preset to service:', create);
+        const result = await presetService.createPreset(create);
         console.log('📥 Service create result:', result);
 
         setPresets((prev) => [...prev, result]);
@@ -241,12 +219,7 @@ export function useAppData(): UseAppDataReturn {
       if (ServiceContainer.has('preset')) {
         const presetService = ServiceContainer.getOrThrow('preset');
 
-        // DesignPreset을 Core Preset으로 변환하여 업데이트
-        const corePreset: Preset = {
-          ...updatedPreset,
-          updatedAt: new Date(),
-        };
-
+        const corePreset: Preset = { ...updatedPreset, updatedAt: new Date() } as Preset;
         console.log('📤 Sending preset update to service:', corePreset);
         const result = await presetService.updatePreset(corePreset.id, corePreset);
         console.log('📥 Service update result:', result);
