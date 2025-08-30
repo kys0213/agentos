@@ -23,7 +23,9 @@ export class BridgeServiceAdapter {
 
   async getCurrentBridge(): Promise<{ id: string; config: LlmManifest } | null> {
     const cur = C.methods['get-current'].response.parse(await this.client.get_current());
-    if (!cur) return null;
+    if (!cur) {
+      return null;
+    }
     return { id: cur.id, config: cur.manifest as LlmManifest };
   }
 

@@ -3,6 +3,7 @@
 본 디렉토리는 개념/의도/기준 중심의 문서를 제공합니다. 구현 세부 예시는 recipes로 분리합니다.
 
 ## Quick Links
+
 - RPC: `apps/gui/docs/rpc/README.md`
   - Guide: `apps/gui/docs/rpc/GUIDE.md`
   - Spec (SSOT): `apps/gui/docs/rpc/SPEC.md`

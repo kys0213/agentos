@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { UseAppDataReturn } from '../stores/store-types';
-import type {
-  Preset,
-  McpConfig,
-  ReadonlyAgentMetadata,
-  ReadonlyPreset,
-  CreatePreset,
-} from '@agentos/core';
+import type { McpConfig, ReadonlyAgentMetadata } from '@agentos/core';
 import { ServiceContainer } from '../../shared/di/service-container';
 
 /**
@@ -15,7 +9,6 @@ import { ServiceContainer } from '../../shared/di/service-container';
  * Mock 데이터 대신 실제 Core 서비스를 사용
  */
 export function useAppData(): UseAppDataReturn {
-  const [presets, setPresets] = useState<ReadonlyPreset[]>([]);
   const [currentAgents, setCurrentAgents] = useState<ReadonlyAgentMetadata[]>([]);
   const [showEmptyState, setShowEmptyState] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -41,21 +34,6 @@ export function useAppData(): UseAppDataReturn {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Preset Service를 통해 프리셋 로드
-        console.log('🔄 Loading presets from PresetService...');
-
-        if (ServiceContainer.has('preset')) {
-          const presetService = ServiceContainer.getOrThrow('preset');
-          console.log('📦 PresetService found, calling getAllPresets()...');
-
-          const corePresets = await presetService.getAllPresets();
-          console.log('✅ Presets loaded from service:', corePresets);
-          // Core Preset 그대로 사용 (UI 전용 필드 주입 제거)
-          setPresets(corePresets);
-        } else {
-          console.warn('⚠️ PresetService not found in ServiceContainer');
-        }
-
         // Agent Service를 통해 실제 에이전트 로드
         console.log('🔄 Loading agents from AgentService...');
 
@@ -75,8 +53,6 @@ export function useAppData(): UseAppDataReturn {
         const error = err instanceof Error ? err : new Error(String(err));
         console.error('Failed to load app data:', error);
         setError(error);
-        // 에러 발생 시 빈 상태로 설정
-        setPresets([]);
         setCurrentAgents([]);
       } finally {
         setLoading(false);
@@ -103,46 +79,6 @@ export function useAppData(): UseAppDataReturn {
       );
     } catch (error) {
       console.error('Failed to update agent status:', error);
-      throw error;
-    }
-  };
-
-  const handleCreatePreset = async (
-    newPresetData: Partial<ReadonlyPreset>
-  ): Promise<ReadonlyPreset> => {
-    try {
-      console.log('🔄 Creating new preset:', newPresetData);
-
-      if (ServiceContainer.has('preset')) {
-        const presetService = ServiceContainer.getOrThrow('preset');
-
-        const create: CreatePreset = {
-          name: newPresetData.name || '',
-          description: newPresetData.description ?? '',
-          author: 'User',
-          version: '1.0.0',
-          systemPrompt: newPresetData.systemPrompt || '',
-          enabledMcps: [],
-          llmBridgeName: newPresetData.llmBridgeName ?? 'default',
-          llmBridgeConfig: newPresetData.llmBridgeConfig ?? {},
-          // 도메인 기본값: status/category는 코어/레포 기본값에 위임
-          status: (newPresetData.status as Preset['status']) ?? 'active',
-          category: newPresetData.category ?? ['general'],
-        } as CreatePreset;
-
-        console.log('📤 Sending preset to service:', create);
-        const result = await presetService.createPreset(create);
-        console.log('📥 Service create result:', result);
-
-        setPresets((prev) => [...prev, result]);
-        console.log('✅ Preset created and added to state');
-        return result;
-      }
-
-      throw new Error('PresetService not available');
-    } catch (error) {
-      console.error('❌ Failed to create preset:', error);
-      setError(error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   };
@@ -207,54 +143,7 @@ export function useAppData(): UseAppDataReturn {
     }
   };
 
-  const handleUpdatePreset = async (updatedPreset: Preset): Promise<void> => {
-    try {
-      console.log('🔄 Updating preset:', updatedPreset);
-
-      if (ServiceContainer.has('preset')) {
-        const presetService = ServiceContainer.getOrThrow('preset');
-
-        const corePreset: Preset = { ...updatedPreset, updatedAt: new Date() } as Preset;
-        console.log('📤 Sending preset update to service:', corePreset);
-        const result = await presetService.updatePreset(corePreset.id, corePreset);
-        console.log('📥 Service update result:', result);
-      }
-
-      // 로컬 상태 업데이트
-      setPresets((prev) =>
-        prev.map((preset) =>
-          preset.id === updatedPreset.id ? { ...updatedPreset, updatedAt: new Date() } : preset
-        )
-      );
-      console.log('✅ Preset updated in state');
-    } catch (error) {
-      console.error('❌ Failed to update preset:', error);
-      setError(error instanceof Error ? error : new Error(String(error)));
-      throw error;
-    }
-  };
-
-  const handleDeletePreset = async (presetId: string): Promise<void> => {
-    try {
-      console.log('🔄 Deleting preset:', presetId);
-
-      if (ServiceContainer.has('preset')) {
-        const presetService = ServiceContainer.getOrThrow('preset');
-
-        console.log('📤 Sending delete request to service for:', presetId);
-        const result = await presetService.deletePreset(presetId);
-        console.log('📥 Service delete result:', result);
-      }
-
-      // 로컬 상태에서 제거
-      setPresets((prev) => prev.filter((preset) => preset.id !== presetId));
-      console.log('✅ Preset deleted from state');
-    } catch (error) {
-      console.error('❌ Failed to delete preset:', error);
-      setError(error instanceof Error ? error : new Error(String(error)));
-      throw error;
-    }
-  };
+  // Preset 로직은 React Query 훅(use-presets)으로 이동
 
   const getMentionableAgents = (): ReadonlyAgentMetadata[] => {
     return currentAgents.filter((agent) => agent.status === 'active' || agent.status === 'idle');
@@ -268,22 +157,18 @@ export function useAppData(): UseAppDataReturn {
   const agentsToShow = showEmptyState ? [] : currentAgents;
 
   return {
-    presets,
     currentAgents: agentsToShow,
     showEmptyState,
     setShowEmptyState,
     loading, // 로딩 상태 추가
     error, // 에러 상태 추가
     handleUpdateAgentStatus,
-    handleCreatePreset,
     handleCreateMCPTool,
     handleCreateAgent,
     handleCreateCustomTool,
-    handleUpdatePreset,
-    handleDeletePreset,
     getMentionableAgents,
     getActiveAgents,
     reloadAgents, // Agent 생성 후 수동 동기화용
   };
 }
-/* eslint-disable @typescript-eslint/no-explicit-any, no-restricted-syntax */
+// end

@@ -1,5 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import type { ChatSessionDescription, CursorPagination, CursorPaginationResult } from '@agentos/core';
+import type {
+  ChatSessionDescription,
+  CursorPagination,
+  CursorPaginationResult,
+} from '@agentos/core';
 import { ServiceContainer } from '../../../shared/di/service-container';
 
 export const CONVERSATION_QUERY_KEYS = {
@@ -37,7 +41,10 @@ export function useSessionMessages(sessionId: string | undefined, pagination?: C
         return null;
       }
       const svc = ServiceContainer.getOrThrow('conversation');
-      return (await svc.getMessages(sessionId, pagination)) as CursorPaginationResult<MinimalMessage>;
+      return (await svc.getMessages(
+        sessionId,
+        pagination
+      )) as CursorPaginationResult<MinimalMessage>;
     },
     enabled: !!sessionId,
     staleTime: 10_000,

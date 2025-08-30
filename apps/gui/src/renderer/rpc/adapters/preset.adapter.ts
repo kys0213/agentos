@@ -65,15 +65,23 @@ export class PresetServiceAdapter {
       category: preset.category as string[] | undefined,
     });
     const res = C.methods['create'].response.parse(await this.client.create(payload));
-    if (res.success && res.result) return this.toPreset(res.result);
+    if (res.success && res.result) {
+      return this.toPreset(res.result);
+    }
     throw new Error(res.error ?? 'Failed to create preset');
   }
 
   async updatePreset(id: string, patch: Partial<Omit<Preset, 'id'>>): Promise<Preset> {
     const current = C.methods['get'].response.parse(await this.client.get(id));
-    if (!current) throw new Error('Preset not found');
+    if (!current) {
+      throw new Error('Preset not found');
+    }
     // Merge at core level for safety (patch may be core-shaped)
-    const mergedCore: Preset = { ...this.toPreset(current), ...(patch as Partial<Preset>), id } as Preset;
+    const mergedCore: Preset = {
+      ...this.toPreset(current),
+      ...(patch as Partial<Preset>),
+      id,
+    } as Preset;
     const updatePayload = C.methods['update'].payload.parse({
       id,
       preset: {
@@ -93,7 +101,9 @@ export class PresetServiceAdapter {
       },
     });
     const res = C.methods['update'].response.parse(await this.client.update(updatePayload));
-    if (res.success && res.result) return this.toPreset(res.result);
+    if (res.success && res.result) {
+      return this.toPreset(res.result);
+    }
     throw new Error(res.error ?? 'Failed to update preset');
   }
 
@@ -102,7 +112,9 @@ export class PresetServiceAdapter {
     const before = C.methods['get'].response.parse(await this.client.get(id));
     await this.client.delete(id);
     // If not found, throw to respect API contract
-    if (!before) throw new Error('Preset not found');
+    if (!before) {
+      throw new Error('Preset not found');
+    }
     return this.toPreset(before);
   }
 

@@ -1,10 +1,6 @@
 {
   "extends": ["../../.eslintrc.json"],
-  "ignorePatterns": [
-    "src/main/**/gen/**",
-    "src/shared/rpc/gen/**",
-    "src/renderer/rpc/gen/**"
-  ],
+  "ignorePatterns": ["src/main/**/gen/**", "src/shared/rpc/gen/**", "src/renderer/rpc/gen/**"],
   "parserOptions": {
     "project": ["./tsconfig.json"]
   },
@@ -21,8 +17,7 @@
         "message": "Do not use 'as any'; use proper typing, generics, or runtime guards."
       }
     ]
-  }
-  ,
+  },
   "overrides": [
     {
       "files": ["src/renderer/**/*.{ts,tsx}"],

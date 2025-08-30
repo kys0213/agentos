@@ -100,12 +100,25 @@ export const useSendChatMessage = (
 
       const assistantMessages: Readonly<MessageHistory>[] = result.messages.map(
         (m: BridgeMsg, idx) => {
+          const serverMsgId =
+            typeof m['messageId'] === 'string' ? (m['messageId'] as string) : undefined;
+          const createdRaw = m['createdAt'] as unknown;
+          let createdAt: Date;
+          if (createdRaw instanceof Date) {
+            createdAt = createdRaw;
+          } else if (typeof createdRaw === 'string') {
+            createdAt = new Date(createdRaw);
+          } else {
+            createdAt = new Date();
+          }
+
           const common = {
-            messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
+            messageId: serverMsgId ?? `assistant-${result.sessionId}-${Date.now()}-${idx}`,
             role: m.role,
             content: m.content,
-            createdAt: new Date(),
+            createdAt,
           };
+
           if (m.role === 'tool') {
             const name = typeof m['name'] === 'string' ? (m['name'] as string) : '';
             const toolCallId =

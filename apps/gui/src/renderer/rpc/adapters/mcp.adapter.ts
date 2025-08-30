@@ -1,4 +1,6 @@
-type ToolExecutionResponse = { success: true; result?: unknown } | { success: false; error: string };
+type ToolExecutionResponse =
+  | { success: true; result?: unknown }
+  | { success: false; error: string };
 type ResourceListResponse = { resources: Array<unknown> };
 type ResourceResponse = { uri: string; content: unknown; mimeType: string };
 import { McpClient } from '../gen/mcp.client';
@@ -28,7 +30,9 @@ export class McpServiceAdapter {
   ): Promise<ToolExecutionResponse> {
     const payload = C.methods['invokeTool'].payload.parse({ name: toolName, input: args });
     const parsed = C.methods['invokeTool'].response.parse(await this.client.invokeTool(payload));
-    return parsed.success ? { success: true, result: parsed.result } : { success: false, error: parsed.error };
+    return parsed.success
+      ? { success: true, result: parsed.result }
+      : { success: false, error: parsed.error };
   }
 
   async getMcpResources(_clientName: string): Promise<ResourceListResponse> {

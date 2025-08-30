@@ -8,4 +8,3 @@
 - 로드맵: `apps/gui/docs/FRONTEND_IMPLEMENTATION_ROADMAP.md` → `apps/gui/docs/frontend/roadmap.md`
 
 정리 작업 계획: `apps/gui/plan/DOCS_AND_PLANS_STANDARDIZATION_PLAN.md`
-

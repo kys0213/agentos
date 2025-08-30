@@ -32,7 +32,10 @@ export const SubAgentCreateContainer: React.FC<SubAgentCreateContainerProps> = (
     mutationFn: async (data: CreateAgentMetadata) =>
       ServiceContainer.getOrThrow('agent').createAgent(data),
     onSuccess: (agent) => {
+      // Invalidate agent lists used across views
       queryClient.invalidateQueries({ queryKey: ['agents'] });
+      queryClient.invalidateQueries({ queryKey: ['chat', 'mentionableAgents'] });
+      queryClient.invalidateQueries({ queryKey: ['chat', 'activeAgents'] });
       onCreated?.((agent as unknown as { id: string }).id);
       onBack();
     },

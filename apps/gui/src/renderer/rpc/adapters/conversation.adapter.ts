@@ -13,9 +13,9 @@ export class ConversationServiceAdapter {
 
   getMessages(sessionId: string, pagination?: unknown) {
     const payload = C.methods['getMessages'].payload.parse({ sessionId, pagination });
-    return this.client.getMessages(payload).then((res) =>
-      C.methods['getMessages'].response.parse(res)
-    );
+    return this.client
+      .getMessages(payload)
+      .then((res) => C.methods['getMessages'].response.parse(res));
   }
 
   deleteSession(sessionId: string) {

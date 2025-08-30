@@ -93,21 +93,29 @@ export function MCPToolsManager() {
             const mcpTools = await mcpService.getAllToolMetadata();
 
             // Convert metadata (Record<string, unknown>) to GUI shape safely
+            const computeId = (raw: Record<string, unknown>, name: string) =>
+              typeof raw['id'] === 'string'
+                ? (raw['id'] as string)
+                : name.toLowerCase().replace(/\s+/g, '-');
+
             const toGui = (raw: Record<string, unknown>): GuiMcpTool => {
-              const name = typeof raw['name'] === 'string' ? raw['name'] : 'Unknown Tool';
-              const id = (typeof raw['id'] === 'string' ? raw['id'] : name.toLowerCase().replace(/\s+/g, '-')) as string;
-              const description =
-                typeof raw['description'] === 'string' ? (raw['description'] as string) : '';
-              const category = typeof raw['category'] === 'string' ? (raw['category'] as string) : 'other';
-              const status =
-                typeof raw['status'] === 'string' ? (raw['status'] as string) : 'disconnected';
-              const version = typeof raw['version'] === 'string' ? (raw['version'] as string) : '1.0.0';
-              const provider = typeof raw['provider'] === 'string' ? (raw['provider'] as string) : undefined;
-              const usageCount = typeof raw['usageCount'] === 'number' ? (raw['usageCount'] as number) : 0;
-              const endpoint = typeof raw['endpoint'] === 'string' ? (raw['endpoint'] as string) : undefined;
-              const permissions = Array.isArray(raw['permissions'])
-                ? (raw['permissions'] as string[])
-                : [];
+              const getString = (k: string, fallback = ''): string =>
+                typeof raw[k] === 'string' ? (raw[k] as string) : fallback;
+              const getNumber = (k: string, fallback = 0): number =>
+                typeof raw[k] === 'number' ? (raw[k] as number) : fallback;
+              const getArray = <T = unknown,>(k: string): T[] =>
+                Array.isArray(raw[k]) ? (raw[k] as T[]) : [];
+
+              const name = getString('name', 'Unknown Tool');
+              const id = computeId(raw, name);
+              const description = getString('description', '');
+              const category = getString('category', 'other');
+              const status = getString('status', 'disconnected');
+              const version = getString('version', '1.0.0');
+              const provider = getString('provider', '') || undefined;
+              const usageCount = getNumber('usageCount', 0);
+              const endpoint = getString('endpoint', '') || undefined;
+              const permissions = getArray<string>('permissions');
               return {
                 id,
                 name,
@@ -336,10 +344,15 @@ export function MCPToolsManager() {
         const mcpService = ServiceContainer.getOrThrow('mcp');
         const mcpTools = await mcpService.getAllToolMetadata();
 
+        const computeId = (raw: Record<string, unknown>, name: string) =>
+          typeof raw['id'] === 'string'
+            ? (raw['id'] as string)
+            : name.toLowerCase().replace(/\s+/g, '-');
         const guiTools: GuiMcpTool[] = (mcpTools as Record<string, unknown>[]).map((raw) => {
           const name = typeof raw['name'] === 'string' ? (raw['name'] as string) : 'Unknown Tool';
-          const id = (typeof raw['id'] === 'string' ? raw['id'] : name.toLowerCase().replace(/\s+/g, '-')) as string;
-          const category = typeof raw['category'] === 'string' ? (raw['category'] as string) : 'other';
+          const id = computeId(raw, name);
+          const category =
+            typeof raw['category'] === 'string' ? (raw['category'] as string) : 'other';
           return {
             id,
             name,
@@ -350,7 +363,7 @@ export function MCPToolsManager() {
             provider: raw['provider'] as string | undefined,
             usageCount: (raw['usageCount'] as number) ?? 0,
             endpoint: raw['endpoint'] as string | undefined,
-            permissions: (Array.isArray(raw['permissions']) ? (raw['permissions'] as string[]) : []),
+            permissions: Array.isArray(raw['permissions']) ? (raw['permissions'] as string[]) : [],
             icon: getIconForCategory(category),
           };
         });

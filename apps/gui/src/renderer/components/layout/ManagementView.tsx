@@ -72,7 +72,6 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     showEmptyState,
     setShowEmptyState,
     // handleUpdateAgentStatus not used in this view
-    handleCreatePreset,
     handleCreateMCPTool,
     // handleCreateAgent not used in this view
     handleCreateCustomTool,
@@ -124,7 +123,15 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     }
 
     if (creatingAgent) {
-      return <SubAgentCreateContainer onBack={handleBackToAgents} />;
+      return (
+        <SubAgentCreateContainer
+          onBack={handleBackToAgents}
+          onCreated={(id) => {
+            // Open chat with the newly created agent and return to chat view
+            handleOpenChat(id);
+          }}
+        />
+      );
     }
 
     if (creatingCustomTool) {

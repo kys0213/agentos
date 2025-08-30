@@ -46,4 +46,3 @@ const stats = await mcp.usage_getStats({});
 mcp.usage.getStats  → usage_getStats()
 mcp.usage.events    → usage_eventsStream() / usage_eventsOn()
 ```
-
