@@ -52,16 +52,16 @@ apps/gui/docs/
 - [x] `docs/README.md`(루트 인덱스)와 `docs/frontend/README.md` 추가
 
 - RPC 문서 통합
-  - [ ] `ELECTRON_MCP_IPC_SPEC.md` → `docs/rpc/SPEC.md`로 이동 및 개념 중심 축약
-  - [ ] `RPC_AND_STREAMING_GUIDE.md` → `docs/rpc/GUIDE.md`로 이동(요약 중심), 상세 코드는 `recipes.md`로 분리
-  - [x] `IPC_TERMS_AND_CHANNELS.md` → `docs/rpc/TERMS.md` 단일 출처 앵커 생성(현 문서 링크 유지)
+  - [x] `ELECTRON_MCP_IPC_SPEC.md` → `docs/rpc/SPEC_FULL.md`로 이동, `docs/rpc/SPEC.md`는 SSOT 요약으로 유지
+  - [x] `RPC_AND_STREAMING_GUIDE.md` → `docs/rpc/GUIDE.md`로 이동(요약/가이드), 상세 코드는 `recipes.md`로 보강
+  - [x] `IPC_TERMS_AND_CHANNELS.md` → `docs/rpc/TERMS_FULL.md`로 이동, `docs/rpc/TERMS.md`는 SSOT 앵커로 유지
 - [x] `docs/rpc/recipes.md` 신설: 취소(return/close), dot→underscore 네이밍, z.input/z.output 추론 예시
 
 - Frontend 문서 응집
-  - [ ] `GUI_CODE_STYLE.md` → `docs/frontend/code-style.md`
-  - [ ] `GUI_IMPLEMENTATION_PATTERNS.md` → `docs/frontend/patterns.md`
-  - [ ] `GUI_TESTING.md` → `docs/frontend/testing.md`
-  - [ ] `FRONTEND_IMPLEMENTATION_ROADMAP.md` → `docs/frontend/roadmap.md`
+  - [x] `GUI_CODE_STYLE.md` → `docs/frontend/code-style.md`
+  - [x] `GUI_IMPLEMENTATION_PATTERNS.md` → `docs/frontend/patterns.md`
+  - [x] `GUI_TESTING.md` → `docs/frontend/testing.md`
+  - [x] `FRONTEND_IMPLEMENTATION_ROADMAP.md` → `docs/frontend/roadmap.md`
   - [ ] `DESIGN_HOOKS_IMPROVEMENT_PLAN.md`: 내용이 가이드에 부합하면 `frontend/patterns.md`에 편입, 아니면 plan으로 이동
 
 - 기록/아카이브 이동
