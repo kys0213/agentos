@@ -62,7 +62,7 @@ apps/gui/docs/
   - [x] `GUI_IMPLEMENTATION_PATTERNS.md` → `docs/frontend/patterns.md`
   - [x] `GUI_TESTING.md` → `docs/frontend/testing.md`
   - [x] `FRONTEND_IMPLEMENTATION_ROADMAP.md` → `docs/frontend/roadmap.md`
-  - [ ] `DESIGN_HOOKS_IMPROVEMENT_PLAN.md`: 내용이 가이드에 부합하면 `frontend/patterns.md`에 편입, 아니면 plan으로 이동
+  - [x] `DESIGN_HOOKS_IMPROVEMENT_PLAN.md`: (파일 미존재/NAPA) — 현 시점 반영 불필요
 
 - 기록/아카이브 이동
   - [x] `docs/archive/` 인덱스 생성 + STEP3/STEP4 상단 Archived 배너 추가(이동 전 단계)
@@ -75,15 +75,15 @@ apps/gui/docs/
 
 - 네이밍/규칙 명문화
 - [x] dot→underscore 규칙을 `docs/rpc/SPEC.md`에 단일 출처로 명문화(요약)
-  - [ ] `scripts/rpc-codegen.js` 생성 헤더에 규칙 1줄 주석 추가(문서-툴 일치)
+  - [x] `scripts/rpc-codegen.js` 생성 헤더에 규칙 1줄 주석 추가(문서-툴 일치)
 
 - 교차 링크/배너 정리
   - [x] 기존 위치 파일 상단에 “이 문서는 이동됩니다/이동 예정” 안내 및 새 경로 링크(가이드/스펙/용어/프론트 문서 적용)
   - [x] GUIDE ↔ SPEC ↔ TERMS ↔ recipes 간 상호 링크 정리
 
 - 인덱스/내비게이션
-  - [ ] `PLAN_INDEX.md`에 본 계획서 링크 추가 및 Active 섹션 업데이트
-  - [ ] `docs/README.md`에서 핵심 문서로 빠르게 이동 가능한 앵커 제공
+  - [x] `PLAN_INDEX.md`에 본 계획서 링크 추가 및 Active 섹션 업데이트
+  - [x] `docs/README.md`에서 핵심 문서로 빠르게 이동 가능한 앵커 제공
 
 ## 작업 순서
 
