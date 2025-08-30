@@ -46,7 +46,7 @@ export const McpUsageUpdateEventSchema = z.object({
       errorCode: z.string().optional(),
     })
     .optional(),
-  metadata: z.any().optional(),
+  metadata: z.unknown().optional(),
   connectionStatus: z
     .union([
       z.literal('connected'),

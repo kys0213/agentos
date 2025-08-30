@@ -5,6 +5,6 @@ export const agentMetadataSchema = z.object({
   description: z.string(),
   icon: z.string(),
   keywords: z.array(z.string()),
-  preset: z.record(z.string(), z.any()),
+  preset: z.record(z.string(), z.unknown()),
   status: z.enum(['active', 'idle', 'inactive']),
 });
