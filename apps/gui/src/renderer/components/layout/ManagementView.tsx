@@ -34,6 +34,8 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
   // Use hooks directly like design/App.tsx
   const chatState = useChatState();
   const appData = useAppData();
+  const { data: presets = [] } = usePresets();
+  const createPresetMutation = useCreatePreset();
 
   const {
     activeSection,
@@ -66,12 +68,10 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
   } = chatState;
 
   const {
-    presets,
     currentAgents,
     showEmptyState,
     setShowEmptyState,
     // handleUpdateAgentStatus not used in this view
-    handleCreatePreset,
     handleCreateMCPTool,
     // handleCreateAgent not used in this view
     handleCreateCustomTool,
@@ -83,7 +83,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
 
   // Create handlers that combine navigation and data operations (like design/App.tsx)
   const onCreatePreset = async (newPreset: CreatePreset) => {
-    const preset = await handleCreatePreset(newPreset);
+    const preset = await createPresetMutation.mutateAsync(newPreset);
     handleSelectPreset(preset);
     return preset;
   };
@@ -123,7 +123,15 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     }
 
     if (creatingAgent) {
-      return <SubAgentCreateContainer onBack={handleBackToAgents} />;
+      return (
+        <SubAgentCreateContainer
+          onBack={handleBackToAgents}
+          onCreated={(id) => {
+            // Open chat with the newly created agent and return to chat view
+            handleOpenChat(id);
+          }}
+        />
+      );
     }
 
     if (creatingCustomTool) {
@@ -273,4 +281,5 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
   );
 };
 
+import { usePresets, useCreatePreset } from '../../hooks/queries/use-presets';
 export default ManagementView;

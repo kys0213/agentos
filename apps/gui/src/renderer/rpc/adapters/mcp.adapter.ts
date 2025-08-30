@@ -1,7 +1,10 @@
-type ToolExecutionResponse = { success: true; result?: unknown } | { success: false; error: string };
+type ToolExecutionResponse =
+  | { success: true; result?: unknown }
+  | { success: false; error: string };
 type ResourceListResponse = { resources: Array<unknown> };
 type ResourceResponse = { uri: string; content: unknown; mimeType: string };
 import { McpClient } from '../gen/mcp.client';
+import { McpContract as C } from '../../../shared/rpc/contracts/mcp.contract';
 
 export class McpServiceAdapter {
   constructor(private readonly client: McpClient) {}
@@ -25,9 +28,11 @@ export class McpServiceAdapter {
     toolName: string,
     args: Record<string, unknown>
   ): Promise<ToolExecutionResponse> {
-    const res = await this.client.invokeTool({ name: toolName, input: args });
-    if ((res as any)?.success) return { success: true, result: (res as any).result };
-    return { success: false, error: (res as any)?.error ?? 'invokeTool failed' };
+    const payload = C.methods['invokeTool'].payload.parse({ name: toolName, input: args });
+    const parsed = C.methods['invokeTool'].response.parse(await this.client.invokeTool(payload));
+    return parsed.success
+      ? { success: true, result: parsed.result }
+      : { success: false, error: parsed.error };
   }
 
   async getMcpResources(_clientName: string): Promise<ResourceListResponse> {
@@ -42,11 +47,11 @@ export class McpServiceAdapter {
     return { connected: false };
   }
 
-  async getToolMetadata(_clientName: string) {
-    return {} as any;
+  async getToolMetadata(_clientName: string): Promise<Record<string, unknown>> {
+    return {} as Record<string, unknown>;
   }
 
-  async getAllToolMetadata() {
-    return [] as any;
+  async getAllToolMetadata(): Promise<Record<string, unknown>[]> {
+    return [] as Record<string, unknown>[];
   }
 }

@@ -8,21 +8,25 @@ See also: `GUIDE.md`, `TERMS.md`, `recipes.md`.
 - 인덱스: `apps/gui/docs/rpc/README.md`
 
 ## 프레임 규격
+
 - kind: `req | res | err | nxt | end | can`
 - 상관관계: `cid`
 - 에러: CoreError 매핑(`code`, `domain`, `message`, `details?`)
 - 취소: 소비자 → `can` 프레임 전송(AsyncGenerator `return()` 또는 `close()` 호출)
 
 ## 클라이언트 메서드 네이밍 규칙
+
 - 점 표기 채널은 클라이언트 메서드에서 언더스코어로 변환합니다.
   - 예: `mcp.usage.getStats` → `usage_getStats()`
   - 스트림: `mcp.usage.events` → `usage_eventsStream()` / `usage_eventsOn()`
 
 ## 타입 규칙(zod)
+
 - 요청 payload 타입: `z.input<typeof Contract.methods['name']['payload']>`
 - 응답/스트림 타입: `z.output<typeof ...>`
 
 ## 취소/해제 규칙
+
 - AsyncGenerator: `for await...` 탈출 후 `await it.return?.()` 호출
 - 구독형(On): `const close = ...On(handler); await close()`
 

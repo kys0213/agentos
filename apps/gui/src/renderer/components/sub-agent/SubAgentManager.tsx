@@ -24,12 +24,12 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import type { AgentMetadata, AgentStatus } from '@agentos/core';
+import type { AgentStatus, ReadonlyAgentMetadata } from '@agentos/core';
 import { SubAgentBadge } from './SubAgentBadge';
 import { CategoryIcon } from '../common/CategoryIcon';
 
 export interface SubAgentManagerProps {
-  agents: AgentMetadata[];
+  agents: ReadonlyAgentMetadata[];
   onUpdateAgentStatus: (agentId: string, newStatus: AgentStatus) => void;
   onOpenChat: (agentId: string) => void;
   onCreateAgent?: () => void;

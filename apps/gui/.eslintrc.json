@@ -1,10 +1,6 @@
 {
   "extends": ["../../.eslintrc.json"],
-  "ignorePatterns": [
-    "src/main/**/gen/**",
-    "src/shared/rpc/gen/**",
-    "src/renderer/rpc/gen/**"
-  ],
+  "ignorePatterns": ["src/main/**/gen/**", "src/shared/rpc/gen/**", "src/renderer/rpc/gen/**"],
   "parserOptions": {
     "project": ["./tsconfig.json"]
   },
@@ -13,7 +9,7 @@
     "brace-style": ["error", "1tbs", { "allowSingleLine": false }],
     "no-nested-ternary": "warn",
     "multiline-ternary": ["warn", "always-multiline"],
-    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-explicit-any": "error",
     "no-restricted-syntax": [
       "error",
       {
@@ -21,15 +17,31 @@
         "message": "Do not use 'as any'; use proper typing, generics, or runtime guards."
       }
     ]
-  }
-  ,
+  },
   "overrides": [
     {
       "files": ["src/renderer/**/*.{ts,tsx}"],
       "rules": {
-        "no-restricted-syntax": "off",
-        "@typescript-eslint/no-explicit-any": "warn",
+        "no-restricted-syntax": "error",
+        "@typescript-eslint/no-explicit-any": "error",
         "prettier/prettier": "warn"
+      }
+    },
+    {
+      "files": [
+        "src/**/*.__tests__.*",
+        "src/**/__tests__/**/*.{ts,tsx}",
+        "src/**/?(*.)+(spec|test).{ts,tsx}"
+      ],
+      "rules": {
+        "no-restricted-syntax": [
+          "warn",
+          {
+            "selector": "TSAsExpression > TSAnyKeyword",
+            "message": "Avoid 'as any' in tests unless strictly necessary."
+          }
+        ],
+        "@typescript-eslint/no-explicit-any": "warn"
       }
     }
   ]

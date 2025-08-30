@@ -6,23 +6,31 @@ import { z } from 'zod';
 export class PresetClient {
   constructor(private readonly transport: RpcClient) {}
 
-  list(): Promise<z.output<typeof C.methods['list']['response']>> {
+  list(): Promise<z.output<(typeof C.methods)['list']['response']>> {
     return this.transport.request(C.methods['list'].channel);
   }
 
-  get(payload: z.input<typeof C.methods['get']['payload']>): Promise<z.output<typeof C.methods['get']['response']>> {
+  get(
+    payload: z.input<(typeof C.methods)['get']['payload']>
+  ): Promise<z.output<(typeof C.methods)['get']['response']>> {
     return this.transport.request(C.methods['get'].channel, payload);
   }
 
-  create(payload: z.input<typeof C.methods['create']['payload']>): Promise<z.output<typeof C.methods['create']['response']>> {
+  create(
+    payload: z.input<(typeof C.methods)['create']['payload']>
+  ): Promise<z.output<(typeof C.methods)['create']['response']>> {
     return this.transport.request(C.methods['create'].channel, payload);
   }
 
-  update(payload: z.input<typeof C.methods['update']['payload']>): Promise<z.output<typeof C.methods['update']['response']>> {
+  update(
+    payload: z.input<(typeof C.methods)['update']['payload']>
+  ): Promise<z.output<(typeof C.methods)['update']['response']>> {
     return this.transport.request(C.methods['update'].channel, payload);
   }
 
-  delete(payload: z.input<typeof C.methods['delete']['payload']>): Promise<z.output<typeof C.methods['delete']['response']>> {
+  delete(
+    payload: z.input<(typeof C.methods)['delete']['payload']>
+  ): Promise<z.output<(typeof C.methods)['delete']['response']>> {
     return this.transport.request(C.methods['delete'].channel, payload);
   }
 }

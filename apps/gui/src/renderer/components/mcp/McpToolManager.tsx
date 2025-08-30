@@ -92,11 +92,46 @@ export function MCPToolsManager() {
             // Get all MCP tool metadata
             const mcpTools = await mcpService.getAllToolMetadata();
 
-            // Convert Core McpToolMetadata to GUI format with icons
-            const guiTools: GuiMcpTool[] = mcpTools.map((tool) => ({
-              ...tool,
-              icon: getIconForCategory(tool.category || 'other'),
-            }));
+            // Convert metadata (Record<string, unknown>) to GUI shape safely
+            const computeId = (raw: Record<string, unknown>, name: string) =>
+              typeof raw['id'] === 'string'
+                ? (raw['id'] as string)
+                : name.toLowerCase().replace(/\s+/g, '-');
+
+            const toGui = (raw: Record<string, unknown>): GuiMcpTool => {
+              const getString = (k: string, fallback = ''): string =>
+                typeof raw[k] === 'string' ? (raw[k] as string) : fallback;
+              const getNumber = (k: string, fallback = 0): number =>
+                typeof raw[k] === 'number' ? (raw[k] as number) : fallback;
+              const getArray = <T = unknown,>(k: string): T[] =>
+                Array.isArray(raw[k]) ? (raw[k] as T[]) : [];
+
+              const name = getString('name', 'Unknown Tool');
+              const id = computeId(raw, name);
+              const description = getString('description', '');
+              const category = getString('category', 'other');
+              const status = getString('status', 'disconnected');
+              const version = getString('version', '1.0.0');
+              const provider = getString('provider', '') || undefined;
+              const usageCount = getNumber('usageCount', 0);
+              const endpoint = getString('endpoint', '') || undefined;
+              const permissions = getArray<string>('permissions');
+              return {
+                id,
+                name,
+                description,
+                category,
+                status: status as GuiMcpTool['status'],
+                version,
+                provider,
+                usageCount,
+                endpoint,
+                permissions,
+                icon: getIconForCategory(category),
+              };
+            };
+
+            const guiTools: GuiMcpTool[] = (mcpTools as Record<string, unknown>[]).map(toGui);
 
             setTools(guiTools);
 
@@ -309,10 +344,29 @@ export function MCPToolsManager() {
         const mcpService = ServiceContainer.getOrThrow('mcp');
         const mcpTools = await mcpService.getAllToolMetadata();
 
-        const guiTools: GuiMcpTool[] = mcpTools.map((tool) => ({
-          ...tool,
-          icon: getIconForCategory(tool.category || 'other'),
-        }));
+        const computeId = (raw: Record<string, unknown>, name: string) =>
+          typeof raw['id'] === 'string'
+            ? (raw['id'] as string)
+            : name.toLowerCase().replace(/\s+/g, '-');
+        const guiTools: GuiMcpTool[] = (mcpTools as Record<string, unknown>[]).map((raw) => {
+          const name = typeof raw['name'] === 'string' ? (raw['name'] as string) : 'Unknown Tool';
+          const id = computeId(raw, name);
+          const category =
+            typeof raw['category'] === 'string' ? (raw['category'] as string) : 'other';
+          return {
+            id,
+            name,
+            description: (raw['description'] as string) ?? '',
+            category,
+            status: ((raw['status'] as string) ?? 'disconnected') as GuiMcpTool['status'],
+            version: (raw['version'] as string) ?? '1.0.0',
+            provider: raw['provider'] as string | undefined,
+            usageCount: (raw['usageCount'] as number) ?? 0,
+            endpoint: raw['endpoint'] as string | undefined,
+            permissions: Array.isArray(raw['permissions']) ? (raw['permissions'] as string[]) : [],
+            icon: getIconForCategory(category),
+          };
+        });
 
         setTools(guiTools);
       }

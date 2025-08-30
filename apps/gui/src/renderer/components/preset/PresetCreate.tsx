@@ -731,7 +731,7 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                         </Button>
                       </div>
 
-                      {formData.enabledMcps && formData.enabledMcps.length === 0 ? (
+                      {formData.enabledMcps && formData.enabledMcps.length === 0 && (
                         <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
                           <Settings className="w-8 h-8 text-gray-400 mx-auto mb-3" />
                           <h4 className="font-medium text-foreground mb-2">No MCP Tools Added</h4>
@@ -747,48 +747,46 @@ export function PresetCreate({ onBack, onCreate }: PresetCreateProps) {
                             Add Your First MCP Tool
                           </Button>
                         </div>
-                      ) : (
+                      )}
+                      {formData.enabledMcps && formData.enabledMcps.length > 0 && (
                         <div className="space-y-3">
-                          {formData.enabledMcps &&
-                            formData.enabledMcps.map((mcpTool, index) => (
-                              <Card key={index} className="p-4">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                                      {getMCPIcon(mcpTool.name)}
-                                    </div>
-                                    <div>
-                                      <h4 className="font-medium text-foreground">
+                          {formData.enabledMcps.map((mcpTool, index) => (
+                            <Card key={index} className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
+                                    {getMCPIcon(mcpTool.name)}
+                                  </div>
+                                  <div>
+                                    <h4 className="font-medium text-foreground">{mcpTool.name}</h4>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <Badge variant="outline" className="text-xs">
                                         {mcpTool.name}
-                                      </h4>
-                                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Badge variant="outline" className="text-xs">
-                                          {mcpTool.name}
-                                        </Badge>
-                                        <span>v{mcpTool.version}</span>
-                                        {mcpTool.name === 'stdio' && (
-                                          <span className="font-mono text-xs">{mcpTool.name}</span>
-                                        )}
-                                        {(mcpTool.name === 'streamableHttp' ||
-                                          mcpTool.name === 'websocket' ||
-                                          mcpTool.name === 'sse') && (
-                                          <span className="font-mono text-xs">{mcpTool.name}</span>
-                                        )}
-                                      </div>
+                                      </Badge>
+                                      <span>v{mcpTool.version}</span>
+                                      {mcpTool.name === 'stdio' && (
+                                        <span className="font-mono text-xs">{mcpTool.name}</span>
+                                      )}
+                                      {(mcpTool.name === 'streamableHttp' ||
+                                        mcpTool.name === 'websocket' ||
+                                        mcpTool.name === 'sse') && (
+                                        <span className="font-mono text-xs">{mcpTool.name}</span>
+                                      )}
                                     </div>
                                   </div>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleRemoveMCPTool(index)}
-                                    className="gap-1 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
-                                  >
-                                    <X className="w-3 h-3" />
-                                    Remove
-                                  </Button>
                                 </div>
-                              </Card>
-                            ))}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleRemoveMCPTool(index)}
+                                  className="gap-1 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                >
+                                  <X className="w-3 h-3" />
+                                  Remove
+                                </Button>
+                              </div>
+                            </Card>
+                          ))}
                         </div>
                       )}
                     </Card>

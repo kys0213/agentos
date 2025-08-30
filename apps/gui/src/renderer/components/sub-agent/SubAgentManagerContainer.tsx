@@ -28,7 +28,12 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
   const mutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: AgentStatus }) =>
       ServiceContainer.getOrThrow('agent').updateAgent(id, { status }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['agents'] }),
+    onSuccess: () => {
+      // Refresh agent lists across management and chat views
+      queryClient.invalidateQueries({ queryKey: ['agents'] });
+      queryClient.invalidateQueries({ queryKey: ['chat', 'mentionableAgents'] });
+      queryClient.invalidateQueries({ queryKey: ['chat', 'activeAgents'] });
+    },
   });
 
   if (status === 'pending') {
@@ -53,9 +58,8 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
   }
 
   return (
-    // eslint-disable-next-line no-restricted-syntax
     <SubAgentManager
-      agents={agents as any}
+      agents={agents}
       onOpenChat={() => {}}
       onCreateAgent={onCreateAgent}
       onUpdateAgentStatus={(id, status) => mutation.mutate({ id, status })}

@@ -8,4 +8,3 @@ RPC 관련 문서를 단일 출처로 통합합니다.
 - recipes: 예제 모음 — `apps/gui/docs/rpc/recipes.md`
 
 정리 작업 계획: `apps/gui/plan/DOCS_AND_PLANS_STANDARDIZATION_PLAN.md`
-

@@ -6,6 +6,7 @@ See also: `SPEC.md`, `TERMS.md`, `recipes.md`.
 본 문서는 GUI의 계약(contracts) → 코드 생성(codegen) → 어댑터(adapters) → 스트리밍(streaming)까지의 최신/안정 가이드를 통합합니다. 세부 구현 계획과 진행 관리는 `apps/gui/plan/RPC_AND_STREAMING_CONSOLIDATED_PLAN.md`를 참고하세요.
 
 ## 1) 계약(Contracts) → 코드 생성(Codegen)
+
 - 계약 소스: `apps/gui/src/shared/rpc/contracts/*.contract.ts`
   - 모든 메서드의 payload/response/streamResponse를 Zod 스키마로 정의
   - `z.record(z.string(), z.unknown())`로 Key/Value 명시(버전 호환성)
@@ -23,6 +24,7 @@ See also: `SPEC.md`, `TERMS.md`, `recipes.md`.
   - 덮어쓰기 정책: 생성물 상단 헤더 없으면 `.gen.new.ts`로 안전 생성
 
 ## 2) 생성 클라이언트 사용 규칙
+
 - 단발 RPC
   - 예: `client.create(payload: z.input<typeof C.methods['create']['payload']> ): Promise<z.output<typeof ...>>`
 - 스트림 RPC (streamResponse 지정)
@@ -61,26 +63,31 @@ await close(); // can 프레임 전송 → 서버 구독 해제
 ```
 
 ## 3) 어댑터(Adapters) 패턴
+
 - 역할: 생성 클라이언트(채널/타입 안전)를 앱의 도메인 서비스 인터페이스에 매핑
 - 경계 검증: 필요 시 Zod `safeParse`로 런타임 검증 → 성공 시 파싱된 데이터 사용
 - 점진적 엄격화: any/cast를 제거하고 계약 스키마 기반으로 정렬(Phase 2 참조)
 
 ## 4) Nest 컨트롤러 가이드
+
 - 컨트롤러 스텁은 `@EventPattern('<ns>.<method>')`와 `ZodValidationPipe` 적용
 - payload/response 타입은 `z.input`/`z.output` 기반으로 주석/반환 일치
 - 실제 비즈니스 로직 연결은 도메인 모듈에서 주입하여 구현(승격 시)
 
 ## 5) 트랜스포트/취소 규칙
+
 - 프레임 규격: `req/res/err/nxt/end/can`
 - 스트림 취소: 소비자가 `can` 프레임 전송(클라이언트 측 `close()`/`return()`)
 - 전송 인터페이스: `RpcClient.request/stream/on`
 
 ## 6) 테스트/검증
+
 - 타입 체크: `pnpm -w typecheck` / GUI 범위: `pnpm -C apps/gui typecheck`
 - 빌드: `pnpm -C apps/gui build`
 - 스냅샷/통합: 스트림 취소/타임아웃, CoreError 전파 보강 권장
 
 ## 7) 마이그레이션 체크리스트
+
 - [x] 계약 스키마 정비(레코드 키 명시, 스키마 누락 제거)
 - [x] 코드젠 반영: z.input/z.output, 스트림 메서드 생성
 - [x] McpUsage 스트림: transport.on → generated On/Stream 전환
@@ -89,6 +96,7 @@ await close(); // can 프레임 전송 → 서버 구독 해제
 - [ ] 문서/예제 보강(취소/해제, 에러 흐름, 성능 팁)
 
 ## 8) 참고
+
 - IPC/프레임 상세: `apps/gui/docs/ELECTRON_MCP_IPC_SPEC.md`
 - 통합 계획(진행 관리): `apps/gui/plan/RPC_AND_STREAMING_CONSOLIDATED_PLAN.md`
 - 생성 클라이언트 예시: `apps/gui/src/renderer/rpc/gen/*.client.ts`

@@ -2,11 +2,9 @@ import type {
   AgentMetadata,
   AgentStatus,
   CreateAgentMetadata,
-  CreatePreset,
   McpConfig,
   Preset,
   ReadonlyAgentMetadata,
-  ReadonlyPreset,
 } from '@agentos/core';
 
 /**
@@ -70,19 +68,15 @@ export interface UseChatStateReturn {
  */
 
 export interface UseAppDataReturn {
-  presets: ReadonlyPreset[];
   currentAgents: ReadonlyAgentMetadata[];
   showEmptyState: boolean;
   setShowEmptyState: (show: boolean) => void;
   loading: boolean; // 로딩 상태
   error: Error | null; // 에러 상태 추가
   handleUpdateAgentStatus: (agentId: string, status: AgentStatus) => Promise<void>;
-  handleCreatePreset: (preset: CreatePreset) => Promise<ReadonlyPreset>;
   handleCreateMCPTool: (mcpConfig: McpConfig) => Promise<unknown>;
   handleCreateAgent: (agent: CreateAgentMetadata) => Promise<AgentMetadata>;
   handleCreateCustomTool: (toolData: unknown) => Promise<unknown>;
-  handleUpdatePreset: (preset: Preset) => Promise<void>;
-  handleDeletePreset: (presetId: string) => Promise<void>;
   getMentionableAgents: () => ReadonlyAgentMetadata[];
   getActiveAgents: () => ReadonlyAgentMetadata[];
   reloadAgents: () => Promise<void>; // Agent 생성 후 수동 동기화용

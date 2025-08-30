@@ -1,7 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { MessageHistory, ReadonlyAgentMetadata } from '@agentos/core';
-/* eslint-disable @typescript-eslint/no-explicit-any, no-restricted-syntax */
-import { normalizeToArrayContent } from './normalize';
 import { ServiceContainer } from '../../../shared/di/service-container';
 
 export const CHAT_QUERY_KEYS = {
@@ -15,7 +13,7 @@ export const useMentionableAgents = () => {
     queryKey: CHAT_QUERY_KEYS.mentionableAgents,
     queryFn: async () => {
       const agentService = ServiceContainer.getOrThrow('agent');
-      const all = (await agentService.getAllAgentMetadatas()) as any as ReadonlyAgentMetadata[];
+      const all = await agentService.getAllAgentMetadatas();
       return all.filter((a) => a.status === 'active' || a.status === 'idle');
     },
     staleTime: 60_000,
@@ -27,7 +25,7 @@ export const useActiveAgents = () => {
     queryKey: CHAT_QUERY_KEYS.activeAgents,
     queryFn: async () => {
       const agentService = ServiceContainer.getOrThrow('agent');
-      const all = (await agentService.getAllAgentMetadatas()) as any as ReadonlyAgentMetadata[];
+      const all = await agentService.getAllAgentMetadatas();
       return all.filter((a) => a.status === 'active');
     },
     staleTime: 30_000,
@@ -67,12 +65,12 @@ export const useSendChatMessage = (
       const agentService = ServiceContainer.getOrThrow('agent');
 
       // 유저 메시지
-      const userMessage: any = {
+      const userMessage: Readonly<MessageHistory> = {
         messageId: `user-${Date.now()}`,
         role: 'user',
         content: [{ contentType: 'text', value: text }],
         createdAt: new Date(),
-      };
+      } as const;
 
       // 캐시에 유저 메시지 먼저 추가 (낙관적)
       queryClient.setQueryData(
@@ -95,27 +93,47 @@ export const useSendChatMessage = (
       );
 
       // 응답 메시지들을 MessageHistory로 매핑 (배열 콘텐츠로 정규화)
-      const assistantMessages: any[] = result.messages.map((m: any, idx: number): any => {
-        if (m.role === 'tool') {
-          return {
-            messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
+      type BridgeMsg = {
+        role: string;
+        content: { contentType: string; value: unknown }[];
+      } & Record<string, unknown>;
+
+      const assistantMessages: Readonly<MessageHistory>[] = result.messages.map(
+        (m: BridgeMsg, idx) => {
+          const serverMsgId =
+            typeof m['messageId'] === 'string' ? (m['messageId'] as string) : undefined;
+          const createdRaw = m['createdAt'] as unknown;
+          let createdAt: Date;
+          if (createdRaw instanceof Date) {
+            createdAt = createdRaw;
+          } else if (typeof createdRaw === 'string') {
+            createdAt = new Date(createdRaw);
+          } else {
+            createdAt = new Date();
+          }
+
+          const common = {
+            messageId: serverMsgId ?? `assistant-${result.sessionId}-${Date.now()}-${idx}`,
             role: m.role,
             content: m.content,
-            createdAt: new Date(),
-            name: m.name ?? '',
-            toolCallId: m.toolCallId ?? '',
-            isCompressed: false,
-            agentMetadata: undefined,
+            createdAt,
           };
-        } else {
-          return {
-            messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
-            role: m.role,
-            content: m.content,
-            createdAt: new Date(),
-          };
+
+          if (m.role === 'tool') {
+            const name = typeof m['name'] === 'string' ? (m['name'] as string) : '';
+            const toolCallId =
+              typeof m['toolCallId'] === 'string' ? (m['toolCallId'] as string) : '';
+            return {
+              ...common,
+              name,
+              toolCallId,
+              isCompressed: false,
+              agentMetadata: undefined,
+            } as Readonly<MessageHistory>;
+          }
+          return common as Readonly<MessageHistory>;
         }
-      });
+      );
 
       // 세션 ID 갱신 콜백 (서버에서 새 세션 발급 시 반영)
       options?.onSessionId?.(result.sessionId);

@@ -6,9 +6,8 @@ export class BridgeServiceAdapter {
   constructor(private readonly client: BridgeClient) {}
 
   async registerBridge(config: LlmManifest): Promise<{ success: boolean }> {
-    const res = C.methods['register'].response.parse(
-      await this.client.register({ manifest: config })
-    );
+    const payload = C.methods['register'].payload.parse({ manifest: config });
+    const res = C.methods['register'].response.parse(await this.client.register(payload));
     return { success: !!res.success };
   }
 
@@ -24,7 +23,9 @@ export class BridgeServiceAdapter {
 
   async getCurrentBridge(): Promise<{ id: string; config: LlmManifest } | null> {
     const cur = C.methods['get-current'].response.parse(await this.client.get_current());
-    if (!cur) return null;
+    if (!cur) {
+      return null;
+    }
     return { id: cur.id, config: cur.manifest as LlmManifest };
   }
 
