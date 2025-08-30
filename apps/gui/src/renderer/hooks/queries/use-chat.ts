@@ -1,7 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { MessageHistory, ReadonlyAgentMetadata } from '@agentos/core';
-/* eslint-disable @typescript-eslint/no-explicit-any, no-restricted-syntax */
-import { normalizeToArrayContent } from './normalize';
 import { ServiceContainer } from '../../../shared/di/service-container';
 
 export const CHAT_QUERY_KEYS = {
@@ -67,12 +65,12 @@ export const useSendChatMessage = (
       const agentService = ServiceContainer.getOrThrow('agent');
 
       // 유저 메시지
-      const userMessage: any = {
+      const userMessage: Readonly<MessageHistory> = {
         messageId: `user-${Date.now()}`,
         role: 'user',
         content: [{ contentType: 'text', value: text }],
         createdAt: new Date(),
-      };
+      } as const;
 
       // 캐시에 유저 메시지 먼저 추가 (낙관적)
       queryClient.setQueryData(
@@ -95,26 +93,23 @@ export const useSendChatMessage = (
       );
 
       // 응답 메시지들을 MessageHistory로 매핑 (배열 콘텐츠로 정규화)
-      const assistantMessages: any[] = result.messages.map((m: any, idx: number): any => {
+      const assistantMessages: Readonly<MessageHistory>[] = result.messages.map((m: any, idx) => {
+        const common = {
+          messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
+          role: m.role as string,
+          content: m.content as { contentType: string; value: unknown }[],
+          createdAt: new Date(),
+        };
         if (m.role === 'tool') {
           return {
-            messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
-            role: m.role,
-            content: m.content,
-            createdAt: new Date(),
+            ...common,
             name: m.name ?? '',
             toolCallId: m.toolCallId ?? '',
             isCompressed: false,
             agentMetadata: undefined,
-          };
-        } else {
-          return {
-            messageId: `assistant-${result.sessionId}-${Date.now()}-${idx}`,
-            role: m.role,
-            content: m.content,
-            createdAt: new Date(),
-          };
+          } as Readonly<MessageHistory>;
         }
+        return common as Readonly<MessageHistory>;
       });
 
       // 세션 ID 갱신 콜백 (서버에서 새 세션 발급 시 반영)
