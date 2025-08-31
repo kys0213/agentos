@@ -10,4 +10,9 @@ module.exports = {
   moduleNameMapper: {
     '^electron-store$': '<rootDir>/__mocks__/electron-store.ts',
   },
+  globals: {
+    'ts-jest': {
+      tsconfig: '<rootDir>/tsconfig.tests.json',
+    },
+  },
 };

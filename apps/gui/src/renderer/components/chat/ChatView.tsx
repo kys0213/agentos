@@ -22,7 +22,6 @@ import { AppSection } from '../../stores/store-types';
 
 interface ChatViewProps {
   onNavigate: (section: AppSection) => void;
-  agents: ReadonlyAgentMetadata[];
   mentionableAgents: ReadonlyAgentMetadata[];
   activeAgents: ReadonlyAgentMetadata[];
   messages: Readonly<MessageHistory>[];
@@ -33,7 +32,6 @@ interface ChatViewProps {
 
 export const ChatView: React.FC<ChatViewProps> = ({
   onNavigate,
-  agents,
   mentionableAgents,
   activeAgents,
   messages,
@@ -42,6 +40,16 @@ export const ChatView: React.FC<ChatViewProps> = ({
   onSendMessage,
 }) => {
   const selectedChatId = useMemo(() => selectedAgentId, [selectedAgentId]);
+
+  // memoized derived counts to avoid recalculation per render
+  const idleCount = useMemo(
+    () => mentionableAgents.filter((a) => a.status === 'idle').length,
+    [mentionableAgents]
+  );
+  const inactiveCount = useMemo(
+    () => mentionableAgents.filter((a) => a.status === 'inactive').length,
+    [mentionableAgents]
+  );
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -121,11 +129,11 @@ export const ChatView: React.FC<ChatViewProps> = ({
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3 text-status-idle" />
-                <span>Idle: {agents.filter((a) => a.status === 'idle').length}</span>
+                <span>Idle: {idleCount}</span>
               </div>
               <div className="flex items-center gap-1">
                 <MinusCircle className="w-3 h-3 text-status-inactive" />
-                <span>Off: {agents.filter((a) => a.status === 'inactive').length}</span>
+                <span>Off: {inactiveCount}</span>
               </div>
             </div>
           </Card>
@@ -133,7 +141,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
         <div className="flex-1 min-h-0">
           <ChatHistory
-            agents={agents}
+            agents={mentionableAgents}
             selectedChatId={selectedChatId}
             onSelectChat={onSelectAgent}
             lastMessageByAgentId={{}}

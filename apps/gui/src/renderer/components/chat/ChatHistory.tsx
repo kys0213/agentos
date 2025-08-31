@@ -1,6 +1,6 @@
 import type { ReadonlyAgentMetadata, MessageHistory } from '@agentos/core';
 import { Archive, Bot, MessageSquare, MoreVertical, Plus, Search } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -14,7 +14,7 @@ interface ChatHistoryProps {
   lastMessageByAgentId?: Record<string, MessageHistory | undefined>;
 }
 
-export function ChatHistory({
+export const ChatHistory = React.memo(function ChatHistory({
   agents,
   onSelectChat,
   selectedChatId,
@@ -215,4 +215,4 @@ export function ChatHistory({
       </div>
     </div>
   );
-}
+});

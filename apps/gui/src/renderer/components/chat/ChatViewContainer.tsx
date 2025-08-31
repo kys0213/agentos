@@ -122,7 +122,6 @@ export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) =>
 
   return (
     <ChatView
-      agents={mentionableAgents}
       mentionableAgents={mentionableAgents}
       activeAgents={activeAgents}
       onNavigate={onNavigate ?? (() => {})}
