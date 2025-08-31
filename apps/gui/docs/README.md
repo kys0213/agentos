@@ -14,6 +14,7 @@
   - Patterns: `apps/gui/docs/frontend/patterns.md`
   - Testing: `apps/gui/docs/frontend/testing.md`
   - Roadmap: `apps/gui/docs/frontend/roadmap.md`
+  - See patterns/testing/roadmap for current plans; legacy consolidated plan was removed per DOCS_POLICY
 
 유지보수 메모
 - SSOT: RPC의 GUIDE/SPEC/TERMS는 `apps/gui/docs/rpc/` 아래 문서를 단일 출처로 사용합니다.
