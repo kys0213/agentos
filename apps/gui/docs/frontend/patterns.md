@@ -110,4 +110,3 @@ Testing hooks
 Related docs
 - Testing guide and MCP scenario: `frontend/testing.md`
 - Roadmap phases summary: `frontend/roadmap.md`
- 
