@@ -17,7 +17,6 @@ describe('ChatView header chips', () => {
     const comp = renderer.create(
       <ChatView
         onNavigate={() => {}}
-        agents={[agent('1', 'Alpha')]}
         mentionableAgents={[agent('1', 'Alpha')]}
         activeAgents={[agent('1', 'Alpha')]}
         messages={[] as Readonly<MessageHistory>[]}
