@@ -25,38 +25,64 @@ export interface UsageLogQueryOptions {
  */
 export type McpUsageUpdateEvent = z.infer<typeof McpUsageUpdateEventSchema>;
 
-export const McpUsageUpdateEventSchema = z.object({
-  type: z.union([
-    z.literal('usage-logged'),
-    z.literal('metadata-updated'),
-    z.literal('connection-changed'),
-  ]),
+const BaseEvent = z.object({
   clientName: z.string(),
-  newLog: z
-    .object({
-      id: z.string(),
-      toolId: z.string().optional(),
-      toolName: z.string().optional(),
-      timestamp: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
-      operation: z.literal('tool.call'),
-      status: z.union([z.literal('success'), z.literal('error')]),
-      durationMs: z.number().optional(),
-      agentId: z.string().optional(),
-      sessionId: z.string().optional(),
-      errorCode: z.string().optional(),
-    })
-    .optional(),
-  metadata: z.unknown().optional(),
-  connectionStatus: z
-    .union([
-      z.literal('connected'),
-      z.literal('disconnected'),
-      z.literal('error'),
-      z.literal('pending'),
-    ])
-    .optional(),
   timestamp: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
 });
+
+const UsageLoggedEvent = BaseEvent.extend({
+  type: z.literal('usage-logged'),
+  newLog: z.object({
+    id: z.string(),
+    toolId: z.string().optional(),
+    toolName: z.string().optional(),
+    timestamp: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
+    operation: z.literal('tool.call'),
+    status: z.union([z.literal('success'), z.literal('error')]),
+    durationMs: z.number().optional(),
+    agentId: z.string().optional(),
+    sessionId: z.string().optional(),
+    errorCode: z.string().optional(),
+  }),
+});
+
+const MetadataShape = z
+  .object({
+    toolId: z.string().optional(),
+    toolName: z.string().optional(),
+    status: z
+      .union([
+        z.literal('connected'),
+        z.literal('disconnected'),
+        z.literal('error'),
+        z.literal('pending'),
+      ])
+      .optional(),
+    usageCount: z.number().nonnegative().optional(),
+    lastUsedAt: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()).optional(),
+  })
+  .passthrough();
+
+const MetadataUpdatedEvent = BaseEvent.extend({
+  type: z.literal('metadata-updated'),
+  metadata: MetadataShape,
+});
+
+const ConnectionChangedEvent = BaseEvent.extend({
+  type: z.literal('connection-changed'),
+  connectionStatus: z.union([
+    z.literal('connected'),
+    z.literal('disconnected'),
+    z.literal('error'),
+    z.literal('pending'),
+  ]),
+});
+
+export const McpUsageUpdateEventSchema = z.discriminatedUnion('type', [
+  UsageLoggedEvent,
+  MetadataUpdatedEvent,
+  ConnectionChangedEvent,
+]);
 
 /**
  * GUI용 확장 메타데이터
