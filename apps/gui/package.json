@@ -6,6 +6,7 @@
   "private": true,
   "main": "dist/main/main.js",
   "scripts": {
+    "codegen": "node scripts/rpc-codegen.mjs",
     "typecheck": "tsc --noEmit",
     "compile": "tsc",
     "clean": "rm -rf dist",
