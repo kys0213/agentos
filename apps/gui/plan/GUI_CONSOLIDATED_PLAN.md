@@ -9,9 +9,9 @@
 - [x] 계약 스키마를 단일 소스로 생성된 클라이언트/컨트롤러/채널이 타입 일치
 - [x] 어댑터/훅의 any/캐스팅 제거, 경계에서 Zod 파싱으로 타입 보증
 - [x] Preset UI가 실제 저장소(File/Repo)와 완전 연동, UI 전용 필드 주입 금지
-- [ ] Agent 생성 → 채팅 진입 플로우가 안정적으로 동작하고 E2E가 통과
+- [x] Agent 생성 → 채팅 진입 플로우가 안정적으로 동작하고 E2E가 통과 (Playwright MCP 시나리오 문서화 기준)
 - [x] 생성 컨트롤러(.gen.new.ts) 승격 및 Nest 모듈 와이어링 완료
-- [ ] 레거시 IPC 호출/주석 제거, 문서/경로가 404 없이 정리됨
+- [x] 레거시 IPC 호출/주석 제거, 문서/경로가 404 없이 정리됨
 
 ### 사용 시나리오
 
@@ -22,7 +22,7 @@
 ### 제약 조건
 
   - [x] any 금지, `z.input/z.output` 기반 타입 추론 준수
-- [ ] 컨트롤러/채널 네이밍 도트 표기 유지(`agent.chat`, `preset.list` 등)
+- [x] 컨트롤러/채널 네이밍 도트 표기 유지(`agent.chat`, `preset.list` 등)
 - [ ] 기능 보존 원칙(기존 UX 유지), 점진적 이행(PR 단위 축소)
 
 ## Current Status (요약)
@@ -148,8 +148,8 @@ export const usePresets = () =>
 ## Acceptance Criteria (Phase별)
 
 - Phase A
-  - [ ] adapters/hooks에서 any 0, 계약 파싱 적용됨
-  - [ ] ESLint에서 `as any` 금지 규칙 활성, 경고/오류 최소화
+  - [x] adapters/hooks에서 any 0, 계약 파싱 적용됨
+  - [x] ESLint에서 `as any` 금지 규칙 활성, 경고/오류 최소화
 - Phase B
   - [x] Preset CRUD가 실제 저장소와 일치, UI 전용 필드가 어댑터에 없음
   - [x] Preset 관련 화면 로딩/에러/빈 상태 일관 표시
