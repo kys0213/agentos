@@ -9,7 +9,7 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "rpc:codegen": "node scripts/rpc-codegen.js"
+    "rpc:codegen": "pnpm --filter @agentos/apps-gui codegen"
   },
   "pnpm": {
     "ignoredBuiltDependencies": [
