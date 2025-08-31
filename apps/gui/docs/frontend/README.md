@@ -12,3 +12,12 @@ GUI 프런트엔드 문서의 단일 인덱스입니다. 각 문서는 역할 �
   - 이행 단계(Consolidated Phases A–F) 요약과 남은 작업
 
 문서 표준화 추적: `apps/gui/plan/DOCS_AND_PLANS_STANDARDIZATION_PLAN.md`
+
+---
+
+## Change Checklist (keep docs in sync)
+
+- Does the change affect container/presentational boundaries or props? Update `patterns.md`.
+- Did you modify chat flow or data sources? Reflect in `patterns.md` (Chat) and `roadmap.md` (phase status).
+- New/changed test approach? Add or adjust guidance in `testing.md` (and recipes if code snippets help).
+- Introduced/removed public UI patterns? Ensure `code-style.md` or `patterns.md` captures the rule.
