@@ -1,6 +1,15 @@
-# GUI Consolidated Delivery Plan (v1)
+# GUI Consolidated Delivery Plan (v1) — Promoted
 
-본 문서는 GUI 관련 분산 계획서들을 단일 계획으로 통합합니다. 계약(Contract) → 코드젠 → 어댑터/훅 → 컨트롤러 승격 → 레거시 제거까지 일관된 흐름으로 정리하며, Preset 실데이터/채팅 동기화/타입 엄격화/문서 표준화를 포함합니다.
+> Document Meta
+>
+> - Type: Overview/Guide (promoted from plan)
+> - Scope: `apps/gui`
+> - Audience: GUI contributors (architecture, QA, docs)
+> - SSOT links: RPC Guide/SPEC/TERMS (see Links section)
+> - Status: Stable; use as the single reference for GUI consolidation
+> - Relation: Supersedes earlier scattered `plan/*` notes (now merged)
+
+본 문서는 GUI 관련 분산 계획서들을 단일 계획으로 통합합니다. 계약(Contract) → 코드젠 → 어댑터/훅 → 컨트롤러 승격 → 레거시 제거까지 일관된 흐름으로 정리하며, Preset 실데이터/채팅 동기화/타입 엄격화/문서 표준화를 포함합니다. 승격된 문서이므로 결과 중심(완료 기준/수용 기준)으로 유지합니다.
 
 ## Requirements
 
@@ -28,7 +37,7 @@
 ## Current Status (요약)
 
 - Phase A–D 주요 항목 완료. 타입 엄격화/React Query 일원화/채팅 플로우 복구/컨트롤러 승격 완료.
-- 남은 과제: e2e 시나리오(생성→전송→응답) 추가, 레거시/문서 정리(Phase E), 소수의 Prettier/unused 경고 정리.
+- 남은 과제: 소수의 Prettier/unused 경고 정리(비기능), 문서 인덱스 소폭 재정돈(필요 시).
 
 ## Phased Plan
 
@@ -81,7 +90,7 @@
   - files: `apps/gui/src/renderer/bootstrap.ts`(서비스 등록/DI 일원화 검증)
 - 문서 링크 정상화 및 가이드 스텁 추가
   - 누락 가이드: `apps/gui/docs/RPC_AND_STREAMING_GUIDE.md`(→ `apps/gui/docs/rpc/GUIDE.md` 연결 스텁 추가 완료)
-  - 표준화 계획서 스텁: `apps/gui/plan/DOCS_AND_PLANS_STANDARDIZATION_PLAN.md`
+  - 표준화 계획서(추적용): `apps/gui/plan/DOCS_AND_PLANS_STANDARDIZATION_PLAN.md` (문서 구조 변경 시 참고)
 
 ### Phase F — 품질/테스트/성능
 
@@ -125,6 +134,14 @@
 5. Phase E 레거시 제거 + 문서 경로 정리
 6. Phase F 스트림 취소/품질 보강
 
+## Links (SSOT & Index)
+
+- RPC Index: `apps/gui/docs/rpc/README.md`
+- RPC Guide (SSOT: 사용/스트리밍/취소): `apps/gui/docs/rpc/GUIDE.md` (정리 진행 중)
+- RPC SPEC (SSOT: 프레임/에러/취소): `apps/gui/docs/rpc/SPEC.md`
+- RPC TERMS (SSOT: 용어/채널 표준): `apps/gui/docs/rpc/TERMS.md`
+- Recipes: `apps/gui/docs/rpc/recipes.md`
+- Frontend Index: `apps/gui/docs/frontend/README.md`
 ## Interface Sketch (발췌)
 
 ```ts
