@@ -186,13 +186,21 @@ function writeRendererClient(spec, outDir) {
   lines.push(`  constructor(private readonly transport: RpcClient) {}`);
   for (const [name, info] of Object.entries(spec.methods)) {
     const mname = safeName(name);
-    const payloadType = info.hasPayload ? `z.input<typeof C.methods['${name}']['payload']>` : 'void';
-    const resultType = info.hasResponse ? `z.output<typeof C.methods['${name}']['response']>` : 'void';
-    const streamType = info.hasStreamResponse ? `z.output<typeof C.methods['${name}']['streamResponse']>` : 'void';
+    const payloadType = info.hasPayload
+      ? `z.input<typeof C.methods['${name}']['payload']>`
+      : 'void';
+    const resultType = info.hasResponse
+      ? `z.output<typeof C.methods['${name}']['response']>`
+      : 'void';
+    const streamType = info.hasStreamResponse
+      ? `z.output<typeof C.methods['${name}']['streamResponse']>`
+      : 'void';
     lines.push('');
     if (info.hasStreamResponse) {
       if (info.hasPayload) {
-        lines.push(`  ${mname}Stream(payload: ${payloadType}): AsyncGenerator<${streamType}, void, unknown> {`);
+        lines.push(
+          `  ${mname}Stream(payload: ${payloadType}): AsyncGenerator<${streamType}, void, unknown> {`
+        );
         lines.push(
           `    return this.transport.stream ? this.transport.stream<${streamType}>(C.methods['${name}'].channel, payload) : (async function*(){})()`
         );
@@ -205,7 +213,9 @@ function writeRendererClient(spec, outDir) {
         lines.push('  }');
       }
       lines.push(`  ${mname}On(handler: (ev: ${streamType}) => void): CloseFn {`);
-      lines.push(`    return this.transport.on<${streamType}>(C.methods['${name}'].channel, handler);`);
+      lines.push(
+        `    return this.transport.on<${streamType}>(C.methods['${name}'].channel, handler);`
+      );
       lines.push('  }');
       continue;
     }
@@ -233,11 +243,19 @@ function writeSharedTypes(spec, outDir) {
   for (const [name, info] of Object.entries(spec.methods)) {
     const mname = safeName(name);
     const base = `typeof import('${contractPath}').${capitalize(spec.namespace)}Contract['methods']['${name}']`;
-    if (info.hasPayload) lines.push(`export type ${mname}_Payload = import('zod').infer<${base}['payload']>;`);
-    else lines.push(`export type ${mname}_Payload = void;`);
-    if (info.hasResponse) lines.push(`export type ${mname}_Result = import('zod').infer<${base}['response']>;`);
-    else lines.push(`export type ${mname}_Result = void;`);
-    if (info.hasStreamResponse) lines.push(`export type ${mname}_Stream = import('zod').infer<${base}['streamResponse']>;`);
+    if (info.hasPayload) {
+      lines.push(`export type ${mname}_Payload = import('zod').infer<${base}['payload']>;`);
+    } else {
+      lines.push(`export type ${mname}_Payload = void;`);
+    }
+    if (info.hasResponse) {
+      lines.push(`export type ${mname}_Result = import('zod').infer<${base}['response']>;`);
+    } else {
+      lines.push(`export type ${mname}_Result = void;`);
+    }
+    if (info.hasStreamResponse) {
+      lines.push(`export type ${mname}_Stream = import('zod').infer<${base}['streamResponse']>;`);
+    }
     lines.push('');
   }
   const file = path.join(outDir, `${spec.namespace}.types.d.ts`);
@@ -262,8 +280,12 @@ function writeMainController(spec, outDir) {
     const mname = safeName(name);
     lines.push('');
     lines.push(`  @EventPattern('${info.channel}')`);
-    const payloadType = info.hasPayload ? `z.input<typeof C.methods['${name}']['payload']>` : 'void';
-    const returnType = info.hasResponse ? `z.output<typeof C.methods['${name}']['response']>` : 'void';
+    const payloadType = info.hasPayload
+      ? `z.input<typeof C.methods['${name}']['payload']>`
+      : 'void';
+    const returnType = info.hasResponse
+      ? `z.output<typeof C.methods['${name}']['response']>`
+      : 'void';
     if (info.hasPayload) {
       lines.push(
         `  async ${mname}(@Payload(new ZodValidationPipe(C.methods['${name}']['payload'])) payload: ${payloadType}): Promise<${returnType}> {`
@@ -295,12 +317,18 @@ function main() {
   const specs = files.map(extractSpec);
   writeChannelsFile(specs, channelsOut);
 <<<<<<< HEAD
+<<<<<<< HEAD
   console.log(
     `[rpc-codegen] Wrote ${path.relative(appRoot, channelsOut)} from ${files.length} contract(s).`
   );
 =======
   console.log(`[rpc-codegen] Wrote ${path.relative(appRoot, channelsOut)} from ${files.length} contract(s).`);
 >>>>>>> 2c78373 (chore(gui): move RPC codegen into apps/gui; add local codegen script and update root proxy\n\n- New: apps/gui/scripts/rpc-codegen.mjs (ESM) with app-root paths\n- apps/gui/package.json: add "codegen" script\n- root package.json: "rpc:codegen" proxies to GUI codegen\n- remove old scripts/rpc-codegen.js)
+=======
+  console.log(
+    `[rpc-codegen] Wrote ${path.relative(appRoot, channelsOut)} from ${files.length} contract(s).`
+  );
+>>>>>>> 3c2e2da (chore(gui): remove unused generated controllers (*.controller.ts) in gen folders; keep active *.gen.new.ts)
   for (const spec of specs) {
     writeRendererClient(spec, path.resolve(appRoot, 'src/renderer/rpc/gen'));
     writeMainController(spec, path.resolve(appRoot, `src/main/${spec.namespace}/gen`));
