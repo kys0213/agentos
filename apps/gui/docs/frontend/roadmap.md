@@ -23,3 +23,22 @@ This roadmap tracks the design alignment work for the GUI against the Figma mock
 
 - Devtools are hidden by default; enable with `VITE_DEVTOOLS=true` in dev.
 - Further polish will be done alongside data wiring for pinned/archived.
+
+---
+
+## Consolidated Delivery Phases (A–F)
+
+Outcome-focused summary of the GUI consolidation (see RPC/Frontend docs for details).
+
+- Phase A — Type Safety
+  - Adapters/hooks any 0, Zod parse at boundaries, ESLint as-any ban.
+- Phase B — Preset Real Data
+  - React Query single source, UI-only fields removed from adapters, standard loading/error/empty.
+- Phase C — Chat Flow
+  - Agent-create → chat entry restored, empty-state fixed, container pattern streamlined (ChatView props reduced; ChatHistory memoized).
+- Phase D — Controllers
+  - `.gen.new.ts` generation promoted and wired into Nest modules; ZodValidationPipe enforced.
+- Phase E — Legacy/Docs
+  - Legacy IPC refs removed/renamed to RPC; docs path consolidation with SSOT links.
+- Phase F — Quality
+  - Stream cancel/unsubscribe tests and recipes; pipelines green.
