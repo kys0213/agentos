@@ -103,7 +103,6 @@ Note: Implementation is non-normative; rely on IPC contracts documented in `ELEC
 - ChatHistory wrapped in `React.memo` to reduce re-renders.
 - Containers own React Query wiring and session id continuity (map by agent id).
 - Presentational Chat components remain prop-driven; no direct ServiceContainer access.
-
 Testing hooks
 - Prefer rendering presentational components with explicit props over mounting containers.
 - For container logic (e.g., session id continuity), cover with focused hook tests or unit tests that assert invalidation and side‑effects.
@@ -111,3 +110,4 @@ Testing hooks
 Related docs
 - Testing guide and MCP scenario: `frontend/testing.md`
 - Roadmap phases summary: `frontend/roadmap.md`
+ 
