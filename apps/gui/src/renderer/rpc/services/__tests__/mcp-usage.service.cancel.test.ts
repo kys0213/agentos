@@ -1,4 +1,3 @@
-import { describe, expect, it, jest } from '@jest/globals';
 import type { CloseFn, RpcClient } from '../../../../shared/rpc/transport';
 import { McpUsageRpcService } from '../mcp-usage.service';
 import type { McpUsageUpdateEvent } from '../../../../shared/types/mcp-usage-types';
