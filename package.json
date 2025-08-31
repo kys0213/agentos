@@ -8,8 +8,7 @@
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "rpc:codegen": "pnpm --filter @agentos/apps-gui codegen"
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "pnpm": {
     "ignoredBuiltDependencies": [
