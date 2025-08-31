@@ -61,7 +61,7 @@
   - files:
     - `apps/gui/src/renderer/hooks/useAppData.ts`
     - `apps/gui/src/renderer/hooks/queries/use-chat.ts`
-  - [ ] 컨테이너 패턴 정비(필요 시): ChatView/History/Interface 컨테이너 재검토
+  - [x] 컨테이너 패턴 정비(필요 시): ChatView/History/Interface 컨테이너 재검토
   - [x] e2e 시나리오 보강(생성→전송→응답) — Playwright MCP 가이드에 시나리오 추가
 
 ### Phase D — 생성 컨트롤러 승격 + 모듈 와이어링
