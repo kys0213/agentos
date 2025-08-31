@@ -24,6 +24,23 @@ const close = mcp.usage_eventsOn((ev) => render(ev));
 await close(); // can 프레임 전송 → 서버 구독 해제
 ```
 
+## 서비스 레이어에서의 안전한 구독/취소
+
+```ts
+import { McpUsageRpcService } from '@/renderer/rpc/services/mcp-usage.service';
+import { createRpcTransport } from '@/renderer/rpc/rpc-channel.factory';
+
+const rpc = createRpcTransport();
+const usage = new McpUsageRpcService(rpc);
+
+const close = await usage.subscribeToUsageUpdates((ev) => {
+  console.log('usage event', ev);
+});
+
+// ... 작업 후 반드시 해제
+await close();
+```
+
 ## z.input / z.output 타입 추론
 
 ```ts
