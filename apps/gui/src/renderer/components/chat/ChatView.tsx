@@ -41,6 +41,16 @@ export const ChatView: React.FC<ChatViewProps> = ({
 }) => {
   const selectedChatId = useMemo(() => selectedAgentId, [selectedAgentId]);
 
+  // memoized derived counts to avoid recalculation per render
+  const idleCount = useMemo(
+    () => mentionableAgents.filter((a) => a.status === 'idle').length,
+    [mentionableAgents]
+  );
+  const inactiveCount = useMemo(
+    () => mentionableAgents.filter((a) => a.status === 'inactive').length,
+    [mentionableAgents]
+  );
+
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'research':
@@ -119,11 +129,11 @@ export const ChatView: React.FC<ChatViewProps> = ({
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3 text-status-idle" />
-                <span>Idle: {mentionableAgents.filter((a) => a.status === 'idle').length}</span>
+                <span>Idle: {idleCount}</span>
               </div>
               <div className="flex items-center gap-1">
                 <MinusCircle className="w-3 h-3 text-status-inactive" />
-                <span>Off: {mentionableAgents.filter((a) => a.status === 'inactive').length}</span>
+                <span>Off: {inactiveCount}</span>
               </div>
             </div>
           </Card>
