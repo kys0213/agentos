@@ -1,7 +1,8 @@
 import type { CreatePreset, Preset } from '@agentos/core';
 import { ServiceContainer } from '../../shared/di/service-container';
 
-// IPC 기반 프리셋 스토어 (브라우저 호환)
+// RPC 기반 프리셋 스토어 (브라우저 호환)
+// ServiceContainer에 주입된 generated RPC client를 통해 동작합니다.
 export class PresetStore {
   private get presetService() {
     return ServiceContainer.getOrThrow('preset');
