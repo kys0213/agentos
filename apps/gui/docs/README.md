@@ -15,18 +15,7 @@
   - Testing: `apps/gui/docs/frontend/testing.md`
   - Roadmap: `apps/gui/docs/frontend/roadmap.md`
 
-- RPC
-  - 개요/인덱스: `apps/gui/docs/rpc/` (정리 진행 중)
-  - 가이드: `apps/gui/docs/RPC_AND_STREAMING_GUIDE.md` → 향후 `apps/gui/docs/rpc/GUIDE.md`
-  - 스펙: `apps/gui/docs/ELECTRON_MCP_IPC_SPEC.md` → 향후 `apps/gui/docs/rpc/SPEC.md`
-  - 용어: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md` → 향후 `apps/gui/docs/rpc/TERMS.md`
-  - 레시피: `apps/gui/docs/rpc/recipes.md` (신규)
-
-- Frontend
-  - 인덱스: `apps/gui/docs/frontend/README.md`
-  - 코드 스타일: `apps/gui/docs/GUI_CODE_STYLE.md` → 향후 `apps/gui/docs/frontend/code-style.md`
-  - 구현 패턴: `apps/gui/docs/GUI_IMPLEMENTATION_PATTERNS.md` → 향후 `apps/gui/docs/frontend/patterns.md`
-  - 테스트: `apps/gui/docs/GUI_TESTING.md` → 향후 `apps/gui/docs/frontend/testing.md`
-  - 로드맵: `apps/gui/docs/FRONTEND_IMPLEMENTATION_ROADMAP.md` → 향후 `apps/gui/docs/frontend/roadmap.md`
-
-정리 작업 계획: `apps/gui/plan/DOCS_AND_PLANS_STANDARDIZATION_PLAN.md`
+유지보수 메모
+- SSOT: RPC의 GUIDE/SPEC/TERMS는 `apps/gui/docs/rpc/` 아래 문서를 단일 출처로 사용합니다.
+- 중복 제거: 레거시 `GUI_*` 문서는 제거되었거나 통합되었습니다.
+- 표준화 계획 추적: `apps/gui/plan/DOCS_AND_PLANS_STANDARDIZATION_PLAN.md`

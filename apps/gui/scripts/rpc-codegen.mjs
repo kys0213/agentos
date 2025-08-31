@@ -1,15 +1,12 @@
 /*
-  RPC Codegen (Phase A+, JS version)
-  - Scans contracts (*.contract.ts)
+  RPC Codegen (GUI-local)
+  - Scans contracts (*.contract.ts) under app root
   - Writes (with safe overwrite):
-    * shared/rpc/gen/channels.ts (channel constants)
-    * renderer/rpc/gen/<ns>.client.ts (typed client via z.input/z.output)
-    * main/<ns>/gen/<ns>.controller.ts (Nest controller stubs with ZodValidationPipe)
+    * src/shared/rpc/gen/channels.ts (channel constants)
+    * src/renderer/rpc/gen/<ns>.client.ts (typed client via z.input/z.output)
+    * src/main/<ns>/gen/<ns>.controller.ts (Nest controller stubs with ZodValidationPipe)
+    * src/shared/rpc/gen/<ns>.types.d.ts (declaration-only helper types)
 */
-// Codegen rule summary:
-// - Dot-separated channels map to client method names with underscores.
-//   e.g. `mcp.usage.getStats` -> `usage_getStats()`; `mcp.usage.events` -> `usage_eventsStream()` / `usage_eventsOn()`
-// - Stream endpoints generate both AsyncGenerator `<name>Stream()` and subscription `<name>On()` helpers.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,8 +17,11 @@ function findContractFiles(root) {
   const files = [];
   for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
     const p = path.join(root, entry.name);
-    if (entry.isDirectory()) files.push(...findContractFiles(p));
-    else if (entry.isFile() && entry.name.endsWith('.contract.ts')) files.push(p);
+    if (entry.isDirectory()) {
+      files.push(...findContractFiles(p));
+    } else if (entry.isFile() && entry.name.endsWith('.contract.ts')) {
+      files.push(p);
+    }
   }
   return files.sort();
 }
@@ -31,7 +31,6 @@ function extractSpec(filePath) {
   const nsMatch = text.match(/namespace:\s*'([^']+)'/);
   const namespace = nsMatch ? nsMatch[1] : path.basename(filePath).replace(/\.contract\.ts$/, '');
 
-  // Extract only the methods block to avoid matching the top-level "methods" key itself
   const methodsIdx = text.indexOf('methods');
   let inner = '';
   if (methodsIdx >= 0) {
@@ -40,11 +39,12 @@ function extractSpec(filePath) {
       let depth = 0;
       for (let i = braceStart; i < text.length; i++) {
         const ch = text[i];
-        if (ch === '{') depth++;
-        else if (ch === '}') {
+        if (ch === '{') {
+          depth++;
+        } else if (ch === '}') {
           depth--;
           if (depth === 0) {
-            inner = text.slice(braceStart + 1, i); // without outer braces
+            inner = text.slice(braceStart + 1, i);
             break;
           }
         }
@@ -52,60 +52,70 @@ function extractSpec(filePath) {
     }
   }
 
-  // Parse methods with brace-depth to allow nested z.object({...}) safely
   const methods = {};
   let i = 0;
   while (i < inner.length) {
-    // skip whitespace and commas
-    while (i < inner.length && /[\s,]/.test(inner[i])) i++;
-    if (i >= inner.length) break;
-    // parse method name: quoted string or identifier
+    while (i < inner.length && /[\s,]/.test(inner[i])) {
+      i++;
+    }
+    if (i >= inner.length) {
+      break;
+    }
     let name = '';
     if (inner[i] === "'" || inner[i] === '"') {
       const quote = inner[i++];
       const start = i;
-      while (i < inner.length && inner[i] !== quote) i++;
+      while (i < inner.length && inner[i] !== quote) {
+        i++;
+      }
       name = inner.slice(start, i);
-      i++; // skip closing quote
+      i++;
     } else {
       const start = i;
-      while (i < inner.length && /[A-Za-z0-9_\-]/.test(inner[i])) i++;
+      while (i < inner.length && /[A-Za-z0-9_-]/.test(inner[i])) {
+        i++;
+      }
       name = inner.slice(start, i);
     }
-    // skip spaces
-    while (i < inner.length && /\s/.test(inner[i])) i++;
+    while (i < inner.length && /\s/.test(inner[i])) {
+      i++;
+    }
     if (inner[i] !== ':') {
       i++;
       continue;
     }
-    i++; // skip ':'
-    while (i < inner.length && /\s/.test(inner[i])) i++;
+    i++;
+    while (i < inner.length && /\s/.test(inner[i])) {
+      i++;
+    }
     if (inner[i] !== '{') {
       continue;
     }
     const bodyStart = i;
-    // scan balanced braces to find end of this method body
     let depth = 0;
     while (i < inner.length) {
       const ch = inner[i++];
-      if (ch === '{') depth++;
-      else if (ch === '}') {
+      if (ch === '{') {
+        depth++;
+      } else if (ch === '}') {
         depth--;
-        if (depth === 0) break;
+        if (depth === 0) {
+          break;
+        }
       }
     }
     const body = inner.slice(bodyStart + 1, i - 1);
     const chMatch = /channel:\s*'([^']+)'/.exec(body);
-    if (!chMatch) continue;
-    // Fallback: if name is empty, derive from channel suffix after namespace
-    if (!name && chMatch[1].startsWith(namespace + '.')) {
-      name = chMatch[1].slice(namespace.length + 1);
+    if (!chMatch) {
+      continue;
+    }
+    if (!name && chMatch[1].includes('.')) {
+      name = chMatch[1].split('.').slice(1).join('.');
     }
     const hasPayload = /\bpayload\s*:/.test(body);
     const hasResponse = /\bresponse\s*:/.test(body);
     const hasStreamResponse = /\bstreamResponse\s*:/.test(body);
-    const isStream = hasStreamResponse;
-    methods[name] = { channel: chMatch[1], hasPayload, hasResponse, hasStreamResponse, isStream };
+    methods[name] = { channel: chMatch[1], hasPayload, hasResponse, hasStreamResponse };
   }
   return { namespace, methods };
 }
@@ -122,16 +132,23 @@ function writeFileGenerated(file, content) {
       return;
     }
     if (prev === content) {
-      return; // no changes
+      return;
     }
   }
   fs.writeFileSync(file, content, 'utf8');
 }
 
+function safeName(name) {
+  return name.replace(/[^a-zA-Z0-9_]/g, '_');
+}
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 function writeChannelsFile(specs, outFile) {
   const lines = [];
   lines.push(HEADER);
-  lines.push('// Generated by scripts/rpc-codegen.js');
+  lines.push('// Generated by apps/gui/scripts/rpc-codegen.mjs');
   lines.push('');
   lines.push('export const Channels = {');
   for (const spec of specs) {
@@ -155,15 +172,10 @@ function writeChannelsFile(specs, outFile) {
   writeFileGenerated(outFile, lines.join('\n') + '\n');
 }
 
-function safeName(name) {
-  return name.replace(/[^a-zA-Z0-9_]/g, '_');
-}
-
 function writeRendererClient(spec, outDir) {
   const className = `${capitalize(spec.namespace)}Client`;
   const contractConst = `${capitalize(spec.namespace)}Contract`;
   const contractImportPath = `../../../shared/rpc/contracts/${spec.namespace}.contract`;
-  const typesImportPath = `../../../shared/rpc/gen/${spec.namespace}.types`;
   const lines = [];
   lines.push(HEADER);
   lines.push(`import type { RpcClient, CloseFn } from '../../../shared/rpc/transport';`);
@@ -184,7 +196,6 @@ function writeRendererClient(spec, outDir) {
       ? `z.output<typeof C.methods['${name}']['streamResponse']>`
       : 'void';
     lines.push('');
-    // Stream endpoints: provide AsyncGenerator + on(handler) helpers
     if (info.hasStreamResponse) {
       if (info.hasPayload) {
         lines.push(
@@ -201,7 +212,6 @@ function writeRendererClient(spec, outDir) {
         );
         lines.push('  }');
       }
-      // Also expose a simple subscription helper via on(channel, handler)
       lines.push(`  ${mname}On(handler: (ev: ${streamType}) => void): CloseFn {`);
       lines.push(
         `    return this.transport.on<${streamType}>(C.methods['${name}'].channel, handler);`
@@ -209,8 +219,6 @@ function writeRendererClient(spec, outDir) {
       lines.push('  }');
       continue;
     }
-
-    // Request/response endpoints
     if (info.hasPayload) {
       lines.push(`  ${mname}(payload: ${payloadType}): Promise<${resultType}> {`);
       lines.push(`    return this.transport.request(C.methods['${name}'].channel, payload);`);
@@ -296,15 +304,11 @@ function writeMainController(spec, outDir) {
   writeFileGenerated(file, lines.join('\n') + '\n');
 }
 
-function capitalize(s) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
 function main() {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const repoRoot = path.resolve(__dirname, '..');
-  const contractsRoot = path.resolve(repoRoot, 'apps/gui/src/shared/rpc/contracts');
-  const channelsOut = path.resolve(repoRoot, 'apps/gui/src/shared/rpc/gen/channels.ts');
+  const appRoot = path.resolve(__dirname, '..');
+  const contractsRoot = path.resolve(appRoot, 'src/shared/rpc/contracts');
+  const channelsOut = path.resolve(appRoot, 'src/shared/rpc/gen/channels.ts');
   if (!fs.existsSync(contractsRoot)) {
     console.error('No contracts folder:', contractsRoot);
     process.exit(1);
@@ -313,12 +317,12 @@ function main() {
   const specs = files.map(extractSpec);
   writeChannelsFile(specs, channelsOut);
   console.log(
-    `[rpc-codegen] Wrote ${path.relative(repoRoot, channelsOut)} from ${files.length} contract(s).`
+    `[rpc-codegen] Wrote ${path.relative(appRoot, channelsOut)} from ${files.length} contract(s).`
   );
   for (const spec of specs) {
-    writeRendererClient(spec, path.resolve(repoRoot, 'apps/gui/src/renderer/rpc/gen'));
-    writeMainController(spec, path.resolve(repoRoot, `apps/gui/src/main/${spec.namespace}/gen`));
-    writeSharedTypes(spec, path.resolve(repoRoot, 'apps/gui/src/shared/rpc/gen'));
+    writeRendererClient(spec, path.resolve(appRoot, 'src/renderer/rpc/gen'));
+    writeMainController(spec, path.resolve(appRoot, `src/main/${spec.namespace}/gen`));
+    writeSharedTypes(spec, path.resolve(appRoot, 'src/shared/rpc/gen'));
   }
 }
 
