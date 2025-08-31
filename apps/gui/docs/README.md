@@ -14,6 +14,7 @@
   - Patterns: `apps/gui/docs/frontend/patterns.md`
   - Testing: `apps/gui/docs/frontend/testing.md`
   - Roadmap: `apps/gui/docs/frontend/roadmap.md`
+  - Consolidated Plan (v1): `apps/gui/docs/GUI_CONSOLIDATED_PLAN.md`
 
 - RPC
   - 개요/인덱스: `apps/gui/docs/rpc/` (정리 진행 중)
