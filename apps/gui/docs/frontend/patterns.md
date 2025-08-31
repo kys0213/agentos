@@ -84,3 +84,13 @@ Interface-first summary for Model Manager ↔ Bridge integration.
   - Settings screens reuse hooks and invalidation strategy
 
 Note: Implementation is non-normative; rely on IPC contracts documented in `ELECTRON_MCP_IPC_SPEC.md` and terms in `IPC_TERMS_AND_CHANNELS.md`.
+
+---
+
+## 9) Chat Containers — Consolidation Outcomes
+
+- ChatView props streamlined: remove redundant `agents` prop; use `mentionableAgents` as the single list source.
+- Status counters derived via memo (idle/inactive) to avoid repeated filters.
+- ChatHistory wrapped in `React.memo` to reduce re-renders.
+- Containers own React Query wiring and session id continuity (map by agent id).
+- Presentational Chat components remain prop-driven; no direct ServiceContainer access.

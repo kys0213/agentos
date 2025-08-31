@@ -39,66 +39,13 @@
 - Phase A–D 주요 항목 완료. 타입 엄격화/React Query 일원화/채팅 플로우 복구/컨트롤러 승격 완료.
 - 남은 과제: 소수의 Prettier/unused 경고 정리(비기능), 문서 인덱스 소폭 재정돈(필요 시).
 
-## Phased Plan
+## Phased Plan (Merged)
 
-### Phase A — 타입 엄격화(어댑터/훅/ESLint)
+세부 구현/수용 기준은 다음 문서로 통합되었습니다.
 
-- [x] 어댑터 any 제거 및 계약 응답 `parse` 적용
-  - files:
-    - `apps/gui/src/renderer/rpc/adapters/preset.adapter.ts`
-    - `apps/gui/src/renderer/rpc/adapters/agent.adapter.ts`
-    - `apps/gui/src/renderer/rpc/adapters/conversation.adapter.ts`
-    - `apps/gui/src/renderer/rpc/adapters/bridge.adapter.ts`
-- [x] 훅 경계 타입 정렬 및 캐스팅 제거
-  - `apps/gui/src/renderer/hooks/queries/use-chat.ts`
-  - `apps/gui/src/renderer/hooks/queries/use-conversation.ts`
-- [x] ESLint 완화 축소 및 `as any` 금지 강화
-  - `apps/gui/.eslintrc.json`
-
-### Phase B — Preset 실데이터 마무리(단일 소스화)
-
-- [x] 어댑터에서 UI 전용 필드(usageCount/knowledge\*) 주입 제거, 순수 도메인 타입 유지
-- [x] React Query를 Preset의 단일 데이터 소스로 사용하고, `useAppData`는 컴포저로 축소
-  - files:
-    - `apps/gui/src/renderer/hooks/queries/use-presets.ts`
-    - `apps/gui/src/renderer/hooks/useAppData.ts`
-- [x] CRUD 동작/로딩/에러 상태 표준 UI로 통일
-
-### Phase C — 채팅 ReactQuery + 동기화 복구
-
-- [x] 에이전트 생성→채팅 접근 플로우 복구, Empty State 조건 수정
-  - files:
-    - `apps/gui/src/renderer/hooks/useAppData.ts`
-    - `apps/gui/src/renderer/hooks/queries/use-chat.ts`
-  - [x] 컨테이너 패턴 정비(필요 시): ChatView/History/Interface 컨테이너 재검토
-  - [x] e2e 시나리오 보강(생성→전송→응답) — Playwright MCP 가이드에 시나리오 추가
-
-### Phase D — 생성 컨트롤러 승격 + 모듈 와이어링
-
-- [x] `.gen.new.ts` 컨트롤러를 실제 구현으로 승격하고 모듈에 연결
-  - files:
-    - `apps/gui/src/main/agent/gen/agent.controller.gen.new.ts`
-    - `apps/gui/src/main/preset/gen/preset.controller.gen.new.ts`
-    - `apps/gui/src/main/bridge/gen/bridge.controller.gen.new.ts`
-    - `apps/gui/src/main/mcp/gen/mcp.controller.gen.new.ts`
-- [x] `ZodValidationPipe` 적용 및 반환 타입 계약 일치 검증
-- [x] 기존 수동 컨트롤러와 역할 중복 정리(모듈 교체 완료)
-
-### Phase E — 레거시 제거 + 문서 표준화
-
-- 렌더러의 레거시 IPC 호출/주석/테스트 유틸 제거 또는 Rpc로 대체
-  - files: `apps/gui/src/renderer/bootstrap.ts`(서비스 등록/DI 일원화 검증)
-- 문서 링크 정상화 및 가이드 스텁 추가
-  - 누락 가이드: `apps/gui/docs/RPC_AND_STREAMING_GUIDE.md`(→ `apps/gui/docs/rpc/GUIDE.md` 연결 스텁 추가 완료)
-  - 표준화 계획서(추적용): `apps/gui/plan/DOCS_AND_PLANS_STANDARDIZATION_PLAN.md` (문서 구조 변경 시 참고)
-
-### Phase F — 품질/테스트/성능
-
-- 스트림 취소/해제 테스트(누수 방지) 및 레시피 추가
-  - files: `apps/gui/src/renderer/rpc/services/mcp-usage.service.ts`
-  - [x] 구독 해제 테스트 추가 및 recipes에 예시 추가
-- 타입/빌드/린트/테스트 파이프라인 그린 유지
-- 성능/메시지 포트는 별도 문서로 분리 계획
+- Frontend Roadmap: Consolidated Delivery Phases (A–F) — `apps/gui/docs/frontend/roadmap.md`
+- Frontend Patterns: Chat containers outcomes — `apps/gui/docs/frontend/patterns.md`
+- Frontend Testing: Playwright MCP scenario/acceptance — `apps/gui/docs/frontend/testing.md`
 
 ## Todo (도메인 슬라이스)
 

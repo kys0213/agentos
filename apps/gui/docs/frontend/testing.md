@@ -50,3 +50,16 @@ pnpm --filter @agentos/apps-gui typecheck
 ```
 
 테스트 프레임워크(Jest/Vitest)를 사용하는 경우, 각 테스트에서 `bootstrap(new MockIpcChannel())`으로 독립 컨테이너를 구성하세요.
+
+---
+
+## Playwright MCP Scenario (Reference)
+
+- Guide: `apps/gui/docs/PLAYWRIGHT_MCP_GUIDE.md`
+- Scenario: Agent creation → enter chat → send message → receive response
+- Acceptance mapping:
+  - Agent creation leads to immediate chat availability (Phase C)
+  - Empty states rendered correctly with CTA
+  - Message send/assistant response visible; no console errors
+
+Note: We keep this scenario as documentation (no new e2e PRs). Use the guide to drive manual verification via MCP.
