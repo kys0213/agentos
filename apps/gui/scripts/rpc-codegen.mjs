@@ -17,8 +17,11 @@ function findContractFiles(root) {
   const files = [];
   for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
     const p = path.join(root, entry.name);
-    if (entry.isDirectory()) files.push(...findContractFiles(p));
-    else if (entry.isFile() && entry.name.endsWith('.contract.ts')) files.push(p);
+    if (entry.isDirectory()) {
+      files.push(...findContractFiles(p));
+    } else if (entry.isFile() && entry.name.endsWith('.contract.ts')) {
+      files.push(p);
+    }
   }
   return files.sort();
 }
@@ -36,8 +39,9 @@ function extractSpec(filePath) {
       let depth = 0;
       for (let i = braceStart; i < text.length; i++) {
         const ch = text[i];
-        if (ch === '{') depth++;
-        else if (ch === '}') {
+        if (ch === '{') {
+          depth++;
+        } else if (ch === '}') {
           depth--;
           if (depth === 0) {
             inner = text.slice(braceStart + 1, i);
@@ -51,35 +55,60 @@ function extractSpec(filePath) {
   const methods = {};
   let i = 0;
   while (i < inner.length) {
-    while (i < inner.length && /[\s,]/.test(inner[i])) i++;
-    if (i >= inner.length) break;
+    while (i < inner.length && /[\s,]/.test(inner[i])) {
+      i++;
+    }
+    if (i >= inner.length) {
+      break;
+    }
     let name = '';
     if (inner[i] === "'" || inner[i] === '"') {
       const quote = inner[i++];
       const start = i;
-      while (i < inner.length && inner[i] !== quote) i++;
+      while (i < inner.length && inner[i] !== quote) {
+        i++;
+      }
       name = inner.slice(start, i);
       i++;
     } else {
       const start = i;
-      while (i < inner.length && /[A-Za-z0-9_\-]/.test(inner[i])) i++;
+      while (i < inner.length && /[A-Za-z0-9_-]/.test(inner[i])) {
+        i++;
+      }
       name = inner.slice(start, i);
     }
-    while (i < inner.length && /\s/.test(inner[i])) i++;
-    if (inner[i] !== ':') { i++; continue; }
+    while (i < inner.length && /\s/.test(inner[i])) {
+      i++;
+    }
+    if (inner[i] !== ':') {
+      i++;
+      continue;
+    }
     i++;
-    while (i < inner.length && /\s/.test(inner[i])) i++;
-    if (inner[i] !== '{') continue;
+    while (i < inner.length && /\s/.test(inner[i])) {
+      i++;
+    }
+    if (inner[i] !== '{') {
+      continue;
+    }
     const bodyStart = i;
     let depth = 0;
     while (i < inner.length) {
       const ch = inner[i++];
-      if (ch === '{') depth++;
-      else if (ch === '}') { depth--; if (depth === 0) break; }
+      if (ch === '{') {
+        depth++;
+      } else if (ch === '}') {
+        depth--;
+        if (depth === 0) {
+          break;
+        }
+      }
     }
     const body = inner.slice(bodyStart + 1, i - 1);
     const chMatch = /channel:\s*'([^']+)'/.exec(body);
-    if (!chMatch) continue;
+    if (!chMatch) {
+      continue;
+    }
     if (!name && chMatch[1].includes('.')) {
       name = chMatch[1].split('.').slice(1).join('.');
     }
@@ -102,13 +131,19 @@ function writeFileGenerated(file, content) {
       console.warn(`[rpc-codegen] Skip overwrite (no header). Wrote candidate: ${alt}`);
       return;
     }
-    if (prev === content) return;
+    if (prev === content) {
+      return;
+    }
   }
   fs.writeFileSync(file, content, 'utf8');
 }
 
-function safeName(name) { return name.replace(/[^a-zA-Z0-9_]/g, '_'); }
-function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function safeName(name) {
+  return name.replace(/[^a-zA-Z0-9_]/g, '_');
+}
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 function writeChannelsFile(specs, outFile) {
   const lines = [];
@@ -151,13 +186,21 @@ function writeRendererClient(spec, outDir) {
   lines.push(`  constructor(private readonly transport: RpcClient) {}`);
   for (const [name, info] of Object.entries(spec.methods)) {
     const mname = safeName(name);
-    const payloadType = info.hasPayload ? `z.input<typeof C.methods['${name}']['payload']>` : 'void';
-    const resultType = info.hasResponse ? `z.output<typeof C.methods['${name}']['response']>` : 'void';
-    const streamType = info.hasStreamResponse ? `z.output<typeof C.methods['${name}']['streamResponse']>` : 'void';
+    const payloadType = info.hasPayload
+      ? `z.input<typeof C.methods['${name}']['payload']>`
+      : 'void';
+    const resultType = info.hasResponse
+      ? `z.output<typeof C.methods['${name}']['response']>`
+      : 'void';
+    const streamType = info.hasStreamResponse
+      ? `z.output<typeof C.methods['${name}']['streamResponse']>`
+      : 'void';
     lines.push('');
     if (info.hasStreamResponse) {
       if (info.hasPayload) {
-        lines.push(`  ${mname}Stream(payload: ${payloadType}): AsyncGenerator<${streamType}, void, unknown> {`);
+        lines.push(
+          `  ${mname}Stream(payload: ${payloadType}): AsyncGenerator<${streamType}, void, unknown> {`
+        );
         lines.push(
           `    return this.transport.stream ? this.transport.stream<${streamType}>(C.methods['${name}'].channel, payload) : (async function*(){})()`
         );
@@ -170,7 +213,9 @@ function writeRendererClient(spec, outDir) {
         lines.push('  }');
       }
       lines.push(`  ${mname}On(handler: (ev: ${streamType}) => void): CloseFn {`);
-      lines.push(`    return this.transport.on<${streamType}>(C.methods['${name}'].channel, handler);`);
+      lines.push(
+        `    return this.transport.on<${streamType}>(C.methods['${name}'].channel, handler);`
+      );
       lines.push('  }');
       continue;
     }
@@ -198,11 +243,19 @@ function writeSharedTypes(spec, outDir) {
   for (const [name, info] of Object.entries(spec.methods)) {
     const mname = safeName(name);
     const base = `typeof import('${contractPath}').${capitalize(spec.namespace)}Contract['methods']['${name}']`;
-    if (info.hasPayload) lines.push(`export type ${mname}_Payload = import('zod').infer<${base}['payload']>;`);
-    else lines.push(`export type ${mname}_Payload = void;`);
-    if (info.hasResponse) lines.push(`export type ${mname}_Result = import('zod').infer<${base}['response']>;`);
-    else lines.push(`export type ${mname}_Result = void;`);
-    if (info.hasStreamResponse) lines.push(`export type ${mname}_Stream = import('zod').infer<${base}['streamResponse']>;`);
+    if (info.hasPayload) {
+      lines.push(`export type ${mname}_Payload = import('zod').infer<${base}['payload']>;`);
+    } else {
+      lines.push(`export type ${mname}_Payload = void;`);
+    }
+    if (info.hasResponse) {
+      lines.push(`export type ${mname}_Result = import('zod').infer<${base}['response']>;`);
+    } else {
+      lines.push(`export type ${mname}_Result = void;`);
+    }
+    if (info.hasStreamResponse) {
+      lines.push(`export type ${mname}_Stream = import('zod').infer<${base}['streamResponse']>;`);
+    }
     lines.push('');
   }
   const file = path.join(outDir, `${spec.namespace}.types.d.ts`);
@@ -227,8 +280,12 @@ function writeMainController(spec, outDir) {
     const mname = safeName(name);
     lines.push('');
     lines.push(`  @EventPattern('${info.channel}')`);
-    const payloadType = info.hasPayload ? `z.input<typeof C.methods['${name}']['payload']>` : 'void';
-    const returnType = info.hasResponse ? `z.output<typeof C.methods['${name}']['response']>` : 'void';
+    const payloadType = info.hasPayload
+      ? `z.input<typeof C.methods['${name}']['payload']>`
+      : 'void';
+    const returnType = info.hasResponse
+      ? `z.output<typeof C.methods['${name}']['response']>`
+      : 'void';
     if (info.hasPayload) {
       lines.push(
         `  async ${mname}(@Payload(new ZodValidationPipe(C.methods['${name}']['payload'])) payload: ${payloadType}): Promise<${returnType}> {`
@@ -259,7 +316,9 @@ function main() {
   const files = findContractFiles(contractsRoot);
   const specs = files.map(extractSpec);
   writeChannelsFile(specs, channelsOut);
-  console.log(`[rpc-codegen] Wrote ${path.relative(appRoot, channelsOut)} from ${files.length} contract(s).`);
+  console.log(
+    `[rpc-codegen] Wrote ${path.relative(appRoot, channelsOut)} from ${files.length} contract(s).`
+  );
   for (const spec of specs) {
     writeRendererClient(spec, path.resolve(appRoot, 'src/renderer/rpc/gen'));
     writeMainController(spec, path.resolve(appRoot, `src/main/${spec.namespace}/gen`));
@@ -268,4 +327,3 @@ function main() {
 }
 
 main();
-
