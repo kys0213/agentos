@@ -1,6 +1,8 @@
 import { Test } from '@nestjs/testing';
 import { BridgeController } from '../bridge.controller';
 import { LLM_BRIDGE_REGISTRY_TOKEN } from '../../common/model/constants';
+import type { LlmManifest } from 'llm-bridge-spec';
+import type { Resp } from '../dto/bridge.dto';
 
 describe('BridgeController', () => {
   it('register returns success wrapper with id', async () => {
@@ -19,10 +21,18 @@ describe('BridgeController', () => {
     }).compile();
 
     const ctrl = mod.get(BridgeController);
-    const res: any = await ctrl.register({
-      manifest: { name: 'm', version: '1.0.0' } as any,
-      config: {},
-    } as any);
+    const manifest: LlmManifest = {
+      name: 'm',
+      version: '1.0.0',
+      description: '',
+      inputs: [],
+      outputs: [],
+      tools: [],
+      vendor: 'test',
+      license: 'MIT',
+      capabilities: [],
+    };
+    const res: Resp<{ id: string }> = await ctrl.register({ manifest, config: {} });
     expect(res.success).toBe(true);
     expect(res.result.id).toBe('id-1');
   });
@@ -43,12 +53,22 @@ describe('BridgeController', () => {
     }).compile();
 
     const ctrl = mod.get(BridgeController);
-    const res: any = await ctrl.unregister('bad-id');
+    const res = await ctrl.unregister('bad-id');
     expect(res.success).toBe(false);
   });
 
   it('getCurrent returns null or object', async () => {
-    const manifest = { name: 'm', version: '1.0.0' } as any;
+    const manifest: LlmManifest = {
+      name: 'm',
+      version: '1.0.0',
+      description: '',
+      inputs: [],
+      outputs: [],
+      tools: [],
+      vendor: 'test',
+      license: 'MIT',
+      capabilities: [],
+    };
     const registry = {
       getActiveId: jest.fn().mockResolvedValueOnce(null).mockResolvedValueOnce('id-1'),
       getManifest: jest.fn().mockResolvedValue(manifest),
@@ -66,9 +86,9 @@ describe('BridgeController', () => {
     const ctrl = mod.get(BridgeController);
     const r1 = await ctrl.getCurrent();
     expect(r1).toBeNull();
-    const r2: any = await ctrl.getCurrent();
-    expect(r2.id).toBe('id-1');
-    expect(r2.manifest).toEqual(manifest);
+    const r2 = await ctrl.getCurrent();
+    expect(r2?.id).toBe('id-1');
+    expect(r2?.manifest).toEqual(manifest);
   });
 
   it('switchActive wraps success/error', async () => {
@@ -85,7 +105,7 @@ describe('BridgeController', () => {
       providers: [{ provide: LLM_BRIDGE_REGISTRY_TOKEN, useValue: registryOk }],
     }).compile();
     const ctrlOk = modOk.get(BridgeController);
-    const ok: any = await ctrlOk.switchActive('id');
+    const ok = await ctrlOk.switchActive('id');
     expect(ok.success).toBe(true);
 
     const registryErr = {
@@ -101,7 +121,7 @@ describe('BridgeController', () => {
       providers: [{ provide: LLM_BRIDGE_REGISTRY_TOKEN, useValue: registryErr }],
     }).compile();
     const ctrlErr = modErr.get(BridgeController);
-    const err: any = await ctrlErr.switchActive('id');
+    const err = await ctrlErr.switchActive('id');
     expect(err.success).toBe(false);
   });
 });

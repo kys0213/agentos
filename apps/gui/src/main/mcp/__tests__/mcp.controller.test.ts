@@ -1,57 +1,78 @@
 import { Test } from '@nestjs/testing';
 import { McpController } from '../mcp.controller';
-import type { McpService } from '@agentos/core';
+import { McpService } from '@agentos/core';
+import type { McpToolMetadata } from '@agentos/core';
+import type { GetToolDto, InvokeToolDto, Resp } from '../dto/mcp.dto';
 
 describe('McpController', () => {
   it('invokes tool via McpService and wraps response', async () => {
-    const mockMcp: Partial<Record<keyof McpService, any>> = {
-      executeTool: jest
-        .fn()
-        .mockResolvedValue({ isError: false, contents: [], resumptionToken: undefined }),
-      getTool: jest.fn().mockReturnValue(null),
+    const executeToolMock: jest.MockedFunction<McpService['executeTool']> = jest
+      .fn()
+      .mockResolvedValue({ isError: false, contents: [], resumptionToken: undefined });
+    const getToolMock: jest.MockedFunction<McpService['getTool']> = jest.fn().mockReturnValue(null);
+    const mockMcp: Pick<McpService, 'executeTool' | 'getTool'> = {
+      executeTool: executeToolMock,
+      getTool: getToolMock,
     };
 
     const moduleRef = await Test.createTestingModule({
       controllers: [McpController],
-      providers: [{ provide: (require('@agentos/core') as any).McpService, useValue: mockMcp }],
+      providers: [{ provide: McpService, useValue: mockMcp }],
     }).compile();
 
     const ctrl = moduleRef.get(McpController);
-    const resp: any = await ctrl.invokeTool({ name: 'foo.bar' } as any);
+    const resp: Resp<unknown> = await ctrl.invokeTool({ name: 'foo.bar' } satisfies InvokeToolDto);
     expect(resp.success).toBe(true);
-    expect(mockMcp.executeTool as any).toHaveBeenCalledWith('foo.bar', undefined, undefined);
+    expect(executeToolMock).toHaveBeenCalledWith('foo.bar', undefined, undefined);
   });
 
   it('wraps error as { success: false }', async () => {
-    const mockMcp: Partial<Record<keyof McpService, any>> = {
-      executeTool: jest.fn().mockRejectedValue(new Error('boom')),
-      getTool: jest.fn().mockReturnValue(null),
+    const executeToolMock: jest.MockedFunction<McpService['executeTool']> = jest
+      .fn()
+      .mockRejectedValue(new Error('boom'));
+    const getToolMock: jest.MockedFunction<McpService['getTool']> = jest.fn().mockReturnValue(null);
+    const mockMcp: Pick<McpService, 'executeTool' | 'getTool'> = {
+      executeTool: executeToolMock,
+      getTool: getToolMock,
     };
 
     const moduleRef = await Test.createTestingModule({
       controllers: [McpController],
-      providers: [{ provide: (require('@agentos/core') as any).McpService, useValue: mockMcp }],
+      providers: [{ provide: McpService, useValue: mockMcp }],
     }).compile();
 
     const ctrl = moduleRef.get(McpController);
-    const resp: any = await ctrl.invokeTool({ name: 'foo.bar' } as any);
+    const resp: Resp<unknown> = await ctrl.invokeTool({ name: 'foo.bar' } satisfies InvokeToolDto);
     expect(resp.success).toBe(false);
   });
 
   it('getTool forwards name via DTO', async () => {
-    const mockMcp: Partial<Record<keyof McpService, any>> = {
-      getTool: jest.fn().mockReturnValue({ id: 't1' }),
-      executeTool: jest.fn(),
+    const toolMeta: McpToolMetadata = {
+      id: 't1',
+      name: 'foo.bar',
+      description: '',
+      version: '1.0.0',
+      permissions: [],
+      status: 'connected',
+      usageCount: 0,
+    };
+    const getToolMock: jest.MockedFunction<McpService['getTool']> = jest
+      .fn()
+      .mockReturnValue(toolMeta);
+    const executeToolMock: jest.MockedFunction<McpService['executeTool']> = jest.fn();
+    const mockMcp: Pick<McpService, 'executeTool' | 'getTool'> = {
+      getTool: getToolMock,
+      executeTool: executeToolMock,
     };
 
     const moduleRef = await Test.createTestingModule({
       controllers: [McpController],
-      providers: [{ provide: (require('@agentos/core') as any).McpService, useValue: mockMcp }],
+      providers: [{ provide: McpService, useValue: mockMcp }],
     }).compile();
 
     const ctrl = moduleRef.get(McpController);
-    const tool: any = await ctrl.getTool({ name: 'foo.bar' } as any);
-    expect(tool).toEqual({ id: 't1' });
-    expect(mockMcp.getTool as any).toHaveBeenCalledWith('foo.bar');
+    const tool = await ctrl.getTool({ name: 'foo.bar' } satisfies GetToolDto);
+    expect(tool?.id).toEqual('t1');
+    expect(getToolMock).toHaveBeenCalledWith('foo.bar');
   });
 });

@@ -2,14 +2,36 @@ import React from 'react';
 import renderer from 'react-test-renderer';
 import { ChatView } from '../../ChatView';
 import type { ReadonlyAgentMetadata, MessageHistory } from '@agentos/core';
+import type { ReadonlyPreset } from '@agentos/core';
+
+const makePreset = (): ReadonlyPreset => ({
+  id: 'p',
+  name: 'Preset',
+  description: '',
+  author: 'test',
+  createdAt: new Date(0),
+  updatedAt: new Date(0),
+  version: '1.0.0',
+  systemPrompt: '',
+  llmBridgeName: 'none',
+  llmBridgeConfig: {},
+  status: 'active',
+  usageCount: 0,
+  knowledgeDocuments: 0,
+  knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 },
+  category: ['development'],
+});
 
 const agent = (id: string, name: string): ReadonlyAgentMetadata => ({
   id,
   name,
   description: '',
+  icon: '',
   keywords: [],
-  preset: { id: 'p', name: 'Preset', category: ['development'] } as any,
+  preset: makePreset(),
   status: 'active',
+  sessionCount: 0,
+  usageCount: 0,
 });
 
 describe('ChatView header chips', () => {

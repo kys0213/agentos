@@ -37,7 +37,8 @@ describe('RpcEndpoint', () => {
     ep.start();
 
     const p = ep.request<number>('math.add', { a: 1, b: 2 });
-    const req = tr.sent.find((f) => f.kind === 'req')! as any;
+    const isReq = (f: RpcFrame): f is Extract<RpcFrame, { kind: 'req' }> => f.kind === 'req';
+    const req = tr.sent.find(isReq)!;
     expect(req).toBeDefined();
 
     tr.onFrame?.({ kind: 'res', cid: req.cid, ok: true, result: 3 });
@@ -51,9 +52,10 @@ describe('RpcEndpoint', () => {
     ep.start();
 
     const p = ep.request('boom', {});
-    const req = tr.sent.find((f) => f.kind === 'req')! as any;
+    const isReq = (f: RpcFrame): f is Extract<RpcFrame, { kind: 'req' }> => f.kind === 'req';
+    const req = tr.sent.find(isReq)!;
 
-    tr.onFrame?.({ kind: 'err', cid: req.cid, ok: false, message: 'bad', code: 'INTERNAL' as any });
+    tr.onFrame?.({ kind: 'err', cid: req.cid, ok: false, message: 'bad', code: 'INTERNAL' });
 
     await expect(p).rejects.toThrow('bad');
   });
@@ -83,7 +85,8 @@ describe('RpcEndpoint', () => {
     // Wait a bit for the async generator to set up subscription and send request
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    const req = tr.sent.find((f) => f.kind === 'req')! as any;
+    const isReq = (f: RpcFrame): f is Extract<RpcFrame, { kind: 'req' }> => f.kind === 'req';
+    const req = tr.sent.find(isReq)!;
 
     tr.onFrame?.({ kind: 'nxt', cid: req.cid, data: 1 });
     tr.onFrame?.({ kind: 'nxt', cid: req.cid, data: 2 });
@@ -116,7 +119,8 @@ describe('RpcEndpoint', () => {
     // Wait a bit for the async generator to set up subscription and send request
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    const req = tr.sent.find((f) => f.kind === 'req')! as any;
+    const isReq = (f: RpcFrame): f is Extract<RpcFrame, { kind: 'req' }> => f.kind === 'req';
+    const req = tr.sent.find(isReq)!;
     tr.onFrame?.({ kind: 'nxt', cid: req.cid, data: 1 });
 
     const first = await firstPromise;
@@ -124,7 +128,9 @@ describe('RpcEndpoint', () => {
     await it.return?.();
 
     // endpoint should post a cancel frame
-    const hasCancel = tr.sent.some((f) => f.kind === 'can' && (f as any).cid === req.cid);
+    const hasCancel = tr.sent.some(
+      (f): f is Extract<RpcFrame, { kind: 'can' }> => f.kind === 'can' && f.cid === req.cid
+    );
     expect(hasCancel).toBe(true);
   });
 
@@ -142,9 +148,10 @@ describe('RpcEndpoint', () => {
     // Wait a bit for the async generator to set up subscription and send request
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    const req = tr.sent.find((f) => f.kind === 'req')! as any;
+    const isReq = (f: RpcFrame): f is Extract<RpcFrame, { kind: 'req' }> => f.kind === 'req';
+    const req = tr.sent.find(isReq)!;
     const initialCancelCount = tr.sent.filter(
-      (f) => f.kind === 'can' && (f as any).cid === req.cid
+      (f): f is Extract<RpcFrame, { kind: 'can' }> => f.kind === 'can' && f.cid === req.cid
     ).length;
 
     // Send normal stream completion
@@ -166,7 +173,7 @@ describe('RpcEndpoint', () => {
 
     // No additional cancel frame should be sent after normal completion
     const finalCancelCount = tr.sent.filter(
-      (f) => f.kind === 'can' && (f as any).cid === req.cid
+      (f): f is Extract<RpcFrame, { kind: 'can' }> => f.kind === 'can' && f.cid === req.cid
     ).length;
     expect(finalCancelCount).toBe(initialCancelCount);
   });
@@ -176,11 +183,14 @@ describe('RpcEndpoint', () => {
     const ep = new RpcEndpoint(tr);
     ep.start();
 
-    ep.register('math.add', (p: any) => (p.a ?? 0) + (p.b ?? 0));
+    ep.register('math.add', (p: { a?: number; b?: number }) => (p.a ?? 0) + (p.b ?? 0));
 
-    tr.onFrame?.({ kind: 'req', cid: 'c9', method: 'math.add', payload: { a: 2, b: 5 } } as any);
+    tr.onFrame?.({ kind: 'req', cid: 'c9', method: 'math.add', payload: { a: 2, b: 5 } });
 
-    const res = tr.sent.find((f) => f.kind === 'res' && (f as any).cid === 'c9') as any;
+    const isRes = (f: RpcFrame): f is Extract<RpcFrame, { kind: 'res' }> => f.kind === 'res';
+    const res = tr.sent.find(
+      (f): f is Extract<RpcFrame, { kind: 'res' }> => isRes(f) && f.cid === 'c9'
+    )!;
     expect(res).toBeDefined();
     expect(res.ok).toBe(true);
     expect(res.result).toBe(7);

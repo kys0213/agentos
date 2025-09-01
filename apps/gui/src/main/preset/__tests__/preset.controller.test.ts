@@ -3,9 +3,11 @@ import { PresetController } from '../preset.controller';
 import { PRESET_REPOSITORY_TOKEN } from '../../common/preset/constants';
 import type { PresetRepository, Preset, CursorPaginationResult, CreatePreset } from '@agentos/core';
 
+type PresetSummary = { id: string; name: string; description: string; updatedAt: Date };
+
 class InMemoryPresetRepo implements PresetRepository {
   store = new Map<string, Preset>();
-  async list(): Promise<CursorPaginationResult<any>> {
+  async list(): Promise<CursorPaginationResult<PresetSummary>> {
     const items = Array.from(this.store.values()).map((p) => ({
       id: p.id,
       name: p.name,

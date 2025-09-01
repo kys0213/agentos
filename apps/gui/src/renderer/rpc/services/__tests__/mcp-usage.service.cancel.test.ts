@@ -2,7 +2,11 @@ import type { CloseFn, RpcClient } from '../../../../shared/rpc/transport';
 import { McpUsageRpcService } from '../mcp-usage.service';
 import type { McpUsageUpdateEvent } from '../../../../shared/types/mcp-usage-types';
 
-function createMockRpc(): { rpc: RpcClient; emit: (payload: unknown) => void; wasClosed: () => boolean } {
+function createMockRpc(): {
+  rpc: RpcClient;
+  emit: (payload: unknown) => void;
+  wasClosed: () => boolean;
+} {
   let handler: ((payload: unknown) => void) | null = null;
   let closed = false;
   const rpc: RpcClient = {
