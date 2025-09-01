@@ -46,11 +46,11 @@ export const isInstalledBridgeRecord = (v: unknown): v is InstalledBridgeRecord 
   }
   const o = v as Record<string, unknown>;
   const idOk = typeof o.id === 'string';
-  const installedAt = o.installedAt as unknown;
+  const installedAt = o.installedAt;
   const installedAtOk =
     typeof installedAt === 'string' || installedAt instanceof Date || installedAt === undefined;
 
-  const manifest = o.manifest as unknown;
+  const manifest = o.manifest;
   if (!isObject(manifest)) {
     return false;
   }
@@ -69,8 +69,8 @@ export const isActiveBridgeState = (v: unknown): v is ActiveBridgeState => {
     return false;
   }
   const o = v as Record<string, unknown>;
-  const activeId = o.activeId as unknown;
-  const updatedAt = o.updatedAt as unknown;
+  const activeId = o.activeId;
+  const updatedAt = o.updatedAt;
   const activeIdOk = activeId === null || typeof activeId === 'string';
   const updatedAtOk = typeof updatedAt === 'string' || updatedAt instanceof Date;
   return activeIdOk && updatedAtOk;
