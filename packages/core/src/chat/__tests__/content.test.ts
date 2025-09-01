@@ -38,7 +38,10 @@ describe('Core content standardization', () => {
   });
 
   test('normalizeToCoreContentArray: circular object → String fallback', () => {
-    interface Circular { self?: unknown; [k: string]: unknown }
+    interface Circular {
+      self?: unknown;
+      [k: string]: unknown;
+    }
     const a: Circular = {};
     a.self = a; // create circular reference
     const arr = normalizeToCoreContentArray(a);

@@ -291,7 +291,13 @@ export class GraphStore {
     const embedder = this.embedder.exportState?.() ?? null;
     return { graph: { nodes, edges }, embedder, canonicalMeta: defaultCanonicalMeta };
   }
-  fromSnapshot(s: { graph: { nodes: Array<{ id: string; embedding: unknown; [k: string]: unknown }>; edges: Edge[] }; embedder?: unknown }) {
+  fromSnapshot(s: {
+    graph: {
+      nodes: Array<{ id: string; embedding: unknown; [k: string]: unknown }>;
+      edges: Edge[];
+    };
+    embedder?: unknown;
+  }) {
     this.nodes.clear();
     this.edges.clear();
     this.byCanonical.clear();
@@ -299,7 +305,10 @@ export class GraphStore {
       this.inverted.clear();
     }
     for (const raw of s.graph.nodes) {
-      const n = { ...(raw as Record<string, unknown>), embedding: deserializeSparse(raw.embedding) } as BaseNode;
+      const n = {
+        ...(raw as Record<string, unknown>),
+        embedding: deserializeSparse(raw.embedding),
+      } as BaseNode;
       this.nodes.set(n.id, n);
       this.indexNode(n.id, n.text, n.canonicalKey);
     }
