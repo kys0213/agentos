@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import { ChatView } from '../../ChatView';
+import { ChatView } from '../ChatView';
 import type { ReadonlyAgentMetadata, MessageHistory } from '@agentos/core';
 import type { ReadonlyPreset } from '@agentos/core';
 

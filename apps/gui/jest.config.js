@@ -23,8 +23,7 @@ module.exports = {
   },
   testPathIgnorePatterns: [
     '/node_modules/',
-    '<rootDir>/dist/',
-    '<rootDir>/src/renderer/components/chat/__tests__/'
+    '<rootDir>/dist/'
   ],
   // ts-jest globals config deprecated; using transform options above
 };
