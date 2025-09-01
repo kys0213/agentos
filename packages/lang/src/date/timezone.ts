@@ -23,10 +23,12 @@ export type TimeZone = CommonTimeZone | BrandedTimeZone;
 export function isValidTimeZone(zoneId: string): boolean {
   try {
     // Prefer spec API if available (Node 20+/modern runtimes)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const anyIntl = Intl as any;
-    if (typeof anyIntl.supportedValuesOf === 'function') {
-      const list: string[] = anyIntl.supportedValuesOf('timeZone');
+    type IntlWithSupportedValues = typeof Intl & {
+      supportedValuesOf?: (key: 'timeZone') => readonly string[];
+    };
+    const intl = Intl as IntlWithSupportedValues;
+    if (typeof intl.supportedValuesOf === 'function') {
+      const list = intl.supportedValuesOf('timeZone');
       return list.includes(zoneId);
     }
     // Fallback heuristic: attempt DateTimeFormat with the zone
