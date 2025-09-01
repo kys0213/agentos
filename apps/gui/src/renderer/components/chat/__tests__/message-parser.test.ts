@@ -9,7 +9,7 @@ import type { MultiModalContent } from 'llm-bridge-spec';
 const msg = (content: MultiModalContent[] | MultiModalContent | string): MessageHistory => ({
   messageId: 'm1',
   role: 'user',
-  content,
+  content: Array.isArray(content) ? content : [],
   createdAt: new Date(),
 });
 

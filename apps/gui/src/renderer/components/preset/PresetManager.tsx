@@ -166,9 +166,27 @@ export function PresetManager({
             setViewMode('list');
             return created;
           }
-          onCreatePreset?.(data as unknown as Partial<Preset>);
+          onCreatePreset?.(data as Partial<Preset>);
           setViewMode('list');
-          return { ...(data as unknown as Preset) } as Preset;
+          const created: Preset = {
+            id: `temp-${Date.now()}`,
+            name: data.name,
+            description: data.description,
+            author: data.author,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            version: data.version,
+            systemPrompt: data.systemPrompt,
+            enabledMcps: data.enabledMcps,
+            llmBridgeName: data.llmBridgeName,
+            llmBridgeConfig: data.llmBridgeConfig,
+            status: data.status,
+            usageCount: 0,
+            knowledgeDocuments: 0,
+            knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 },
+            category: Array.isArray(data.category) ? data.category : [],
+          };
+          return created;
         }}
       />
     );

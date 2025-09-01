@@ -58,10 +58,17 @@ export const PresetManagerContainer: React.FC<{ onStartCreatePreset?: () => void
         throw new Error('Preset not found');
       }
       const created = await svc.createPreset({
-        ...src,
-        id: undefined as unknown as string,
         name: `${src.name} (copy)`,
-      } as unknown as CreatePreset);
+        description: src.description,
+        author: src.author,
+        version: src.version,
+        systemPrompt: src.systemPrompt,
+        enabledMcps: src.enabledMcps,
+        llmBridgeName: src.llmBridgeName,
+        llmBridgeConfig: src.llmBridgeConfig,
+        status: src.status,
+        category: src.category,
+      });
       return created;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['presets'] }),
@@ -159,8 +166,8 @@ export const PresetManagerContainer: React.FC<{ onStartCreatePreset?: () => void
         isLoading={false}
         onDeletePreset={(id) => deleteMutation.mutate(id)}
         onDuplicatePreset={(p) => duplicateMutation.mutate(p.id)}
-        onCreatePreset={(data) => createMutation.mutate(data as unknown as CreatePreset)}
-        onCreatePresetAsync={(data) => createMutation.mutateAsync(data as CreatePreset)}
+        onCreatePreset={(data) => createMutation.mutate(toCreatePresetFromPartial(data))}
+        onCreatePresetAsync={(data) => createMutation.mutateAsync(data)}
         onUpdatePreset={(id, data) =>
           updateMutation.mutate({ id, data: data as Partial<Omit<Preset, 'id'>> })
         }
@@ -169,5 +176,20 @@ export const PresetManagerContainer: React.FC<{ onStartCreatePreset?: () => void
     </div>
   );
 };
+
+function toCreatePresetFromPartial(data: Partial<Preset>): CreatePreset {
+  return {
+    name: data.name ?? '',
+    description: data.description ?? '',
+    author: data.author ?? '',
+    version: data.version ?? '1.0.0',
+    systemPrompt: data.systemPrompt ?? '',
+    enabledMcps: data.enabledMcps,
+    llmBridgeName: data.llmBridgeName ?? 'default',
+    llmBridgeConfig: data.llmBridgeConfig ?? {},
+    status: data.status ?? 'active',
+    category: Array.isArray(data.category) ? data.category : [],
+  };
+}
 
 export default PresetManagerContainer;

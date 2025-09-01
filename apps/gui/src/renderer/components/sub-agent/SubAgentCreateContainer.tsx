@@ -36,7 +36,7 @@ export const SubAgentCreateContainer: React.FC<SubAgentCreateContainerProps> = (
       queryClient.invalidateQueries({ queryKey: ['agents'] });
       queryClient.invalidateQueries({ queryKey: ['chat', 'mentionableAgents'] });
       queryClient.invalidateQueries({ queryKey: ['chat', 'activeAgents'] });
-      onCreated?.((agent as unknown as { id: string }).id);
+      onCreated?.(agent.id);
       onBack();
     },
   });

@@ -120,7 +120,7 @@ export function useAppData(): UseAppDataReturn {
       // 생성 후 전체 Agent 데이터 재로드로 일관성 보장
       setTimeout(() => reloadAgents(), 100);
 
-      return agent as unknown as ReadonlyAgentMetadata;
+      return agent;
     } catch (error) {
       console.error('Failed to create agent:', error);
       throw error;
