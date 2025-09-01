@@ -73,10 +73,19 @@ export async function browseHistory(manager: ChatManager, sessionId: string): Pr
       return;
     }
     for (const message of page.items) {
-      const first = Array.isArray(message.content)
-        ? message.content[0]
-        : (message.content as unknown as MultiModalContent);
-      const content = first && first.contentType === 'text' ? first.value : '[non-text]';
+      let first: MultiModalContent | undefined;
+      if (Array.isArray(message.content)) {
+        first = message.content[0];
+      } else if (
+        typeof message.content === 'object' &&
+        message.content &&
+        'contentType' in message.content
+      ) {
+        first = message.content as MultiModalContent;
+      } else {
+        first = undefined;
+      }
+      const content = first?.contentType === 'text' ? first.value : '[non-text]';
       const time = message.createdAt.toISOString();
       console.log(`${chalk.gray('[' + time + ']')} ${chalk.cyan(message.role)}: ${content}`);
     }

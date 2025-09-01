@@ -58,10 +58,15 @@ export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge
       const session = await manager.load({ sessionId: 'default', agentId: 'cli-agent' });
       const { items } = await session.getHistories();
       for (const msg of items) {
-        const first = Array.isArray(msg.content)
-          ? msg.content[0]
-          : (msg.content as unknown as MultiModalContent);
-        const text = first && first.contentType === 'text' ? first.value : '[non-text]';
+        let first: MultiModalContent | undefined;
+        if (Array.isArray(msg.content)) {
+          first = msg.content[0];
+        } else if (typeof msg.content === 'object' && msg.content && 'contentType' in msg.content) {
+          first = msg.content as MultiModalContent;
+        } else {
+          first = undefined;
+        }
+        const text = first?.contentType === 'text' ? first.value : '[non-text]';
         console.log(`${msg.role}: ${text}`);
       }
     })
@@ -73,10 +78,19 @@ export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge
       };
       const { messages } = await agent.chat([userMessage]);
       const assistantMessage = messages[messages.length - 1];
-      const first = Array.isArray(assistantMessage.content)
-        ? assistantMessage.content[0]
-        : (assistantMessage.content as unknown as MultiModalContent);
-      const text = first && first.contentType === 'text' ? first.value : '[non-text]';
+      let first: MultiModalContent | undefined;
+      if (Array.isArray(assistantMessage.content)) {
+        first = assistantMessage.content[0];
+      } else if (
+        typeof assistantMessage.content === 'object' &&
+        assistantMessage.content &&
+        'contentType' in assistantMessage.content
+      ) {
+        first = assistantMessage.content as MultiModalContent;
+      } else {
+        first = undefined;
+      }
+      const text = first?.contentType === 'text' ? first.value : '[non-text]';
       console.log('Assistant:', text);
     });
 
