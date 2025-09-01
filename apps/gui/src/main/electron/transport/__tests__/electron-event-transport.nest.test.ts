@@ -54,8 +54,10 @@ describe('ElectronEventTransport (Nest microservice)', () => {
       strategy: new ElectronEventTransport(ipcMainMock),
     });
     // Silence Nest logs in tests to avoid noisy console output
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (app as any).useLogger?.(false);
+    const maybeUseLogger = (app as { useLogger?: (flag: boolean) => void }).useLogger;
+    if (typeof maybeUseLogger === 'function') {
+      maybeUseLogger(false);
+    }
     await app.listen();
 
     emit({ kind: 'req', cid: 'c1', method: 'mock.echo', payload: 'hello' });
@@ -74,8 +76,10 @@ describe('ElectronEventTransport (Nest microservice)', () => {
     const app = moduleRef.createNestMicroservice<MicroserviceOptions>({
       strategy: new ElectronEventTransport(ipcMainMock),
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (app as any).useLogger?.(false);
+    const maybeUseLogger2 = (app as { useLogger?: (flag: boolean) => void }).useLogger;
+    if (typeof maybeUseLogger2 === 'function') {
+      maybeUseLogger2(false);
+    }
     await app.listen();
 
     emit({ kind: 'req', cid: 'c2', method: 'mock.stream', payload: 2 });
@@ -96,8 +100,10 @@ describe('ElectronEventTransport (Nest microservice)', () => {
     const app = moduleRef.createNestMicroservice<MicroserviceOptions>({
       strategy: new ElectronEventTransport(ipcMainMock),
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (app as any).useLogger?.(false);
+    const maybeUseLogger3 = (app as { useLogger?: (flag: boolean) => void }).useLogger;
+    if (typeof maybeUseLogger3 === 'function') {
+      maybeUseLogger3(false);
+    }
     await app.listen();
 
     emit({ kind: 'req', cid: 'c3', method: 'mock.error' });
