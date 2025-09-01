@@ -53,9 +53,10 @@ describe('GraphStore', () => {
       }
     }
     const snap = g.toSnapshot();
-    const nodes = snap.graph.nodes
-      .filter((n: any) => n.type === 'query')
-      .map((n: any) => ({
+    type RawNode = { [k: string]: unknown };
+    const nodes = (snap.graph.nodes as RawNode[])
+      .filter((n) => n.type === 'query')
+      .map((n) => ({
         text: n.text,
         canonicalKey: n.canonicalKey,
         degree: n.degree,
@@ -64,9 +65,9 @@ describe('GraphStore', () => {
           feedback: Number((n.weights?.feedback ?? 0).toFixed(2)),
         },
       }))
-      .sort((a: any, b: any) => (a.text || '').localeCompare(b.text || ''));
+      .sort((a, b) => String(a.text || '').localeCompare(String(b.text || '')));
     const edgeTypeCounts = snap.graph.edges.reduce(
-      (acc: any, e: any) => {
+      (acc: Record<string, number>, e) => {
         acc[e.type] = (acc[e.type] ?? 0) + 1;
         return acc;
       },

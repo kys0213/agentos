@@ -53,7 +53,7 @@ export interface McpUsageLog {
   /** 실행 결과 상태 */
   status: McpUsageStatus;
   /** 입력 파라미터 (옵셔널) */
-  parameters?: Record<string, any>;
+  parameters?: Record<string, unknown>;
   /** 에러 메시지 (옵셔널) */
   error?: string;
   /** 실행 결과 (옵셔널) */

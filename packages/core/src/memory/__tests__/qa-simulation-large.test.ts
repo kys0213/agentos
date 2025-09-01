@@ -111,11 +111,12 @@ describe('QA agent large simulation (~100 queries)', () => {
 
     // Snapshot summary with structural metrics
     const snap = sStore.toSnapshot();
-    const edges = snap.graph.edges as any[];
-    const nodes = (snap.graph.nodes as any[]).filter((n) => n.type === 'query');
+    type RawNode = { [k: string]: unknown };
+    const edges = snap.graph.edges;
+    const nodes = (snap.graph.nodes as RawNode[]).filter((n) => n.type === 'query');
 
     const typeCounts = edges.reduce(
-      (acc: any, e: any) => {
+      (acc: Record<string, number>, e) => {
         acc[e.type] = (acc[e.type] ?? 0) + 1;
         return acc;
       },
@@ -193,9 +194,9 @@ describe('QA agent large simulation (~100 queries)', () => {
       repeat: quant(rpArr),
       components: { count: compSizes.length, top: compSizes.slice(0, 5) },
       topTexts: nodes
-        .sort((a: any, b: any) => (b.weights?.feedback ?? 0) - (a.weights?.feedback ?? 0))
+        .sort((a, b) => Number(b.weights?.feedback ?? 0) - Number(a.weights?.feedback ?? 0))
         .slice(0, 10)
-        .map((n: any) => ({
+        .map((n) => ({
           text: n.text,
           fb: Number((n.weights?.feedback ?? 0).toFixed(2)),
           degree: n.degree,
@@ -209,10 +210,10 @@ describe('QA agent large simulation (~100 queries)', () => {
     expect(aStats.nodes).toBeGreaterThan(0);
 
     const aSnap = aStore.toSnapshot();
-    const aEdges = aSnap.graph.edges as any[];
-    const aNodes = (aSnap.graph.nodes as any[]).filter((n) => n.type === 'query');
+    const aEdges = aSnap.graph.edges;
+    const aNodes = (aSnap.graph.nodes as RawNode[]).filter((n) => n.type === 'query');
     const aTypeCounts = aEdges.reduce(
-      (acc: any, e: any) => {
+      (acc: Record<string, number>, e) => {
         acc[e.type] = (acc[e.type] ?? 0) + 1;
         return acc;
       },
@@ -225,9 +226,9 @@ describe('QA agent large simulation (~100 queries)', () => {
         ((aTypeCounts['similar_to'] ?? 0) / Math.max(1, aEdges.length)).toFixed(3)
       ),
       topTexts: aNodes
-        .sort((a: any, b: any) => (b.weights?.feedback ?? 0) - (a.weights?.feedback ?? 0))
+        .sort((a, b) => Number(b.weights?.feedback ?? 0) - Number(a.weights?.feedback ?? 0))
         .slice(0, 10)
-        .map((n: any) => ({
+        .map((n) => ({
           text: n.text,
           fb: Number((n.weights?.feedback ?? 0).toFixed(2)),
           degree: n.degree,

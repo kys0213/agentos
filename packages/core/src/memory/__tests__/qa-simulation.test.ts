@@ -122,10 +122,11 @@ describe('QA agent scenario simulation', () => {
     // 세션 종료 → 승격 + 체크포인트
     // Snapshot session state (sanitized) before finalize
     const snap = o.getSessionStore(sid).toSnapshot();
-    const edges = snap.graph.edges as any[];
-    const nodes = (snap.graph.nodes as any[]).filter((n) => n.type === 'query');
+    type RawNode = { [k: string]: unknown };
+    const edges = snap.graph.edges;
+    const nodes = (snap.graph.nodes as RawNode[]).filter((n) => n.type === 'query');
     const typeCounts = edges.reduce(
-      (acc: any, e: any) => {
+      (acc: Record<string, number>, e) => {
         acc[e.type] = (acc[e.type] ?? 0) + 1;
         return acc;
       },
@@ -133,13 +134,13 @@ describe('QA agent scenario simulation', () => {
     );
     const sessionSummary = {
       nodes: nodes
-        .map((n: any) => ({
+        .map((n) => ({
           text: n.text,
           degree: n.degree,
           feedback: Number((n.weights?.feedback ?? 0).toFixed(2)),
           repeat: Number((n.weights?.repeat ?? 0).toFixed(2)),
         }))
-        .sort((a: any, b: any) => (a.text || '').localeCompare(b.text || '')),
+        .sort((a, b) => String(a.text || '').localeCompare(String(b.text || ''))),
       edges: typeCounts,
       similarRatio: Number(
         ((typeCounts['similar_to'] ?? 0) / Math.max(1, edges.length)).toFixed(3)
