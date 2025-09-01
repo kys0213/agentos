@@ -53,11 +53,7 @@ describe('ElectronEventTransport (Nest microservice)', () => {
     const app = moduleRef.createNestMicroservice<MicroserviceOptions>({
       strategy: new ElectronEventTransport(ipcMainMock),
     });
-    // Silence Nest logs in tests to avoid noisy console output
-    const maybeUseLogger = (app as { useLogger?: (flag: boolean) => void }).useLogger;
-    if (typeof maybeUseLogger === 'function') {
-      maybeUseLogger(false);
-    }
+    // Silence logs: skip useLogger call for Nest v11 compatibility
     await app.listen();
 
     emit({ kind: 'req', cid: 'c1', method: 'mock.echo', payload: 'hello' });
@@ -76,10 +72,7 @@ describe('ElectronEventTransport (Nest microservice)', () => {
     const app = moduleRef.createNestMicroservice<MicroserviceOptions>({
       strategy: new ElectronEventTransport(ipcMainMock),
     });
-    const maybeUseLogger2 = (app as { useLogger?: (flag: boolean) => void }).useLogger;
-    if (typeof maybeUseLogger2 === 'function') {
-      maybeUseLogger2(false);
-    }
+    // Silence logs: skip useLogger call for Nest v11 compatibility
     await app.listen();
 
     emit({ kind: 'req', cid: 'c2', method: 'mock.stream', payload: 2 });
@@ -100,10 +93,7 @@ describe('ElectronEventTransport (Nest microservice)', () => {
     const app = moduleRef.createNestMicroservice<MicroserviceOptions>({
       strategy: new ElectronEventTransport(ipcMainMock),
     });
-    const maybeUseLogger3 = (app as { useLogger?: (flag: boolean) => void }).useLogger;
-    if (typeof maybeUseLogger3 === 'function') {
-      maybeUseLogger3(false);
-    }
+    // Silence logs: skip useLogger call for Nest v11 compatibility
     await app.listen();
 
     emit({ kind: 'req', cid: 'c3', method: 'mock.error' });
