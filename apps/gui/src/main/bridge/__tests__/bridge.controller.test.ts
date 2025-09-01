@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { BridgeController } from '../bridge.controller';
 import { LLM_BRIDGE_REGISTRY_TOKEN } from '../../common/model/constants';
 import type { LlmManifest } from 'llm-bridge-spec';
+import { z } from 'zod';
 import type { Resp } from '../dto/bridge.dto';
 
 describe('BridgeController', () => {
@@ -21,20 +22,31 @@ describe('BridgeController', () => {
     }).compile();
 
     const ctrl = mod.get(BridgeController);
-    const manifest: LlmManifest = {
+    const manifest = {
       name: 'm',
-      version: '1.0.0',
       description: '',
-      inputs: [],
-      outputs: [],
-      tools: [],
-      vendor: 'test',
-      license: 'MIT',
-      capabilities: [],
+      schemaVersion: '1',
+      language: 'node',
+      entry: 'index.js',
+      configSchema: z.object({}),
+      models: [],
+      // vendor and license omitted per current manifest type
+      capabilities: {
+        modalities: ['text'] as Array<'text'>,
+        supportsToolCall: false,
+        supportsFunctionCall: false,
+        supportsMultiTurn: false,
+        supportsStreaming: false,
+        supportsVision: false,
+      },
     };
     const res: Resp<{ id: string }> = await ctrl.register({ manifest, config: {} });
     expect(res.success).toBe(true);
-    expect(res.result.id).toBe('id-1');
+    if (res.success) {
+      expect(res.result.id).toBe('id-1');
+    } else {
+      throw new Error('expected success');
+    }
   });
 
   it('unregister wraps errors', async () => {
@@ -58,16 +70,23 @@ describe('BridgeController', () => {
   });
 
   it('getCurrent returns null or object', async () => {
-    const manifest: LlmManifest = {
+    const manifest = {
       name: 'm',
-      version: '1.0.0',
       description: '',
-      inputs: [],
-      outputs: [],
-      tools: [],
-      vendor: 'test',
-      license: 'MIT',
-      capabilities: [],
+      schemaVersion: '1',
+      language: 'node',
+      entry: 'index.js',
+      configSchema: z.object({}),
+      models: [],
+      // vendor and license omitted per current manifest type
+      capabilities: {
+        modalities: ['text'] as Array<'text'>,
+        supportsToolCall: false,
+        supportsFunctionCall: false,
+        supportsMultiTurn: false,
+        supportsStreaming: false,
+        supportsVision: false,
+      },
     };
     const registry = {
       getActiveId: jest.fn().mockResolvedValueOnce(null).mockResolvedValueOnce('id-1'),
