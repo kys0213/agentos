@@ -1,5 +1,5 @@
 import { mock } from 'jest-mock-extended';
-import type { LlmBridge, UserMessage, LlmBridgeResponse } from 'llm-bridge-spec';
+import type { LlmBridge, LlmBridgeResponse } from 'llm-bridge-spec';
 import type { ChatManager } from '../../chat/chat.manager';
 import type { ChatSession } from '../../chat/chat-session';
 import { McpRegistry } from '../../tool/mcp/mcp.registery';
@@ -46,20 +46,20 @@ describe('SimpleAgent events', () => {
     const chatManager = mock<ChatManager>();
     const chatSession = mock<ChatSession>();
     chatSession.sessionId = 's-evt';
-    chatManager.create.mockResolvedValue(chatSession as unknown as ChatSession);
-    chatManager.getSession.mockResolvedValue(chatSession as unknown as ChatSession);
+    chatManager.create.mockResolvedValue(chatSession);
+    chatManager.getSession.mockResolvedValue(chatSession);
 
     // minimal llm response
     const resp: LlmBridgeResponse = {
       content: { contentType: 'text', value: 'ok' },
       toolCalls: [],
-    } as any;
+    };
     llm.invoke.mockResolvedValue(resp);
 
     const agent = new SimpleAgent('a-evt', llm, mcp, chatManager, mock<AgentMetadataRepository>());
 
-    const events: any[] = [];
-    // @ts-ignore - SimpleAgent provides on() at runtime
+    const events: Array<{ type: string; [k: string]: unknown }> = [];
+    // @ts-expect-error - SimpleAgent provides on() at runtime
     const off = agent.on((e) => events.push(e));
 
     const session = await agent.createSession();

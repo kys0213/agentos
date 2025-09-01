@@ -1,8 +1,11 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { mock } from 'jest-mock-extended';
-import type { LlmBridge, LlmBridgeResponse, UserMessage } from 'llm-bridge-spec';
+import type { LlmBridge, UserMessage } from 'llm-bridge-spec';
 import { DefaultAgentSession } from '../simple-agent-session';
+import { McpRegistry } from '../../tool/mcp/mcp.registery';
+import { Mcp } from '../../tool/mcp/mcp';
+import type { Tool } from '@modelcontextprotocol/sdk/types';
 import type { AgentMetadata } from '../agent-metadata';
 import { FileBasedSessionStorage } from '../../chat/file/file-based-session-storage';
 import { FileBasedChatManager } from '../../chat/file/file-based-chat.manager';
@@ -76,28 +79,54 @@ describe('DefaultAgentSession + FileBasedChatManager cohesion', () => {
     // 1st call: tool call
     llm.invoke.mockResolvedValueOnce({
       content: { contentType: 'text', value: 'a1' },
-      toolCalls: [{ name: 'dummy.echo', toolCallId: 'tc-1', arguments: { text: 'hi' } } as any],
-    } as LlmBridgeResponse);
+      toolCalls: [{ name: 'dummy.echo', toolCallId: 'tc-1', arguments: { text: 'hi' } }],
+    });
     // 2nd call: final assistant
     llm.invoke.mockResolvedValueOnce({
       content: { contentType: 'text', value: 'a2' },
       toolCalls: [],
-    } as LlmBridgeResponse);
+    });
 
-    const mcp = {
-      getAll: jest.fn().mockResolvedValue([]),
-      getToolOrThrow: jest.fn().mockResolvedValue({
-        mcp: {
-          name: 'dummy',
-          getTools: jest.fn(),
-          invokeTool: jest.fn().mockResolvedValue({
-            isError: false,
-            contents: [{ type: 'text', text: 'tool-result' }],
-          }),
-        },
-        tool: { name: 'dummy.echo', description: 'echo', parameters: {} },
-      }),
-    } as any;
+    class TestMcp extends Mcp {
+      constructor() {
+        // client/transport are not used in these overridden methods
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error test double
+        super({}, {}, { name: 'dummy', version: '1.0.0' } as { name: string; version: string });
+      }
+      async getTools(): Promise<Tool[]> {
+        const t: Tool = {
+          // @ts-expect-error minimal fields for test
+          name: 'dummy.echo',
+          // @ts-expect-error minimal fields for test
+          description: 'echo',
+          // @ts-expect-error minimal fields for test
+          parameters: {},
+        };
+        return [t];
+      }
+      async invokeTool(): Promise<{
+        isError: boolean;
+        contents: Array<{ type: 'text'; text: string }>;
+      }> {
+        return { isError: false, contents: [{ type: 'text', text: 'tool-result' }] };
+      }
+    }
+
+    class TestMcpRegistry extends McpRegistry {
+      private readonly testMcp = new TestMcp();
+      async getAll(): Promise<Mcp[]> {
+        return [this.testMcp];
+      }
+      async getToolOrThrow() {
+        return {
+          mcp: this.testMcp,
+          tool: { name: 'dummy.echo', description: 'echo', parameters: {} },
+        };
+      }
+    }
+
+    const mcp = new TestMcpRegistry();
 
     const session = new DefaultAgentSession(chatSession, llm, mcp, meta());
 
@@ -115,7 +144,7 @@ describe('DefaultAgentSession + FileBasedChatManager cohesion', () => {
     off();
 
     // Inspect in-memory incremental history before commit
-    const recent: any[] = (chatSession as any).metadata.recentMessages;
+    const recent = (await chatSession.getHistories()).items;
     const roles = recent.map((h) => h.role);
     expect(roles).toEqual(['user', 'assistant', 'tool', 'assistant']);
 

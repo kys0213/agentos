@@ -15,8 +15,8 @@ describe('SimpleAgent.createSession', () => {
     const chatSession = mock<ChatSession>();
 
     chatSession.sessionId = 's-1';
-    chatManager.create.mockResolvedValue(chatSession as unknown as ChatSession);
-    chatManager.getSession.mockResolvedValue(chatSession as unknown as ChatSession);
+    chatManager.create.mockResolvedValue(chatSession);
+    chatManager.getSession.mockResolvedValue(chatSession);
 
     const meta: AgentMetadata = {
       id: 'a-1',
@@ -49,23 +49,17 @@ describe('SimpleAgent.createSession', () => {
     };
 
     // MCP registry getAll은 빈 배열 반환으로 설정(툴 없는 환경)
-    mcp.getAll.mockResolvedValue([] as any);
+    mcp.getAll.mockResolvedValue([]);
 
     const repo = mock<AgentMetadataRepository>();
     repo.getOrThrow.mockResolvedValue(meta);
-    const agent = new SimpleAgent(
-      'a-1',
-      llm,
-      mcp,
-      chatManager,
-      repo as unknown as AgentMetadataRepository
-    );
+    const agent = new SimpleAgent('a-1', llm, mcp, chatManager, repo);
 
     // LLM 응답 목업
     const resp: LlmBridgeResponse = {
       content: { contentType: 'text', value: 'hi' },
       toolCalls: [],
-    } as LlmBridgeResponse;
+    };
     llm.invoke.mockResolvedValue(resp);
 
     const session = await agent.createSession();
