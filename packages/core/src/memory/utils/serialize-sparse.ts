@@ -10,7 +10,7 @@ export function serializeSparse(v?: SparseVec | number[]) {
   return [...(v as SparseVec).entries()];
 }
 
-export function deserializeSparse(x: any): SparseVec | number[] | undefined {
+export function deserializeSparse(x: unknown): SparseVec | number[] | undefined {
   if (!x) {
     return undefined;
   }

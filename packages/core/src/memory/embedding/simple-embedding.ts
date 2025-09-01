@@ -49,14 +49,15 @@ export class SimpleEmbedding implements EmbeddingProvider {
       hashAlgo: 'fnv1a64_demo',
     };
   }
-  importState(s: any) {
+  importState(s: unknown) {
     if (!s) {
       return;
     }
-    this.dim = s.dim ?? this.dim;
-    this.minN = s.minN ?? this.minN;
-    this.maxN = s.maxN ?? this.maxN;
-    this.seed = s.seed ?? this.seed;
+    const cfg = s as Partial<{ dim: number; minN: number; maxN: number; seed: number }>;
+    this.dim = cfg.dim ?? this.dim;
+    this.minN = cfg.minN ?? this.minN;
+    this.maxN = cfg.maxN ?? this.maxN;
+    this.seed = cfg.seed ?? this.seed;
   }
 
   embed(text: string): SparseVec {

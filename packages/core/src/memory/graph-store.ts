@@ -285,13 +285,13 @@ export class GraphStore {
   toSnapshot() {
     const nodes = [...this.nodes.values()].map((n) => ({
       ...n,
-      embedding: serializeSparse(n.embedding as any),
+      embedding: serializeSparse(n.embedding),
     }));
     const edges = [...this.edges.values()];
-    const embedder = (this.embedder as any).exportState?.() ?? null;
+    const embedder = this.embedder.exportState?.() ?? null;
     return { graph: { nodes, edges }, embedder, canonicalMeta: defaultCanonicalMeta };
   }
-  fromSnapshot(s: any) {
+  fromSnapshot(s: { graph: { nodes: Array<{ id: string; embedding: unknown; [k: string]: unknown }>; edges: Edge[] }; embedder?: unknown }) {
     this.nodes.clear();
     this.edges.clear();
     this.byCanonical.clear();
@@ -299,14 +299,14 @@ export class GraphStore {
       this.inverted.clear();
     }
     for (const raw of s.graph.nodes) {
-      const n = { ...raw, embedding: deserializeSparse(raw.embedding) } as BaseNode;
+      const n = { ...(raw as Record<string, unknown>), embedding: deserializeSparse(raw.embedding) } as BaseNode;
       this.nodes.set(n.id, n);
       this.indexNode(n.id, n.text, n.canonicalKey);
     }
     for (const e of s.graph.edges) {
       this.edges.set(e.id, e);
     }
-    (this.embedder as any).importState?.(s.embedder);
+    this.embedder.importState?.(s.embedder);
   }
   async saveToFile(file: string, opts?: { onlyIfDirty?: boolean }) {
     if (opts?.onlyIfDirty && !this.dirty) {
