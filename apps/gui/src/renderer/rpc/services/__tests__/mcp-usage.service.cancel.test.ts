@@ -16,13 +16,13 @@ function createMockRpc(): {
     on<T>(channel: string, h: (payload: T) => void): CloseFn {
       // ensure correct channel is used
       expect(channel).toBe('mcp.usage.events');
-      handler = h as unknown as (payload: unknown) => void;
+      handler = (payload: unknown) => h(payload as T);
       return async () => {
         closed = true;
         handler = null;
       };
     },
-  } as unknown as RpcClient;
+  };
 
   return {
     rpc,
@@ -50,7 +50,7 @@ describe('McpUsageRpcService.subscribeToUsageUpdates', () => {
         status: 'success',
         timestamp: new Date(),
       },
-    } as McpUsageUpdateEvent;
+    };
     emit(ev);
     expect(cb).toHaveBeenCalledTimes(1);
 

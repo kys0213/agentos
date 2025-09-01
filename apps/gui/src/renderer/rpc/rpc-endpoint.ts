@@ -15,8 +15,8 @@ import { Cid, RpcFrame, RpcMetadata } from '../../shared/rpc/rpc-frame';
 import type { CloseFn, FrameTransport, RpcClient } from '../../shared/rpc/transport';
 import { toAsyncIterable } from './toAsyncIterator';
 
-export type RpcHandler = (payload: unknown, meta?: unknown) => unknown; // Promise | AsyncGenerator | Observable-like
-export type RpcHandlers = Record<string, RpcHandler>;
+export type RpcHandler<T = unknown> = (payload: T, meta?: unknown) => unknown; // Promise | AsyncGenerator | Observable-like
+export type RpcHandlers = Record<string, RpcHandler<unknown>>;
 
 export interface RpcClientOptions {
   timeoutMs?: number; // default 30s
@@ -122,12 +122,12 @@ export class RpcEndpoint implements RpcClient {
     this.seq = 0;
   }
 
-  register(method: string, fn: RpcHandler) {
+  register<T = unknown>(method: string, fn: RpcHandler<T>) {
     if (this.handlers[method]) {
       throw new Error(`Method ${method} already registered`);
     }
 
-    this.handlers[method] = fn;
+    this.handlers[method] = fn as RpcHandler<unknown>;
   }
 
   async request<T = unknown>(

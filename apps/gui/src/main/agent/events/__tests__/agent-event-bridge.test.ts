@@ -8,14 +8,13 @@ describe('AgentEventBridge', () => {
     const oc = new OutboundChannel();
     const bridge = new AgentEventBridge(oc);
 
-    const received: OutboundEvent<AgentEventPayload>[] = [];
+    const received: OutboundEvent[] = [];
     const sub = bridge.stream().subscribe((ev) => {
       received.push(ev);
       if (received.length === 1) {
         expect(ev.type).toBe('agent.session.message');
-        if ('message' in ev.payload) {
-          expect(ev.payload.sessionId).toBe('s1');
-        }
+        const p = ev.payload as { sessionId?: string };
+        expect(p.sessionId).toBe('s1');
         sub.unsubscribe();
         done();
       }
