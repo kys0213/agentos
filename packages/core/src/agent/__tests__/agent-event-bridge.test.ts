@@ -65,7 +65,15 @@ class FakeEventfulAgent implements Agent {
 class FakeSession implements AgentSession {
   readonly id: string;
   readonly sessionId: string;
-  private handlers: { [K in AgentSessionEvent]?: Set<(p: AgentSessionEventMap[K]) => void> } = {};
+  private handlers: { [K in AgentSessionEvent]: Set<(p: AgentSessionEventMap[K]) => void> } = {
+    message: new Set(),
+    status: new Set(),
+    error: new Set(),
+    terminated: new Set(),
+    promptRequest: new Set(),
+    consentRequest: new Set(),
+    sensitiveInputRequest: new Set(),
+  };
   constructor(id: string) {
     this.id = id;
     this.sessionId = id;
@@ -84,15 +92,12 @@ class FakeSession implements AgentSession {
     event: E,
     handler: (p: AgentSessionEventMap[E]) => void
   ): Unsubscribe {
-    const set = (this.handlers[event] ??= new Set());
+    const set = this.handlers[event] as Set<(p: AgentSessionEventMap[E]) => void>;
     set.add(handler);
     return () => set.delete(handler);
   }
   emit<E extends AgentSessionEvent>(event: E, payload: AgentSessionEventMap[E]) {
-    const set = this.handlers[event];
-    if (!set) {
-      return;
-    }
+    const set = this.handlers[event] as Set<(p: AgentSessionEventMap[E]) => void>;
     for (const h of set) {
       h(payload);
     }

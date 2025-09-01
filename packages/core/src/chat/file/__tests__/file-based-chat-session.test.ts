@@ -273,8 +273,8 @@ describe('FileBasedChatSession', () => {
 
     it('커밋 후 페이지네이션에서도 배열 콘텐츠가 유지되어야 한다', async () => {
       const msgs: Message[] = [
-        { role: 'user', content: { contentType: 'text', value: 'u' } },
-        { role: 'assistant', content: { contentType: 'text', value: 'a1' } },
+        { role: 'user', content: [{ contentType: 'text', value: 'u' }] },
+        { role: 'assistant', content: [{ contentType: 'text', value: 'a1' }] },
         {
           role: 'tool',
           name: 'dummy',
@@ -284,7 +284,7 @@ describe('FileBasedChatSession', () => {
             { contentType: 'file', value: Buffer.from('bytes') },
           ],
         },
-        { role: 'assistant', content: { contentType: 'text', value: 'a2' } },
+        { role: 'assistant', content: [{ contentType: 'text', value: 'a2' }] },
       ];
 
       for (const m of msgs) {

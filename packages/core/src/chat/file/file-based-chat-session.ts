@@ -81,7 +81,10 @@ export class FileBasedChatSession implements ChatSession {
         const first = Array.isArray(summary.content)
           ? summary.content[0]
           : (summary.content as { contentType: string; value: unknown });
-        this.metadata.title = first && first.contentType === 'text' ? first.value : undefined;
+        this.metadata.title =
+          first && first.contentType === 'text' && typeof first.value === 'string'
+            ? first.value
+            : undefined;
       }
     }
 
@@ -115,6 +118,19 @@ export class FileBasedChatSession implements ChatSession {
   async getHistories(options?: CursorPagination): Promise<CursorPaginationResult<MessageHistory>> {
     const { cursor, limit = 10 } = options ?? {};
 
+    // 옵션이 없으면 커밋 전 임시(in-memory) 메시지를 우선 반환
+    if (!options) {
+      const items: MessageHistory[] = [...this.metadata.recentMessages];
+      for await (const history of this.storage.read(this.agentId, this.sessionId)) {
+        items.push(history);
+      }
+      return {
+        items,
+        nextCursor: items.length > 0 ? items[items.length - 1].messageId : '',
+        hasMore: false,
+      };
+    }
+
     const buffer: MessageHistory[] = [];
 
     for await (const history of this.storage.read(this.agentId, this.sessionId)) {
@@ -131,7 +147,7 @@ export class FileBasedChatSession implements ChatSession {
 
     return {
       items: buffer,
-      nextCursor: buffer[buffer.length - 1].messageId,
+      nextCursor: buffer.length > 0 ? buffer[buffer.length - 1].messageId : '',
       hasMore: false, // 임시로 false 설정
     };
   }

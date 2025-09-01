@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import { MarkdownSplitter } from '../../splitter/markdown-splitter';
-import { KnowledgeDocumentMeta } from '../../types';
+import { KnowledgeDocumentMeta, KnowledgeDocId, PresetId } from '../../types';
 
 describe('MarkdownSplitter', () => {
   beforeAll(() => {
@@ -14,8 +14,8 @@ describe('MarkdownSplitter', () => {
   });
 
   const meta: KnowledgeDocumentMeta = {
-    id: 'doc-1',
-    presetId: 'preset-1',
+    id: 'doc-1' as KnowledgeDocId,
+    presetId: 'preset-1' as PresetId,
     title: 'Doc',
     createdAt: new Date(),
     updatedAt: new Date(),

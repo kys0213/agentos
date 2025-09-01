@@ -122,9 +122,8 @@ describe('SimpleAgentService', () => {
     repo.list.mockResolvedValue({ items: [m1, m2], nextCursor: '', hasMore: false });
     repo.get.mockImplementation(async (id: string) => (id === 'a1' ? m1 : id === 'a2' ? m2 : null));
     repo.getOrThrow.mockImplementation(async (id: string) => (id === 'a1' ? m1 : m2));
-    const llm: LlmBridge = {
-      invoke: async () => ({ content: { contentType: 'text', value: 'ok' }, toolCalls: [] }),
-    } as LlmBridge;
+    const llm = mock<LlmBridge>();
+    llm.invoke.mockResolvedValue({ content: { contentType: 'text', value: 'ok' }, toolCalls: [] });
     llmReg.getBridgeByName.mockResolvedValue(llm);
 
     const svc = new SimpleAgentService(llmReg, mcpReg, chatMgr, repo);
@@ -144,9 +143,8 @@ describe('SimpleAgentService', () => {
     repo.search.mockResolvedValue({ items: [m1], nextCursor: '', hasMore: false });
     repo.get.mockResolvedValue(m1);
     repo.getOrThrow.mockResolvedValue(m1);
-    const llm: LlmBridge = {
-      invoke: async () => ({ content: { contentType: 'text', value: 'ok' }, toolCalls: [] }),
-    } as LlmBridge;
+    const llm = mock<LlmBridge>();
+    llm.invoke.mockResolvedValue({ content: { contentType: 'text', value: 'ok' }, toolCalls: [] });
     llmReg.getBridgeByName.mockResolvedValue(llm);
 
     const svc = new SimpleAgentService(llmReg, mcpReg, chatMgr, repo);
@@ -162,9 +160,9 @@ describe('SimpleAgentService', () => {
     const m1 = meta('a1');
     repo.get.mockResolvedValue(m1);
     repo.getOrThrow.mockResolvedValue(m1);
-    llmReg.getBridgeByName.mockResolvedValue({
-      invoke: async () => ({ content: { contentType: 'text', value: 'ok' }, toolCalls: [] }),
-    } as LlmBridge);
+    const llm = mock<LlmBridge>();
+    llm.invoke.mockResolvedValue({ content: { contentType: 'text', value: 'ok' }, toolCalls: [] });
+    llmReg.getBridgeByName.mockResolvedValue(llm);
     const chatSession: ChatSession = {
       sessionId: 's-1',
       agentId: 'a1',
@@ -205,9 +203,9 @@ describe('SimpleAgentService', () => {
     const m1 = meta('a1');
     repo.get.mockResolvedValue(m1);
     repo.getOrThrow.mockResolvedValue(m1);
-    llmReg.getBridgeByName.mockResolvedValue({
-      invoke: async () => ({ content: { contentType: 'text', value: 'ok' }, toolCalls: [] }),
-    } as LlmBridge);
+    const llm = mock<LlmBridge>();
+    llm.invoke.mockResolvedValue({ content: { contentType: 'text', value: 'ok' }, toolCalls: [] });
+    llmReg.getBridgeByName.mockResolvedValue(llm);
     const chatSession: ChatSession = {
       sessionId: 's-1',
       agentId: 'a1',

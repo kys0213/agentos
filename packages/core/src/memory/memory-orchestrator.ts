@@ -135,7 +135,9 @@ export class MemoryOrchestrator {
     if (checkpoint) {
       const snap = s.toSnapshot();
       const top = this.pickTopQueries(
-        snap.graph.nodes,
+        this.normalizeNodes(
+          snap.graph.nodes as Array<Omit<BaseNode, 'embedding'> & { embedding: unknown }>
+        ),
         this.cfg.promotion.minRank,
         this.cfg.checkpoint.topK,
         this.cfg.promotion.minDegree ?? 0,
@@ -179,7 +181,9 @@ export class MemoryOrchestrator {
     }
     const snap = s.toSnapshot();
     const top = this.pickTopQueries(
-      snap.graph.nodes,
+      this.normalizeNodes(
+        snap.graph.nodes as Array<Omit<BaseNode, 'embedding'> & { embedding: unknown }>
+      ),
       this.cfg.promotion.minRank,
       this.cfg.promotion.maxPromotions,
       this.cfg.promotion.minDegree ?? 0,
@@ -198,5 +202,32 @@ export class MemoryOrchestrator {
       count++;
     }
     return count;
+  }
+
+  private normalizeNodes(
+    nodes: Array<Omit<BaseNode, 'embedding'> & { embedding: unknown }>
+  ): BaseNode[] {
+    return nodes.map((n) => {
+      const e = (n as { embedding?: unknown }).embedding;
+      let embedding: number[] | Map<number, number> | undefined;
+      if (e == null) {
+        embedding = undefined;
+      } else if (Array.isArray(e)) {
+        if (e.length === 0 || typeof e[0] === 'number') {
+          embedding = e as number[];
+        } else {
+          try {
+            embedding = new Map(e as [number, number][]);
+          } catch {
+            embedding = undefined;
+          }
+        }
+      } else if (e instanceof Map) {
+        embedding = e as Map<number, number>;
+      } else {
+        embedding = undefined;
+      }
+      return { ...n, embedding } as BaseNode;
+    });
   }
 }

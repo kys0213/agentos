@@ -94,14 +94,24 @@ describe('DefaultAgentSession + FileBasedChatManager cohesion', () => {
         // @ts-expect-error test double
         super({}, {}, { name: 'dummy', version: '1.0.0' } as { name: string; version: string });
       }
+      // Avoid accessing base client in tests
+      get name() {
+        return 'dummy';
+      }
+      get version() {
+        return '1.0.0';
+      }
       async getTools(): Promise<Tool[]> {
         const t: Tool = {
-          // @ts-expect-error minimal fields for test
           name: 'dummy.echo',
-          // @ts-expect-error minimal fields for test
           description: 'echo',
-          // @ts-expect-error minimal fields for test
-          parameters: {},
+          inputSchema: {
+            type: 'object',
+            properties: {
+              text: { type: 'string' },
+            },
+            required: ['text'],
+          },
         };
         return [t];
       }
@@ -118,10 +128,21 @@ describe('DefaultAgentSession + FileBasedChatManager cohesion', () => {
       async getAll(): Promise<Mcp[]> {
         return [this.testMcp];
       }
-      async getToolOrThrow() {
+      async getToolOrThrow(name: string) {
+        const tool: Tool = {
+          name: 'dummy.echo',
+          description: 'echo',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              text: { type: 'string' },
+            },
+            required: ['text'],
+          },
+        };
         return {
           mcp: this.testMcp,
-          tool: { name: 'dummy.echo', description: 'echo', parameters: {} },
+          tool,
         };
       }
     }
@@ -149,6 +170,7 @@ describe('DefaultAgentSession + FileBasedChatManager cohesion', () => {
     expect(roles).toEqual(['user', 'assistant', 'tool', 'assistant']);
 
     const toolMsg = recent.find((h) => h.role === 'tool');
-    expect(Array.isArray(toolMsg.content)).toBe(true);
+    expect(toolMsg).toBeDefined();
+    expect(Array.isArray(toolMsg!.content)).toBe(true);
   });
 });

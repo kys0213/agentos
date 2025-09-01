@@ -58,8 +58,7 @@ describe('SimpleAgent events', () => {
 
     const agent = new SimpleAgent('a-evt', llm, mcp, chatManager, mock<AgentMetadataRepository>());
 
-    const events: Array<{ type: string; [k: string]: unknown }> = [];
-    // @ts-expect-error - SimpleAgent provides on() at runtime
+    const events: import('../agent-events').AgentEvent[] = [];
     const off = agent.on((e) => events.push(e));
 
     const session = await agent.createSession();

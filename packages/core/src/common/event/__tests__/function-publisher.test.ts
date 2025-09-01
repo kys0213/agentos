@@ -26,7 +26,7 @@ describe('FunctionPublisher', () => {
     );
     pub.publish('ch', { a: 1 });
     expect(typeof calls[0].p).toBe('string');
-    expect(JSON.parse(calls[0].p)).toEqual({ a: 1 });
+    expect(JSON.parse(calls[0].p as string)).toEqual({ a: 1 });
   });
 });
 
