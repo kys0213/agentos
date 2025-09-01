@@ -40,7 +40,7 @@ describe('McpService usage hook integration', () => {
         return {
           id: 'tool-1',
           name: config.name,
-          description: config.description ?? '',
+          description: '',
           version: config.version,
           permissions: [],
           status: 'connected',
