@@ -52,7 +52,7 @@ export class FileBasedChatSession implements ChatSession {
           messageId: this.nextMessageId(),
           createdAt: new Date(),
           ...compressed.summary,
-        } as unknown as MessageHistory,
+        } as MessageHistory,
         createdAt: new Date(),
         coveringUpTo: first.createdAt,
       };
@@ -80,7 +80,7 @@ export class FileBasedChatSession implements ChatSession {
         const { summary } = await this.titleCompressor.compress([userMessage]);
         const first = Array.isArray(summary.content)
           ? summary.content[0]
-          : (summary.content as unknown as import('llm-bridge-spec').MultiModalContent);
+          : (summary.content as { contentType: string; value: unknown });
         this.metadata.title = first && first.contentType === 'text' ? first.value : undefined;
       }
     }
@@ -106,7 +106,7 @@ export class FileBasedChatSession implements ChatSession {
       messageId: this.nextMessageId(),
       createdAt: new Date(),
       ...message,
-    } as unknown as MessageHistory;
+    } as MessageHistory;
     this.metadata.recentMessages.push(history);
     this.metadata.totalMessages++;
     return history;
