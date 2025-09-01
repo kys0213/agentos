@@ -15,6 +15,10 @@
       {
         "selector": "TSAsExpression > TSAnyKeyword",
         "message": "Do not use 'as any'; use proper typing, generics, or runtime guards."
+      },
+      {
+        "selector": "TSAsExpression > TSUnknownKeyword",
+        "message": "Do not use 'as unknown'; prefer explicit types or narrowing with guards."
       }
     ]
   },
@@ -43,11 +47,15 @@
             "message": "Do not use 'as any' in tests. Model types explicitly or use narrow test-only interfaces."
           },
           {
+            "selector": "TSAsExpression > TSUnknownKeyword",
+            "message": "Do not use 'as unknown' in tests. Narrow types with type guards or adjust generics."
+          },
+          {
             "selector": "ImportExpression",
             "message": "Dynamic import() is forbidden in tests. Use static imports or dependency injection/mocks."
           }
         ],
-        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/no-explicit-any": "error",
         "prettier/prettier": "warn"
       }
     }
