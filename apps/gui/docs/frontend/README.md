@@ -11,8 +11,7 @@ GUI 프런트엔드 문서의 단일 인덱스입니다. 각 문서는 역할 �
 - Roadmap: `apps/gui/docs/frontend/roadmap.md`
   - 이행 단계(Consolidated Phases A–F) 요약과 남은 작업
 
-문서 표준화 추적: `apps/gui/plan/DOCS_AND_PLANS_STANDARDIZATION_PLAN.md`
----
+## 문서 표준화 추적: `apps/gui/plan/DOCS_AND_PLANS_STANDARDIZATION_PLAN.md`
 
 ## Change Checklist (keep docs in sync)
 
