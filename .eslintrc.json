@@ -22,6 +22,23 @@
     "brace-style": ["warn", "1tbs", { "allowSingleLine": false }],
     "no-nested-ternary": "error",
     "multiline-ternary": ["warn", "always-multiline"],
+    "@typescript-eslint/no-require-imports": "error",
+    "@typescript-eslint/no-var-requires": "error",
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "TSAsExpression > TSAnyKeyword",
+        "message": "Do not use 'as any'. Define proper types, use generics, or add type guards."
+      },
+      {
+        "selector": "TSAsExpression > TSUnknownKeyword",
+        "message": "Do not use 'as unknown'. Prefer explicit types or narrowing with guards."
+      },
+      {
+        "selector": "ImportExpression",
+        "message": "Dynamic import() is forbidden. Use static imports or dependency injection/mocks."
+      }
+    ],
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-explicit-any": "warn",
@@ -29,5 +46,14 @@
     "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "arrow-parens": ["error", "always"]
   },
-  "ignorePatterns": ["dist", "node_modules", "*.js", "**/__tests__/**"]
+  "ignorePatterns": ["dist", "node_modules", "*.js"],
+  "overrides": [
+    {
+      "files": ["**/__tests__/**/*.{ts,tsx}", "**/?(*.)+(spec|test).{ts,tsx}"],
+      "rules": {
+        "@typescript-eslint/ban-ts-comment": "warn",
+        "no-nested-ternary": "warn"
+      }
+    }
+  ]
 }
