@@ -53,6 +53,9 @@ describe('ElectronEventTransport (Nest microservice)', () => {
     const app = moduleRef.createNestMicroservice<MicroserviceOptions>({
       strategy: new ElectronEventTransport(ipcMainMock),
     });
+    // Silence Nest logs in tests to avoid noisy console output
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (app as any).useLogger?.(false);
     await app.listen();
 
     emit({ kind: 'req', cid: 'c1', method: 'mock.echo', payload: 'hello' });
@@ -71,6 +74,8 @@ describe('ElectronEventTransport (Nest microservice)', () => {
     const app = moduleRef.createNestMicroservice<MicroserviceOptions>({
       strategy: new ElectronEventTransport(ipcMainMock),
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (app as any).useLogger?.(false);
     await app.listen();
 
     emit({ kind: 'req', cid: 'c2', method: 'mock.stream', payload: 2 });
@@ -91,6 +96,8 @@ describe('ElectronEventTransport (Nest microservice)', () => {
     const app = moduleRef.createNestMicroservice<MicroserviceOptions>({
       strategy: new ElectronEventTransport(ipcMainMock),
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (app as any).useLogger?.(false);
     await app.listen();
 
     emit({ kind: 'req', cid: 'c3', method: 'mock.error' });
