@@ -353,7 +353,9 @@ export function PresetManager({
                             <p className="text-lg font-medium text-foreground">No results</p>
                             <p className="text-sm mt-2">Try adjusting filters or search terms.</p>
                             <div className="mt-4 flex items-center justify-center gap-2">
-                              <Button variant="outline" onClick={() => setSearchQuery("")}>Clear search</Button>
+                              <Button variant="outline" onClick={() => setSearchQuery('')}>
+                                Clear search
+                              </Button>
                               <Button variant="outline" onClick={() => setSelectedCategory('all')}>
                                 Reset category
                               </Button>

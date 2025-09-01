@@ -14,8 +14,8 @@ describe('MarkdownSplitter', () => {
   });
 
   const meta: KnowledgeDocumentMeta = {
-    id: 'doc-1' as any,
-    presetId: 'preset-1' as any,
+    id: 'doc-1',
+    presetId: 'preset-1',
     title: 'Doc',
     createdAt: new Date(),
     updatedAt: new Date(),

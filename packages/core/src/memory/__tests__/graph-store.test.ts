@@ -48,7 +48,9 @@ describe('GraphStore', () => {
     ];
     for (const t of texts) {
       const id = g.upsertQuery(t);
-      if (t.includes('작성')) g.recordFeedback(id, 'up');
+      if (t.includes('작성')) {
+        g.recordFeedback(id, 'up');
+      }
     }
     const snap = g.toSnapshot();
     const nodes = snap.graph.nodes

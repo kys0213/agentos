@@ -26,7 +26,9 @@ const cfg = {
 
 function repeat<T>(arr: T[], times = 1): T[] {
   const out: T[] = [];
-  for (let i = 0; i < times; i++) out.push(...arr);
+  for (let i = 0; i < times; i++) {
+    out.push(...arr);
+  }
   return out;
 }
 
@@ -94,9 +96,15 @@ describe('QA agent scenario simulation', () => {
     for (const q of dataset) {
       const id = o.upsertQuery(sid, q);
       ids.push(id);
-      if (q.includes('작성') || q.includes('생성')) o.recordFeedback(sid, id, 'up');
-      if (q.includes('리팩토링')) o.recordFeedback(sid, id, 'retry');
-      if (q.includes('증적')) o.recordFeedback(sid, id, 'up');
+      if (q.includes('작성') || q.includes('생성')) {
+        o.recordFeedback(sid, id, 'up');
+      }
+      if (q.includes('리팩토링')) {
+        o.recordFeedback(sid, id, 'retry');
+      }
+      if (q.includes('증적')) {
+        o.recordFeedback(sid, id, 'up');
+      }
     }
 
     // 그래프 상태 검증(세션)

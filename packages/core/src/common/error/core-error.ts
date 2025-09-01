@@ -50,7 +50,12 @@ export class CoreError extends Error {
     if (options?.cause && typeof options.cause === 'object') {
       try {
         // Node 16+: Error has cause option but keep compatibility
-        (this as unknown as Record<string, unknown>).cause = options.cause;
+        Object.defineProperty(this, 'cause', {
+          value: options.cause,
+          configurable: true,
+          enumerable: false,
+          writable: true,
+        });
       } catch {
         // ignore
       }

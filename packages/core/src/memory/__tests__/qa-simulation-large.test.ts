@@ -51,11 +51,21 @@ function buildDataset(): string[] {
 
   const out: string[] = [];
   for (const p of products) {
-    for (const fn of authoring) out.push(fn(p));
-    for (const fn of regression) out.push(fn(p));
-    for (const fn of retrieval) out.push(fn(p));
-    for (const fn of evidence) out.push(fn(p));
-    for (const fn of search) out.push(fn(p));
+    for (const fn of authoring) {
+      out.push(fn(p));
+    }
+    for (const fn of regression) {
+      out.push(fn(p));
+    }
+    for (const fn of retrieval) {
+      out.push(fn(p));
+    }
+    for (const fn of evidence) {
+      out.push(fn(p));
+    }
+    for (const fn of search) {
+      out.push(fn(p));
+    }
   }
   // paraphrases without product prefix
   out.push(
@@ -83,9 +93,15 @@ describe('QA agent large simulation (~100 queries)', () => {
 
     for (const q of dataset) {
       const id = o.upsertQuery(sid, q);
-      if (q.includes('작성') || q.includes('생성')) o.recordFeedback(sid, id, 'up');
-      if (q.includes('리팩토링')) o.recordFeedback(sid, id, 'retry');
-      if (q.includes('증적')) o.recordFeedback(sid, id, 'up');
+      if (q.includes('작성') || q.includes('생성')) {
+        o.recordFeedback(sid, id, 'up');
+      }
+      if (q.includes('리팩토링')) {
+        o.recordFeedback(sid, id, 'retry');
+      }
+      if (q.includes('증적')) {
+        o.recordFeedback(sid, id, 'up');
+      }
     }
 
     const sStore = o.getSessionStore(sid);
@@ -110,7 +126,9 @@ describe('QA agent large simulation (~100 queries)', () => {
     const rpArr = nodes.map((n) => Number(n.weights?.repeat ?? 0));
 
     const quant = (arr: number[]) => {
-      if (arr.length === 0) return { min: 0, max: 0, mean: 0, median: 0, p90: 0 };
+      if (arr.length === 0) {
+        return { min: 0, max: 0, mean: 0, median: 0, p90: 0 };
+      }
       const sorted = [...arr].sort((a, b) => a - b);
       const sum = arr.reduce((a, b) => a + b, 0);
       const mean = sum / arr.length;
@@ -129,17 +147,22 @@ describe('QA agent large simulation (~100 queries)', () => {
 
     // Connected components on similar_to as undirected
     const adj = new Map<string, Set<string>>();
-    for (const e of edges)
+    for (const e of edges) {
       if (e.type === 'similar_to') {
-        if (!adj.has(e.from)) adj.set(e.from, new Set());
-        if (!adj.has(e.to)) adj.set(e.to, new Set());
+        if (!adj.has(e.from)) {
+          adj.set(e.from, new Set());
+        }
+        if (!adj.has(e.to)) {
+          adj.set(e.to, new Set());
+        }
         adj.get(e.from)!.add(e.to);
         adj.get(e.to)!.add(e.from);
       }
+    }
     const seen = new Set<string>();
     const compSizes: number[] = [];
     const nodeIds = nodes.map((n) => n.id);
-    for (const id of nodeIds)
+    for (const id of nodeIds) {
       if (!seen.has(id)) {
         let size = 0;
         const q = [id];
@@ -147,14 +170,16 @@ describe('QA agent large simulation (~100 queries)', () => {
         while (q.length) {
           const cur = q.pop()!;
           size++;
-          for (const nb of adj.get(cur)?.values() ?? [])
+          for (const nb of adj.get(cur)?.values() ?? []) {
             if (!seen.has(nb)) {
               seen.add(nb);
               q.push(nb as string);
             }
+          }
         }
         compSizes.push(size);
       }
+    }
     compSizes.sort((a, b) => b - a);
 
     const metrics = {
