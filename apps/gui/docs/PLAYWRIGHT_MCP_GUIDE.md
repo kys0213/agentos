@@ -38,10 +38,11 @@ Other form elements use accessible labels (e.g., “Agent Name”, “Descriptio
 
 2. In MCP tool, open the browser to `http://localhost:5173`.
    - Alternatively, run a script (pseudo):
+
      ```ts
      // Pseudo-only. Keep as documentation; don't commit runnable tests per policy.
      import { chromium } from '@playwright/test';
-     
+
      async function run() {
        const browser = await chromium.launch();
        const page = await browser.newPage();
