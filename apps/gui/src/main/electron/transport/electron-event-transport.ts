@@ -15,9 +15,36 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
 
   private readonly subscriptions = new Map<string, Subscription>();
 
+  private readonly localHandlers = new Map<
+    string,
+    ((
+      payload: unknown,
+      ctx: { senderId: number }
+    ) =>
+      | unknown
+      | AsyncGenerator<unknown, unknown, unknown>
+      | import('rxjs').Observable<unknown>) & { extras?: { broadcast?: boolean } }
+  >();
+
   constructor(private readonly ipcMain: IpcMain) {
     super();
     this.onIncomingFrame = this.createIncomingFrameHandler();
+  }
+
+  /**
+   * Register an RPC handler for a method. Exposed to support test wiring
+   * without accessing internal Server state.
+   */
+  public registerHandler(
+    method: string,
+    handler: (
+      payload: unknown,
+      ctx: { senderId: number }
+    ) => unknown | AsyncGenerator<unknown, unknown, unknown> | import('rxjs').Observable<unknown>,
+    extras?: { broadcast?: boolean }
+  ): void {
+    const withExtras = Object.assign(handler, { extras });
+    this.localHandlers.set(method, withExtras);
   }
 
   listen(cb: () => void) {
@@ -53,7 +80,8 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
           return;
         }
 
-        const handler = this.messageHandlers.get(frame.method);
+        const handler =
+          this.localHandlers.get(frame.method) ?? this.messageHandlers.get(frame.method);
 
         if (!handler) {
           return this.sendTo(senderId, {
