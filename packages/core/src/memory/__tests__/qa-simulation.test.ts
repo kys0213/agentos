@@ -122,7 +122,12 @@ describe('QA agent scenario simulation', () => {
     // 세션 종료 → 승격 + 체크포인트
     // Snapshot session state (sanitized) before finalize
     const snap = o.getSessionStore(sid).toSnapshot();
-    type RawNode = { [k: string]: unknown };
+    type RawNode = {
+      type?: string;
+      text?: string;
+      degree?: number;
+      weights?: { feedback?: number; repeat?: number };
+    };
     const edges = snap.graph.edges;
     const nodes = (snap.graph.nodes as RawNode[]).filter((n) => n.type === 'query');
     const typeCounts = edges.reduce(

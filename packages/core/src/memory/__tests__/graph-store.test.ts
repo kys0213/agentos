@@ -53,7 +53,13 @@ describe('GraphStore', () => {
       }
     }
     const snap = g.toSnapshot();
-    type RawNode = { [k: string]: unknown };
+    type RawNode = {
+      type?: string;
+      text?: string;
+      canonicalKey?: string;
+      degree?: number;
+      weights?: { repeat?: number; feedback?: number };
+    };
     const nodes = (snap.graph.nodes as RawNode[])
       .filter((n) => n.type === 'query')
       .map((n) => ({

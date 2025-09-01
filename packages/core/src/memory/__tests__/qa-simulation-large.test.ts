@@ -111,7 +111,13 @@ describe('QA agent large simulation (~100 queries)', () => {
 
     // Snapshot summary with structural metrics
     const snap = sStore.toSnapshot();
-    type RawNode = { [k: string]: unknown };
+    type RawNode = {
+      type?: string;
+      id: string;
+      text?: string;
+      degree?: number;
+      weights?: { feedback?: number; repeat?: number };
+    };
     const edges = snap.graph.edges;
     const nodes = (snap.graph.nodes as RawNode[]).filter((n) => n.type === 'query');
 

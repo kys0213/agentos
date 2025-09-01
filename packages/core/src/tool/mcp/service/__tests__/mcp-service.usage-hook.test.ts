@@ -21,7 +21,8 @@ describe('McpService usage hook integration', () => {
     const usageService = new McpUsageService(usageRepo);
     // Minimal stubs for dependencies
     const fakeRepo = {} as import('../../repository/mcp-tool-repository').McpToolRepository;
-    const fakeRegistry = {
+    // The service only uses a small subset of the registry API; provide a minimal stub.
+    const fakeRegistry: import('../../registry/mcp-metadata-registry').McpMetadataRegistry = {
       initialize: jest.fn().mockResolvedValue(undefined),
       getAllTools: jest.fn().mockReturnValue({
         items: [
@@ -38,7 +39,7 @@ describe('McpService usage hook integration', () => {
       }),
       executeTool: jest.fn().mockResolvedValue({ ok: true }),
       on: jest.fn().mockReturnValue(() => {}),
-    } as import('../../registry/mcp-metadata-registry').McpMetadataRegistry;
+    } as any;
     const service = new McpService(fakeRepo, fakeRegistry, usageService);
 
     await service.initialize();
