@@ -30,14 +30,10 @@ export class GeneratedMcpController {
     payload: z.input<(typeof C.methods)['invokeTool']['payload']>
   ): Promise<z.output<(typeof C.methods)['invokeTool']['response']>> {
     try {
-      const res = await this.mcp.executeTool(
-        payload.name,
-        payload.input,
-        {
-          agentId: payload.agentId,
-          sessionId: payload.resumptionToken,
-        }
-      );
+      const res = await this.mcp.executeTool(payload.name, payload.input, {
+        agentId: payload.agentId,
+        sessionId: payload.resumptionToken,
+      });
       return { success: true, result: res };
     } catch (e) {
       const msg = (e as Error)?.message ?? 'Tool invocation failed';

@@ -8,15 +8,14 @@ import type { RpcFrame } from '../../../../shared/rpc/rpc-frame';
 import { createIpcMainFixture, flush } from '../test-helpers/fixture';
 import { frames, clear } from '../test-helpers/electron-mock-store';
 jest.mock('electron', () => {
-  const store = require('../test-helpers/electron-mock-store');
   const win = {
     isDestroyed: () => false,
-    webContents: { send: (_ch: string, frame: RpcFrame) => store.frames.push(frame) },
+    webContents: { send: (_ch: string, frame: RpcFrame) => frames.push(frame) },
   } as const;
   return {
     BrowserWindow: {
-      fromId: jest.fn(() => win as any),
-      getAllWindows: jest.fn(() => [win as any]),
+      fromId: jest.fn(() => win),
+      getAllWindows: jest.fn(() => [win]),
     },
   };
 });
@@ -54,6 +53,7 @@ describe('ElectronEventTransport (Nest microservice)', () => {
     const app = moduleRef.createNestMicroservice<MicroserviceOptions>({
       strategy: new ElectronEventTransport(ipcMainMock),
     });
+    // Silence logs: skip useLogger call for Nest v11 compatibility
     await app.listen();
 
     emit({ kind: 'req', cid: 'c1', method: 'mock.echo', payload: 'hello' });
@@ -72,6 +72,7 @@ describe('ElectronEventTransport (Nest microservice)', () => {
     const app = moduleRef.createNestMicroservice<MicroserviceOptions>({
       strategy: new ElectronEventTransport(ipcMainMock),
     });
+    // Silence logs: skip useLogger call for Nest v11 compatibility
     await app.listen();
 
     emit({ kind: 'req', cid: 'c2', method: 'mock.stream', payload: 2 });
@@ -92,6 +93,7 @@ describe('ElectronEventTransport (Nest microservice)', () => {
     const app = moduleRef.createNestMicroservice<MicroserviceOptions>({
       strategy: new ElectronEventTransport(ipcMainMock),
     });
+    // Silence logs: skip useLogger call for Nest v11 compatibility
     await app.listen();
 
     emit({ kind: 'req', cid: 'c3', method: 'mock.error' });

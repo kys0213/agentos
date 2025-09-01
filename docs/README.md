@@ -17,5 +17,6 @@ This is the entry point for repository-wide documentation.
   - RPC (guide/spec/terms/recipes): `apps/gui/docs/rpc/README.md`
 
 Notes
+
 - Follow `DOCS_POLICY.md` for SSOT and Plan→Docs promotion.
 - Prefer updating existing docs over adding new ones to avoid sprawl.

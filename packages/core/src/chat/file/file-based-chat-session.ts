@@ -52,7 +52,7 @@ export class FileBasedChatSession implements ChatSession {
           messageId: this.nextMessageId(),
           createdAt: new Date(),
           ...compressed.summary,
-        } as unknown as MessageHistory,
+        } as MessageHistory,
         createdAt: new Date(),
         coveringUpTo: first.createdAt,
       };
@@ -80,8 +80,11 @@ export class FileBasedChatSession implements ChatSession {
         const { summary } = await this.titleCompressor.compress([userMessage]);
         const first = Array.isArray(summary.content)
           ? summary.content[0]
-          : (summary.content as unknown as import('llm-bridge-spec').MultiModalContent);
-        this.metadata.title = first && first.contentType === 'text' ? first.value : undefined;
+          : (summary.content as { contentType: string; value: unknown });
+        this.metadata.title =
+          first && first.contentType === 'text' && typeof first.value === 'string'
+            ? first.value
+            : undefined;
       }
     }
 
@@ -106,7 +109,7 @@ export class FileBasedChatSession implements ChatSession {
       messageId: this.nextMessageId(),
       createdAt: new Date(),
       ...message,
-    } as unknown as MessageHistory;
+    } as MessageHistory;
     this.metadata.recentMessages.push(history);
     this.metadata.totalMessages++;
     return history;
@@ -114,6 +117,19 @@ export class FileBasedChatSession implements ChatSession {
 
   async getHistories(options?: CursorPagination): Promise<CursorPaginationResult<MessageHistory>> {
     const { cursor, limit = 10 } = options ?? {};
+
+    // 옵션이 없으면 커밋 전 임시(in-memory) 메시지를 우선 반환
+    if (!options) {
+      const items: MessageHistory[] = [...this.metadata.recentMessages];
+      for await (const history of this.storage.read(this.agentId, this.sessionId)) {
+        items.push(history);
+      }
+      return {
+        items,
+        nextCursor: items.length > 0 ? items[items.length - 1].messageId : '',
+        hasMore: false,
+      };
+    }
 
     const buffer: MessageHistory[] = [];
 
@@ -131,7 +147,7 @@ export class FileBasedChatSession implements ChatSession {
 
     return {
       items: buffer,
-      nextCursor: buffer[buffer.length - 1].messageId,
+      nextCursor: buffer.length > 0 ? buffer[buffer.length - 1].messageId : '',
       hasMore: false, // 임시로 false 설정
     };
   }

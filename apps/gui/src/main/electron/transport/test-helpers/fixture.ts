@@ -6,13 +6,13 @@ export type BridgePostHandler = (e: { sender: { id: number } }, frame: RpcFrame)
 export function createIpcMainFixture() {
   let handler: BridgePostHandler | null = null;
   const ipcMain: Partial<IpcMain> = {};
-  (
-    ipcMain as unknown as {
-      on: (c: string, l: (event: unknown, ...args: unknown[]) => void) => unknown;
-    }
-  ).on = (channel: string, listener: (event: unknown, ...args: unknown[]) => void) => {
+  type OnFn = (c: string, l: (event: unknown, ...args: unknown[]) => void) => unknown;
+  (ipcMain as { on: OnFn }).on = (
+    channel: string,
+    listener: (event: unknown, ...args: unknown[]) => void
+  ) => {
     if (channel === 'bridge:post') {
-      handler = listener as unknown as BridgePostHandler;
+      handler = (e, frame) => listener(e, frame);
     }
     return ipcMain;
   };

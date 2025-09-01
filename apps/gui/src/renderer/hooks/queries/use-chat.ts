@@ -102,7 +102,7 @@ export const useSendChatMessage = (
         (m: BridgeMsg, idx) => {
           const serverMsgId =
             typeof m['messageId'] === 'string' ? (m['messageId'] as string) : undefined;
-          const createdRaw = m['createdAt'] as unknown;
+          const createdRaw = m['createdAt'];
           let createdAt: Date;
           if (createdRaw instanceof Date) {
             createdAt = createdRaw;

@@ -10,13 +10,15 @@ export class LlmCompressor implements CompressStrategy {
   async compress(messages: MessageHistory[]): Promise<CompressionResult> {
     const text = messages
       .map((m) => {
-        const first = Array.isArray(m.content)
-          ? m.content[0]
-          : (m.content as unknown as MultiModalContent);
-        if (first && first.contentType === 'text') {
-          return `${m.role}: ${first.value}`;
+        let first: MultiModalContent | undefined;
+        if (Array.isArray(m.content)) {
+          first = m.content[0];
+        } else if (typeof m.content === 'object' && m.content && 'contentType' in m.content) {
+          first = m.content as MultiModalContent;
         }
-        return `${m.role}: [non-text]`;
+        return first?.contentType === 'text'
+          ? `${m.role}: ${first.value}`
+          : `${m.role}: [non-text]`;
       })
       .join('\n');
 

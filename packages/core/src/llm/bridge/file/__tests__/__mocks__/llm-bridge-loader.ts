@@ -10,7 +10,7 @@ import {
 import z from 'zod';
 
 export class LlmBridgeLoader implements BridgeLoader {
-  scan<M extends LlmManifest>(options?: ScanOptions): Promise<BridgeLoadResult<M>[]> {
+  scan<M extends LlmManifest>(_options?: ScanOptions): Promise<BridgeLoadResult<M>[]> {
     throw new Error('Method not implemented.');
   }
 

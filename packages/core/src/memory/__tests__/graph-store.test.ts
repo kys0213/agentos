@@ -48,12 +48,21 @@ describe('GraphStore', () => {
     ];
     for (const t of texts) {
       const id = g.upsertQuery(t);
-      if (t.includes('작성')) g.recordFeedback(id, 'up');
+      if (t.includes('작성')) {
+        g.recordFeedback(id, 'up');
+      }
     }
     const snap = g.toSnapshot();
-    const nodes = snap.graph.nodes
-      .filter((n: any) => n.type === 'query')
-      .map((n: any) => ({
+    type RawNode = {
+      type?: string;
+      text?: string;
+      canonicalKey?: string;
+      degree?: number;
+      weights?: { repeat?: number; feedback?: number };
+    };
+    const nodes = (snap.graph.nodes as RawNode[])
+      .filter((n) => n.type === 'query')
+      .map((n) => ({
         text: n.text,
         canonicalKey: n.canonicalKey,
         degree: n.degree,
@@ -62,9 +71,9 @@ describe('GraphStore', () => {
           feedback: Number((n.weights?.feedback ?? 0).toFixed(2)),
         },
       }))
-      .sort((a: any, b: any) => (a.text || '').localeCompare(b.text || ''));
+      .sort((a, b) => String(a.text || '').localeCompare(String(b.text || '')));
     const edgeTypeCounts = snap.graph.edges.reduce(
-      (acc: any, e: any) => {
+      (acc: Record<string, number>, e) => {
         acc[e.type] = (acc[e.type] ?? 0) + 1;
         return acc;
       },

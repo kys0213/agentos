@@ -2,7 +2,7 @@ import { FunctionPublisher, CompositePublisher } from '../../event/function-publ
 
 describe('FunctionPublisher', () => {
   test('publishes with prefix', () => {
-    const calls: any[] = [];
+    const calls: Array<{ ch: string; p: unknown }> = [];
     const pub = new FunctionPublisher(
       (ch, p) => {
         calls.push({ ch, p });
@@ -17,7 +17,7 @@ describe('FunctionPublisher', () => {
   });
 
   test('serializes json when enabled', () => {
-    const calls: any[] = [];
+    const calls: Array<{ ch: string; p: unknown }> = [];
     const pub = new FunctionPublisher(
       (ch, p) => {
         calls.push({ ch, p });
@@ -26,14 +26,14 @@ describe('FunctionPublisher', () => {
     );
     pub.publish('ch', { a: 1 });
     expect(typeof calls[0].p).toBe('string');
-    expect(JSON.parse(calls[0].p)).toEqual({ a: 1 });
+    expect(JSON.parse(calls[0].p as string)).toEqual({ a: 1 });
   });
 });
 
 describe('CompositePublisher', () => {
   test('fan-out to multiple publishers', () => {
-    const a: any[] = [];
-    const b: any[] = [];
+    const a: Array<{ ch: string; p: unknown }> = [];
+    const b: Array<{ ch: string; p: unknown }> = [];
     const pa = new FunctionPublisher((ch, p) => {
       a.push({ ch, p });
     });

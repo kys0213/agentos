@@ -143,17 +143,19 @@ describe('FileBasedChatSession', () => {
           content: [
             { contentType: 'text', value: 't1' },
             { contentType: 'file', value: Buffer.from('b') },
-          ] as any,
-        } as any,
+          ],
+        },
       ];
 
       // 첫 메시지 생성 시각 고정
-      jest.spyOn(global, 'Date').mockImplementationOnce(() => firstCreatedAt as any);
+      jest.useFakeTimers();
+      jest.setSystemTime(firstCreatedAt);
       await session.appendMessage(testMessages[0]);
       await session.appendMessage(testMessages[1]);
       await session.appendMessage(testMessages[2]);
 
       await session.commit();
+      jest.useRealTimers();
 
       expect(mockStorage.saveCheckpoint).toHaveBeenCalledWith(
         expect.any(String),
@@ -228,7 +230,7 @@ describe('FileBasedChatSession', () => {
     });
 
     it('cursor와 limit을 사용해 페이지네이션을 적용해야 한다', async () => {
-      const histories = [
+      const histories: MessageHistory[] = [
         {
           messageId: '1',
           createdAt: new Date(),
@@ -257,7 +259,7 @@ describe('FileBasedChatSession', () => {
 
       mockStorage.read.mockImplementation(async function* () {
         for (const h of histories) {
-          yield h as any;
+          yield h;
         }
       });
 
@@ -271,8 +273,8 @@ describe('FileBasedChatSession', () => {
 
     it('커밋 후 페이지네이션에서도 배열 콘텐츠가 유지되어야 한다', async () => {
       const msgs: Message[] = [
-        { role: 'user', content: { contentType: 'text', value: 'u' } },
-        { role: 'assistant', content: { contentType: 'text', value: 'a1' } },
+        { role: 'user', content: [{ contentType: 'text', value: 'u' }] },
+        { role: 'assistant', content: [{ contentType: 'text', value: 'a1' }] },
         {
           role: 'tool',
           name: 'dummy',
@@ -280,9 +282,9 @@ describe('FileBasedChatSession', () => {
           content: [
             { contentType: 'text', value: 'tool-text' },
             { contentType: 'file', value: Buffer.from('bytes') },
-          ] as any,
-        } as any,
-        { role: 'assistant', content: { contentType: 'text', value: 'a2' } },
+          ],
+        },
+        { role: 'assistant', content: [{ contentType: 'text', value: 'a2' }] },
       ];
 
       for (const m of msgs) {
@@ -291,20 +293,28 @@ describe('FileBasedChatSession', () => {
       await session.commit();
 
       // saveMessageHistories로 전달된 데이터를 기반으로 read() 동작을 흉내냄
-      const flushed = mockStorage.saveMessageHistories.mock.calls[0][2];
+      const calls = mockStorage.saveMessageHistories.mock.calls;
+      const flushed = calls[0][2] as Readonly<MessageHistory>[];
       mockStorage.read.mockImplementation(async function* () {
-        for (const h of flushed) yield h;
+        for (const h of flushed) {
+          yield h;
+        }
       });
 
       const page = await session.getHistories({ cursor: '1', limit: 2, direction: 'forward' });
       expect(page.items.map((i) => i.role)).toEqual(['tool', 'assistant']);
-      const toolMsg = page.items[0] as any;
-      expect(Array.isArray(toolMsg.content)).toBe(true);
-      const arr = toolMsg.content as any[];
-      expect(arr[0]).toEqual({ contentType: 'text', value: 'tool-text' });
-      expect(arr[1].contentType).toBe('file');
-      const fileVal: any = arr[1].value;
-      expect(Buffer.isBuffer(fileVal) || (fileVal && fileVal.type === 'Buffer')).toBe(true);
+      const toolMsg = page.items[0];
+      if (Array.isArray(toolMsg.content)) {
+        const arr = toolMsg.content;
+        expect(arr[0]).toEqual({ contentType: 'text', value: 'tool-text' });
+        expect((arr[1] as { contentType: string }).contentType).toBe('file');
+        const fileVal = (arr[1] as { value: Buffer | { type?: string } }).value;
+        expect(
+          Buffer.isBuffer(fileVal) || (fileVal && (fileVal as { type?: string }).type === 'Buffer')
+        ).toBe(true);
+      } else {
+        throw new Error('content should be array');
+      }
     });
   });
 

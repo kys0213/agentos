@@ -21,6 +21,7 @@ This document defines mandatory patterns for GUI implementation to keep the code
 - Presentational components must not call `useQueryClient()` directly. Inject a refresh action via props instead.
 
 Cross‑refs
+
 - Naming guidance lives in `frontend/code-style.md`.
 - See `frontend/testing.md` for how to assert cache effects without reaching into internals.
 
@@ -41,6 +42,7 @@ Cross‑refs
 - Utilities (e.g., `toCapabilityLabels`) belong in `hooks/queries/*` or a shared utils module.
 
 Enforcement
+
 - ESLint: `@typescript-eslint/no-explicit-any` = error (tests may be warn), `no-restricted-syntax` bans `as any`.
 - Zod at boundaries: parse contract responses and input payloads; prefer `z.unknown()` over `z.any()`.
 - Promote discriminated unions where it models runtime (e.g., usage events).
@@ -103,11 +105,12 @@ Note: Implementation is non-normative; rely on IPC contracts documented in `ELEC
 - ChatHistory wrapped in `React.memo` to reduce re-renders.
 - Containers own React Query wiring and session id continuity (map by agent id).
 - Presentational Chat components remain prop-driven; no direct ServiceContainer access.
+  Testing hooks
 
-Testing hooks
 - Prefer rendering presentational components with explicit props over mounting containers.
 - For container logic (e.g., session id continuity), cover with focused hook tests or unit tests that assert invalidation and side‑effects.
 
 Related docs
+
 - Testing guide and MCP scenario: `frontend/testing.md`
 - Roadmap phases summary: `frontend/roadmap.md`

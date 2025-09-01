@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs/promises';
 import { GraphStore } from './graph-store';
-import { GraphConfig } from './types';
+import { GraphConfig, BaseNode, Edge } from './types';
 import { SimpleEmbedding } from './embedding/simple-embedding';
 
 export type Scope = 'agent' | 'session';
@@ -82,7 +82,7 @@ export class MemoryOrchestrator {
     return [...map.values()].sort((a, b) => b.score - a.score).slice(0, k);
   }
 
-  private rank(n: any, halfLifeMin: number) {
+  private rank(n: Pick<BaseNode, 'lastAccess' | 'weights'>, halfLifeMin: number) {
     const now = Date.now();
     const ageMin = (now - n.lastAccess) / (1000 * 60);
     const recency = Math.exp(-Math.log(2) * (ageMin / halfLifeMin));
@@ -91,7 +91,7 @@ export class MemoryOrchestrator {
     return 0.5 * recency + 0.3 * repeat + 0.2 * fb;
   }
   private pickTopQueries(
-    nodes: any[],
+    nodes: BaseNode[],
     minRank: number,
     topK: number,
     minDegree: number,
@@ -135,7 +135,9 @@ export class MemoryOrchestrator {
     if (checkpoint) {
       const snap = s.toSnapshot();
       const top = this.pickTopQueries(
-        snap.graph.nodes,
+        this.normalizeNodes(
+          snap.graph.nodes as Array<Omit<BaseNode, 'embedding'> & { embedding: unknown }>
+        ),
         this.cfg.promotion.minRank,
         this.cfg.checkpoint.topK,
         this.cfg.promotion.minDegree ?? 0,
@@ -154,9 +156,9 @@ export class MemoryOrchestrator {
           degree: q.degree,
           canonicalKey: q.canonicalKey,
         })),
-        edges: snap.graph.edges
-          .filter((e: any) => top.some((q) => q.id === e.from || q.id === e.to))
-          .map((e: any) => ({ from: e.from, to: e.to, type: e.type, weight: e.weight })),
+        edges: (snap.graph.edges as Edge[])
+          .filter((e) => top.some((q) => q.id === e.from || q.id === e.to))
+          .map((e) => ({ from: e.from, to: e.to, type: e.type, weight: e.weight })),
         embedder: snap.embedder,
         canonicalMeta: snap.canonicalMeta,
       };
@@ -179,7 +181,9 @@ export class MemoryOrchestrator {
     }
     const snap = s.toSnapshot();
     const top = this.pickTopQueries(
-      snap.graph.nodes,
+      this.normalizeNodes(
+        snap.graph.nodes as Array<Omit<BaseNode, 'embedding'> & { embedding: unknown }>
+      ),
       this.cfg.promotion.minRank,
       this.cfg.promotion.maxPromotions,
       this.cfg.promotion.minDegree ?? 0,
@@ -198,5 +202,32 @@ export class MemoryOrchestrator {
       count++;
     }
     return count;
+  }
+
+  private normalizeNodes(
+    nodes: Array<Omit<BaseNode, 'embedding'> & { embedding: unknown }>
+  ): BaseNode[] {
+    return nodes.map((n) => {
+      const e = (n as { embedding?: unknown }).embedding;
+      let embedding: number[] | Map<number, number> | undefined;
+      if (e == null) {
+        embedding = undefined;
+      } else if (Array.isArray(e)) {
+        if (e.length === 0 || typeof e[0] === 'number') {
+          embedding = e as number[];
+        } else {
+          try {
+            embedding = new Map(e as [number, number][]);
+          } catch {
+            embedding = undefined;
+          }
+        }
+      } else if (e instanceof Map) {
+        embedding = e as Map<number, number>;
+      } else {
+        embedding = undefined;
+      }
+      return { ...n, embedding } as BaseNode;
+    });
   }
 }

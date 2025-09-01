@@ -41,7 +41,7 @@ export function toAsyncIterable<T>(source: Observable<T>): AsyncIterable<T> {
             }
 
             if (err) {
-              throw err as unknown;
+              throw err instanceof Error ? err : new Error(String(err));
             }
 
             if (done) {

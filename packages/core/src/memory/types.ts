@@ -36,6 +36,6 @@ export interface GraphConfig {
 
 export interface EmbeddingProvider {
   embed(text: string): number[] | Map<number, number>;
-  exportState?(): any;
-  importState?(s: any): void;
+  exportState?(): unknown;
+  importState?(s: unknown): void;
 }

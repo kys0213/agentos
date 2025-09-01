@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import { ChatHistory } from '../../ChatHistory';
+import { ChatHistory } from '../ChatHistory';
 
 describe('ChatHistory UI', () => {
   it('renders Archived pill and empty state when no agents', () => {

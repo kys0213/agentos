@@ -15,9 +15,36 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
 
   private readonly subscriptions = new Map<string, Subscription>();
 
+  private readonly localHandlers = new Map<
+    string,
+    ((
+      payload: unknown,
+      ctx: { senderId: number }
+    ) =>
+      | unknown
+      | AsyncGenerator<unknown, unknown, unknown>
+      | import('rxjs').Observable<unknown>) & { extras?: { broadcast?: boolean } }
+  >();
+
   constructor(private readonly ipcMain: IpcMain) {
     super();
     this.onIncomingFrame = this.createIncomingFrameHandler();
+  }
+
+  /**
+   * Register an RPC handler for a method. Exposed to support test wiring
+   * without accessing internal Server state.
+   */
+  public registerHandler(
+    method: string,
+    handler: (
+      payload: unknown,
+      ctx: { senderId: number }
+    ) => unknown | AsyncGenerator<unknown, unknown, unknown> | import('rxjs').Observable<unknown>,
+    extras?: { broadcast?: boolean }
+  ): void {
+    const withExtras = Object.assign(handler, { extras });
+    this.localHandlers.set(method, withExtras);
   }
 
   listen(cb: () => void) {
@@ -53,7 +80,8 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
           return;
         }
 
-        const handler = this.messageHandlers.get(frame.method);
+        const handler =
+          this.localHandlers.get(frame.method) ?? this.messageHandlers.get(frame.method);
 
         if (!handler) {
           return this.sendTo(senderId, {
@@ -76,7 +104,7 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
         if (isObservable(out)) {
           this.handleByObservable(out, frame, send);
           return;
-        } else if (out && typeof out[Symbol.asyncIterator] === 'function') {
+        } else if (isAsyncIterable(out)) {
           for await (const chunk of out) {
             send({ kind: 'nxt', cid: frame.cid, data: chunk, method: frame.method });
           }
@@ -140,8 +168,8 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
           kind: 'err',
           cid: frame.cid,
           ok: false,
-          message: String((e as unknown as { message?: string })?.message ?? e),
-          code: (e as unknown as { code?: string })?.code ?? 'OPERATION_FAILED',
+          message: getErrorMessage(e),
+          code: getErrorCode(e) ?? 'OPERATION_FAILED',
         }),
       complete: () => {
         send({ kind: 'end', cid: frame.cid });
@@ -168,4 +196,31 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
       win.webContents.send('bridge:frame', frame);
     }
   }
+}
+
+// Type guard for async iterables
+function isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
+  return (
+    value != null &&
+    typeof (value as { [Symbol.asyncIterator]?: unknown })[Symbol.asyncIterator] === 'function'
+  );
+}
+
+function getErrorMessage(e: unknown): string {
+  if (e instanceof Error) {
+    return e.message;
+  }
+  if (isObject(e) && 'message' in e) {
+    const msg = (e as { message?: unknown }).message;
+    return typeof msg === 'string' ? msg : String(msg);
+  }
+  return String(e);
+}
+
+function getErrorCode(e: unknown): string | undefined {
+  if (isObject(e) && 'code' in e) {
+    const code = (e as { code?: unknown }).code;
+    return typeof code === 'string' ? code : undefined;
+  }
+  return undefined;
 }

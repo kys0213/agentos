@@ -18,12 +18,12 @@ export class AgentServiceAdapter {
 
   async getAgentMetadata(id: string): Promise<ReadonlyAgentMetadata> {
     const res = await this.client.get_metadata(id);
-    return C.methods['get-metadata'].response.parse(res) as unknown as ReadonlyAgentMetadata;
+    return C.methods['get-metadata'].response.parse(res) as ReadonlyAgentMetadata;
   }
 
   async getAllAgentMetadatas(): Promise<ReadonlyAgentMetadata[]> {
     const res = await this.client.get_all_metadatas();
-    return C.methods['get-all-metadatas'].response.parse(res) as unknown as ReadonlyAgentMetadata[];
+    return C.methods['get-all-metadatas'].response.parse(res) as ReadonlyAgentMetadata[];
   }
 
   async updateAgent(agentId: string, patch: Record<string, unknown>) {
@@ -35,7 +35,7 @@ export class AgentServiceAdapter {
   async createAgent(agent: Record<string, unknown>): Promise<ReadonlyAgentMetadata> {
     const payload = C.methods['create'].payload.parse(agent);
     const res = await this.client.create(payload);
-    return C.methods['create'].response.parse(res) as unknown as ReadonlyAgentMetadata;
+    return C.methods['create'].response.parse(res) as ReadonlyAgentMetadata;
   }
 
   async deleteAgent(id: string) {

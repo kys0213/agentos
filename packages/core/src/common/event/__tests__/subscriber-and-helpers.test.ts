@@ -12,7 +12,7 @@ describe('FunctionSubscriber + subscribeJson', () => {
       };
     });
 
-    const seen: any[] = [];
+    const seen: import('../../event/ipc-payload-guards').AgentStatusPayload[] = [];
     subscribeJson(sub, 'agent/status', isAgentStatusPayload, (p) => seen.push(p));
 
     // simulate JSON string payload
@@ -32,7 +32,7 @@ describe('FunctionSubscriber + subscribeJson', () => {
       return () => {};
     });
 
-    const seen: any[] = [];
+    const seen: import('../../event/ipc-payload-guards').SessionMessagePayload[] = [];
     subscribeJson(sub, 'agent/session/s-1/message', isSessionMessagePayload, (p) => seen.push(p));
     listeners['agent/session/s-1/message'][0]({
       agentId: 'a',

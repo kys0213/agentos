@@ -2,7 +2,11 @@ import type { CloseFn, RpcClient } from '../../../../shared/rpc/transport';
 import { McpUsageRpcService } from '../mcp-usage.service';
 import type { McpUsageUpdateEvent } from '../../../../shared/types/mcp-usage-types';
 
-function createMockRpc(): { rpc: RpcClient; emit: (payload: unknown) => void; wasClosed: () => boolean } {
+function createMockRpc(): {
+  rpc: RpcClient;
+  emit: (payload: unknown) => void;
+  wasClosed: () => boolean;
+} {
   let handler: ((payload: unknown) => void) | null = null;
   let closed = false;
   const rpc: RpcClient = {
@@ -12,13 +16,13 @@ function createMockRpc(): { rpc: RpcClient; emit: (payload: unknown) => void; wa
     on<T>(channel: string, h: (payload: T) => void): CloseFn {
       // ensure correct channel is used
       expect(channel).toBe('mcp.usage.events');
-      handler = h as unknown as (payload: unknown) => void;
+      handler = (payload: unknown) => h(payload as T);
       return async () => {
         closed = true;
         handler = null;
       };
     },
-  } as unknown as RpcClient;
+  };
 
   return {
     rpc,
@@ -46,7 +50,7 @@ describe('McpUsageRpcService.subscribeToUsageUpdates', () => {
         status: 'success',
         timestamp: new Date(),
       },
-    } as McpUsageUpdateEvent;
+    };
     emit(ev);
     expect(cb).toHaveBeenCalledTimes(1);
 

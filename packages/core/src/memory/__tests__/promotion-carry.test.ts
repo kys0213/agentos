@@ -31,8 +31,12 @@ describe('Promotion carries weights into agent store', () => {
     const text = '제품B 회귀 테스트 실행';
     // Boost feedback and repeat
     const q = o.upsertQuery(sid, text);
-    for (let i = 0; i < 5; i++) o.recordFeedback(sid, q, 'up');
-    for (let i = 0; i < 3; i++) o.upsertQuery(sid, text);
+    for (let i = 0; i < 5; i++) {
+      o.recordFeedback(sid, q, 'up');
+    }
+    for (let i = 0; i < 3; i++) {
+      o.upsertQuery(sid, text);
+    }
 
     const before = o.getAgentStore().searchSimilarQueries(text, 3);
     await o.finalizeSession(sid, { promote: true, checkpoint: false });

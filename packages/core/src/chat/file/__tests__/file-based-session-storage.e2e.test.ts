@@ -112,13 +112,14 @@ describe('FileBasedSessionStorage E2E', () => {
       const loaded = await storage.readAll('a-1', sessionId);
 
       expect(Array.isArray(loaded[0].content)).toBe(true);
-      const arr = loaded[0].content as any[];
+      const arr = loaded[0].content as Array<{ contentType: string; value: unknown }>;
       expect(arr[0]).toEqual({ contentType: 'text', value: 'result text' });
       // Buffer는 JSON 직렬화 시 { type: 'Buffer', data: [...] }로 로드됨
       expect(arr[1].contentType).toBe('file');
-      expect(typeof arr[1].value).toBe('object');
-      expect(arr[1].value && arr[1].value.type).toBe('Buffer');
-      expect(Array.isArray(arr[1].value.data)).toBe(true);
+      const val = arr[1].value as { type?: string; data?: unknown };
+      expect(typeof val).toBe('object');
+      expect(val && val.type).toBe('Buffer');
+      expect(Array.isArray(val.data as unknown[])).toBe(true);
     });
   });
 

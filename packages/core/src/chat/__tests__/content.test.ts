@@ -38,7 +38,11 @@ describe('Core content standardization', () => {
   });
 
   test('normalizeToCoreContentArray: circular object → String fallback', () => {
-    const a: any = {};
+    interface Circular {
+      self?: unknown;
+      [k: string]: unknown;
+    }
+    const a: Circular = {};
     a.self = a; // create circular reference
     const arr = normalizeToCoreContentArray(a);
     expect(arr).toHaveLength(1);

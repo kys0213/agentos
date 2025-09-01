@@ -40,15 +40,15 @@ export interface SessionSensitiveInputRequestPayload extends SessionBase {
   fields: Array<{ key: string; label: string; secret?: boolean }>;
 }
 
-export function parseMaybeJson<T = unknown>(payload: unknown): T {
+export function parseMaybeJson(payload: unknown): unknown {
   if (typeof payload === 'string') {
     try {
-      return JSON.parse(payload) as T;
+      return JSON.parse(payload);
     } catch {
-      return payload as unknown as T;
+      return payload;
     }
   }
-  return payload as T;
+  return payload;
 }
 
 export function isObject(v: unknown): v is Record<string, unknown> {

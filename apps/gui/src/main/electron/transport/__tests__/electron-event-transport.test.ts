@@ -5,15 +5,14 @@ import type { RpcFrame } from '../../../../shared/rpc/rpc-frame';
 import { createIpcMainFixture, flush } from '../test-helpers/fixture';
 import { frames, clear } from '../test-helpers/electron-mock-store';
 jest.mock('electron', () => {
-  const store = require('../test-helpers/electron-mock-store');
   const win = {
     isDestroyed: () => false,
-    webContents: { send: (_ch: string, frame: RpcFrame) => store.frames.push(frame) },
+    webContents: { send: (_ch: string, frame: RpcFrame) => frames.push(frame) },
   } as const;
   return {
     BrowserWindow: {
-      fromId: jest.fn(() => win as any),
-      getAllWindows: jest.fn(() => [win as any]),
+      fromId: jest.fn(() => win),
+      getAllWindows: jest.fn(() => [win]),
     },
   };
 });
@@ -31,11 +30,8 @@ describe('ElectronEventTransport', () => {
     t.listen(() => {});
 
     // register handler
-    const handler = Object.assign(
-      jest.fn().mockResolvedValue('pong'),
-      {} as Record<string, unknown>
-    );
-    (t as any).messageHandlers.set('ping', handler);
+    const handler = jest.fn().mockResolvedValue('pong');
+    t.registerHandler('ping', handler);
 
     emit({ kind: 'req', cid: 'c1', method: 'ping', payload: 42 });
     await flush();
@@ -46,11 +42,8 @@ describe('ElectronEventTransport', () => {
     const t = new ElectronEventTransport(ipcMainMock);
     t.listen(() => {});
 
-    const handler = Object.assign(
-      jest.fn().mockReturnValue(of('a', 'b').pipe(take(2))),
-      {} as Record<string, unknown>
-    );
-    (t as any).messageHandlers.set('stream.obs', handler);
+    const handler = jest.fn().mockReturnValue(of('a', 'b').pipe(take(2)));
+    t.registerHandler('stream.obs', handler);
 
     emit({ kind: 'req', cid: 'c2', method: 'stream.obs' });
     await flush();
@@ -67,8 +60,8 @@ describe('ElectronEventTransport', () => {
       yield 1;
       yield 2;
     }
-    const handler = Object.assign(jest.fn().mockReturnValue(gen()), {} as Record<string, unknown>);
-    (t as any).messageHandlers.set('stream.gen', handler);
+    const handler = jest.fn().mockReturnValue(gen());
+    t.registerHandler('stream.gen', handler);
 
     emit({ kind: 'req', cid: 'c3', method: 'stream.gen' });
     await flush();
@@ -82,11 +75,8 @@ describe('ElectronEventTransport', () => {
     t.listen(() => {});
 
     const subj = new Subject<number>();
-    const handler = Object.assign(
-      jest.fn().mockReturnValue(subj.asObservable()),
-      {} as Record<string, unknown>
-    );
-    (t as any).messageHandlers.set('stream.cancel', handler);
+    const handler = jest.fn().mockReturnValue(subj.asObservable());
+    t.registerHandler('stream.cancel', handler);
 
     emit({ kind: 'req', cid: 'c4', method: 'stream.cancel' });
     subj.next(1);
@@ -117,13 +107,10 @@ describe('ElectronEventTransport', () => {
     const t = new ElectronEventTransport(ipcMainMock);
     t.listen(() => {});
 
-    const handler = Object.assign(
-      jest.fn().mockImplementation(() => {
-        throw new CoreError('agent', 'INVALID_ARGUMENT', 'bad input', { details: { x: 1 } });
-      }),
-      {}
-    );
-    (t as any).messageHandlers.set('boom', handler);
+    const handler = jest.fn().mockImplementation(() => {
+      throw new CoreError('agent', 'INVALID_ARGUMENT', 'bad input', { details: { x: 1 } });
+    });
+    t.registerHandler('boom', handler);
 
     emit({ kind: 'req', cid: 'c6', method: 'boom' });
     await flush();
@@ -136,10 +123,8 @@ describe('ElectronEventTransport', () => {
     const t = new ElectronEventTransport(ipcMainMock);
     t.listen(() => {});
 
-    type WithExtras<T> = T & { extras?: { broadcast?: boolean } };
-    const handler = jest.fn().mockResolvedValue('ok') as WithExtras<jest.Mock>;
-    handler.extras = { broadcast: true };
-    (t as any).messageHandlers.set('broadcast.ping', handler);
+    const handler = jest.fn().mockResolvedValue('ok');
+    t.registerHandler('broadcast.ping', handler, { broadcast: true });
 
     emit({ kind: 'req', cid: 'c7', method: 'broadcast.ping' });
     await flush();

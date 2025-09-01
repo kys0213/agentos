@@ -2,7 +2,7 @@
   "extends": ["../../.eslintrc.json"],
   "ignorePatterns": ["src/main/**/gen/**", "src/shared/rpc/gen/**", "src/renderer/rpc/gen/**"],
   "parserOptions": {
-    "project": ["./tsconfig.json"]
+    "project": ["./tsconfig.json", "./tsconfig.tests.json"]
   },
   "rules": {
     "curly": ["warn", "all"],
@@ -15,6 +15,10 @@
       {
         "selector": "TSAsExpression > TSAnyKeyword",
         "message": "Do not use 'as any'; use proper typing, generics, or runtime guards."
+      },
+      {
+        "selector": "TSAsExpression > TSUnknownKeyword",
+        "message": "Do not use 'as unknown'; prefer explicit types or narrowing with guards."
       }
     ]
   },
@@ -34,14 +38,25 @@
         "src/**/?(*.)+(spec|test).{ts,tsx}"
       ],
       "rules": {
+        "@typescript-eslint/no-require-imports": "error",
+        "@typescript-eslint/no-var-requires": "error",
         "no-restricted-syntax": [
-          "warn",
+          "error",
           {
             "selector": "TSAsExpression > TSAnyKeyword",
-            "message": "Avoid 'as any' in tests unless strictly necessary."
+            "message": "Do not use 'as any' in tests. Model types explicitly or use narrow test-only interfaces."
+          },
+          {
+            "selector": "TSAsExpression > TSUnknownKeyword",
+            "message": "Do not use 'as unknown' in tests. Narrow types with type guards or adjust generics."
+          },
+          {
+            "selector": "ImportExpression",
+            "message": "Dynamic import() is forbidden in tests. Use static imports or dependency injection/mocks."
           }
         ],
-        "@typescript-eslint/no-explicit-any": "warn"
+        "@typescript-eslint/no-explicit-any": "error",
+        "prettier/prettier": "warn"
       }
     }
   ]

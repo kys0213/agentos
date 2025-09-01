@@ -61,7 +61,7 @@ export class PresetServiceAdapter {
       enabledMcps: (preset.enabledMcps ?? []).map((m) => m.name),
       llmBridgeName: preset.llmBridgeName,
       llmBridgeConfig: preset.llmBridgeConfig as Record<string, unknown>,
-      status: preset.status as unknown as string | undefined,
+      status: preset.status,
       category: preset.category as string[] | undefined,
     });
     const res = C.methods['create'].response.parse(await this.client.create(payload));

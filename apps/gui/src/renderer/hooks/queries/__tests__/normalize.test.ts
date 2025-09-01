@@ -1,8 +1,10 @@
 import { normalizeToArrayContent } from '../normalize';
 
+import type { Message } from 'llm-bridge-spec';
+
 describe('normalizeToArrayContent', () => {
   it('keeps array as-is (arrays-only spec)', () => {
-    const m: any = {
+    const m: Message = {
       role: 'assistant',
       content: [
         { contentType: 'text', value: 'A' },

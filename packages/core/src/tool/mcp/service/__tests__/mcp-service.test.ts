@@ -1,6 +1,7 @@
 import { McpConfig } from '../../mcp-config';
 import { McpToolMetadata } from '../../mcp-types';
 import { McpMetadataRegistry } from '../../registry/mcp-metadata-registry';
+import { McpRegistry } from '../../mcp.registery';
 import { McpToolRepository } from '../../repository/mcp-tool-repository';
 import { McpService } from '../mcp-service';
 
@@ -26,32 +27,32 @@ const createMockRepository = (): jest.Mocked<McpToolRepository> => {
   return mockRepo;
 };
 
-const createMockMcpRegistry = () => {
-  return {
-    register: jest.fn(),
-    unregister: jest.fn(),
-    get: jest.fn().mockResolvedValue(null),
-    getAll: jest.fn().mockResolvedValue([]),
-    getTool: jest.fn().mockResolvedValue(null),
-    getToolOrThrow: jest.fn(),
-    getOrThrow: jest.fn(),
-    onRegister: jest.fn(),
-    onUnregister: jest.fn(),
-    isRegistered: jest.fn().mockReturnValue(false),
-    unregisterAll: jest.fn(),
-    parseMcpAndToolName: jest.fn().mockReturnValue({ mcpName: 'test', toolName: null }),
-  };
-};
+class FakeMcpRegistry extends McpRegistry {
+  register = jest.fn(async (_config: McpConfig) => {});
+  unregister = jest.fn(
+    async (_name: string): Promise<import('@agentos/lang/utils').Result<void> | undefined> =>
+      undefined
+  );
+  get = jest.fn(async (_name: string) => null);
+  getAll = jest.fn(async () => []);
+  getTool = jest.fn(async (_name: string) => null);
+  getToolOrThrow = jest.fn();
+  getOrThrow = jest.fn();
+  onRegister = jest.fn((_fn: (m: unknown) => void) => {});
+  onUnregister = jest.fn((_fn: (m: unknown) => void) => {});
+  isRegistered = jest.fn((_name: string) => false);
+  unregisterAll = jest.fn(async () => {});
+}
 
 describe('McpService', () => {
   let service: McpService;
   let mockRepository: jest.Mocked<McpToolRepository>;
-  let mockMcpRegistry: any;
+  let mockMcpRegistry: FakeMcpRegistry;
   let registry: McpMetadataRegistry;
 
   beforeEach(async () => {
     mockRepository = createMockRepository();
-    mockMcpRegistry = createMockMcpRegistry();
+    mockMcpRegistry = new FakeMcpRegistry();
 
     // 사용자 제안 패턴: 의존성 주입 사용
     registry = new McpMetadataRegistry(mockRepository, mockMcpRegistry);
@@ -75,16 +76,15 @@ describe('McpService', () => {
     });
 
     it('should emit operation events during initialization', async () => {
-      const events: any[] = [];
-      service.on('operationStarted', (e) => events.push({ type: 'started', ...e }));
-      service.on('operationCompleted', (e) => events.push({ type: 'completed', ...e }));
+      const started: import('../mcp-service').McpServiceEvents['operationStarted'][] = [];
+      const completed: import('../mcp-service').McpServiceEvents['operationCompleted'][] = [];
+      service.on('operationStarted', (e) => started.push(e));
+      service.on('operationCompleted', (e) => completed.push(e));
 
       await service.initialize();
 
-      expect(events).toEqual([
-        { type: 'started', operation: 'initialize' },
-        { type: 'completed', operation: 'initialize', success: true },
-      ]);
+      expect(started).toEqual([{ operation: 'initialize' }]);
+      expect(completed).toEqual([{ operation: 'initialize', success: true }]);
     });
 
     it('should not initialize twice', async () => {
@@ -155,9 +155,10 @@ describe('McpService', () => {
     });
 
     it('should emit operation events during registration', async () => {
-      const events: any[] = [];
-      service.on('operationStarted', (e) => events.push({ type: 'started', ...e }));
-      service.on('operationCompleted', (e) => events.push({ type: 'completed', ...e }));
+      const started: import('../mcp-service').McpServiceEvents['operationStarted'][] = [];
+      const completed: import('../mcp-service').McpServiceEvents['operationCompleted'][] = [];
+      service.on('operationStarted', (e) => started.push(e));
+      service.on('operationCompleted', (e) => completed.push(e));
 
       const config: McpConfig = {
         type: 'stdio',
@@ -185,10 +186,8 @@ describe('McpService', () => {
 
       const tool = await service.registerTool(config);
 
-      expect(events).toEqual([
-        { type: 'started', operation: 'registerTool' },
-        { type: 'completed', operation: 'registerTool', toolId: tool.id, success: true },
-      ]);
+      expect(started).toEqual([{ operation: 'registerTool' }]);
+      expect(completed).toEqual([{ operation: 'registerTool', toolId: tool.id, success: true }]);
     });
 
     it('should forward registry events', async () => {
@@ -289,10 +288,12 @@ describe('McpService', () => {
         config,
       };
 
-      toolId = mockTool.id;
-
-      // Registry cache 설정
-      (registry as any).metadataCache.set(toolId, mockTool);
+      mockRepository.create.mockResolvedValue(mockTool);
+      mockRepository.update.mockResolvedValue(mockTool);
+      mockMcpRegistry.register.mockResolvedValue(undefined);
+      const tool = await service.registerTool(config);
+      toolId = tool.id;
+      mockTool = tool;
     });
 
     it('should unregister existing tool', async () => {
@@ -311,9 +312,10 @@ describe('McpService', () => {
     });
 
     it('should emit operation events during unregistration', async () => {
-      const events: any[] = [];
-      service.on('operationStarted', (e) => events.push({ type: 'started', ...e }));
-      service.on('operationCompleted', (e) => events.push({ type: 'completed', ...e }));
+      const started: import('../mcp-service').McpServiceEvents['operationStarted'][] = [];
+      const completed: import('../mcp-service').McpServiceEvents['operationCompleted'][] = [];
+      service.on('operationStarted', (e) => started.push(e));
+      service.on('operationCompleted', (e) => completed.push(e));
 
       mockMcpRegistry.isRegistered.mockReturnValue(true);
       mockMcpRegistry.unregister.mockResolvedValue(undefined);
@@ -321,10 +323,8 @@ describe('McpService', () => {
 
       await service.unregisterTool(toolId);
 
-      expect(events).toEqual([
-        { type: 'started', operation: 'unregisterTool', toolId },
-        { type: 'completed', operation: 'unregisterTool', toolId, success: true },
-      ]);
+      expect(started).toEqual([{ operation: 'unregisterTool', toolId }]);
+      expect(completed).toEqual([{ operation: 'unregisterTool', toolId, success: true }]);
     });
   });
 
@@ -353,8 +353,12 @@ describe('McpService', () => {
         },
       };
 
-      toolId = mockTool.id;
-      (registry as any).metadataCache.set(toolId, mockTool);
+      mockRepository.create.mockResolvedValue(mockTool);
+      mockRepository.update.mockResolvedValue(mockTool);
+      mockMcpRegistry.register.mockResolvedValue(undefined);
+      const tool = await service.registerTool(mockTool.config as McpConfig);
+      toolId = tool.id;
+      mockTool = tool;
     });
 
     it('should update tool metadata', async () => {
@@ -411,8 +415,12 @@ describe('McpService', () => {
         },
       };
 
-      toolId = mockTool.id;
-      (registry as any).metadataCache.set(toolId, mockTool);
+      mockRepository.create.mockResolvedValue(mockTool);
+      mockRepository.update.mockResolvedValue(mockTool);
+      mockMcpRegistry.register.mockResolvedValue(undefined);
+      const tool = await service.registerTool(mockTool.config as McpConfig);
+      toolId = tool.id;
+      mockTool = tool;
     });
 
     it('should update connection status', async () => {
@@ -456,8 +464,12 @@ describe('McpService', () => {
         },
       };
 
-      toolId = mockTool.id;
-      (registry as any).metadataCache.set(toolId, mockTool);
+      mockRepository.create.mockResolvedValue(mockTool);
+      mockRepository.update.mockResolvedValue(mockTool);
+      mockMcpRegistry.register.mockResolvedValue(undefined);
+      const tool = await service.registerTool(mockTool.config as McpConfig);
+      toolId = tool.id;
+      mockTool = tool;
     });
 
     it('should increment usage count', async () => {
@@ -482,11 +494,12 @@ describe('McpService', () => {
   });
 
   describe('querying', () => {
+    let tools: McpToolMetadata[];
     beforeEach(async () => {
       await service.initialize();
 
       // 테스트용 도구들을 cache에 설정
-      const tools: McpToolMetadata[] = [
+      tools = [
         {
           id: 'tool-1',
           name: 'search-tool',
@@ -530,8 +543,11 @@ describe('McpService', () => {
         },
       ];
 
-      const cache = (registry as any).metadataCache;
-      tools.forEach((tool) => cache.set(tool.id, tool));
+      mockRepository.list.mockResolvedValue({ items: tools, nextCursor: '', hasMore: false });
+      // 새 Registry/Service로 초기화하여 메타데이터 재로딩
+      registry = new McpMetadataRegistry(mockRepository, mockMcpRegistry);
+      service = new McpService(mockRepository, registry);
+      await service.initialize();
     });
 
     it('should get all tools', () => {
@@ -541,7 +557,7 @@ describe('McpService', () => {
 
     it('should search tools', async () => {
       const searchResult = {
-        items: [(registry as any).metadataCache.get('tool-1')],
+        items: [tools[0]],
         nextCursor: '',
         hasMore: false,
       };
@@ -604,8 +620,8 @@ describe('McpService', () => {
     });
 
     it('should emit failed operation events on errors', async () => {
-      const events: any[] = [];
-      service.on('operationCompleted', (e) => events.push(e));
+      const completed: import('../mcp-service').McpServiceEvents['operationCompleted'][] = [];
+      service.on('operationCompleted', (e) => completed.push(e));
 
       const config: McpConfig = {
         type: 'stdio',
@@ -622,7 +638,7 @@ describe('McpService', () => {
         // Expected error
       }
 
-      expect(events).toContainEqual({
+      expect(completed).toContainEqual({
         operation: 'registerTool',
         success: false,
       });

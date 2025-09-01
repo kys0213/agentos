@@ -4,6 +4,7 @@ import { DefaultAgentSession } from '../simple-agent-session';
 import type { ChatSession, MessageHistory } from '../../chat/chat-session';
 import type { AgentMetadata } from '../agent-metadata';
 import { ChatSessionMetadata } from '../../chat/chat-session-metata';
+import { McpRegistry } from '../../tool/mcp/mcp.registery';
 
 function createChatSession(sessionId = 's-t1'): ChatSession {
   const messages: MessageHistory[] = [];
@@ -86,7 +87,7 @@ describe('DefaultAgentSession interactions', () => {
     llm.invoke.mockReturnValue(deferred);
 
     const chat = createChatSession('s-abort');
-    const mcp = { getAll: jest.fn().mockResolvedValue([]) } as any;
+    const mcp = new McpRegistry();
     const agent = new DefaultAgentSession(chat, llm, mcp, createMeta());
 
     const ac = new AbortController();
@@ -101,7 +102,7 @@ describe('DefaultAgentSession interactions', () => {
     // Abort before llm resolves
     ac.abort();
     // Now resolve LLM to let the pipeline proceed and hit abort check
-    resolveFn!({ content: { contentType: 'text', value: 'ok' }, toolCalls: [] } as any);
+    resolveFn!({ content: { contentType: 'text', value: 'ok' }, toolCalls: [] });
 
     await expect(run).rejects.toThrow('stopped by abort signal');
     expect(statusEvents).toContain('terminated');
@@ -113,7 +114,7 @@ describe('DefaultAgentSession interactions', () => {
     llm.invoke.mockImplementation(() => new Promise<LlmBridgeResponse>(() => {}));
 
     const chat = createChatSession('s-timeout');
-    const mcp = { getAll: jest.fn().mockResolvedValue([]) } as any;
+    const mcp = new McpRegistry();
     const agent = new DefaultAgentSession(chat, llm, mcp, createMeta());
 
     const errors: Error[] = [];
@@ -134,7 +135,7 @@ describe('DefaultAgentSession interactions', () => {
     llm.invoke.mockRejectedValue(new Error('boom'));
 
     const chat = createChatSession('s-error');
-    const mcp = { getAll: jest.fn().mockResolvedValue([]) } as any;
+    const mcp = new McpRegistry();
     const agent = new DefaultAgentSession(chat, llm, mcp, createMeta());
 
     const errors: Error[] = [];

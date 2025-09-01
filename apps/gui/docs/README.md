@@ -14,8 +14,10 @@
   - Patterns: `apps/gui/docs/frontend/patterns.md`
   - Testing: `apps/gui/docs/frontend/testing.md`
   - Roadmap: `apps/gui/docs/frontend/roadmap.md`
+  - See patterns/testing/roadmap for current plans; legacy consolidated plan was removed per DOCS_POLICY
 
 유지보수 메모
+
 - SSOT: RPC의 GUIDE/SPEC/TERMS는 `apps/gui/docs/rpc/` 아래 문서를 단일 출처로 사용합니다.
 - 중복 제거: 레거시 `GUI_*` 문서는 제거되었거나 통합되었습니다.
 - 표준화 계획 추적: `apps/gui/plan/DOCS_AND_PLANS_STANDARDIZATION_PLAN.md`

@@ -4,11 +4,12 @@ import {
   hasTextContent,
 } from '../../../utils/message-parser';
 import type { MessageHistory } from '@agentos/core';
+import type { MultiModalContent } from 'llm-bridge-spec';
 
-const msg = (content: any): MessageHistory => ({
+const msg = (content: MultiModalContent[] | MultiModalContent | string): MessageHistory => ({
   messageId: 'm1',
   role: 'user',
-  content,
+  content: Array.isArray(content) ? content : [],
   createdAt: new Date(),
 });
 

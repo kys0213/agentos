@@ -3,7 +3,7 @@ import { SimpleEmbedding } from '../../memory/embedding/simple-embedding';
 
 describe('Eviction respects maxNodes/maxEdges', () => {
   test('nodes do not exceed maxNodes after many inserts', () => {
-    const cfg = {
+    const cfg: import('../types').GraphConfig = {
       maxNodes: 30,
       maxEdges: 200,
       halfLifeMin: 240,
@@ -12,8 +12,10 @@ describe('Eviction respects maxNodes/maxEdges', () => {
       protectMinDegree: 1,
       enableInvertedIndex: false,
     };
-    const g = new GraphStore(cfg as any, new SimpleEmbedding());
-    for (let i = 0; i < 120; i++) g.upsertQuery(`테스트 케이스 작성 ${i}`);
+    const g = new GraphStore(cfg, new SimpleEmbedding());
+    for (let i = 0; i < 120; i++) {
+      g.upsertQuery(`테스트 케이스 작성 ${i}`);
+    }
     const stats = g.stats();
     expect(stats.nodes).toBeLessThanOrEqual(30);
     expect(stats.edges).toBeLessThanOrEqual(200);

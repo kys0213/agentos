@@ -11,15 +11,15 @@ const store = new Map<string, string>();
 const filenameOf = (p: string) => path.basename(p);
 
 jest.mock('@agentos/lang/fs', () => {
-  const ok = <T>(result: T) => ({ success: true, result });
-  const fail = (reason: unknown) => ({ success: false, reason });
+  const ok = (result: unknown) => ({ success: true as const, result });
+  const fail = (reason: unknown) => ({ success: false as const, reason });
 
-  class MockJsonFileHandler<T> {
+  class MockJsonFileHandler {
     constructor(private filePath: string) {}
-    static create<T>(filePath: string) {
-      return new MockJsonFileHandler<T>(filePath);
+    static create(filePath: string) {
+      return new MockJsonFileHandler(filePath);
     }
-    async read(options: any = {}) {
+    async read(options: { useDefaultOnError?: boolean; defaultValue?: unknown } = {}) {
       const content = store.get(this.filePath);
       if (!content) {
         if (options.useDefaultOnError && options.defaultValue !== undefined) {
@@ -34,7 +34,7 @@ jest.mock('@agentos/lang/fs', () => {
         return fail(e);
       }
     }
-    async write(data: any) {
+    async write(data: unknown) {
       try {
         store.set(this.filePath, JSON.stringify(data));
         return ok(undefined);
@@ -67,7 +67,9 @@ jest.mock('@agentos/lang/fs', () => {
     },
     async readSafe(filePath: string) {
       const v = store.get(filePath);
-      if (v === undefined) return fail(new Error('not found'));
+      if (v === undefined) {
+        return fail(new Error('not found'));
+      }
       return ok(v);
     },
     async copy(_src: string, _dest: string) {
@@ -77,7 +79,7 @@ jest.mock('@agentos/lang/fs', () => {
       return store.has(filePath);
     },
     async stat(_filePath: string) {
-      return ok({} as any);
+      return ok({} as Record<string, unknown>);
     },
   };
 

@@ -121,6 +121,7 @@
     "@types/react-dom": "^18.2.19",
     "@types/react-test-renderer": "^18.0.0",
     "@types/react-window": "^1.8.8",
+    "jest-environment-jsdom": "^29.7.0",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.21",
     "concurrently": "^8.2.2",
