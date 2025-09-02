@@ -9,6 +9,8 @@
     "dev": "tsc -w",
     "lint": "eslint src --ext .ts",
     "test": "jest",
+    "test:vitest": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "start": "node dist/index.js"
   },
