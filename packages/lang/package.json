@@ -64,7 +64,6 @@
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
     "test:vitest": "vitest run",
-    "test:watch": "vitest",
     "clean": "rm -rf dist && rm -rf esm",
     "verify:esm": "node ./scripts/verify-esm.mjs",
     "verify:cjs": "node ./scripts/verify-cjs.cjs"

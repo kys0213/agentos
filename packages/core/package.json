@@ -69,7 +69,6 @@
     "lint": "eslint src --ext .ts",
     "test": "jest",
     "test:vitest": "vitest run",
-    "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist && rm -rf esm"
   },

@@ -23,7 +23,6 @@
     "start": "electron .",
     "test": "jest --passWithNoTests",
     "test:vitest": "vitest run",
-    "test:watch": "vitest",
     "test:e2e": "playwright test --reporter=line",
     "test:e2e:line": "playwright test --reporter=line",
     "test:e2e:list": "playwright test --reporter=list",
