@@ -19,11 +19,13 @@ function buildQueries(): string[] {
   return arr.concat(arr); // duplicates to grow
 }
 
+import { vi } from 'vitest';
+
 describe('Inverted index on/off yields consistent results', () => {
   test('top-k results overlap and look consistent (snapshot)', () => {
     // Fix time for deterministic ranking
     let tick = 1_700_000_000_000;
-    const nowSpy = jest.spyOn(Date, 'now').mockImplementation(() => (tick += 1000));
+    const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => (tick += 1000));
     const base = {
       maxNodes: 1000,
       maxEdges: 4000,

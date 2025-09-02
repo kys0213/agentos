@@ -10,7 +10,7 @@ const store = new Map<string, string>();
 // Helper to extract filename from path
 const filenameOf = (p: string) => path.basename(p);
 
-jest.mock('@agentos/lang/fs', () => {
+vi.mock('@agentos/lang/fs', () => {
   const ok = (result: unknown) => ({ success: true as const, result });
   const fail = (reason: unknown) => ({ success: false as const, reason });
 
@@ -107,7 +107,7 @@ const makeManifest = (name: string): LlmManifest => ({
 describe('FileBasedLlmBridgeRegistry (mocked FS)', () => {
   beforeEach(() => {
     store.clear();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('register/list/get/active/unregister lifecycle', async () => {

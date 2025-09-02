@@ -1,4 +1,5 @@
-import { mock } from 'jest-mock-extended';
+import { mock, type MockProxy } from 'vitest-mock-extended';
+import { vi } from 'vitest';
 import { LlmUsage, Message } from 'llm-bridge-spec';
 import { Checkpoint, CompressStrategy, MessageHistory } from '../../chat-session';
 import { FileBasedChatSession } from '../file-based-chat-session';
@@ -7,10 +8,10 @@ import { FileBasedSessionMetadata } from '../file-based-session.metadata';
 
 describe('FileBasedChatSession', () => {
   let session: FileBasedChatSession;
-  let mockStorage: jest.Mocked<FileBasedSessionStorage>;
+  let mockStorage: MockProxy<FileBasedSessionStorage>;
   let mockPreset: FileBasedSessionMetadata;
-  let mockTitleCompressor: jest.Mocked<CompressStrategy>;
-  let mockHistoryCompressor: jest.Mocked<CompressStrategy>;
+  let mockTitleCompressor: MockProxy<CompressStrategy>;
+  let mockHistoryCompressor: MockProxy<CompressStrategy>;
 
   beforeEach(() => {
     mockStorage = mock<FileBasedSessionStorage>();
@@ -148,14 +149,14 @@ describe('FileBasedChatSession', () => {
       ];
 
       // 첫 메시지 생성 시각 고정
-      jest.useFakeTimers();
-      jest.setSystemTime(firstCreatedAt);
+      vi.useFakeTimers();
+      vi.setSystemTime(firstCreatedAt);
       await session.appendMessage(testMessages[0]);
       await session.appendMessage(testMessages[1]);
       await session.appendMessage(testMessages[2]);
 
       await session.commit();
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       expect(mockStorage.saveCheckpoint).toHaveBeenCalledWith(
         expect.any(String),

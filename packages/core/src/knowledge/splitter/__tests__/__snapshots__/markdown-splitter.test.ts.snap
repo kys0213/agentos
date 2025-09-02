@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`MarkdownSplitter splits by headings and sliding windows (dummy.md) 1`] = `
+exports[`MarkdownSplitter > splits by headings and sliding windows (dummy.md) 1`] = `
 [
   {
     "anchors": [

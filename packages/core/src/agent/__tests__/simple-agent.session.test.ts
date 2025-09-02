@@ -1,4 +1,4 @@
-import { mock } from 'jest-mock-extended';
+import { mock } from 'vitest-mock-extended';
 import type { LlmBridge, UserMessage, LlmBridgeResponse } from 'llm-bridge-spec';
 import { SimpleAgent } from '../simple-agent';
 import { McpRegistry } from '../../tool/mcp/mcp.registery';

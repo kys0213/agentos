@@ -1,11 +1,11 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Inject } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { McpService } from '@agentos/core';
 import { GetToolDto, InvokeToolDto, type Resp } from './dto/mcp.dto';
 
 @Controller()
 export class McpController {
-  constructor(private readonly mcp: McpService) {}
+  constructor(@Inject(McpService) private readonly mcp: McpService) {}
 
   @EventPattern('mcp.getTool')
   async getTool(@Payload() dto: GetToolDto) {

@@ -1,13 +1,13 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
-import { mock, MockProxy } from 'jest-mock-extended';
+import { mock, MockProxy } from 'vitest-mock-extended';
 import { Mcp } from '../mcp';
 import { McpConfig } from '../mcp-config';
 import { McpEvent } from '../mcp-event';
 
 // Mock dependencies
-jest.mock('@modelcontextprotocol/sdk/client/index');
+vi.mock('@modelcontextprotocol/sdk/client/index');
 
 describe('Mcp', () => {
   let mockClient: MockProxy<Client>;
@@ -17,7 +17,7 @@ describe('Mcp', () => {
 
   beforeEach(() => {
     // Reset all mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Setup mock client
     mockClient = mock<Client>();
@@ -182,7 +182,7 @@ describe('Mcp', () => {
 
   describe('event handling', () => {
     it('should emit connected event on successful connection', async () => {
-      const connectedHandler = jest.fn();
+      const connectedHandler = vi.fn();
       mcp.on(McpEvent.CONNECTED, connectedHandler);
 
       await mcp.connect();
@@ -190,7 +190,7 @@ describe('Mcp', () => {
     });
 
     it('should emit disconnected event on successful disconnection', async () => {
-      const disconnectedHandler = jest.fn();
+      const disconnectedHandler = vi.fn();
       mcp.on(McpEvent.DISCONNECTED, disconnectedHandler);
 
       await mcp.connect();

@@ -1,4 +1,4 @@
-import { mock } from 'jest-mock-extended';
+import { mock } from 'vitest-mock-extended';
 import type { LlmBridge, LlmBridgeResponse } from 'llm-bridge-spec';
 import type { ChatManager } from '../../chat/chat.manager';
 import type { ChatSession } from '../../chat/chat-session';

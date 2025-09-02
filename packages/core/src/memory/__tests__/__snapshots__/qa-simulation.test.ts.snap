@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`QA agent scenario simulation builds a meaningful graph and promotions work 1`] = `
+exports[`QA agent scenario simulation > builds a meaningful graph and promotions work 1`] = `
 {
   "sRes": [
     {
@@ -218,7 +218,7 @@ exports[`QA agent scenario simulation builds a meaningful graph and promotions w
 }
 `;
 
-exports[`QA agent scenario simulation builds a meaningful graph and promotions work 2`] = `
+exports[`QA agent scenario simulation > builds a meaningful graph and promotions work 2`] = `
 {
   "aRes": [
     {
