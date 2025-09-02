@@ -49,7 +49,7 @@ export class GeneratedMcpController {
     const pg = toCorePagination((payload as any)?.pg);
     const query = toCoreQuery((payload as any)?.query);
     const page = await this.usage.list(query, pg);
-    return page.items as any;
+    return page.items as unknown as z.output<(typeof C.methods)['usage.getLogs']['response']>;
   }
 
   @EventPattern('mcp.usage.getStats')
@@ -58,7 +58,9 @@ export class GeneratedMcpController {
     payload: z.input<(typeof C.methods)['usage.getStats']['payload']>
   ): Promise<z.output<(typeof C.methods)['usage.getStats']['response']>> {
     const query = toCoreQuery((payload as any)?.query);
-    return (await this.usage.getStats(query)) as any;
+    return (await this.usage.getStats(query)) as unknown as z.output<
+      (typeof C.methods)['usage.getStats']['response']
+    >;
   }
 
   @EventPattern('mcp.usage.getHourlyStats')
@@ -92,7 +94,7 @@ export class GeneratedMcpController {
       cursor = page.nextCursor;
     }
     const hourlyData: Array<[number, number]> = buckets.map((c, h) => [h, c]);
-    return { hourlyData } as any;
+    return { hourlyData };
   }
 
   @EventPattern('mcp.usage.clear')
@@ -101,12 +103,14 @@ export class GeneratedMcpController {
     payload: z.input<(typeof C.methods)['usage.clear']['payload']>
   ): Promise<z.output<(typeof C.methods)['usage.clear']['response']>> {
     // Optional clear support placeholder
-    return { success: true } as any;
+    return { success: true };
   }
 
   @EventPattern('mcp.usage.events')
   async usage_events(): Promise<void> {
-    return this.outbound.ofType('mcp.usage.').pipe(map((ev) => ev)) as any;
+    // Side-effect: set up stream source; transport will subscribe via channel
+    this.outbound.ofType('mcp.usage.').pipe(map((ev) => ev));
+    return;
   }
 }
 

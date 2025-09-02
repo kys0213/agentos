@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { BridgeContract as C } from '../../../shared/rpc/contracts/bridge.contract';
 import type { LlmBridgeRegistry } from '@agentos/core';
+import type { LlmManifest } from 'llm-bridge-spec';
 import { LLM_BRIDGE_REGISTRY_TOKEN } from '../../common/model/constants';
 
 @Controller()
@@ -18,13 +19,13 @@ export class GeneratedBridgeController {
   ): Promise<z.output<(typeof C.methods)['register']['response']>> {
     try {
       const id = await this.registry.register(
-        payload.manifest as any,
+        payload.manifest as LlmManifest,
         (payload.config ?? {}) as Record<string, unknown>,
         payload.id ? { id: payload.id } : undefined
       );
       return { success: true, id };
     } catch (e: unknown) {
-      return { success: false, error: e instanceof Error ? e.message : String(e) } as any;
+      return { success: false, error: e instanceof Error ? e.message : String(e) };
     }
   }
 
@@ -35,9 +36,9 @@ export class GeneratedBridgeController {
   ): Promise<z.output<(typeof C.methods)['unregister']['response']>> {
     try {
       await this.registry.unregister(payload);
-      return { success: true } as any;
+      return { success: true };
     } catch (e: unknown) {
-      return { success: false, error: e instanceof Error ? e.message : String(e) } as any;
+      return { success: false, error: e instanceof Error ? e.message : String(e) };
     }
   }
 
@@ -48,9 +49,9 @@ export class GeneratedBridgeController {
   ): Promise<z.output<(typeof C.methods)['switch']['response']>> {
     try {
       await this.registry.setActiveId(payload);
-      return { success: true } as any;
+      return { success: true };
     } catch (e: unknown) {
-      return { success: false, error: e instanceof Error ? e.message : String(e) } as any;
+      return { success: false, error: e instanceof Error ? e.message : String(e) };
     }
   }
 
@@ -61,13 +62,13 @@ export class GeneratedBridgeController {
       return null;
     }
     const manifest = await this.registry.getManifest(id);
-    return manifest ? ({ id, manifest } as any) : null;
+    return manifest ? { id, manifest } : null;
   }
 
   @EventPattern('bridge.list')
   async list(): Promise<z.output<(typeof C.methods)['list']['response']>> {
     const list = await this.registry.listSummaries();
-    return list.map((x) => ({ id: x.id })) as any;
+    return list.map((x) => ({ id: x.id }));
   }
 
   @EventPattern('bridge.get-config')
@@ -76,6 +77,6 @@ export class GeneratedBridgeController {
     payload: z.input<(typeof C.methods)['get-config']['payload']>
   ): Promise<z.output<(typeof C.methods)['get-config']['response']>> {
     const cfg = await this.registry.getManifest(payload);
-    return (cfg as any) ?? null;
+    return cfg ?? null;
   }
 }
