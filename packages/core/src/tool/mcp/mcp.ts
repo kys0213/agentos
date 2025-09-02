@@ -148,11 +148,12 @@ export class Mcp extends EventEmitter {
       throw new Error('Tool call failed reason: ' + error);
     }
 
-    const contents = isArray(result.content)
-      ? (result.content as Array<McpContent>)
-      : result.content != null
-        ? ([result.content as McpContent] as Array<McpContent>)
-        : ([] as Array<McpContent>);
+    let contents: Array<McpContent> = [];
+    if (isArray(result.content)) {
+      contents = result.content as Array<McpContent>;
+    } else if (result.content != null) {
+      contents = [result.content as McpContent];
+    }
 
     const out: InvokeToolResult = {
       isError: result.isError === true,
