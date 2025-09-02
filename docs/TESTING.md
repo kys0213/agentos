@@ -1,17 +1,17 @@
 # Testing Guide
 
-Unit tests use **Jest** with `ts-jest`. Test files live under `__tests__` directories.
+Unit tests use **Vitest**. Test files live under `__tests__` directories.
 
 Run all tests from the repository root:
 
 ```bash
-pnpm test
+pnpm -r test
 ```
 
 For watch mode during development:
 
 ```bash
-pnpm dev
+pnpm -r test:watch
 ```
 
 ## 테스트 철학 (Testing Philosophy)
@@ -103,7 +103,7 @@ export class MockMcpToolRepository implements McpToolRepository {
 ```typescript
 // 테스트 파일 내에서 복잡한 Mock 구현하지 말 것
 const mockRepo = {
-  get: jest.fn(),
+  get: vi.fn(),
   // ... 복잡한 구현들 (권장하지 않음)
 };
 ```
@@ -143,12 +143,12 @@ describe('McpMetadataRegistry', () => {
 
 ## 🔧 Mock 패턴 가이드라인
 
-### 1. jest-mock-extended 활용
+### 1. vitest-mock-extended 활용
 
 **인터페이스 Mock 생성**
 
 ```typescript
-import { mock } from 'jest-mock-extended';
+import { mock } from 'vitest-mock-extended';
 
 const mockMcpRegistry: ReturnType<typeof mock<McpRegistry>> = mock<McpRegistry>();
 ```
@@ -192,23 +192,23 @@ export class MockMcpToolRepository implements McpToolRepository {
 
 #### Service Layer
 
-- **Jest Function Mock**: 단순한 jest.fn() Mock 활용
+- **Vitest Function Mock**: 단순한 vi.fn() Mock 활용
 - **기본 동작 설정**: 필요한 경우에만 mockResolvedValue 등으로 설정
 
 ```typescript
 const createMockMcpRegistry = () => ({
-  register: jest.fn(),
-  unregister: jest.fn(),
-  get: jest.fn().mockResolvedValue(null),
-  getAll: jest.fn().mockResolvedValue([]),
-  isRegistered: jest.fn().mockReturnValue(false),
+  register: vi.fn(),
+  unregister: vi.fn(),
+  get: vi.fn().mockResolvedValue(null),
+  getAll: vi.fn().mockResolvedValue([]),
+  isRegistered: vi.fn().mockReturnValue(false),
   // ...
 });
 ```
 
 #### Protocol Layer
 
-- **External Library Mock**: 외부 라이브러리는 jest-mock-extended 활용
+- **External Library Mock**: 외부 라이브러리는 vitest-mock-extended 활용
 - **최소 구현**: 테스트에 필요한 메서드만 Mock
 
 ## 📝 테스트 작성 패턴
@@ -217,16 +217,16 @@ const createMockMcpRegistry = () => ({
 
 ```typescript
 // 1. Import 섹션
-import { mock } from 'jest-mock-extended';
+import { mock } from 'vitest-mock-extended';
 import { Subject } from './subject-to-test';
 import { Dependency } from './dependency';
 import { MockRepository } from './fixture'; // Fixture 활용
 
 // 2. Mock 팩토리 함수들
-const createMockDependency = (): jest.Mocked<Dependency> => {
+const createMockDependency = (): Dependency => {
   return {
-    method: jest.fn(),
-    asyncMethod: jest.fn().mockResolvedValue(defaultValue),
+    method: vi.fn(),
+    asyncMethod: vi.fn().mockResolvedValue(defaultValue),
     // ... 모든 메서드 구현
   };
 };
@@ -234,7 +234,7 @@ const createMockDependency = (): jest.Mocked<Dependency> => {
 // 3. 테스트 Suite
 describe('Subject', () => {
   let subject: Subject;
-  let mockDependency: jest.Mocked<Dependency>;
+  let mockDependency: Dependency;
 
   beforeEach(async () => {
     mockDependency = createMockDependency();
@@ -352,8 +352,8 @@ it('should handle connection failure gracefully', async () => {
 
 - Test files must end with `.test.ts`
 - Test files live under `__tests__` directories
-- Use **Jest** with `ts-jest` configuration
-- Use **jest-mock-extended** for creating type-safe mocks
+- Use **Vitest** with per-package `vitest.config.ts`
+- Use **vitest-mock-extended** for creating type-safe mocks
 - Write deterministic unit tests using mocks
 
 ### 2. 코어 모듈 테스트 작성
@@ -394,7 +394,7 @@ describe('parseJson', () => {
 
 ```typescript
 // packages/core/src/mcp/__tests__/mcp.test.ts
-import { mock, MockProxy } from 'jest-mock-extended';
+import { mock, MockProxy } from 'vitest-mock-extended';
 
 describe('Mcp', () => {
   let mockClient: MockProxy<Client>;
@@ -403,12 +403,12 @@ describe('Mcp', () => {
 
   beforeEach(() => {
     // Reset all mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
-    // Setup mock client using jest-mock-extended
+    // Setup mock client using vitest-mock-extended
     mockClient = mock<Client>();
 
-    // Setup mock transport using jest-mock-extended
+    // Setup mock transport using vitest-mock-extended
     mockTransport = mock<Transport>();
 
     // Create Mcp instance
@@ -438,14 +438,14 @@ describe('Mcp', () => {
 ```typescript
 // packages/core/src/chat/file/__tests__/file-based-chat-session.test.ts
 import { promises as fs } from 'fs';
-import { MockProxy } from 'jest-mock-extended';
+import { vi } from 'vitest';
 
-jest.mock('fs/promises');
-const mockFs = fs as MockProxy<typeof fs>;
+vi.mock('fs/promises');
+const mockFs = vi.mocked(fs);
 
 describe('FileBasedChatSession', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should save session to file', async () => {
@@ -476,22 +476,22 @@ describe('FileBasedChatSession', () => {
 // packages/core/src/common/scheduler/__tests__/scheduler.test.ts
 describe('Scheduler', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('should execute callback after specified time', () => {
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
     const scheduler = new Scheduler();
 
     scheduler.schedule(mockCallback, 1000);
 
     expect(mockCallback).not.toHaveBeenCalled();
 
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
 
     expect(mockCallback).toHaveBeenCalledTimes(1);
   });
@@ -503,10 +503,10 @@ describe('Scheduler', () => {
 ```typescript
 // packages/core/src/mcp/__tests__/mcp-transport.test.ts
 import fetch from 'node-fetch';
-import { MockProxy } from 'jest-mock-extended';
+import { vi } from 'vitest';
 
-jest.mock('node-fetch');
-const mockFetch = fetch as MockProxy<typeof fetch>;
+vi.mock('node-fetch');
+const mockFetch = vi.mocked(fetch);
 
 describe('McpTransport', () => {
   it('should send HTTP request', async () => {
@@ -568,7 +568,7 @@ src/
 - [ ] 테스트 간 격리가 보장됨
 - [ ] 의미 있는 테스트 이름 사용
 - [ ] Given-When-Then 패턴 적용
-- [ ] jest-mock-extended 활용한 타입 안전 Mock
+- [ ] vitest-mock-extended 활용한 타입 안전 Mock
 
 ## ✨ 베스트 프랙티스
 
@@ -715,20 +715,20 @@ pnpm test
 pnpm --filter @agentos/core test
 
 # 워치 모드
-pnpm dev
+pnpm -r test:watch
 
 # 커버리지 포함
-pnpm test --coverage
+vitest run --coverage
 ```
 
 ### 2. CI/CD 파이프라인
 
 ```bash
 # 코어 모듈 100% 커버리지 검증
-pnpm test --coverage --coverageThreshold='{"global":{"branches":100,"functions":100,"lines":100,"statements":100}}'
+vitest run --coverage
 
 # 병렬 테스트 실행
-pnpm test --maxWorkers=4
+pnpm -r test
 ```
 
 ## 성능 고려사항
@@ -751,7 +751,7 @@ pnpm test --maxWorkers=4
 
 - **비결정적 테스트**: 외부 의존성 mocking 확인
 - **테스트 간 간섭**: beforeEach/afterEach에서 상태 초기화
-- **타이밍 이슈**: jest.useFakeTimers() 사용
+- **타이밍 이슈**: vi.useFakeTimers() 사용
 
 ### 2. 디버깅 팁
 
