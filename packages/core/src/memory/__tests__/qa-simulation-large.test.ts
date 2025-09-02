@@ -82,11 +82,13 @@ function buildDataset(): string[] {
     .flatMap(() => out);
 }
 
+import { vi } from 'vitest';
+
 describe('QA agent large simulation (~100 queries)', () => {
   test('graph forms clusters and promotions carry weights [snapshot]', async () => {
     // Fix time to ensure deterministic ranks/scores
     let tick = 1_700_000_000_000;
-    const nowSpy = jest.spyOn(Date, 'now').mockImplementation(() => (tick += 1000));
+    const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => (tick += 1000));
     const o = new MemoryOrchestrator('qa-agent-large', cfg);
     const sid = 's-qa-large';
     const dataset = buildDataset().slice(0, 100);

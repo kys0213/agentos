@@ -67,8 +67,8 @@
     "build:esm": "tsc -p tsconfig.esm.json",
     "dev": "tsc -w",
     "lint": "eslint src --ext .ts",
-    "test": "jest",
-    "test:vitest": "vitest run",
+    "test": "vitest run",
+    "test:vitest": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist && rm -rf esm"
   },

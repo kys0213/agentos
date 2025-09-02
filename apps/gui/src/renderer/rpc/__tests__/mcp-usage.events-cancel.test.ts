@@ -3,7 +3,7 @@ import type { FrameTransport } from '../../../shared/rpc/transport';
 import type { RpcFrame } from '../../../shared/rpc/rpc-frame';
 import { McpUsageRpcService } from '../services/mcp-usage.service';
 
-jest.setTimeout(10000);
+// Timeout configured via vitest.config; no per-suite override
 
 describe('McpUsageRpcService.subscribeToUsageUpdates cancel semantics', () => {
   it('posts can on unsubscribe and stops receiving events', async () => {

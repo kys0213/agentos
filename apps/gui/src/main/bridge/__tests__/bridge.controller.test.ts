@@ -8,12 +8,12 @@ import type { Resp } from '../dto/bridge.dto';
 describe('BridgeController', () => {
   it('register returns success wrapper with id', async () => {
     const registry = {
-      register: jest.fn().mockResolvedValue('id-1'),
-      listSummaries: jest.fn(),
-      getActiveId: jest.fn(),
-      getManifest: jest.fn(),
-      unregister: jest.fn(),
-      setActiveId: jest.fn(),
+      register: vi.fn().mockResolvedValue('id-1'),
+      listSummaries: vi.fn(),
+      getActiveId: vi.fn(),
+      getManifest: vi.fn(),
+      unregister: vi.fn(),
+      setActiveId: vi.fn(),
     };
 
     const mod = await Test.createTestingModule({
@@ -51,12 +51,12 @@ describe('BridgeController', () => {
 
   it('unregister wraps errors', async () => {
     const registry = {
-      unregister: jest.fn().mockRejectedValue(new Error('nope')),
-      listSummaries: jest.fn(),
-      getActiveId: jest.fn(),
-      getManifest: jest.fn(),
-      register: jest.fn(),
-      setActiveId: jest.fn(),
+      unregister: vi.fn().mockRejectedValue(new Error('nope')),
+      listSummaries: vi.fn(),
+      getActiveId: vi.fn(),
+      getManifest: vi.fn(),
+      register: vi.fn(),
+      setActiveId: vi.fn(),
     };
 
     const mod = await Test.createTestingModule({
@@ -89,12 +89,12 @@ describe('BridgeController', () => {
       },
     };
     const registry = {
-      getActiveId: jest.fn().mockResolvedValueOnce(null).mockResolvedValueOnce('id-1'),
-      getManifest: jest.fn().mockResolvedValue(manifest),
-      listSummaries: jest.fn(),
-      unregister: jest.fn(),
-      register: jest.fn(),
-      setActiveId: jest.fn(),
+      getActiveId: vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce('id-1'),
+      getManifest: vi.fn().mockResolvedValue(manifest),
+      listSummaries: vi.fn(),
+      unregister: vi.fn(),
+      register: vi.fn(),
+      setActiveId: vi.fn(),
     };
 
     const mod = await Test.createTestingModule({
@@ -112,12 +112,12 @@ describe('BridgeController', () => {
 
   it('switchActive wraps success/error', async () => {
     const registryOk = {
-      setActiveId: jest.fn().mockResolvedValue(undefined),
-      listSummaries: jest.fn(),
-      getActiveId: jest.fn(),
-      getManifest: jest.fn(),
-      unregister: jest.fn(),
-      register: jest.fn(),
+      setActiveId: vi.fn().mockResolvedValue(undefined),
+      listSummaries: vi.fn(),
+      getActiveId: vi.fn(),
+      getManifest: vi.fn(),
+      unregister: vi.fn(),
+      register: vi.fn(),
     };
     const modOk = await Test.createTestingModule({
       controllers: [BridgeController],
@@ -128,12 +128,12 @@ describe('BridgeController', () => {
     expect(ok.success).toBe(true);
 
     const registryErr = {
-      setActiveId: jest.fn().mockRejectedValue(new Error('bad')),
-      listSummaries: jest.fn(),
-      getActiveId: jest.fn(),
-      getManifest: jest.fn(),
-      unregister: jest.fn(),
-      register: jest.fn(),
+      setActiveId: vi.fn().mockRejectedValue(new Error('bad')),
+      listSummaries: vi.fn(),
+      getActiveId: vi.fn(),
+      getManifest: vi.fn(),
+      unregister: vi.fn(),
+      register: vi.fn(),
     };
     const modErr = await Test.createTestingModule({
       controllers: [BridgeController],

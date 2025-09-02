@@ -103,7 +103,7 @@ export class MockMcpToolRepository implements McpToolRepository {
 ```typescript
 // 테스트 파일 내에서 복잡한 Mock 구현하지 말 것
 const mockRepo = {
-  get: jest.fn(),
+  get: vi.fn(),
   // ... 복잡한 구현들 (권장하지 않음)
 };
 ```
@@ -148,7 +148,7 @@ describe('McpMetadataRegistry', () => {
 **인터페이스 Mock 생성**
 
 ```typescript
-import { mock } from 'jest-mock-extended';
+import { mock } from 'vitest-mock-extended';
 
 const mockMcpRegistry: ReturnType<typeof mock<McpRegistry>> = mock<McpRegistry>();
 ```
@@ -223,10 +223,10 @@ import { Dependency } from './dependency';
 import { MockRepository } from './fixture'; // Fixture 활용
 
 // 2. Mock 팩토리 함수들
-const createMockDependency = (): jest.Mocked<Dependency> => {
+const createMockDependency = (): Dependency => {
   return {
-    method: jest.fn(),
-    asyncMethod: jest.fn().mockResolvedValue(defaultValue),
+    method: vi.fn(),
+    asyncMethod: vi.fn().mockResolvedValue(defaultValue),
     // ... 모든 메서드 구현
   };
 };
@@ -394,7 +394,7 @@ describe('parseJson', () => {
 
 ```typescript
 // packages/core/src/mcp/__tests__/mcp.test.ts
-import { mock, MockProxy } from 'jest-mock-extended';
+import { mock, MockProxy } from 'vitest-mock-extended';
 
 describe('Mcp', () => {
   let mockClient: MockProxy<Client>;
@@ -403,7 +403,7 @@ describe('Mcp', () => {
 
   beforeEach(() => {
     // Reset all mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Setup mock client using jest-mock-extended
     mockClient = mock<Client>();
@@ -440,8 +440,8 @@ describe('Mcp', () => {
 import { promises as fs } from 'fs';
 import { MockProxy } from 'jest-mock-extended';
 
-jest.mock('fs/promises');
-const mockFs = fs as MockProxy<typeof fs>;
+vi.mock('fs/promises');
+const mockFs = vi.mocked(fs);
 
 describe('FileBasedChatSession', () => {
   beforeEach(() => {
@@ -476,22 +476,22 @@ describe('FileBasedChatSession', () => {
 // packages/core/src/common/scheduler/__tests__/scheduler.test.ts
 describe('Scheduler', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('should execute callback after specified time', () => {
-    const mockCallback = jest.fn();
+    const mockCallback = vi.fn();
     const scheduler = new Scheduler();
 
     scheduler.schedule(mockCallback, 1000);
 
     expect(mockCallback).not.toHaveBeenCalled();
 
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
 
     expect(mockCallback).toHaveBeenCalledTimes(1);
   });
@@ -503,10 +503,10 @@ describe('Scheduler', () => {
 ```typescript
 // packages/core/src/mcp/__tests__/mcp-transport.test.ts
 import fetch from 'node-fetch';
-import { MockProxy } from 'jest-mock-extended';
+import { vi } from 'vitest';
 
-jest.mock('node-fetch');
-const mockFetch = fetch as MockProxy<typeof fetch>;
+vi.mock('node-fetch');
+const mockFetch = vi.mocked(fetch);
 
 describe('McpTransport', () => {
   it('should send HTTP request', async () => {

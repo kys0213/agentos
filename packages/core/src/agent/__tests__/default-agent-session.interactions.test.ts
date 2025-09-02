@@ -1,4 +1,4 @@
-import { mock } from 'jest-mock-extended';
+import { mock } from 'vitest-mock-extended';
 import type { LlmBridge, LlmBridgeResponse, UserMessage } from 'llm-bridge-spec';
 import { DefaultAgentSession } from '../simple-agent-session';
 import type { ChatSession, MessageHistory } from '../../chat/chat-session';

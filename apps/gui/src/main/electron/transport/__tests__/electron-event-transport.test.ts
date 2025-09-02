@@ -107,7 +107,7 @@ describe('ElectronEventTransport', () => {
     const t = new ElectronEventTransport(ipcMainMock);
     t.listen(() => {});
 
-    const handler = jest.fn().mockImplementation(() => {
+    const handler = vi.fn().mockImplementation(() => {
       throw new CoreError('agent', 'INVALID_ARGUMENT', 'bad input', { details: { x: 1 } });
     });
     t.registerHandler('boom', handler);
