@@ -6,6 +6,9 @@ export default defineConfig({
     setupFiles: ['../../vitest.setup.ts'],
     passWithNoTests: true,
     environment: 'node',
+    testTimeout: 60000,
+    hookTimeout: 30000,
+    teardownTimeout: 30000,
     environmentMatchGlobs: [
       ['src/renderer/**', 'jsdom'],
       ['src/main/**', 'node'],

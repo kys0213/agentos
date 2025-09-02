@@ -6,6 +6,9 @@ export default defineConfig({
     globals: true,
     setupFiles: ['../../vitest.setup.ts'],
     passWithNoTests: true,
+    testTimeout: 60000,
+    hookTimeout: 30000,
+    teardownTimeout: 30000,
     include: ['src/**/__tests__/**/*.test.ts'],
     coverage: {
       provider: 'v8',

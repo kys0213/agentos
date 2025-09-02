@@ -10,14 +10,3 @@ exports[`MemoryOrchestrator > hybrid search dedupes by canonicalKey across sessi
   },
 ]
 `;
-
-exports[`MemoryOrchestrator hybrid search dedupes by canonicalKey across session and agent 1`] = `
-[
-  {
-    "canonicalKey": "ck:nfc_v1:fnv1a64_demo:i8y8gt",
-    "from": "session",
-    "score": 0.57,
-    "text": "AgentOS MVP 설계",
-  },
-]
-`;
