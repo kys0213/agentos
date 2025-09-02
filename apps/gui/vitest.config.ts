@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     setupFiles: ['../../vitest.setup.ts'],
+    passWithNoTests: true,
     environment: 'node',
     environmentMatchGlobs: [
       ['src/renderer/**', 'jsdom'],
@@ -19,4 +20,3 @@ export default defineConfig({
     },
   },
 });
-

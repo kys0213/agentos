@@ -61,14 +61,14 @@ describe('RpcEndpoint', () => {
   });
 
   test('request times out when no response', async () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     const tr = new MockTransport();
     const ep = new RpcEndpoint(tr, { timeoutMs: 20 });
     ep.start();
     const p = ep.request('slow', {});
-    jest.advanceTimersByTime(25);
+    vi.advanceTimersByTime(25);
     await expect(p).rejects.toThrow(/RPC_TIMEOUT/);
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   test('stream yields nxt frames until end', async () => {

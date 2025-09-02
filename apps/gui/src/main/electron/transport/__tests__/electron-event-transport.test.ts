@@ -4,15 +4,15 @@ import { CoreError } from '@agentos/core';
 import type { RpcFrame } from '../../../../shared/rpc/rpc-frame';
 import { createIpcMainFixture, flush } from '../test-helpers/fixture';
 import { frames, clear } from '../test-helpers/electron-mock-store';
-jest.mock('electron', () => {
+vi.mock('electron', () => {
   const win = {
     isDestroyed: () => false,
     webContents: { send: (_ch: string, frame: RpcFrame) => frames.push(frame) },
   } as const;
   return {
     BrowserWindow: {
-      fromId: jest.fn(() => win),
-      getAllWindows: jest.fn(() => [win]),
+      fromId: vi.fn(() => win),
+      getAllWindows: vi.fn(() => [win]),
     },
   };
 });
@@ -30,7 +30,7 @@ describe('ElectronEventTransport', () => {
     t.listen(() => {});
 
     // register handler
-    const handler = jest.fn().mockResolvedValue('pong');
+    const handler = vi.fn().mockResolvedValue('pong');
     t.registerHandler('ping', handler);
 
     emit({ kind: 'req', cid: 'c1', method: 'ping', payload: 42 });
@@ -42,7 +42,7 @@ describe('ElectronEventTransport', () => {
     const t = new ElectronEventTransport(ipcMainMock);
     t.listen(() => {});
 
-    const handler = jest.fn().mockReturnValue(of('a', 'b').pipe(take(2)));
+    const handler = vi.fn().mockReturnValue(of('a', 'b').pipe(take(2)));
     t.registerHandler('stream.obs', handler);
 
     emit({ kind: 'req', cid: 'c2', method: 'stream.obs' });
@@ -60,7 +60,7 @@ describe('ElectronEventTransport', () => {
       yield 1;
       yield 2;
     }
-    const handler = jest.fn().mockReturnValue(gen());
+    const handler = vi.fn().mockReturnValue(gen());
     t.registerHandler('stream.gen', handler);
 
     emit({ kind: 'req', cid: 'c3', method: 'stream.gen' });
@@ -75,7 +75,7 @@ describe('ElectronEventTransport', () => {
     t.listen(() => {});
 
     const subj = new Subject<number>();
-    const handler = jest.fn().mockReturnValue(subj.asObservable());
+    const handler = vi.fn().mockReturnValue(subj.asObservable());
     t.registerHandler('stream.cancel', handler);
 
     emit({ kind: 'req', cid: 'c4', method: 'stream.cancel' });
@@ -123,7 +123,7 @@ describe('ElectronEventTransport', () => {
     const t = new ElectronEventTransport(ipcMainMock);
     t.listen(() => {});
 
-    const handler = jest.fn().mockResolvedValue('ok');
+    const handler = vi.fn().mockResolvedValue('ok');
     t.registerHandler('broadcast.ping', handler, { broadcast: true });
 
     emit({ kind: 'req', cid: 'c7', method: 'broadcast.ping' });

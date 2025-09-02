@@ -5,6 +5,7 @@ export default defineConfig({
     environment: 'node',
     globals: true,
     setupFiles: ['../../vitest.setup.ts'],
+    passWithNoTests: true,
     include: ['src/**/__tests__/**/*.test.ts'],
     coverage: {
       provider: 'v8',
@@ -12,4 +13,3 @@ export default defineConfig({
     },
   },
 });
-

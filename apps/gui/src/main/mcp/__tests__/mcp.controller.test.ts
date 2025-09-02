@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { Test } from '@nestjs/testing';
 import { McpController } from '../mcp.controller';
 import { McpService } from '@agentos/core';
@@ -6,10 +7,10 @@ import type { GetToolDto, InvokeToolDto, Resp } from '../dto/mcp.dto';
 
 describe('McpController', () => {
   it('invokes tool via McpService and wraps response', async () => {
-    const executeToolMock: jest.MockedFunction<McpService['executeTool']> = jest
+    const executeToolMock: McpService['executeTool'] = vi
       .fn()
       .mockResolvedValue({ isError: false, contents: [], resumptionToken: undefined });
-    const getToolMock: jest.MockedFunction<McpService['getTool']> = jest.fn().mockReturnValue(null);
+    const getToolMock: McpService['getTool'] = vi.fn().mockReturnValue(null);
     const mockMcp: Pick<McpService, 'executeTool' | 'getTool'> = {
       executeTool: executeToolMock,
       getTool: getToolMock,
@@ -27,10 +28,10 @@ describe('McpController', () => {
   });
 
   it('wraps error as { success: false }', async () => {
-    const executeToolMock: jest.MockedFunction<McpService['executeTool']> = jest
+    const executeToolMock: McpService['executeTool'] = vi
       .fn()
       .mockRejectedValue(new Error('boom'));
-    const getToolMock: jest.MockedFunction<McpService['getTool']> = jest.fn().mockReturnValue(null);
+    const getToolMock: McpService['getTool'] = vi.fn().mockReturnValue(null);
     const mockMcp: Pick<McpService, 'executeTool' | 'getTool'> = {
       executeTool: executeToolMock,
       getTool: getToolMock,
@@ -56,10 +57,10 @@ describe('McpController', () => {
       status: 'connected',
       usageCount: 0,
     };
-    const getToolMock: jest.MockedFunction<McpService['getTool']> = jest
+    const getToolMock: McpService['getTool'] = vi
       .fn()
       .mockReturnValue(toolMeta);
-    const executeToolMock: jest.MockedFunction<McpService['executeTool']> = jest.fn();
+    const executeToolMock: McpService['executeTool'] = vi.fn();
     const mockMcp: Pick<McpService, 'executeTool' | 'getTool'> = {
       getTool: getToolMock,
       executeTool: executeToolMock,

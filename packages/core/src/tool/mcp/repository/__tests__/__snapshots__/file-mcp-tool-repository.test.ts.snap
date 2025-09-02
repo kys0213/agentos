@@ -1,4 +1,21 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`FileMcpToolRepository > create > should create a new MCP tool metadata 1`] = `
+{
+  "args": [
+    "script.js",
+  ],
+  "command": "node",
+  "cwd": undefined,
+  "env": {
+    "API_KEY": "***masked***",
+  },
+  "name": "test-tool",
+  "network": undefined,
+  "type": "stdio",
+  "version": "1.0.0",
+}
+`;
 
 exports[`FileMcpToolRepository create should create a new MCP tool metadata 1`] = `
 {

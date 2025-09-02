@@ -7,15 +7,15 @@ import { CoreError } from '@agentos/core';
 import type { RpcFrame } from '../../../../shared/rpc/rpc-frame';
 import { createIpcMainFixture, flush } from '../test-helpers/fixture';
 import { frames, clear } from '../test-helpers/electron-mock-store';
-jest.mock('electron', () => {
+vi.mock('electron', () => {
   const win = {
     isDestroyed: () => false,
     webContents: { send: (_ch: string, frame: RpcFrame) => frames.push(frame) },
   } as const;
   return {
     BrowserWindow: {
-      fromId: jest.fn(() => win),
-      getAllWindows: jest.fn(() => [win]),
+      fromId: vi.fn(() => win),
+      getAllWindows: vi.fn(() => [win]),
     },
   };
 });
