@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "module": "ESNext"
+    "module": "ESNext",
+    "types": ["vitest/globals"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

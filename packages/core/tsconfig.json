@@ -3,6 +3,7 @@
   "compilerOptions": {
     "rootDir": "./src",
     "baseUrl": ".",
+    "types": ["vitest/globals"],
     "paths": {
       "@agentos/lang": ["../lang/dist/index"],
       "@agentos/lang/*": ["../lang/dist/*"]
