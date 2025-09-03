@@ -18,11 +18,10 @@ describe('McpController', () => {
       getTool: getToolMock,
     };
 
-    const ctrl = new McpController(
-      mockMcp as unknown as McpService,
-      { list: vi.fn(), getStats: vi.fn() } as unknown as McpUsageService,
-      { ofType: vi.fn() } as unknown as OutboundChannel
-    );
+    const mcp = Object.assign(Object.create((McpService as { prototype: object }).prototype), mockMcp) as McpService;
+    const usage = Object.assign(Object.create((McpUsageService as { prototype: object }).prototype), { list: vi.fn(), getStats: vi.fn() }) as McpUsageService;
+    const outbound = Object.assign(Object.create((OutboundChannel as { prototype: object }).prototype), { ofType: vi.fn() }) as OutboundChannel;
+    const ctrl = new McpController(mcp, usage, outbound);
     const resp = await ctrl.invokeTool({ name: 'foo.bar' } satisfies InvokeToolDto);
     expect(resp.success).toBe(true);
     expect(executeToolMock).toHaveBeenCalledWith('foo.bar', undefined, {
@@ -41,11 +40,10 @@ describe('McpController', () => {
       getTool: getToolMock,
     };
 
-    const ctrl = new McpController(
-      mockMcp as unknown as McpService,
-      { list: vi.fn(), getStats: vi.fn() } as unknown as McpUsageService,
-      { ofType: vi.fn() } as unknown as OutboundChannel
-    );
+    const mcp = Object.assign(Object.create((McpService as { prototype: object }).prototype), mockMcp) as McpService;
+    const usage = Object.assign(Object.create((McpUsageService as { prototype: object }).prototype), { list: vi.fn(), getStats: vi.fn() }) as McpUsageService;
+    const outbound = Object.assign(Object.create((OutboundChannel as { prototype: object }).prototype), { ofType: vi.fn() }) as OutboundChannel;
+    const ctrl = new McpController(mcp, usage, outbound);
     const resp = await ctrl.invokeTool({ name: 'foo.bar' } satisfies InvokeToolDto);
     expect(resp.success).toBe(false);
   });
@@ -69,13 +67,13 @@ describe('McpController', () => {
       executeTool: executeToolMock,
     };
 
-    const ctrl = new McpController(
-      mockMcp as unknown as McpService,
-      { list: vi.fn(), getStats: vi.fn() } as unknown as McpUsageService,
-      { ofType: vi.fn() } as unknown as OutboundChannel
-    );
+    const mcp = Object.assign(Object.create((McpService as { prototype: object }).prototype), mockMcp) as McpService;
+    const usage = Object.assign(Object.create((McpUsageService as { prototype: object }).prototype), { list: vi.fn(), getStats: vi.fn() }) as McpUsageService;
+    const outbound = Object.assign(Object.create((OutboundChannel as { prototype: object }).prototype), { ofType: vi.fn() }) as OutboundChannel;
+    const ctrl = new McpController(mcp, usage, outbound);
     const tool = await ctrl.getTool({ name: 'foo.bar' } satisfies GetToolDto);
-    expect((tool as any)?.id).toEqual('t1');
+    const t = tool as { id?: string };
+    expect(t?.id).toEqual('t1');
     expect(getToolMock).toHaveBeenCalledWith('foo.bar');
   });
 });

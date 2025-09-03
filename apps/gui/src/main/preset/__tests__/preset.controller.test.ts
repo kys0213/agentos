@@ -1,7 +1,9 @@
 import { Test } from '@nestjs/testing';
 import { GeneratedPresetController as PresetController } from '../gen/preset.controller.gen.new';
 import { PRESET_REPOSITORY_TOKEN } from '../../common/preset/constants';
-import type { PresetRepository, Preset, CursorPaginationResult } from '@agentos/core';
+import type { PresetRepository, Preset, CursorPaginationResult, CreatePreset } from '@agentos/core';
+import { z } from 'zod';
+import { PresetContract as C } from '../../../shared/rpc/contracts/preset.contract';
 
 type PresetSummary = { id: string; name: string; description: string; updatedAt: Date };
 
@@ -20,7 +22,7 @@ class InMemoryPresetRepo implements PresetRepository {
   async get(id: string): Promise<Preset | null> {
     return this.store.get(id) ?? null;
   }
-  async create(preset: any): Promise<Preset> {
+  async create(preset: CreatePreset): Promise<Preset> {
     const p = {
       ...preset,
       id: 'p1',
@@ -53,7 +55,8 @@ describe('PresetController', () => {
 
     const ctrl = moduleRef.get(PresetController);
 
-    const p = {
+    type CreatePayload = z.input<(typeof C.methods)['create']['payload']>;
+    const p: CreatePayload = {
       name: 'n',
       description: 'd',
       author: 'a',
@@ -66,7 +69,7 @@ describe('PresetController', () => {
       category: ['general'],
     };
 
-    const created = await ctrl.create(p as any);
+    const created = await ctrl.create(p);
 
     if (!created.success) {
       throw new Error('Failed to create preset');
@@ -81,10 +84,16 @@ describe('PresetController', () => {
     const list = await ctrl.list();
     expect(list.items.some((s) => s.id === created.result!.id!)).toBe(true);
 
-    const upd = await ctrl.update({
+    type UpdatePayload = z.input<(typeof C.methods)['update']['payload']>;
+    const updPayload: UpdatePayload = {
       id: created.result!.id!,
-      preset: { ...(created.result as any), name: 'n2' },
-    } as any);
+      preset: {
+        ...(created.result as Preset),
+        name: 'n2',
+        enabledMcps: [],
+      },
+    };
+    const upd = await ctrl.update(updPayload);
     expect(upd.success).toBe(true);
 
     const fetched = await ctrl.get('p1');

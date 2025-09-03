@@ -1,7 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { GeneratedBridgeController as BridgeController } from '../gen/bridge.controller.gen.new';
 import { LLM_BRIDGE_REGISTRY_TOKEN } from '../../common/model/constants';
-import type { LlmManifest } from 'llm-bridge-spec';
 import { z } from 'zod';
 
 describe('BridgeController', () => {
@@ -41,7 +40,9 @@ describe('BridgeController', () => {
     };
     const res = await ctrl.register({ manifest, config: {} });
     expect(res.success).toBe(true);
-    if (!res.success) throw new Error('expected success');
+    if (!res.success) {
+      throw new Error('expected success');
+    }
     expect(res.id).toBe('id-1');
   });
 
