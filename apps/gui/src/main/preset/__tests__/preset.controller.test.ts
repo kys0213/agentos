@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
-import { PresetController } from '../preset.controller';
+import { GeneratedPresetController as PresetController } from '../gen/preset.controller.gen.new';
 import { PRESET_REPOSITORY_TOKEN } from '../../common/preset/constants';
-import type { PresetRepository, Preset, CursorPaginationResult, CreatePreset } from '@agentos/core';
+import type { PresetRepository, Preset, CursorPaginationResult } from '@agentos/core';
 
 type PresetSummary = { id: string; name: string; description: string; updatedAt: Date };
 
@@ -20,7 +20,7 @@ class InMemoryPresetRepo implements PresetRepository {
   async get(id: string): Promise<Preset | null> {
     return this.store.get(id) ?? null;
   }
-  async create(preset: CreatePreset): Promise<Preset> {
+  async create(preset: any): Promise<Preset> {
     const p = {
       ...preset,
       id: 'p1',
@@ -53,7 +53,7 @@ describe('PresetController', () => {
 
     const ctrl = moduleRef.get(PresetController);
 
-    const p: CreatePreset = {
+    const p = {
       name: 'n',
       description: 'd',
       author: 'a',
@@ -66,31 +66,31 @@ describe('PresetController', () => {
       category: ['general'],
     };
 
-    const created = await ctrl.create(p);
+    const created = await ctrl.create(p as any);
 
     if (!created.success) {
       throw new Error('Failed to create preset');
     }
 
     expect(created.success).toBe(true);
-    expect(created.result.id).toBeDefined();
+    expect(created.result?.id).toBeDefined();
 
-    const one = await ctrl.get(created.result.id);
-    expect(one?.id).toBe(created.result.id);
+    const one = await ctrl.get(created.result!.id!);
+    expect(one?.id).toBe(created.result!.id!);
 
     const list = await ctrl.list();
-    expect(list.items.some((s) => s.id === created.result.id)).toBe(true);
+    expect(list.items.some((s) => s.id === created.result!.id!)).toBe(true);
 
     const upd = await ctrl.update({
-      id: created.result.id,
-      preset: { ...created.result, name: 'n2' },
-    });
+      id: created.result!.id!,
+      preset: { ...(created.result as any), name: 'n2' },
+    } as any);
     expect(upd.success).toBe(true);
 
     const fetched = await ctrl.get('p1');
     expect(fetched?.name).toBe('n2');
 
-    const del = await ctrl.remove('p1');
+    const del = await ctrl.delete('p1');
     expect(del.success).toBe(true);
 
     const gone = await ctrl.get('p1');

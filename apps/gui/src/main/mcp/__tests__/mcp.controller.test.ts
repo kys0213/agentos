@@ -1,9 +1,11 @@
 import 'reflect-metadata';
 import { Test } from '@nestjs/testing';
-import { McpController } from '../mcp.controller';
+import { GeneratedMcpController as McpController } from '../gen/mcp.controller.gen.new';
 import { McpService } from '@agentos/core';
+import { McpUsageService } from '@agentos/core';
+import { OutboundChannel } from '../../common/event/outbound-channel';
 import type { McpToolMetadata } from '@agentos/core';
-import type { GetToolDto, InvokeToolDto, Resp } from '../dto/mcp.dto';
+import type { GetToolDto, InvokeToolDto } from '../dto/mcp.dto';
 
 describe('McpController', () => {
   it('invokes tool via McpService and wraps response', async () => {
@@ -16,15 +18,17 @@ describe('McpController', () => {
       getTool: getToolMock,
     };
 
-    const moduleRef = await Test.createTestingModule({
-      controllers: [McpController],
-      providers: [{ provide: McpService, useValue: mockMcp }],
-    }).compile();
-
-    const ctrl = moduleRef.get(McpController);
-    const resp: Resp<unknown> = await ctrl.invokeTool({ name: 'foo.bar' } satisfies InvokeToolDto);
+    const ctrl = new McpController(
+      mockMcp as unknown as McpService,
+      { list: vi.fn(), getStats: vi.fn() } as unknown as McpUsageService,
+      { ofType: vi.fn() } as unknown as OutboundChannel
+    );
+    const resp = await ctrl.invokeTool({ name: 'foo.bar' } satisfies InvokeToolDto);
     expect(resp.success).toBe(true);
-    expect(executeToolMock).toHaveBeenCalledWith('foo.bar', undefined, undefined);
+    expect(executeToolMock).toHaveBeenCalledWith('foo.bar', undefined, {
+      agentId: undefined,
+      sessionId: undefined,
+    });
   });
 
   it('wraps error as { success: false }', async () => {
@@ -37,13 +41,12 @@ describe('McpController', () => {
       getTool: getToolMock,
     };
 
-    const moduleRef = await Test.createTestingModule({
-      controllers: [McpController],
-      providers: [{ provide: McpService, useValue: mockMcp }],
-    }).compile();
-
-    const ctrl = moduleRef.get(McpController);
-    const resp: Resp<unknown> = await ctrl.invokeTool({ name: 'foo.bar' } satisfies InvokeToolDto);
+    const ctrl = new McpController(
+      mockMcp as unknown as McpService,
+      { list: vi.fn(), getStats: vi.fn() } as unknown as McpUsageService,
+      { ofType: vi.fn() } as unknown as OutboundChannel
+    );
+    const resp = await ctrl.invokeTool({ name: 'foo.bar' } satisfies InvokeToolDto);
     expect(resp.success).toBe(false);
   });
 
@@ -66,14 +69,13 @@ describe('McpController', () => {
       executeTool: executeToolMock,
     };
 
-    const moduleRef = await Test.createTestingModule({
-      controllers: [McpController],
-      providers: [{ provide: McpService, useValue: mockMcp }],
-    }).compile();
-
-    const ctrl = moduleRef.get(McpController);
+    const ctrl = new McpController(
+      mockMcp as unknown as McpService,
+      { list: vi.fn(), getStats: vi.fn() } as unknown as McpUsageService,
+      { ofType: vi.fn() } as unknown as OutboundChannel
+    );
     const tool = await ctrl.getTool({ name: 'foo.bar' } satisfies GetToolDto);
-    expect(tool?.id).toEqual('t1');
+    expect((tool as any)?.id).toEqual('t1');
     expect(getToolMock).toHaveBeenCalledWith('foo.bar');
   });
 });
