@@ -30,8 +30,8 @@
 
 ## Todo
 
-- [ ] 누락 가이드 스텁 생성: `apps/gui/docs/RPC_AND_STREAMING_GUIDE.md`
-- [ ] 문서 인덱스 점검: `apps/gui/docs/README.md`, `apps/gui/docs/rpc/README.md`
+- [x] 누락 가이드 스텁 생성: `apps/gui/docs/RPC_AND_STREAMING_GUIDE.md`
+- [x] 문서 인덱스 점검: `apps/gui/docs/README.md`, `apps/gui/docs/rpc/README.md`
 - [ ] 계획서 링크 점검/수정: `apps/gui/plan/*` 내 404 제거
 - [ ] Plan→Docs 승격 체크리스트 작성(기여자 가이드 반영)
 
