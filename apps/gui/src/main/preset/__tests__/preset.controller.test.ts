@@ -85,12 +85,23 @@ describe('PresetController', () => {
     expect(list.items.some((s) => s.id === created.result!.id!)).toBe(true);
 
     type UpdatePayload = z.input<(typeof C.methods)['update']['payload']>;
+    const prev = created.result!;
     const updPayload: UpdatePayload = {
-      id: created.result!.id!,
+      id: prev.id,
       preset: {
-        ...(created.result as Preset),
+        id: prev.id,
         name: 'n2',
+        description: prev.description ?? '',
+        author: prev.author ?? '',
+        version: prev.version ?? '1.0.0',
+        systemPrompt: prev.systemPrompt ?? '',
         enabledMcps: [],
+        llmBridgeName: prev.llmBridgeName,
+        llmBridgeConfig: prev.llmBridgeConfig ?? {},
+        status: (prev as { status?: string }).status ?? 'active',
+        category: prev.category ?? ['general'],
+        createdAt: prev.createdAt,
+        updatedAt: prev.updatedAt,
       },
     };
     const upd = await ctrl.update(updPayload);
