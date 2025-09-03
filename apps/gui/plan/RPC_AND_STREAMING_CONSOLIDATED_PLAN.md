@@ -15,6 +15,9 @@
 - 스트림: `mcp.usage.events`를 `usage_eventsStream/usage_eventsOn`으로 전환
 - zod 추론: 생성 클라이언트가 `z.input/z.output`으로 타입 지정
 - CI: Green(유지), 일부 any/ESLint 완화는 후속 복원 필요
+- 서버 컨트롤러: 생성 컨트롤러(bridge/mcp/agent)에서 `as any` 제거 및 반환 타입 엄격화 완료
+- MCP 스트리밍: 서버가 `Observable<z.output<...>>` 반환 패턴으로 복원(스트림 정상 푸시)
+- 참고: 서버 스트리밍 컨벤션 상세는 `apps/gui/plan/RPC_STREAMING_SERVER_CONVENTION_PLAN.md` 참조
 
 ## 단계별 계획
 
