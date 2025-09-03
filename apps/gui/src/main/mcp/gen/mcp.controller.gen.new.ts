@@ -7,6 +7,7 @@ import { McpContract as C } from '../../../shared/rpc/contracts/mcp.contract';
 import { McpService, McpUsageService, type CursorPagination } from '@agentos/core';
 import { OutboundChannel } from '../../common/event/outbound-channel';
 import { map } from 'rxjs';
+import type { Observable } from 'rxjs';
 
 @Controller()
 export class GeneratedMcpController {
@@ -107,10 +108,12 @@ export class GeneratedMcpController {
   }
 
   @EventPattern('mcp.usage.events')
-  async usage_events(): Promise<void> {
-    // Side-effect: set up stream source; transport will subscribe via channel
-    this.outbound.ofType('mcp.usage.').pipe(map((ev) => ev));
-    return;
+  usage_events(): Observable<
+    z.output<(typeof C.methods)['usage.events']['streamResponse']>
+  > {
+    return this.outbound
+      .ofType('mcp.usage.')
+      .pipe(map((ev) => ev as z.output<(typeof C.methods)['usage.events']['streamResponse']>));
   }
 }
 
