@@ -1,12 +1,10 @@
 import { Test } from '@nestjs/testing';
-import { BridgeController } from '../bridge.controller';
+import { GeneratedBridgeController as BridgeController } from '../gen/bridge.controller.gen.new';
 import { LLM_BRIDGE_REGISTRY_TOKEN } from '../../common/model/constants';
-import type { LlmManifest } from 'llm-bridge-spec';
 import { z } from 'zod';
-import type { Resp } from '../dto/bridge.dto';
 
 describe('BridgeController', () => {
-  it('register returns success wrapper with id', async () => {
+  it('register returns success with id', async () => {
     const registry = {
       register: vi.fn().mockResolvedValue('id-1'),
       listSummaries: vi.fn(),
@@ -40,13 +38,12 @@ describe('BridgeController', () => {
         supportsVision: false,
       },
     };
-    const res: Resp<{ id: string }> = await ctrl.register({ manifest, config: {} });
+    const res = await ctrl.register({ manifest, config: {} });
     expect(res.success).toBe(true);
-    if (res.success) {
-      expect(res.result.id).toBe('id-1');
-    } else {
+    if (!res.success) {
       throw new Error('expected success');
     }
+    expect(res.id).toBe('id-1');
   });
 
   it('unregister wraps errors', async () => {
@@ -69,7 +66,7 @@ describe('BridgeController', () => {
     expect(res.success).toBe(false);
   });
 
-  it('getCurrent returns null or object', async () => {
+  it('get_current returns null or object', async () => {
     const manifest = {
       name: 'm',
       description: '',
@@ -103,9 +100,9 @@ describe('BridgeController', () => {
     }).compile();
 
     const ctrl = mod.get(BridgeController);
-    const r1 = await ctrl.getCurrent();
+    const r1 = await ctrl.get_current();
     expect(r1).toBeNull();
-    const r2 = await ctrl.getCurrent();
+    const r2 = await ctrl.get_current();
     expect(r2?.id).toBe('id-1');
     expect(r2?.manifest).toEqual(manifest);
   });
@@ -124,7 +121,7 @@ describe('BridgeController', () => {
       providers: [{ provide: LLM_BRIDGE_REGISTRY_TOKEN, useValue: registryOk }],
     }).compile();
     const ctrlOk = modOk.get(BridgeController);
-    const ok = await ctrlOk.switchActive('id');
+    const ok = await ctrlOk.switch('id');
     expect(ok.success).toBe(true);
 
     const registryErr = {
@@ -140,7 +137,7 @@ describe('BridgeController', () => {
       providers: [{ provide: LLM_BRIDGE_REGISTRY_TOKEN, useValue: registryErr }],
     }).compile();
     const ctrlErr = modErr.get(BridgeController);
-    const err = await ctrlErr.switchActive('id');
+    const err = await ctrlErr.switch('id');
     expect(err.success).toBe(false);
   });
 });
