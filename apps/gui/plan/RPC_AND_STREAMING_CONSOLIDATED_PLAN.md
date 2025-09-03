@@ -38,8 +38,8 @@
 
 ### Phase 3 — Nest 컨트롤러 승격
 
-- [ ] `apps/gui/src/main/**/gen/*.controller.gen.new.ts` 승격/모듈 와이어링
-- [ ] DTO/ValidationPipe 적용 및 반환 타입 계약 일치
+- [x] `apps/gui/src/main/**/gen/*.controller.gen.new.ts` 승격/모듈 와이어링
+- [x] DTO/ValidationPipe 적용 및 반환 타입 계약 일치
 - [ ] 기존 services/\* 경로 이관/정리
 
 ### Phase 4 — 레거시 제거/문서
