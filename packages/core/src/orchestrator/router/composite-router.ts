@@ -48,7 +48,30 @@ export class CompositeAgentRouter implements AgentRouter {
     }
 
     // 전략 실행
-    const helper = { tokenize: this.tokenizer, buildDoc: this.buildDoc };
+    // Simple per-call caches for tokens and docs
+    const tokenCache = new Map<string, string[]>();
+    const docCache = new Map<string, string>();
+    const cachedTokenizer: Tokenizer = {
+      tokenize: async (text: string) => {
+        const key = text ?? '';
+        if (tokenCache.has(key)) return tokenCache.get(key)!;
+        const tokens = await this.tokenizer.tokenize(text);
+        tokenCache.set(key, tokens);
+        return tokens;
+      },
+    };
+    const cachedBuildDoc: BuildDocFn | undefined = this.buildDoc
+      ? (meta) => {
+          const key = `${meta.id}:${meta.version ?? 'v0'}`;
+          const hit = docCache.get(key);
+          if (hit) return hit;
+          const d = this.buildDoc!(meta);
+          docCache.set(key, d);
+          return d;
+        }
+      : undefined;
+
+    const helper = { tokenize: cachedTokenizer, buildDoc: cachedBuildDoc };
     const strategyResults = await Promise.all(
       this.strategies.map((fn) =>
         fn({ query, metas: candidates.map((c) => c.meta), helpers: helper })
