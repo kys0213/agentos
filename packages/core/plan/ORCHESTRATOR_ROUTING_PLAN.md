@@ -154,17 +154,17 @@ export class CompositeAgentRouter implements AgentRouter {
 
 ## Todo
 
-- [ ] `RouterQuery`/`AgentRouter`/`ScoreResult` 타입 정의
+- [x] `RouterQuery`/`AgentRouter`/`ScoreResult` 타입 정의
 - [x] 입력 정규화 유틸: `RouterQuery`에서 표준 질의 문자열 생성
 - [x] BuildDocFn 유틸(선택): Preset/메타 기반 안전 doc 생성 + snippet 길이 제한(256~512자)
-- [ ] 기본 전략 구현(v1): Mention, BM25Text, KeywordBoost, ToolHint, FileType
+- [x] 기본 전략 구현(v1): Mention, BM25Text, KeywordBoost, ToolHint, FileType
 - [x] 상태 게이팅 적용: active 기본, idle 조건부 포함
-- [ ] 캐시 계층: `agentId+version` 키 기반 doc/토큰 캐시
+- [x] 캐시 계층: `agentId+version` 키 기반 doc/토큰 캐시(라우팅 호출 단위 캐시 구현)
 - [x] `CompositeAgentRouter` 구현(전략 병렬 실행→합산→결정적 정렬 Top-K)
 - [x] 토크나이저 DI 및 기본값 설정, LLM 키워드 토크나이저 옵션화(선택)
-- [ ] 단위 테스트: mention 우선/BM25 매칭/동률 타이브레이커
+- [x] 단위 테스트: mention 우선/BM25 매칭/동률 타이브레이커
 - [ ] 퍼포먼스 스모크 테스트(100 agents, 평균 라우팅 시간 측정)
-- [ ] 문서: `docs/INTERFACE_SPEC.md`에 코어 라우팅 API 섹션 추가
+- [x] 문서: `docs/INTERFACE_SPEC.md`에 코어 라우팅 API 섹션 추가
 - [x] 패키지 export: `packages/core/src/index.ts`에 공개
 
 ## 작업 순서
