@@ -50,7 +50,9 @@ export class CompositeAgentRouter implements AgentRouter {
     // 전략 실행
     const helper = { tokenize: this.tokenizer, buildDoc: this.buildDoc };
     const strategyResults = await Promise.all(
-      this.strategies.map((fn) => fn({ query, metas: candidates.map((c) => c.meta), helpers: helper }))
+      this.strategies.map((fn) =>
+        fn({ query, metas: candidates.map((c) => c.meta), helpers: helper })
+      )
     );
 
     // 점수 합산
@@ -93,9 +95,12 @@ export class CompositeAgentRouter implements AgentRouter {
     return {
       agents: top.map((r) => r.agent),
       scores: options?.includeScores
-        ? top.map((r) => ({ agentId: r.meta.id, score: r.score, metadata: { breakdown: r.breakdown } }))
+        ? top.map((r) => ({
+            agentId: r.meta.id,
+            score: r.score,
+            metadata: { breakdown: r.breakdown },
+          }))
         : undefined,
     };
   }
 }
-

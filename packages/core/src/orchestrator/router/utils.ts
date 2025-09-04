@@ -9,9 +9,9 @@ export function getQueryText(query: RouterQuery): string {
   if (query.content && query.content.length > 0) {
     const texts: string[] = [];
     for (const c of query.content) {
-      if (c && (c as CoreContent).contentType === 'text') {
-        const v = (c as CoreContent).value as unknown;
-        if (typeof v === 'string' && v.trim().length > 0) {
+      if (isTextContent(c)) {
+        const v = c.value;
+        if (v.trim().length > 0) {
           texts.push(v);
         }
       }
@@ -66,7 +66,9 @@ export function statusOrder(s?: string): number {
 }
 
 export function allowByStatus(meta: ReadonlyAgentMetadata, query: RouterQuery): boolean {
-  if (meta.status === 'active') return true;
+  if (meta.status === 'active') {
+    return true;
+  }
   if (meta.status === 'idle') {
     const hints = (query.hints ?? []).map((h) => h.toLowerCase());
     const names = [meta.name?.toLowerCase(), meta.id?.toLowerCase()].filter(Boolean) as string[];
@@ -76,3 +78,8 @@ export function allowByStatus(meta: ReadonlyAgentMetadata, query: RouterQuery): 
   return false;
 }
 
+type MaybeText = { contentType?: unknown; value?: unknown };
+function isTextContent(c: CoreContent): c is CoreContent & { contentType: 'text'; value: string } {
+  const mc = c as MaybeText;
+  return mc != null && mc.contentType === 'text' && typeof mc.value === 'string';
+}

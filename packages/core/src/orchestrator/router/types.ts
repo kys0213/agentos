@@ -30,10 +30,7 @@ export interface DocBuilderOptions {
   promptLimit?: number; // 기본 512자
 }
 
-export type BuildDocFn = (
-  meta: ReadonlyAgentMetadata,
-  options?: DocBuilderOptions
-) => string;
+export type BuildDocFn = (meta: ReadonlyAgentMetadata, options?: DocBuilderOptions) => string;
 
 export interface ScoreResult {
   score: number; // [0,1] 권장
@@ -45,4 +42,3 @@ export type RoutingStrategyFn = (args: {
   metas: ReadonlyAgentMetadata[];
   helpers: { tokenize: Tokenizer; buildDoc?: BuildDocFn };
 }) => Promise<Map<string, ScoreResult>>;
-
