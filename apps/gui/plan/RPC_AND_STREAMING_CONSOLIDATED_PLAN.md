@@ -1,4 +1,6 @@
-# GUI RPC & Streaming Consolidated Plan (v1)
+# [Superseded] GUI RPC & Streaming Consolidated Plan (v1)
+
+이 문서는 `GUI_CONSOLIDATED_PLAN.md`로 통합되었습니다. 최신 정보와 체크리스트는 단일 통합 문서를 참조하세요.
 
 본 계획서는 GUI의 RPC 아키텍처를 계약→코드젠→어댑터→스트리밍까지 일관되게 정리하고, 기존 분산 문서의 중복 항목을 통합합니다.
 

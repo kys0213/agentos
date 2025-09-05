@@ -1,4 +1,6 @@
-# Docs & Plans Standardization Plan (GUI)
+# [Superseded] Docs & Plans Standardization Plan (GUI)
+
+이 문서는 `GUI_CONSOLIDATED_PLAN.md`의 Docs & 표준화 섹션으로 흡수되었습니다.
 
 ## Requirements
 
