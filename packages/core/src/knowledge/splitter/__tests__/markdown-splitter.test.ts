@@ -3,14 +3,16 @@ import fs from 'fs';
 import { MarkdownSplitter } from '../../splitter/markdown-splitter';
 import { KnowledgeDocumentMeta, KnowledgeDocId, PresetId } from '../../types';
 
+import { vi } from 'vitest';
+
 describe('MarkdownSplitter', () => {
   beforeAll(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date('2025-01-01'));
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2025-01-01'));
   });
 
   afterAll(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   const meta: KnowledgeDocumentMeta = {

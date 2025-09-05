@@ -3,52 +3,38 @@ import { McpToolMetadata } from '../../mcp-types';
 import { McpMetadataRegistry } from '../../registry/mcp-metadata-registry';
 import { McpRegistry } from '../../mcp.registery';
 import { McpToolRepository } from '../../repository/mcp-tool-repository';
+import { vi } from 'vitest';
+import { mock, type MockProxy } from 'vitest-mock-extended';
 import { McpService } from '../mcp-service';
 import type { McpServiceEvents } from '../mcp-service';
 
 // Mock 함수들
-const createMockRepository = (): jest.Mocked<McpToolRepository> => {
-  const mockRepo: jest.Mocked<McpToolRepository> = {
-    get: jest.fn(),
-    list: jest.fn(),
-    search: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    on: jest.fn(),
-  };
-
-  // 기본 동작 설정
-  mockRepo.list.mockResolvedValue({
-    items: [],
-    nextCursor: '',
-    hasMore: false,
-  });
-
-  return mockRepo;
+const createMockRepository = (): MockProxy<McpToolRepository> => {
+  const repo = mock<McpToolRepository>();
+  repo.list.mockResolvedValue({ items: [], nextCursor: '', hasMore: false });
+  return repo;
 };
 
 class FakeMcpRegistry extends McpRegistry {
-  register = jest.fn(async (_config: McpConfig) => {});
-  unregister = jest.fn(
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-restricted-syntax
+  register = vi.fn(async (_config: McpConfig) => {});
+  unregister = vi.fn(
     async (_name: string): Promise<import('@agentos/lang/utils').Result<void> | undefined> =>
       undefined
   );
-  get = jest.fn(async (_name: string) => null);
-  getAll = jest.fn(async () => []);
-  getTool = jest.fn(async (_name: string) => null);
-  getToolOrThrow = jest.fn();
-  getOrThrow = jest.fn();
-  onRegister = jest.fn((_fn: (m: unknown) => void) => {});
-  onUnregister = jest.fn((_fn: (m: unknown) => void) => {});
-  isRegistered = jest.fn((_name: string) => false);
-  unregisterAll = jest.fn(async () => {});
+  get = vi.fn(async (_name: string) => null);
+  getAll = vi.fn(async () => []);
+  getTool = vi.fn(async (_name: string) => null);
+  getToolOrThrow = vi.fn();
+  getOrThrow = vi.fn();
+  onRegister = vi.fn((_fn: (m: unknown) => void) => {});
+  onUnregister = vi.fn((_fn: (m: unknown) => void) => {});
+  isRegistered = vi.fn((_name: string) => false);
+  unregisterAll = vi.fn(async () => {});
 }
 
 describe('McpService', () => {
   let service: McpService;
-  let mockRepository: jest.Mocked<McpToolRepository>;
+  let mockRepository: MockProxy<McpToolRepository>;
   let mockMcpRegistry: FakeMcpRegistry;
   let registry: McpMetadataRegistry;
 

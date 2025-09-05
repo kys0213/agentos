@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Inverted index on/off yields consistent results top-k results overlap and look consistent (snapshot) 1`] = `
+exports[`Inverted index on/off yields consistent results > top-k results overlap and look consistent (snapshot) 1`] = `
 {
   "off": [
     {

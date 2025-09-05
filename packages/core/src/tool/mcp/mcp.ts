@@ -148,13 +148,21 @@ export class Mcp extends EventEmitter {
       throw new Error('Tool call failed reason: ' + error);
     }
 
-    return {
-      isError: result.isError == true,
-      contents: isArray(result.content)
-        ? (result.content as Array<McpContent>)
-        : [result.content as McpContent],
-      resumptionToken: freshResumptionToken,
+    let contents: Array<McpContent> = [];
+    if (isArray(result.content)) {
+      contents = result.content as Array<McpContent>;
+    } else if (result.content != null) {
+      contents = [result.content as McpContent];
+    }
+
+    const out: InvokeToolResult = {
+      isError: result.isError === true,
+      contents,
     };
+    if (freshResumptionToken) {
+      out.resumptionToken = freshResumptionToken;
+    }
+    return out;
   }
 
   async getResource(uri: string): Promise<ResourceContents[]> {

@@ -1,19 +1,17 @@
 import { Test } from '@nestjs/testing';
-import { BridgeController } from '../bridge.controller';
+import { GeneratedBridgeController as BridgeController } from '../gen/bridge.controller.gen.new';
 import { LLM_BRIDGE_REGISTRY_TOKEN } from '../../common/model/constants';
-import type { LlmManifest } from 'llm-bridge-spec';
 import { z } from 'zod';
-import type { Resp } from '../dto/bridge.dto';
 
 describe('BridgeController', () => {
-  it('register returns success wrapper with id', async () => {
+  it('register returns success with id', async () => {
     const registry = {
-      register: jest.fn().mockResolvedValue('id-1'),
-      listSummaries: jest.fn(),
-      getActiveId: jest.fn(),
-      getManifest: jest.fn(),
-      unregister: jest.fn(),
-      setActiveId: jest.fn(),
+      register: vi.fn().mockResolvedValue('id-1'),
+      listSummaries: vi.fn(),
+      getActiveId: vi.fn(),
+      getManifest: vi.fn(),
+      unregister: vi.fn(),
+      setActiveId: vi.fn(),
     };
 
     const mod = await Test.createTestingModule({
@@ -40,23 +38,22 @@ describe('BridgeController', () => {
         supportsVision: false,
       },
     };
-    const res: Resp<{ id: string }> = await ctrl.register({ manifest, config: {} });
+    const res = await ctrl.register({ manifest, config: {} });
     expect(res.success).toBe(true);
-    if (res.success) {
-      expect(res.result.id).toBe('id-1');
-    } else {
+    if (!res.success) {
       throw new Error('expected success');
     }
+    expect(res.id).toBe('id-1');
   });
 
   it('unregister wraps errors', async () => {
     const registry = {
-      unregister: jest.fn().mockRejectedValue(new Error('nope')),
-      listSummaries: jest.fn(),
-      getActiveId: jest.fn(),
-      getManifest: jest.fn(),
-      register: jest.fn(),
-      setActiveId: jest.fn(),
+      unregister: vi.fn().mockRejectedValue(new Error('nope')),
+      listSummaries: vi.fn(),
+      getActiveId: vi.fn(),
+      getManifest: vi.fn(),
+      register: vi.fn(),
+      setActiveId: vi.fn(),
     };
 
     const mod = await Test.createTestingModule({
@@ -69,7 +66,7 @@ describe('BridgeController', () => {
     expect(res.success).toBe(false);
   });
 
-  it('getCurrent returns null or object', async () => {
+  it('get_current returns null or object', async () => {
     const manifest = {
       name: 'm',
       description: '',
@@ -89,12 +86,12 @@ describe('BridgeController', () => {
       },
     };
     const registry = {
-      getActiveId: jest.fn().mockResolvedValueOnce(null).mockResolvedValueOnce('id-1'),
-      getManifest: jest.fn().mockResolvedValue(manifest),
-      listSummaries: jest.fn(),
-      unregister: jest.fn(),
-      register: jest.fn(),
-      setActiveId: jest.fn(),
+      getActiveId: vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce('id-1'),
+      getManifest: vi.fn().mockResolvedValue(manifest),
+      listSummaries: vi.fn(),
+      unregister: vi.fn(),
+      register: vi.fn(),
+      setActiveId: vi.fn(),
     };
 
     const mod = await Test.createTestingModule({
@@ -103,44 +100,44 @@ describe('BridgeController', () => {
     }).compile();
 
     const ctrl = mod.get(BridgeController);
-    const r1 = await ctrl.getCurrent();
+    const r1 = await ctrl.get_current();
     expect(r1).toBeNull();
-    const r2 = await ctrl.getCurrent();
+    const r2 = await ctrl.get_current();
     expect(r2?.id).toBe('id-1');
     expect(r2?.manifest).toEqual(manifest);
   });
 
   it('switchActive wraps success/error', async () => {
     const registryOk = {
-      setActiveId: jest.fn().mockResolvedValue(undefined),
-      listSummaries: jest.fn(),
-      getActiveId: jest.fn(),
-      getManifest: jest.fn(),
-      unregister: jest.fn(),
-      register: jest.fn(),
+      setActiveId: vi.fn().mockResolvedValue(undefined),
+      listSummaries: vi.fn(),
+      getActiveId: vi.fn(),
+      getManifest: vi.fn(),
+      unregister: vi.fn(),
+      register: vi.fn(),
     };
     const modOk = await Test.createTestingModule({
       controllers: [BridgeController],
       providers: [{ provide: LLM_BRIDGE_REGISTRY_TOKEN, useValue: registryOk }],
     }).compile();
     const ctrlOk = modOk.get(BridgeController);
-    const ok = await ctrlOk.switchActive('id');
+    const ok = await ctrlOk.switch('id');
     expect(ok.success).toBe(true);
 
     const registryErr = {
-      setActiveId: jest.fn().mockRejectedValue(new Error('bad')),
-      listSummaries: jest.fn(),
-      getActiveId: jest.fn(),
-      getManifest: jest.fn(),
-      unregister: jest.fn(),
-      register: jest.fn(),
+      setActiveId: vi.fn().mockRejectedValue(new Error('bad')),
+      listSummaries: vi.fn(),
+      getActiveId: vi.fn(),
+      getManifest: vi.fn(),
+      unregister: vi.fn(),
+      register: vi.fn(),
     };
     const modErr = await Test.createTestingModule({
       controllers: [BridgeController],
       providers: [{ provide: LLM_BRIDGE_REGISTRY_TOKEN, useValue: registryErr }],
     }).compile();
     const ctrlErr = modErr.get(BridgeController);
-    const err = await ctrlErr.switchActive('id');
+    const err = await ctrlErr.switch('id');
     expect(err.success).toBe(false);
   });
 });

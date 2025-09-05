@@ -32,11 +32,13 @@ function repeat<T>(arr: T[], times = 1): T[] {
   return out;
 }
 
+import { vi } from 'vitest';
+
 describe('QA agent scenario simulation', () => {
   test('builds a meaningful graph and promotions work', async () => {
     // Fix time to ensure deterministic ranks/scores
     let tick = 1_700_000_000_000;
-    const nowSpy = jest.spyOn(Date, 'now').mockImplementation(() => (tick += 1000));
+    const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => (tick += 1000));
     const o = new MemoryOrchestrator('qa-agent', cfg);
     const sid = 's-qa-1';
 

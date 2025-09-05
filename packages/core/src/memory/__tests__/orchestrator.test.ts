@@ -24,11 +24,13 @@ const baseCfg = {
   searchBiasSessionFirst: 0.05,
 };
 
+import { vi } from 'vitest';
+
 describe('MemoryOrchestrator', () => {
   test('hybrid search dedupes by canonicalKey across session and agent', () => {
     // Fix time for deterministic ranking
     let tick = 1_700_000_000_000;
-    const nowSpy = jest.spyOn(Date, 'now').mockImplementation(() => (tick += 1000));
+    const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => (tick += 1000));
     const o = new MemoryOrchestrator('agent-1', baseCfg);
     const sid = 's-1';
     o.upsertQuery(sid, 'AgentOS MVP 설계');

@@ -15,7 +15,7 @@ const presetSchema = z.object({
   updatedAt: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
   version: z.string(),
   systemPrompt: z.string(),
-  enabledMcps: z.array(z.any()).default([]),
+  enabledMcps: z.array(z.unknown()).default([]),
   llmBridgeName: z.string(),
   llmBridgeConfig: z.record(z.string(), z.unknown()).default({}),
   status: z.enum(['active', 'idle', 'inactive']),

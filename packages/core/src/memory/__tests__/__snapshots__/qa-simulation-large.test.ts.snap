@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`QA agent large simulation (~100 queries) graph forms clusters and promotions carry weights [snapshot] 1`] = `
+exports[`QA agent large simulation (~100 queries) > graph forms clusters and promotions carry weights [snapshot] 1`] = `
 {
   "components": {
     "count": 25,
@@ -98,7 +98,7 @@ exports[`QA agent large simulation (~100 queries) graph forms clusters and promo
 }
 `;
 
-exports[`QA agent large simulation (~100 queries) graph forms clusters and promotions carry weights [snapshot] 2`] = `
+exports[`QA agent large simulation (~100 queries) > graph forms clusters and promotions carry weights [snapshot] 2`] = `
 {
   "counts": {
     "edges": 17,

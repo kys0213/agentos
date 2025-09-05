@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { mock } from 'jest-mock-extended';
+import { mock } from 'vitest-mock-extended';
 import type { LlmBridge, UserMessage } from 'llm-bridge-spec';
 import { DefaultAgentSession } from '../simple-agent-session';
 import { McpRegistry } from '../../tool/mcp/mcp.registery';

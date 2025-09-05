@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`GraphStore graph snapshot structure is stable (sanitized) [snapshot] 1`] = `
+exports[`GraphStore > graph snapshot structure is stable (sanitized) [snapshot] 1`] = `
 {
   "edgeTypeCounts": {
     "has_feedback": 3,

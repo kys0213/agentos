@@ -1,7 +1,9 @@
 import { Test } from '@nestjs/testing';
-import { PresetController } from '../preset.controller';
+import { GeneratedPresetController as PresetController } from '../gen/preset.controller.gen.new';
 import { PRESET_REPOSITORY_TOKEN } from '../../common/preset/constants';
 import type { PresetRepository, Preset, CursorPaginationResult, CreatePreset } from '@agentos/core';
+import { z } from 'zod';
+import { PresetContract as C } from '../../../shared/rpc/contracts/preset.contract';
 
 type PresetSummary = { id: string; name: string; description: string; updatedAt: Date };
 
@@ -53,7 +55,8 @@ describe('PresetController', () => {
 
     const ctrl = moduleRef.get(PresetController);
 
-    const p: CreatePreset = {
+    type CreatePayload = z.input<(typeof C.methods)['create']['payload']>;
+    const p: CreatePayload = {
       name: 'n',
       description: 'd',
       author: 'a',
@@ -73,24 +76,41 @@ describe('PresetController', () => {
     }
 
     expect(created.success).toBe(true);
-    expect(created.result.id).toBeDefined();
+    expect(created.result?.id).toBeDefined();
 
-    const one = await ctrl.get(created.result.id);
-    expect(one?.id).toBe(created.result.id);
+    const one = await ctrl.get(created.result!.id!);
+    expect(one?.id).toBe(created.result!.id!);
 
     const list = await ctrl.list();
-    expect(list.items.some((s) => s.id === created.result.id)).toBe(true);
+    expect(list.items.some((s) => s.id === created.result!.id!)).toBe(true);
 
-    const upd = await ctrl.update({
-      id: created.result.id,
-      preset: { ...created.result, name: 'n2' },
-    });
+    type UpdatePayload = z.input<(typeof C.methods)['update']['payload']>;
+    const prev = created.result!;
+    const updPayload: UpdatePayload = {
+      id: prev.id,
+      preset: {
+        id: prev.id,
+        name: 'n2',
+        description: prev.description ?? '',
+        author: prev.author ?? '',
+        version: prev.version ?? '1.0.0',
+        systemPrompt: prev.systemPrompt ?? '',
+        enabledMcps: [],
+        llmBridgeName: prev.llmBridgeName,
+        llmBridgeConfig: prev.llmBridgeConfig ?? {},
+        status: (prev as { status?: string }).status ?? 'active',
+        category: prev.category ?? ['general'],
+        createdAt: prev.createdAt,
+        updatedAt: prev.updatedAt,
+      },
+    };
+    const upd = await ctrl.update(updPayload);
     expect(upd.success).toBe(true);
 
     const fetched = await ctrl.get('p1');
     expect(fetched?.name).toBe('n2');
 
-    const del = await ctrl.remove('p1');
+    const del = await ctrl.delete('p1');
     expect(del.success).toBe(true);
 
     const gone = await ctrl.get('p1');

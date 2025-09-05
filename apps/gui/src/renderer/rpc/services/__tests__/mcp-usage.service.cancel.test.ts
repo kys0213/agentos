@@ -36,7 +36,7 @@ describe('McpUsageRpcService.subscribeToUsageUpdates', () => {
     const { rpc, emit, wasClosed } = createMockRpc();
     const service = new McpUsageRpcService(rpc);
 
-    const cb = jest.fn();
+    const cb = vi.fn();
     const close = await service.subscribeToUsageUpdates(cb);
 
     // emit a valid event (schema-compatible)
