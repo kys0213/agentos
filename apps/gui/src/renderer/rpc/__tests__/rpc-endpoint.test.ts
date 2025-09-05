@@ -7,9 +7,9 @@ class MockTransport implements RpcTransport {
     throw new Error('Method not implemented.');
   }
   on<T = unknown>(
-    channel: string,
-    handler: (payload: T) => void,
-    onError?: (e: unknown) => void
+    _channel: string,
+    _handler: (payload: T) => void,
+    _onError?: (e: unknown) => void
   ): CloseFn {
     throw new Error('Method not implemented.');
   }
@@ -94,7 +94,9 @@ describe('RpcEndpoint', () => {
 
     const out: number[] = [];
     const first = await firstPromise;
-    if (!first.done) out.push(first.value);
+    if (!first.done) {
+      out.push(first.value);
+    }
 
     let next = await it.next();
     while (!next.done) {
@@ -161,7 +163,9 @@ describe('RpcEndpoint', () => {
 
     const out: number[] = [];
     const first = await firstPromise;
-    if (!first.done) out.push(first.value);
+    if (!first.done) {
+      out.push(first.value);
+    }
 
     let next = await it.next();
     while (!next.done) {
