@@ -11,8 +11,10 @@ import type {
   LlmRoutingPolicy,
   LlmReranker,
 } from './types';
-import { allowByStatus, buildSafeDoc, getQueryText, statusOrder } from './utils';
+import { allowByStatus, buildSafeDoc } from './utils';
+import { aggregateResults, rankCandidates, toRouterOutput } from './engine';
 import { RouterHelper } from './helper';
+import { RouterContextBuilder } from './context-builder';
 
 export interface CompositeAgentRouterOptions {
   tokenizer?: Tokenizer;
@@ -27,6 +29,7 @@ export interface CompositeAgentRouterOptions {
     keywordExtractor?: KeywordExtractor;
     reranker?: LlmReranker;
   };
+  compare?: import('./types').RankComparator;
 }
 
 export class CompositeAgentRouter implements AgentRouter {
@@ -64,34 +67,22 @@ export class CompositeAgentRouter implements AgentRouter {
       return { agents: [] };
     }
 
-    // 전략 실행 (헬퍼 객체로 토큰/문서 캐시 포함)
-    const helper = new RouterHelper(this.tokenizer, this.buildDoc);
-    // LLM keyword policy: prefer options.llm; fallback to llmKeyword for backward compat
-    const llmOpt = this.options?.llm;
-    if (llmOpt?.policy?.enableKeyword && llmOpt.keywordExtractor) {
-      helper.configureLlm(llmOpt.keywordExtractor, {
-        maxKeywords: undefined,
-        when:
-          llmOpt.policy.localeMode === 'always'
-            ? 'always'
-            : llmOpt.policy.localeMode === 'cjk'
-              ? 'locale_cjk'
-              : 'never',
-      });
-    } else if ((this as any).options?.llmKeyword) {
-      const { extractor, maxKeywords, when } = (this as any).options.llmKeyword;
-      helper.configureLlm(extractor, { maxKeywords, when });
-    }
-    helper.setQueryContext(query);
+    // 전략 실행 컨텍스트(토큰/문서 캐시 포함)를 Builder로 생성
+    const builder = new RouterContextBuilder(this.tokenizer, this.buildDoc, {
+      llmKeyword: this.options?.llmKeyword,
+    });
+
+    const helper = builder.build(query);
+
     const strategyResults = await Promise.all(
       this.strategies.map((fn) => fn({ query, metas: candidates.map((c) => c.meta), helper }))
     );
 
     // 점수 합산
-    const total = this.aggregate(strategyResults);
+    const total = aggregateResults(strategyResults);
 
     // 후보 정렬 (결정적)
-    let ranked = this.rank(candidates, total, query);
+    let ranked = rankCandidates(candidates, total, query, this.options?.compare);
 
     // Optional LLM rerank step on Top-N
     const policy = this.options?.llm?.policy;
@@ -125,29 +116,15 @@ export class CompositeAgentRouter implements AgentRouter {
           const score = alpha * r.score + (1 - alpha) * rnorm;
           return { ...r, score };
         });
-        ranked = blended.sort((a, b) => {
-          if (b.score !== a.score) {
-            return b.score - a.score;
-          }
-          const sa = statusOrder(a.meta.status);
-          const sb = statusOrder(b.meta.status);
-          if (sa !== sb) {
-            return sa - sb;
-          }
-          const la = a.meta.lastUsed ? new Date(a.meta.lastUsed).getTime() : 0;
-          const lb = b.meta.lastUsed ? new Date(b.meta.lastUsed).getTime() : 0;
-          if (lb !== la) {
-            return lb - la;
-          }
-          if (b.meta.usageCount !== a.meta.usageCount) {
-            return b.meta.usageCount - a.meta.usageCount;
-          }
-          const na = (a.meta.name ?? '').localeCompare(b.meta.name ?? '');
-          if (na !== 0) {
-            return na;
-          }
-          return (a.meta.id ?? '').localeCompare(b.meta.id ?? '');
-        });
+        const totalMap: Map<string, { score: number; breakdown: Record<string, number> }> = new Map(
+          blended.map((r) => [r.meta.id, { score: r.score, breakdown: r.breakdown }])
+        );
+        ranked = rankCandidates(
+          blended.map((r) => ({ agent: r.agent, meta: r.meta })),
+          totalMap,
+          query,
+          this.options?.compare
+        );
       } catch {
         // ignore rerank errors; keep rule-based ranking
       }
@@ -155,85 +132,6 @@ export class CompositeAgentRouter implements AgentRouter {
 
     const top = ranked.slice(0, topK);
 
-    return this.toOutput(top, Boolean(options?.includeScores));
-  }
-
-  private aggregate(
-    strategyResults: Map<string, { score: number }>[]
-  ): Map<string, { score: number; breakdown: Record<string, number> }> {
-    const total = new Map<string, { score: number; breakdown: Record<string, number> }>();
-
-    strategyResults.forEach((res, idx) => {
-      const key = `s${idx}`;
-      for (const [agentId, s] of res.entries()) {
-        const prev = total.get(agentId) ?? { score: 0, breakdown: {} };
-        prev.score += s.score ?? 0;
-        prev.breakdown[key] = s.score ?? 0;
-        total.set(agentId, prev);
-      }
-    });
-
-    return total;
-  }
-
-  private rank(
-    candidates: { agent: Agent; meta: ReadonlyAgentMetadata }[],
-    total: Map<string, { score: number; breakdown: Record<string, number> }>,
-    query: RouterQuery
-  ) {
-    const qText = getQueryText(query);
-
-    return candidates
-      .map(({ agent, meta }) => ({
-        agent,
-        meta,
-        score: total.get(meta.id)?.score ?? 0,
-        breakdown: total.get(meta.id)?.breakdown ?? {},
-        qTextLen: qText.length,
-      }))
-      .sort((a, b) => {
-        if (b.score !== a.score) {
-          return b.score - a.score;
-        }
-        const sa = statusOrder(a.meta.status);
-        const sb = statusOrder(b.meta.status);
-        if (sa !== sb) {
-          return sa - sb;
-        }
-        const la = a.meta.lastUsed ? new Date(a.meta.lastUsed).getTime() : 0;
-        const lb = b.meta.lastUsed ? new Date(b.meta.lastUsed).getTime() : 0;
-        if (lb !== la) {
-          return lb - la;
-        }
-        if (b.meta.usageCount !== a.meta.usageCount) {
-          return b.meta.usageCount - a.meta.usageCount;
-        }
-        const na = (a.meta.name ?? '').localeCompare(b.meta.name ?? '');
-        if (na !== 0) {
-          return na;
-        }
-        return (a.meta.id ?? '').localeCompare(b.meta.id ?? '');
-      });
-  }
-
-  private toOutput(
-    top: Array<{
-      agent: Agent;
-      meta: ReadonlyAgentMetadata;
-      score: number;
-      breakdown: Record<string, number>;
-    }>,
-    includeScores: boolean
-  ) {
-    return {
-      agents: top.map((r) => r.agent),
-      scores: includeScores
-        ? top.map((r) => ({
-            agentId: r.meta.id,
-            score: r.score,
-            metadata: { breakdown: r.breakdown },
-          }))
-        : undefined,
-    };
+    return toRouterOutput(top, Boolean(options?.includeScores));
   }
 }
