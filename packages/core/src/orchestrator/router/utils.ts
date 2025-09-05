@@ -1,6 +1,7 @@
 import type { RouterQuery, BuildDocFn } from './types';
-import type { CoreContent } from '../../chat/content';
 import type { ReadonlyAgentMetadata } from '../../agent/agent-metadata';
+
+import { MultiModalContentHelper } from 'llm-bridge-spec';
 
 export function getQueryText(query: RouterQuery): string {
   if (query.text && query.text.trim().length > 0) {
@@ -9,7 +10,7 @@ export function getQueryText(query: RouterQuery): string {
   if (query.content && query.content.length > 0) {
     const texts: string[] = [];
     for (const c of query.content) {
-      if (isTextContent(c)) {
+      if (MultiModalContentHelper.isStringContent(c)) {
         const v = c.value;
         if (v.trim().length > 0) {
           texts.push(v);
@@ -81,6 +82,7 @@ export function allowByStatus(meta: ReadonlyAgentMetadata, query: RouterQuery): 
   if (meta.status === 'active') {
     return true;
   }
+
   if (meta.status === 'idle') {
     const hints = (query.hints ?? []).map((h) => h.toLowerCase());
     const names = [meta.name?.toLowerCase(), meta.id?.toLowerCase()].filter(Boolean) as string[];
@@ -90,8 +92,4 @@ export function allowByStatus(meta: ReadonlyAgentMetadata, query: RouterQuery): 
   return false;
 }
 
-type MaybeText = { contentType?: unknown; value?: unknown };
-function isTextContent(c: CoreContent): c is CoreContent & { contentType: 'text'; value: string } {
-  const mc = c as MaybeText;
-  return mc != null && mc.contentType === 'text' && typeof mc.value === 'string';
-}
+// Content type guards are delegated to MultiModalContentHelper (llm-bridge-spec)

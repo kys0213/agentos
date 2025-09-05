@@ -37,7 +37,9 @@ export class CompositeAgentRouter implements AgentRouter {
 
     // 수집 및 상태 게이팅
     const metas: ReadonlyAgentMetadata[] = await Promise.all(agents.map((a) => a.getMetadata()));
+
     const candidates: { agent: Agent; meta: ReadonlyAgentMetadata }[] = [];
+
     for (let i = 0; i < agents.length; i++) {
       if (allowByStatus(metas[i], query)) {
         candidates.push({ agent: agents[i], meta: metas[i] });
@@ -64,10 +66,12 @@ export class CompositeAgentRouter implements AgentRouter {
 
     return this.toOutput(top, Boolean(options?.includeScores));
   }
+
   private aggregate(
-    strategyResults: Map<string, { score: number }>[],
+    strategyResults: Map<string, { score: number }>[]
   ): Map<string, { score: number; breakdown: Record<string, number> }> {
     const total = new Map<string, { score: number; breakdown: Record<string, number> }>();
+
     strategyResults.forEach((res, idx) => {
       const key = `s${idx}`;
       for (const [agentId, s] of res.entries()) {
@@ -77,6 +81,7 @@ export class CompositeAgentRouter implements AgentRouter {
         total.set(agentId, prev);
       }
     });
+
     return total;
   }
 
@@ -86,6 +91,7 @@ export class CompositeAgentRouter implements AgentRouter {
     query: RouterQuery
   ) {
     const qText = getQueryText(query);
+
     return candidates
       .map(({ agent, meta }) => ({
         agent,
@@ -120,13 +126,22 @@ export class CompositeAgentRouter implements AgentRouter {
   }
 
   private toOutput(
-    top: Array<{ agent: Agent; meta: ReadonlyAgentMetadata; score: number; breakdown: Record<string, number> }>,
+    top: Array<{
+      agent: Agent;
+      meta: ReadonlyAgentMetadata;
+      score: number;
+      breakdown: Record<string, number>;
+    }>,
     includeScores: boolean
   ) {
     return {
       agents: top.map((r) => r.agent),
       scores: includeScores
-        ? top.map((r) => ({ agentId: r.meta.id, score: r.score, metadata: { breakdown: r.breakdown } }))
+        ? top.map((r) => ({
+            agentId: r.meta.id,
+            score: r.score,
+            metadata: { breakdown: r.breakdown },
+          }))
         : undefined,
     };
   }
