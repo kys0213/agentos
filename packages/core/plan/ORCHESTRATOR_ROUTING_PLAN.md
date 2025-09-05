@@ -142,6 +142,34 @@ export class CompositeAgentRouter implements AgentRouter {
 - 전략 출력 규약: 모든 전략은 [0,1] 범위 점수와 간단한 설명 메타데이터(`matchedTerms`, `strategyScores`)만을 반환한다(사용자 입력 원문 금지).
 - 결정적 정렬: 상기 타이브레이커 규칙을 합성 라우터 결과 정렬에 일관 적용한다.
 
+## LLM‑Assisted Routing (옵션)
+
+목표: 규칙/통계 기반(mention+BM25+휴리스틱) 라우팅을 기본으로 하되, 불확실성이 높거나 한국어/CJK 등 토큰화 한계가 있는 상황에서 LLM을 보조 신호로 활용한다. 비용/지연을 관리 가능한 범위에서 점진 도입한다.
+
+- Keyword Extraction(저비용):
+  - `knowledge/LlmBridgeKeywordExtractor` + `LlmKeywordTokenizer`를 사용해 질의의 핵심 키워드를 추출한다.
+  - 사용 조건: (a) 쿼리 길이 짧고 애매한 경우, (b) 로캘이 ko/ja/zh 등 CJK, (c) BM25 스코어 상위권 동점이 많을 때.
+  - 파라미터: `maxKeywords(≤16)`, `timeoutMs`, `temperature=0`(결정성), 응답은 토큰 세트로 정규화.
+  - 실패/타임아웃: 기본 토크나이저로 폴백.
+
+- LLM Rerank(선택 고비용):
+  - 규칙 기반 상위 N(예: 5~8)을 후보로 추린 뒤, `preset/metadata`로 만든 안전 doc와 질의를 함께 LLM에 제공하여 최종 재정렬한다.
+  - 프롬프트: “질의와 각 후보의 설명/카테고리/키워드를 참고해 가장 적합한 에이전트를 1위부터 나열, JSON 배열로만 응답”.
+  - 가드: temperature=0, max_tokens 제한, 민감 원문 비노출(스니펫만), 시간/비용 상한 초과 시 미실행.
+  - 실패 시: 기존 규칙 기반 정렬 유지.
+
+- Intent Classifier(경량):
+  - LLM으로 intent 라벨(translate/summarize/code/vision 등)을 추출해 `query.tags`에 주입, KeywordBoost에서 가산.
+  - 캐시: 동일 텍스트 해시 단위로 TTL 캐싱.
+
+- Explainability/Privacy:
+  - `ScoreResult.metadata`에는 LLM 이유 문구 대신 간단한 라벨/스코어만 기록(예: `{ rerank: 0.6, reason: 'tags:vision' }`).
+  - 사용자 원문은 저장/전송하지 않고 스니펫/키워드/라벨만 사용.
+
+- Budget/Policy:
+  - 앱 계층에서 라우팅 예산(호출수/시간/비용)과 모드(assist/auto)에 따라 LLM 사용 정책을 주입.
+  - 코어는 전략/토크나이저 DI와 옵션만 제공.
+
 ## Strategy Set(v1 제안)
 
 - MentionStrategy: 멘션/정확 이름/ID 매칭 시 1.0, 그 외 0.
@@ -166,6 +194,14 @@ export class CompositeAgentRouter implements AgentRouter {
 - [x] 퍼포먼스 스모크 테스트(100 agents, 평균 라우팅 시간 측정)
 - [x] 문서: `docs/INTERFACE_SPEC.md`에 코어 라우팅 API 섹션 추가
 - [x] 패키지 export: `packages/core/src/index.ts`에 공개
+
+### LLM‑Assisted (v1.1)
+
+- [ ] LLM KeywordTokenizer 경로 활성화(로캘/불확실성 조건부 실행 + 캐시)
+- [ ] LLM Rerank Strategy(Top‑N 후보 재정렬, 예산/지연 상한, 실패 폴백)
+- [ ] Intent Classifier → `query.tags` 주입 경량 전략
+- [ ] 테스트: 결정성(temperature=0), 실패 폴백, 비용/지연 가드
+- [ ] 정책 훅: 앱 계층 예산/모드 입력으로 LLM 사용 여부 제어
 
 ## 작업 순서
 
