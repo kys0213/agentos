@@ -1,4 +1,5 @@
-import { InMemoryUsageTracker, NoOpUsageTracker } from '../mcp-usage-tracker';
+import { NoOpUsageTracker } from '../no-op-usage-tracker';
+import { InMemoryUsageTracker } from '../in-memory-usage-tracker';
 import { McpUsageLog } from '../mcp-types';
 
 describe('InMemoryUsageTracker', () => {
