@@ -163,7 +163,7 @@ export class CompositeAgentRouter implements AgentRouter {
 - [x] `CompositeAgentRouter` 구현(전략 병렬 실행→합산→결정적 정렬 Top-K)
 - [x] 토크나이저 DI 및 기본값 설정, LLM 키워드 토크나이저 옵션화(선택)
 - [x] 단위 테스트: mention 우선/BM25 매칭/동률 타이브레이커
-- [ ] 퍼포먼스 스모크 테스트(100 agents, 평균 라우팅 시간 측정)
+- [x] 퍼포먼스 스모크 테스트(100 agents, 평균 라우팅 시간 측정)
 - [x] 문서: `docs/INTERFACE_SPEC.md`에 코어 라우팅 API 섹션 추가
 - [x] 패키지 export: `packages/core/src/index.ts`에 공개
 
