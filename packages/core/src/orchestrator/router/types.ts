@@ -43,3 +43,23 @@ export type RoutingStrategyFn = (args: {
   metas: ReadonlyAgentMetadata[];
   helper: RouterHelper;
 }) => Promise<Map<string, ScoreResult>>;
+
+// LLM-assisted routing types
+export interface LlmRoutingPolicy {
+  enableKeyword: boolean;
+  enableIntent?: boolean;
+  enableRerank?: boolean;
+  topN?: number;
+  timeoutMs?: number;
+  localeMode?: 'always' | 'cjk' | 'never';
+  alphaBlend?: number; // weight for rule score in [0,1], default 0.6
+}
+
+export interface LlmReranker {
+  rerank(args: {
+    query: RouterQuery;
+    candidates: Array<{ agentId: string; doc: string }>;
+    helper: RouterHelper;
+    policy: LlmRoutingPolicy;
+  }): Promise<Array<{ agentId: string; score: number }>>; // score in [0,1]
+}

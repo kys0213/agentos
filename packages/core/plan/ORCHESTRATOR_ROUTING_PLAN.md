@@ -10,6 +10,7 @@
 - [ ] 토크나이저 플러그형 구조를 제공한다(기본: `EnglishSimpleTokenizer`, 선택: `LlmKeywordTokenizer`).
 - [ ] 타입 안전성 보장(`any` 금지), `@agentos/core` 내에서 재사용 가능.
 - [ ] `index.d.ts`를 통해 공개 API로 노출한다.
+- [ ] LLM 보조 라우팅을 구조적으로 지원한다(키워드 추출/의도 라벨/Top‑N 재정렬). LLM 실패 시 규칙 기반으로 폴백.
 
 ### 사용 시나리오
 
@@ -142,9 +143,9 @@ export class CompositeAgentRouter implements AgentRouter {
 - 전략 출력 규약: 모든 전략은 [0,1] 범위 점수와 간단한 설명 메타데이터(`matchedTerms`, `strategyScores`)만을 반환한다(사용자 입력 원문 금지).
 - 결정적 정렬: 상기 타이브레이커 규칙을 합성 라우터 결과 정렬에 일관 적용한다.
 
-## LLM‑Assisted Routing (옵션)
+## LLM‑Assisted Routing (핵심 구조)
 
-목표: 규칙/통계 기반(mention+BM25+휴리스틱) 라우팅을 기본으로 하되, 불확실성이 높거나 한국어/CJK 등 토큰화 한계가 있는 상황에서 LLM을 보조 신호로 활용한다. 비용/지연을 관리 가능한 범위에서 점진 도입한다.
+목표: 규칙/통계 기반(mention+BM25+휴리스틱)을 기본으로 하되, 불확실성이 높거나 한국어/CJK 등 토큰화 한계가 있는 상황에서 LLM을 보조 신호로 활용한다. 코어는 구조/DI/정책/캐시를 제공하고, 실행 여부는 앱 정책으로 제어한다.
 
 - Keyword Extraction(저비용):
   - `knowledge/LlmBridgeKeywordExtractor` + `LlmKeywordTokenizer`를 사용해 질의의 핵심 키워드를 추출한다.
@@ -169,6 +170,56 @@ export class CompositeAgentRouter implements AgentRouter {
 - Budget/Policy:
   - 앱 계층에서 라우팅 예산(호출수/시간/비용)과 모드(assist/auto)에 따라 LLM 사용 정책을 주입.
   - 코어는 전략/토크나이저 DI와 옵션만 제공.
+
+### Interface Sketch (LLM DI/정책)
+
+```ts
+// 라우터 옵션에 LLM 정책/구현을 주입
+export interface LlmRoutingPolicy {
+  enableKeyword: boolean;            // 질의 토큰화에 LLM 키워드 사용
+  enableIntent?: boolean;            // intent 라벨 추출→tags 주입
+  enableRerank?: boolean;            // Top‑N 재정렬 활성화
+  topN?: number;                     // 재정렬 후보 수(기본 5~8)
+  timeoutMs?: number;                // 전체 예산(라운드트립)
+  localeMode?: 'always' | 'cjk' | 'never';
+  budget?: { calls?: number; tokens?: number };
+}
+
+export interface LlmReranker {
+  rerank(args: {
+    query: RouterQuery;
+    candidates: Array<{ agentId: string; doc: string }>;
+    helper: RouterHelper; // 안전 doc/snippet/토큰 제공
+    policy: LlmRoutingPolicy;
+  }): Promise<Array<{ agentId: string; score: number }>>; // [0,1] 권장
+}
+
+export interface CompositeAgentRouterOptions {
+  tokenizer?: Tokenizer;
+  buildDoc?: BuildDocFn;
+  llm?: {
+    policy: LlmRoutingPolicy;                     // 필수 정책
+    keywordExtractor?: KeywordExtractor;          // enableKeyword=true일 때 필요
+    reranker?: LlmReranker;                       // enableRerank=true일 때 필요
+  };
+}
+```
+
+### Pipeline (확장 가능한 단계)
+
+1) Normalize: `getQueryText()`로 질의 문자열 표준화, 상태 게이팅.
+2) Enrich (opt): `enableKeyword/enableIntent`에 따라 LLM로 키워드/라벨 추출 → `query.tags/hints` 보강(캐시, 타임아웃, 예산 가드).
+3) Score: 규칙/BM25/휴리스틱 전략 병렬 수행 → [0,1] 점수 합성.
+4) Rerank (opt): 상위 N과 안전 doc를 LLM에 전달→재정렬/보정(블렌딩 또는 순위 교체) + 폴백.
+5) Rank: 결정적 타이브레이커 적용.
+
+블렌딩 예시: `final = α * ruleScore + (1-α) * rerankScore` (α=0.6 권장).
+
+### Caching/Observability/Privacy
+
+- Cache: `doc: agentId+version`, `tokens: (mode: base|llm)+text`, `intent/keywords: hash(model+text)`.
+- Metrics: LLM 호출 수/지연/타임아웃/폴백 비율 수집(옵션 훅 제공).
+- Privacy: 프롬프트에는 스니펫/라벨/키워드만, 원문 저장 금지.
 
 ## Strategy Set(v1 제안)
 
@@ -195,13 +246,13 @@ export class CompositeAgentRouter implements AgentRouter {
 - [x] 문서: `docs/INTERFACE_SPEC.md`에 코어 라우팅 API 섹션 추가
 - [x] 패키지 export: `packages/core/src/index.ts`에 공개
 
-### LLM‑Assisted (v1.1)
+### LLM‑Assisted (v1 / v1.1)
 
-- [ ] LLM KeywordTokenizer 경로 활성화(로캘/불확실성 조건부 실행 + 캐시)
-- [ ] LLM Rerank Strategy(Top‑N 후보 재정렬, 예산/지연 상한, 실패 폴백)
-- [ ] Intent Classifier → `query.tags` 주입 경량 전략
-- [ ] 테스트: 결정성(temperature=0), 실패 폴백, 비용/지연 가드
-- [ ] 정책 훅: 앱 계층 예산/모드 입력으로 LLM 사용 여부 제어
+- [x] LLM KeywordTokenizer 경로 활성화(로캘/불확실성 조건부 실행 + 캐시)
+- [ ] LLM Rerank Strategy(Top‑N 후보 재정렬, 예산/지연 상한, 실패 폴백) — v1.1 구현, 인터페이스는 v1에서 확정
+- [ ] Intent Classifier → `query.tags` 주입 경량 전략 — v1.1
+- [ ] 테스트: 결정성(temperature=0), 실패 폴백, 비용/지연 가드 — v1.1
+- [ ] 정책 훅: 앱 계층 예산/모드 입력으로 LLM 사용 여부 제어 — v1.1
 
 ## 작업 순서
 
