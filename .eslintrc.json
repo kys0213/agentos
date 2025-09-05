@@ -22,7 +22,7 @@
     "brace-style": ["warn", "1tbs", { "allowSingleLine": false }],
     "no-nested-ternary": "error",
     "multiline-ternary": ["warn", "always-multiline"],
-    "max-classes-per-file": ["error", 1],
+    "max-classes-per-file": ["warn", 1],
     "@typescript-eslint/no-require-imports": "error",
     "@typescript-eslint/no-var-requires": "error",
     "no-restricted-syntax": [

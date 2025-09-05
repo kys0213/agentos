@@ -1,6 +1,6 @@
 import type { Tokenizer, KeywordExtractor } from '../../knowledge/tokenizer';
 import type { BuildDocFn } from './types';
-import type { RoutingStrategyFn, LlmRoutingPolicy, LlmReranker } from './types';
+import type { RoutingStrategyFn, LlmRoutingPolicy, LlmReranker, RankComparator } from './types';
 import type { LlmBridge } from 'llm-bridge-spec';
 import { EnglishSimpleTokenizer } from '../../knowledge/tokenizer';
 import { CompositeAgentRouter } from './composite-router';
@@ -18,7 +18,7 @@ export class RouterBuilder {
   };
   private _llmPolicy?: LlmRoutingPolicy;
   private _reranker?: LlmReranker;
-  private _compare?: import('./types').RankComparator;
+  private _compare?: RankComparator;
 
   static create(tokenizer?: Tokenizer, buildDoc?: BuildDocFn): RouterBuilder {
     const b = new RouterBuilder();
@@ -70,7 +70,7 @@ export class RouterBuilder {
     return this;
   }
 
-  compare(cmp: import('./types').RankComparator): this {
+  compare(cmp: RankComparator): this {
     this._compare = cmp;
     return this;
   }
@@ -80,7 +80,11 @@ export class RouterBuilder {
     bridge: LlmBridge,
     opts?: {
       policy?: LlmRoutingPolicy;
-      keyword?: { when?: 'always' | 'locale_cjk' | 'never'; maxKeywords?: number; extractor?: KeywordExtractor };
+      keyword?: {
+        when?: 'always' | 'locale_cjk' | 'never';
+        maxKeywords?: number;
+        extractor?: KeywordExtractor;
+      };
     }
   ): this {
     this._reranker = new DefaultLlmReranker(bridge);
@@ -92,7 +96,8 @@ export class RouterBuilder {
     };
     if (opts?.keyword) {
       const extractor =
-        opts.keyword.extractor ?? new LlmBridgeKeywordExtractor(bridge, { maxKeywords: opts.keyword.maxKeywords });
+        opts.keyword.extractor ??
+        new LlmBridgeKeywordExtractor(bridge, { maxKeywords: opts.keyword.maxKeywords });
       this._llmKeyword = {
         extractor,
         when: opts.keyword.when ?? 'locale_cjk',
@@ -111,11 +116,19 @@ export class RouterBuilder {
       buildDoc: this._buildDoc,
       compare: this._compare,
       llmKeyword: this._llmKeyword,
-      llm: this._llmPolicy || this._reranker
-        ? { policy: this._llmPolicy ?? { enableRerank: true, enableKeyword: Boolean(this._llmKeyword), topN: 5, alphaBlend: 0.6 }, reranker: this._reranker }
-        : undefined,
+      llm:
+        this._llmPolicy || this._reranker
+          ? {
+              policy: this._llmPolicy ?? {
+                enableRerank: true,
+                enableKeyword: Boolean(this._llmKeyword),
+                topN: 5,
+                alphaBlend: 0.6,
+              },
+              reranker: this._reranker,
+            }
+          : undefined,
     };
     return new CompositeAgentRouter(this._strategies, options);
   }
 }
-

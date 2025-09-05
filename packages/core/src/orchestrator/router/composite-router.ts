@@ -11,6 +11,7 @@ import type {
   LlmRoutingPolicy,
   LlmReranker,
 } from './types';
+import type { RankComparator } from './types';
 import { allowByStatus, buildSafeDoc } from './utils';
 import { aggregateResults, rankCandidates, toRouterOutput } from './engine';
 import { RouterHelper } from './helper';
@@ -29,7 +30,7 @@ export interface CompositeAgentRouterOptions {
     keywordExtractor?: KeywordExtractor;
     reranker?: LlmReranker;
   };
-  compare?: import('./types').RankComparator;
+  compare?: RankComparator;
 }
 
 export class CompositeAgentRouter implements AgentRouter {
