@@ -7,6 +7,7 @@ import { vi } from 'vitest';
 import { mock, type MockProxy } from 'vitest-mock-extended';
 import { McpService } from '../mcp-service';
 import type { McpServiceEvents } from '../mcp-service';
+import type { Result } from '@agentos/lang/utils';
 
 // Mock 함수들
 const createMockRepository = (): MockProxy<McpToolRepository> => {
@@ -17,10 +18,7 @@ const createMockRepository = (): MockProxy<McpToolRepository> => {
 
 class FakeMcpRegistry extends McpRegistry {
   register = vi.fn(async (_config: McpConfig) => {});
-  unregister = vi.fn(
-    async (_name: string): Promise<import('@agentos/lang/utils').Result<void> | undefined> =>
-      undefined
-  );
+  unregister = vi.fn(async (_name: string): Promise<Result<void> | undefined> => undefined);
   get = vi.fn(async (_name: string) => null);
   getAll = vi.fn(async () => []);
   getTool = vi.fn(async (_name: string) => null);
