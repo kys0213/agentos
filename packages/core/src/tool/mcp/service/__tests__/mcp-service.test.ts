@@ -4,6 +4,7 @@ import { McpMetadataRegistry } from '../../registry/mcp-metadata-registry';
 import { McpRegistry } from '../../mcp.registery';
 import { McpToolRepository } from '../../repository/mcp-tool-repository';
 import { McpService } from '../mcp-service';
+import type { McpServiceEvents } from '../mcp-service';
 
 // Mock 함수들
 const createMockRepository = (): jest.Mocked<McpToolRepository> => {
@@ -30,6 +31,7 @@ const createMockRepository = (): jest.Mocked<McpToolRepository> => {
 class FakeMcpRegistry extends McpRegistry {
   register = jest.fn(async (_config: McpConfig) => {});
   unregister = jest.fn(
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-restricted-syntax
     async (_name: string): Promise<import('@agentos/lang/utils').Result<void> | undefined> =>
       undefined
   );
@@ -76,8 +78,8 @@ describe('McpService', () => {
     });
 
     it('should emit operation events during initialization', async () => {
-      const started: import('../mcp-service').McpServiceEvents['operationStarted'][] = [];
-      const completed: import('../mcp-service').McpServiceEvents['operationCompleted'][] = [];
+      const started: McpServiceEvents['operationStarted'][] = [];
+      const completed: McpServiceEvents['operationCompleted'][] = [];
       service.on('operationStarted', (e) => started.push(e));
       service.on('operationCompleted', (e) => completed.push(e));
 
@@ -155,8 +157,8 @@ describe('McpService', () => {
     });
 
     it('should emit operation events during registration', async () => {
-      const started: import('../mcp-service').McpServiceEvents['operationStarted'][] = [];
-      const completed: import('../mcp-service').McpServiceEvents['operationCompleted'][] = [];
+      const started: McpServiceEvents['operationStarted'][] = [];
+      const completed: McpServiceEvents['operationCompleted'][] = [];
       service.on('operationStarted', (e) => started.push(e));
       service.on('operationCompleted', (e) => completed.push(e));
 
@@ -312,8 +314,8 @@ describe('McpService', () => {
     });
 
     it('should emit operation events during unregistration', async () => {
-      const started: import('../mcp-service').McpServiceEvents['operationStarted'][] = [];
-      const completed: import('../mcp-service').McpServiceEvents['operationCompleted'][] = [];
+      const started: McpServiceEvents['operationStarted'][] = [];
+      const completed: McpServiceEvents['operationCompleted'][] = [];
       service.on('operationStarted', (e) => started.push(e));
       service.on('operationCompleted', (e) => completed.push(e));
 
@@ -620,7 +622,7 @@ describe('McpService', () => {
     });
 
     it('should emit failed operation events on errors', async () => {
-      const completed: import('../mcp-service').McpServiceEvents['operationCompleted'][] = [];
+      const completed: McpServiceEvents['operationCompleted'][] = [];
       service.on('operationCompleted', (e) => completed.push(e));
 
       const config: McpConfig = {

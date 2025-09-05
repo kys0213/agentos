@@ -1,7 +1,7 @@
 import type { Agent } from '../../agent/agent';
 import type { ReadonlyAgentMetadata } from '../../agent/agent-metadata';
 import type { Tokenizer, KeywordExtractor } from '../../knowledge/tokenizer';
-import { EnglishSimpleTokenizer } from '../../knowledge/tokenizer';
+import { EnglishSimpleTokenizer } from 'src/knowledge/english-simple-tokenizer';
 import type {
   AgentRouter,
   BuildDocFn,

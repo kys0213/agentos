@@ -58,7 +58,7 @@ describe('SimpleAgent events', () => {
 
     const agent = new SimpleAgent('a-evt', llm, mcp, chatManager, mock<AgentMetadataRepository>());
 
-    const events: import('../agent-events').AgentEvent[] = [];
+    const events: AgentEvent[] = [];
     const off = agent.on((e) => events.push(e));
 
     const session = await agent.createSession();
@@ -77,3 +77,4 @@ describe('SimpleAgent events', () => {
     off();
   });
 });
+import type { AgentEvent } from '../agent-events';

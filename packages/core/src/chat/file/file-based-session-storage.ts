@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import type { Dirent } from 'fs';
 import path from 'path';
 import { Checkpoint, MessageHistory } from '../chat-session';
 import { ChatSessionDescription } from '../chat.manager';
@@ -122,7 +123,7 @@ export class FileBasedSessionStorage {
    * 세션 디렉토리 목록을 조회하여 ChatSessionDescription 리스트 반환
    */
   async getSessionList(agentId: string): Promise<ChatSessionDescription[]> {
-    let entries: import('fs').Dirent[] = [];
+    let entries: Dirent[] = [];
     try {
       entries = await fs.readdir(path.join(this.baseDir, agentId), { withFileTypes: true });
     } catch (e) {

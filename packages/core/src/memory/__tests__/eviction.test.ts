@@ -3,7 +3,7 @@ import { SimpleEmbedding } from '../../memory/embedding/simple-embedding';
 
 describe('Eviction respects maxNodes/maxEdges', () => {
   test('nodes do not exceed maxNodes after many inserts', () => {
-    const cfg: import('../types').GraphConfig = {
+    const cfg: GraphConfig = {
       maxNodes: 30,
       maxEdges: 200,
       halfLifeMin: 240,
@@ -21,3 +21,4 @@ describe('Eviction respects maxNodes/maxEdges', () => {
     expect(stats.edges).toBeLessThanOrEqual(200);
   });
 });
+import type { GraphConfig } from '../types';

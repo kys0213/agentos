@@ -1,5 +1,6 @@
 import { InMemoryBM25Index } from '../../bm25/bm25-index';
-import { EnglishSimpleTokenizer, Tokenizer } from '../../tokenizer';
+import { Tokenizer } from '../../tokenizer';
+import { EnglishSimpleTokenizer } from 'src/knowledge/english-simple-tokenizer';
 
 class StubTokenizer implements Tokenizer {
   constructor(private map: Record<string, string[]>) {}

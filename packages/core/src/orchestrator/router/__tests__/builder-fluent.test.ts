@@ -1,6 +1,6 @@
 import { RouterBuilder } from '../router-builder';
 import type { RoutingStrategyFn, ScoreResult, RouterQuery } from '../types';
-import { EnglishSimpleTokenizer } from '../../../knowledge/tokenizer';
+import { EnglishSimpleTokenizer } from 'src/knowledge/english-simple-tokenizer';
 import type { Agent, AgentChatResult } from '../../../agent/agent';
 import type { AgentSession } from '../../../agent/agent-session';
 import type { ReadonlyAgentMetadata } from '../../../agent/agent-metadata';

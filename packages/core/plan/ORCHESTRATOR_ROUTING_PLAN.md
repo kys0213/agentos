@@ -141,7 +141,17 @@ export class CompositeAgentRouter implements AgentRouter {
 - 캐싱: 후보별 doc/토큰 캐시를 `agentId + metadata.version` 키로 관리한다(버전 미지정 시 보수적 TTL).
 - 안전한 DocBuilder: 프롬프트 원문(`systemPrompt`)은 노출하지 않고, 최대 256~512자 스니펫과 `name/description/keywords/category/toolNames` 중심으로 doc을 구성한다.
 - 전략 출력 규약: 모든 전략은 [0,1] 범위 점수와 간단한 설명 메타데이터(`matchedTerms`, `strategyScores`)만을 반환한다(사용자 입력 원문 금지).
-- 결정적 정렬: 상기 타이브레이커 규칙을 합성 라우터 결과 정렬에 일관 적용한다.
+ - 결정적 정렬: 상기 타이브레이커 규칙을 합성 라우터 결과 정렬에 일관 적용한다.
+
+### Builder 중심 컨텍스트 생성
+
+- RouterContextBuilder: 라우팅 1회 요청마다 표준 컨텍스트를 생성한다.
+  - 입력: `tokenizer`, `buildDocFn`, `llmKeyword?`(옵션 정책)
+  - `build(query)` → `RoutingContext`(토큰/도큐먼트 캐시 내장, 로캘/정책 적용)
+- RoutingContext(전략 주입 객체):
+  - `tokenizeQuery(text)`, `tokenizeDoc(text)`, `buildDoc(meta)`, `getQueryText(query)`
+  - 내부 캐시 키: `mode(base|llm)+text`, `doc: agentId+version`
+- 합성 라우터는 Builder로 컨텍스트를 만들고, 모든 전략에 동일 객체를 주입한다(정책/캐시 일관성 보장).
 
 ## LLM‑Assisted Routing (핵심 구조)
 
@@ -155,7 +165,7 @@ export class CompositeAgentRouter implements AgentRouter {
 
 - LLM Rerank(선택 고비용):
   - 규칙 기반 상위 N(예: 5~8)을 후보로 추린 뒤, `preset/metadata`로 만든 안전 doc와 질의를 함께 LLM에 제공하여 최종 재정렬한다.
-  - 프롬프트: “질의와 각 후보의 설명/카테고리/키워드를 참고해 가장 적합한 에이전트를 1위부터 나열, JSON 배열로만 응답”.
+  - 프롬프트(단일, 언어 불가지 기본 템플릿):n    - ROLE: 라우팅 어시스턴트. QUERY와 CANDIDATES를 바탕으로 적합도 산정.n    - INSTRUCTIONS: 신호(의도/키워드/로캘/카테고리/툴/멀티모달/hints) 반영, 0..1 점수, 동점 최소화, JSON 배열만 출력(설명 금지).n    - CONTEXT: LOCALE(없으면 unknown), QUERY(텍스트), HINTS(tags+hints, 선택), CANDIDATES(“#i id=..\n doc”)n    - OUTPUT: 오직 JSON 배열 문자열만.
   - 가드: temperature=0, max_tokens 제한, 민감 원문 비노출(스니펫만), 시간/비용 상한 초과 시 미실행.
   - 실패 시: 기존 규칙 기반 정렬 유지.
 
@@ -185,22 +195,24 @@ export interface LlmRoutingPolicy {
   budget?: { calls?: number; tokens?: number };
 }
 
+// 단순화를 위해 코어는 'LLM 주입'만 받되, 기본 Reranker는 코어가 내장 프롬프트로 제공
+// (앱은 LLM만 전달하면 되고, 프롬프트/포맷은 코어가 관리)
 export interface LlmReranker {
   rerank(args: {
     query: RouterQuery;
     candidates: Array<{ agentId: string; doc: string }>;
-    helper: RouterHelper; // 안전 doc/snippet/토큰 제공
+    helper: RouterHelper;
     policy: LlmRoutingPolicy;
-  }): Promise<Array<{ agentId: string; score: number }>>; // [0,1] 권장
+  }): Promise<Array<{ agentId: string; score: number }>>;
 }
 
 export interface CompositeAgentRouterOptions {
   tokenizer?: Tokenizer;
   buildDoc?: BuildDocFn;
   llm?: {
-    policy: LlmRoutingPolicy;                     // 필수 정책
-    keywordExtractor?: KeywordExtractor;          // enableKeyword=true일 때 필요
-    reranker?: LlmReranker;                       // enableRerank=true일 때 필요
+    policy: LlmRoutingPolicy;           // 호출 예산/모드/locale 등
+    keywordExtractor?: KeywordExtractor; // (선택) LLM 키워드 경로 사용 시
+    reranker?: LlmReranker;              // 미제공 시 코어 기본 Reranker(내장 프롬프트) 사용 권장
   };
 }
 ```

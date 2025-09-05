@@ -1,6 +1,6 @@
 import { CompositeAgentRouter } from '../composite-router';
 import { BM25TextStrategy } from '../strategies/bm25-text-strategy';
-import { EnglishSimpleTokenizer } from '../../../knowledge/tokenizer';
+import { EnglishSimpleTokenizer } from 'src/knowledge/english-simple-tokenizer';
 import type { Agent, AgentChatResult } from '../../../agent/agent';
 import type { AgentSession } from '../../../agent/agent-session';
 import type { ReadonlyAgentMetadata } from '../../../agent/agent-metadata';
