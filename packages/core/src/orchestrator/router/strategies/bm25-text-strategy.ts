@@ -7,11 +7,15 @@ export const BM25TextStrategy: RoutingStrategyFn = async ({ query, metas, helper
   const res = new Map<string, ScoreResult>();
   const q = helper.getQueryText(query);
   if (!q || q.trim().length === 0) {
-    for (const m of metas) res.set(m.id, { score: 0 });
+    for (const m of metas) {
+      res.set(m.id, { score: 0 });
+    }
     return res;
   }
 
-  const index = new InMemoryBM25Index<string>({ tokenizer: { tokenize: (t) => helper.tokenizeDoc(t) } });
+  const index = new InMemoryBM25Index<string>({
+    tokenizer: { tokenize: (t) => helper.tokenizeDoc(t) },
+  });
   for (const m of metas) {
     const doc = helper.buildDoc(m);
     await index.add(m.id, doc);
@@ -20,7 +24,9 @@ export const BM25TextStrategy: RoutingStrategyFn = async ({ query, metas, helper
   const qTokens = await helper.tokenizeQuery(q);
   const results = await index.searchTokens(qTokens, metas.length);
   if (results.length === 0) {
-    for (const m of metas) res.set(m.id, { score: 0 });
+    for (const m of metas) {
+      res.set(m.id, { score: 0 });
+    }
     return res;
   }
 
@@ -29,8 +35,12 @@ export const BM25TextStrategy: RoutingStrategyFn = async ({ query, metas, helper
   const scoreMap = new Map<string, number>();
   for (const r of results) {
     scoreMap.set(r.chunkId, r.score);
-    if (r.score < min) min = r.score;
-    if (r.score > max) max = r.score;
+    if (r.score < min) {
+      min = r.score;
+    }
+    if (r.score > max) {
+      max = r.score;
+    }
   }
   const denom = Math.max(max - min, 1e-9);
   for (const m of metas) {

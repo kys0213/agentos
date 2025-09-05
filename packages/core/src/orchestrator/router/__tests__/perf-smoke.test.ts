@@ -10,14 +10,30 @@ import type { RouterQuery } from '../types';
 
 class StubAgent implements Agent {
   constructor(private meta: ReadonlyAgentMetadata) {}
-  get id() { return this.meta.id; }
-  async chat(): Promise<AgentChatResult> { throw new Error('not used'); }
-  async createSession(): Promise<AgentSession> { throw new Error('not used'); }
-  async getMetadata(): Promise<ReadonlyAgentMetadata> { return this.meta; }
-  async isActive() { return this.meta.status === 'active'; }
-  async isIdle() { return this.meta.status === 'idle'; }
-  async isInactive() { return this.meta.status === 'inactive'; }
-  async isError() { return this.meta.status === 'error'; }
+  get id() {
+    return this.meta.id;
+  }
+  async chat(): Promise<AgentChatResult> {
+    throw new Error('not used');
+  }
+  async createSession(): Promise<AgentSession> {
+    throw new Error('not used');
+  }
+  async getMetadata(): Promise<ReadonlyAgentMetadata> {
+    return this.meta;
+  }
+  async isActive() {
+    return this.meta.status === 'active';
+  }
+  async isIdle() {
+    return this.meta.status === 'idle';
+  }
+  async isInactive() {
+    return this.meta.status === 'inactive';
+  }
+  async isError() {
+    return this.meta.status === 'error';
+  }
   async idle() {}
   async activate() {}
   async inactive() {}
@@ -78,4 +94,3 @@ test('perf smoke: 100 agents routes quickly', async () => {
   // Relaxed threshold to avoid CI flakiness; target is < 25ms local
   expect(avg).toBeLessThan(150);
 });
-

@@ -44,6 +44,15 @@ export type RoutingStrategyFn = (args: {
   helper: RouterHelper;
 }) => Promise<Map<string, ScoreResult>>;
 
+export type RankItem = {
+  agent: Agent;
+  meta: ReadonlyAgentMetadata;
+  score: number;
+  breakdown: Record<string, number>;
+};
+
+export type RankComparator = (a: RankItem, b: RankItem) => number;
+
 // LLM-assisted routing types
 export interface LlmRoutingPolicy {
   enableKeyword: boolean;

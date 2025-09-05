@@ -22,9 +22,12 @@ export class RouterHelper {
     if (hit) {
       return hit;
     }
-    const tokens = (this.shouldUseLlm() && this.llmTokenizer)
-      ? await this.llmTokenizer.tokenize(text)
-      : await this.tokenizer.tokenize(text);
+    let tokens: string[];
+    if (this.shouldUseLlm() && this.llmTokenizer) {
+      tokens = await this.llmTokenizer.tokenize(text);
+    } else {
+      tokens = await this.tokenizer.tokenize(text);
+    }
     this.tokenCache.set(key, tokens);
     return tokens;
   }
@@ -32,7 +35,9 @@ export class RouterHelper {
   async tokenizeDoc(text: string): Promise<string[]> {
     const key = this.tokenCacheKey(text, false);
     const hit = this.tokenCache.get(key);
-    if (hit) return hit;
+    if (hit) {
+      return hit;
+    }
     const tokens = await this.tokenizer.tokenize(text);
     this.tokenCache.set(key, tokens);
     return tokens;
@@ -60,7 +65,10 @@ export class RouterHelper {
     this.queryLocale = query.locale;
   }
 
-  configureLlm(extractor: KeywordExtractor, opts?: { maxKeywords?: number; when?: 'always' | 'locale_cjk' | 'never' }) {
+  configureLlm(
+    extractor: KeywordExtractor,
+    opts?: { maxKeywords?: number; when?: 'always' | 'locale_cjk' | 'never' }
+  ) {
     this.llmTokenizer = new LlmKeywordTokenizer(extractor, opts?.maxKeywords);
     this.llmWhen = opts?.when ?? 'never';
   }
@@ -71,9 +79,15 @@ export class RouterHelper {
   }
 
   private shouldUseLlm(): boolean {
-    if (!this.llmTokenizer) return false;
-    if (this.llmWhen === 'always') return true;
-    if (this.llmWhen === 'never') return false;
+    if (!this.llmTokenizer) {
+      return false;
+    }
+    if (this.llmWhen === 'always') {
+      return true;
+    }
+    if (this.llmWhen === 'never') {
+      return false;
+    }
     const loc = (this.queryLocale ?? '').toLowerCase();
     return loc.startsWith('ko') || loc.startsWith('ja') || loc.startsWith('zh');
   }

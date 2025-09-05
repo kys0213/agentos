@@ -9,13 +9,19 @@ export const ToolHintStrategy: RoutingStrategyFn = async ({ query, metas }) => {
     const tools = m.preset?.enabledMcps?.flatMap((mc) => mc.enabledTools) ?? [];
     const tokens = new Set<string>();
     for (const t of tools) {
-      if (t?.name) tokens.add(t.name.toLowerCase());
-      if (t?.title) tokens.add(t.title.toLowerCase());
+      if (t?.name) {
+        tokens.add(t.name.toLowerCase());
+      }
+      if (t?.title) {
+        tokens.add(t.title.toLowerCase());
+      }
     }
     let hits = 0;
     if (hints.length && tokens.size) {
       for (const h of hints) {
-        if (tokens.has(h)) hits++;
+        if (tokens.has(h)) {
+          hits++;
+        }
       }
     }
     const score = Math.min(0.2, hits * 0.1);

@@ -13,7 +13,9 @@ export const KeywordBoostStrategy: RoutingStrategyFn = async ({ query, metas, he
     let overlap = 0;
     if (qTokens.size > 0 && tokens.size > 0) {
       for (const t of tokens) {
-        if (qTokens.has(t)) overlap++;
+        if (qTokens.has(t)) {
+          overlap++;
+        }
       }
     }
     // 0.05 per overlap, capped to 0.2
