@@ -1,6 +1,6 @@
 import type { Agent } from '../../agent/agent';
 import type { ReadonlyAgentMetadata } from '../../agent/agent-metadata';
-import type { Tokenizer } from '../../knowledge/tokenizer';
+import type { Tokenizer, KeywordExtractor } from '../../knowledge/tokenizer';
 import { EnglishSimpleTokenizer } from '../../knowledge/tokenizer';
 import type {
   AgentRouter,
@@ -17,10 +17,14 @@ import { RouterHelper } from './helper';
 export interface CompositeAgentRouterOptions {
   tokenizer?: Tokenizer;
   buildDoc?: BuildDocFn;
-  llmKeyword?: { extractor: import('../../knowledge/tokenizer').KeywordExtractor; maxKeywords?: number; when?: 'always' | 'locale_cjk' | 'never' };
+  llmKeyword?: {
+    extractor: KeywordExtractor;
+    maxKeywords?: number;
+    when?: 'always' | 'locale_cjk' | 'never';
+  };
   llm?: {
     policy: LlmRoutingPolicy;
-    keywordExtractor?: import('../../knowledge/tokenizer').KeywordExtractor;
+    keywordExtractor?: KeywordExtractor;
     reranker?: LlmReranker;
   };
 }
@@ -67,7 +71,12 @@ export class CompositeAgentRouter implements AgentRouter {
     if (llmOpt?.policy?.enableKeyword && llmOpt.keywordExtractor) {
       helper.configureLlm(llmOpt.keywordExtractor, {
         maxKeywords: undefined,
-        when: (llmOpt.policy.localeMode === 'always' ? 'always' : llmOpt.policy.localeMode === 'cjk' ? 'locale_cjk' : 'never'),
+        when:
+          llmOpt.policy.localeMode === 'always'
+            ? 'always'
+            : llmOpt.policy.localeMode === 'cjk'
+              ? 'locale_cjk'
+              : 'never',
       });
     } else if ((this as any).options?.llmKeyword) {
       const { extractor, maxKeywords, when } = (this as any).options.llmKeyword;
@@ -99,28 +108,44 @@ export class CompositeAgentRouter implements AgentRouter {
         let reMax = -Infinity;
         for (const { agentId, score } of re) {
           reMap.set(agentId, score);
-          if (score < reMin) reMin = score;
-          if (score > reMax) reMax = score;
+          if (score < reMin) {
+            reMin = score;
+          }
+          if (score > reMax) {
+            reMax = score;
+          }
         }
         const d = Math.max(reMax - reMin, 1e-9);
         // Blend scores for candidates in Top-N
         const blended = ranked.map((r) => {
-          if (!reMap.has(r.meta.id)) return r;
+          if (!reMap.has(r.meta.id)) {
+            return r;
+          }
           const rnorm = (reMap.get(r.meta.id)! - reMin) / d;
           const score = alpha * r.score + (1 - alpha) * rnorm;
           return { ...r, score };
         });
         ranked = blended.sort((a, b) => {
-          if (b.score !== a.score) return b.score - a.score;
+          if (b.score !== a.score) {
+            return b.score - a.score;
+          }
           const sa = statusOrder(a.meta.status);
           const sb = statusOrder(b.meta.status);
-          if (sa !== sb) return sa - sb;
+          if (sa !== sb) {
+            return sa - sb;
+          }
           const la = a.meta.lastUsed ? new Date(a.meta.lastUsed).getTime() : 0;
           const lb = b.meta.lastUsed ? new Date(b.meta.lastUsed).getTime() : 0;
-          if (lb !== la) return lb - la;
-          if (b.meta.usageCount !== a.meta.usageCount) return b.meta.usageCount - a.meta.usageCount;
+          if (lb !== la) {
+            return lb - la;
+          }
+          if (b.meta.usageCount !== a.meta.usageCount) {
+            return b.meta.usageCount - a.meta.usageCount;
+          }
           const na = (a.meta.name ?? '').localeCompare(b.meta.name ?? '');
-          if (na !== 0) return na;
+          if (na !== 0) {
+            return na;
+          }
           return (a.meta.id ?? '').localeCompare(b.meta.id ?? '');
         });
       } catch {

@@ -35,6 +35,10 @@
         "message": "Do not use 'as unknown'. Prefer explicit types or narrowing with guards."
       },
       {
+        "selector": "TSImportType",
+        "message": "Inline import types (import('...')) are forbidden. Use top-level `import type { ... } from '...';`."
+      },
+      {
         "selector": "ImportExpression",
         "message": "Dynamic import() is forbidden. Use static imports or dependency injection/mocks."
       }
