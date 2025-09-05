@@ -23,4 +23,3 @@ export const ToolHintStrategy: RoutingStrategyFn = async ({ query, metas }) => {
   }
   return res;
 };
-

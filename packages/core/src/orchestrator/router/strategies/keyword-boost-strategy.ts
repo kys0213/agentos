@@ -1,11 +1,10 @@
 import type { RoutingStrategyFn, ScoreResult } from '../types';
-import { getQueryText } from '../utils';
 
 // KeywordBoostStrategy: overlap of query tokens with keywords/categories
-export const KeywordBoostStrategy: RoutingStrategyFn = async ({ query, metas, helpers }) => {
+export const KeywordBoostStrategy: RoutingStrategyFn = async ({ query, metas, helper }) => {
   const res = new Map<string, ScoreResult>();
-  const q = getQueryText(query);
-  const qTokens = new Set<string>(q ? await helpers.tokenize.tokenize(q) : []);
+  const q = helper.getQueryText(query);
+  const qTokens = new Set<string>(q ? await helper.tokenize(q) : []);
 
   for (const m of metas) {
     const keywords = (m.keywords ?? []).map((k) => k.toLowerCase());
@@ -26,4 +25,3 @@ export const KeywordBoostStrategy: RoutingStrategyFn = async ({ query, metas, he
   }
   return res;
 };
-

@@ -25,13 +25,23 @@ export const buildSafeDoc: BuildDocFn = (meta, options) => {
   const limit = Math.max(0, Math.min(4096, options?.promptLimit ?? 512));
   const parts: string[] = [];
   parts.push(`name: ${meta.name}`);
-  if (meta.description) parts.push(`desc: ${truncate(meta.description, 256)}`);
-  if (meta.keywords?.length) parts.push(`keywords: ${meta.keywords.join(', ')}`);
-  if (meta.preset?.category?.length) parts.push(`cats: ${meta.preset.category.join(', ')}`);
+
+  if (meta.description) {
+    parts.push(`desc: ${truncate(meta.description, 256)}`);
+  }
+
+  if (meta.keywords?.length) {
+    parts.push(`keywords: ${meta.keywords.join(', ')}`);
+  }
+  if (meta.preset?.category?.length) {
+    parts.push(`cats: ${meta.preset.category.join(', ')}`);
+  }
   try {
     const tools = meta.preset?.enabledMcps?.flatMap((m) => m.enabledTools) ?? [];
     const toolTokens = tools.flatMap((t) => [t.name, t.title]).filter(Boolean) as string[];
-    if (toolTokens.length) parts.push(`tools: ${Array.from(new Set(toolTokens)).join(', ')}`);
+    if (toolTokens.length) {
+      parts.push(`tools: ${Array.from(new Set(toolTokens)).join(', ')}`);
+    }
   } catch {
     // ignore
   }
@@ -44,7 +54,9 @@ export const buildSafeDoc: BuildDocFn = (meta, options) => {
 };
 
 function truncate(s: string, n: number): string {
-  if (!s) return '';
+  if (!s) {
+    return '';
+  }
   return s.length <= n ? s : s.slice(0, n);
 }
 

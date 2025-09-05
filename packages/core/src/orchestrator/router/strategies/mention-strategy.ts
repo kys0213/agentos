@@ -14,4 +14,3 @@ export const MentionStrategy: RoutingStrategyFn = async ({ query, metas }) => {
   }
   return res;
 };
-
