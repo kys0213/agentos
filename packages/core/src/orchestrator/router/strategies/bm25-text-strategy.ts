@@ -11,12 +11,14 @@ export const BM25TextStrategy: RoutingStrategyFn = async ({ query, metas, helper
     return res;
   }
 
-  const index = new InMemoryBM25Index<string>({ tokenizer: { tokenize: (t) => helper.tokenize(t) } });
+  const index = new InMemoryBM25Index<string>({ tokenizer: { tokenize: (t) => helper.tokenizeDoc(t) } });
   for (const m of metas) {
     const doc = helper.buildDoc(m);
     await index.add(m.id, doc);
   }
-  const results = await index.search(q, metas.length);
+  // Query tokenization uses LLM policy when enabled
+  const qTokens = await helper.tokenizeQuery(q);
+  const results = await index.searchTokens(qTokens, metas.length);
   if (results.length === 0) {
     for (const m of metas) res.set(m.id, { score: 0 });
     return res;

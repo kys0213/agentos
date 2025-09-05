@@ -4,7 +4,7 @@ import type { RoutingStrategyFn, ScoreResult } from '../types';
 export const KeywordBoostStrategy: RoutingStrategyFn = async ({ query, metas, helper }) => {
   const res = new Map<string, ScoreResult>();
   const q = helper.getQueryText(query);
-  const qTokens = new Set<string>(q ? await helper.tokenize(q) : []);
+  const qTokens = new Set<string>(q ? await helper.tokenizeQuery(q) : []);
 
   for (const m of metas) {
     const keywords = (m.keywords ?? []).map((k) => k.toLowerCase());

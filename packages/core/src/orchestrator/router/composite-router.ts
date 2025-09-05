@@ -15,17 +15,20 @@ import { RouterHelper } from './helper';
 export interface CompositeAgentRouterOptions {
   tokenizer?: Tokenizer;
   buildDoc?: BuildDocFn;
+  llmKeyword?: { extractor: import('../../knowledge/tokenizer').KeywordExtractor; maxKeywords?: number; when?: 'always' | 'locale_cjk' | 'never' };
 }
 
 export class CompositeAgentRouter implements AgentRouter {
   private readonly strategies: RoutingStrategyFn[];
   private readonly tokenizer: Tokenizer;
   private readonly buildDoc?: BuildDocFn;
+  private readonly options?: CompositeAgentRouterOptions;
 
   constructor(strategies: RoutingStrategyFn[], options?: CompositeAgentRouterOptions) {
     this.strategies = strategies;
     this.tokenizer = options?.tokenizer ?? new EnglishSimpleTokenizer();
     this.buildDoc = options?.buildDoc ?? buildSafeDoc;
+    this.options = options;
   }
 
   async route(
@@ -52,6 +55,11 @@ export class CompositeAgentRouter implements AgentRouter {
 
     // 전략 실행 (헬퍼 객체로 토큰/문서 캐시 포함)
     const helper = new RouterHelper(this.tokenizer, this.buildDoc);
+    if ((this as any).options?.llmKeyword) {
+      const { extractor, maxKeywords, when } = (this as any).options.llmKeyword;
+      helper.configureLlm(extractor, { maxKeywords, when });
+    }
+    helper.setQueryContext(query);
     const strategyResults = await Promise.all(
       this.strategies.map((fn) => fn({ query, metas: candidates.map((c) => c.meta), helper }))
     );
