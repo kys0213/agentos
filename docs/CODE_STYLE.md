@@ -13,6 +13,13 @@ This project uses **TypeScript** with ESLint and Prettier to keep the codebase c
 2. **Clean Architecture** — aim for a clear dependency flow and avoid circular references.
 3. **Test-Driven Development** — write tests first when adding new behavior.
 4. **Type Safety** — favor generics and avoid `any`. If you must accept unknown input, use `unknown` and guard types before use.
+5. **One Class per File** — 한 파일에는 하나의 클래스만 선언합니다. 유지보수성과 검색성, 순환 의존성 방지에 유리합니다. (ESLint `max-classes-per-file: ["error", 1]` 적용)
+
+### One Class per File 규칙 예외
+
+- 테스트 파일(`**/__tests__/**`, `*.test.ts`, `*.spec.ts`)은 작은 mock/helper 클래스를 함께 둘 수 있도록 최대 2개까지 경고 수준으로 허용합니다. 파일이 커지면 분리하세요.
+- `index.ts`(barrel 파일)는 클래스를 직접 선언하지 말고 재-export만 수행합니다.
+- 인터페이스/타입/enum은 이 규칙의 대상이 아니지만, 클래스와 섞여 과도하게 커질 경우 파일을 분리하는 것을 권장합니다.
 
 ## Control Flow & Readability
 

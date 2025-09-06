@@ -82,6 +82,10 @@ export class InMemoryBM25Index<TChunkId extends string = string> {
 
   async search(query: string, topK: number = 5): Promise<BM25SearchResult<TChunkId>[]> {
     const qTokens = await this.tokenizer.tokenize(query);
+    return this.searchTokens(qTokens, topK);
+  }
+
+  async searchTokens(qTokens: string[], topK: number = 5): Promise<BM25SearchResult<TChunkId>[]> {
     const scores = new Map<TChunkId, number>();
 
     for (const q of qTokens) {

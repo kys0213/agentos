@@ -1,5 +1,5 @@
-import { McpUsageLog, McpUsageStats, McpUsageTracker } from './mcp-types';
-import { isNonEmptyArray } from '@agentos/lang/validation';
+import { isNonEmptyArray } from '@agentos/lang';
+import { McpUsageTracker, McpUsageLog, McpUsageStats } from './mcp-types';
 
 /**
  * 메모리 기반 MCP 사용량 추적기 구현
@@ -7,6 +7,7 @@ import { isNonEmptyArray } from '@agentos/lang/validation';
  * 사용량 로그를 메모리에 저장하고 실시간 통계를 제공합니다.
  * 프로덕션 환경에서는 데이터베이스 기반 구현으로 교체할 수 있습니다.
  */
+
 export class InMemoryUsageTracker implements McpUsageTracker {
   private logs: McpUsageLog[] = [];
   private nextId = 1;
@@ -133,32 +134,5 @@ export class InMemoryUsageTracker implements McpUsageTracker {
 
   private generateId(): string {
     return `log_${this.nextId++}_${Date.now()}`;
-  }
-}
-
-/**
- * 사용량 추적을 비활성화한 더미 구현
- * usageTrackingEnabled: false 일 때 사용됩니다.
- */
-export class NoOpUsageTracker implements McpUsageTracker {
-  trackUsage(_log: Omit<McpUsageLog, 'id' | 'timestamp'>): void {
-    // 아무것도 하지 않음
-  }
-
-  getUsageLogs(_toolId?: string): McpUsageLog[] {
-    return [];
-  }
-
-  getUsageStats(_toolId?: string): McpUsageStats {
-    return {
-      totalUsage: 0,
-      successRate: 0,
-      averageDuration: 0,
-      errorCount: 0,
-    };
-  }
-
-  clearLogs(_olderThan?: Date): void {
-    // 아무것도 하지 않음
   }
 }

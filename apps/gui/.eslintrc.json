@@ -10,51 +10,35 @@
     "no-nested-ternary": "warn",
     "multiline-ternary": ["warn", "always-multiline"],
     "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-require-imports": "error",
+    "@typescript-eslint/no-var-requires": "error",
     "no-restricted-syntax": [
       "error",
       {
         "selector": "TSAsExpression > TSAnyKeyword",
-        "message": "Do not use 'as any'; use proper typing, generics, or runtime guards."
+        "message": "Do not use 'as any' in tests. Model types explicitly or use narrow test-only interfaces."
       },
       {
         "selector": "TSAsExpression > TSUnknownKeyword",
-        "message": "Do not use 'as unknown'; prefer explicit types or narrowing with guards."
+        "message": "Do not use 'as unknown' in tests. Narrow types with type guards or adjust generics."
+      },
+      {
+        "selector": "ImportExpression",
+        "message": "Dynamic import() is forbidden in tests. Use static imports or dependency injection/mocks."
       }
     ]
   },
   "overrides": [
     {
-      "files": ["src/renderer/**/*.{ts,tsx}"],
+      "files": ["src/main/**/dto/**/*.ts"],
       "rules": {
-        "no-restricted-syntax": "error",
-        "@typescript-eslint/no-explicit-any": "error",
-        "prettier/prettier": "warn"
+        "max-classes-per-file": ["warn", 8]
       }
     },
     {
-      "files": [
-        "src/**/*.__tests__.*",
-        "src/**/__tests__/**/*.{ts,tsx}",
-        "src/**/?(*.)+(spec|test).{ts,tsx}"
-      ],
+      "files": ["src/renderer/**/*.{ts,tsx}"],
       "rules": {
-        "@typescript-eslint/no-require-imports": "error",
-        "@typescript-eslint/no-var-requires": "error",
-        "no-restricted-syntax": [
-          "error",
-          {
-            "selector": "TSAsExpression > TSAnyKeyword",
-            "message": "Do not use 'as any' in tests. Model types explicitly or use narrow test-only interfaces."
-          },
-          {
-            "selector": "TSAsExpression > TSUnknownKeyword",
-            "message": "Do not use 'as unknown' in tests. Narrow types with type guards or adjust generics."
-          },
-          {
-            "selector": "ImportExpression",
-            "message": "Dynamic import() is forbidden in tests. Use static imports or dependency injection/mocks."
-          }
-        ],
+        "no-restricted-syntax": "error",
         "@typescript-eslint/no-explicit-any": "error",
         "prettier/prettier": "warn"
       }

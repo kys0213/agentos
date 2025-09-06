@@ -2,5 +2,18 @@
   "extends": ["../../.eslintrc.json"],
   "parserOptions": {
     "project": ["./tsconfig.json"]
+  },
+  "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["^src/*", "^src/**"],
+            "message": "'src/*' 절대 경로 임포트는 금지합니다. 패키지 내부는 상대 경로(../) 또는 허용된 워크스페이스 별칭(@agentos/*)을 사용하세요."
+          }
+        ]
+      }
+    ]
   }
 }

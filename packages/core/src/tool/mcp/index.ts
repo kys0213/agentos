@@ -45,3 +45,6 @@ export { McpUsageService } from './usage/service/mcp-usage-service';
 // Legacy exports (for backward compatibility)
 export { McpEvent, type McpEventMap } from './mcp-event';
 export { McpTransportFactory } from './mcp-transport.factory';
+export { InMemoryUsageTracker } from './in-memory-usage-tracker';
+export type { McpUsageTracker } from './mcp-types';
+export { NoOpUsageTracker } from './no-op-usage-tracker';

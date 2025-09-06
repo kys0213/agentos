@@ -21,5 +21,16 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov'],
     },
+    deps: {
+      optimizer: {
+        ssr: {
+          include: ['llm-bridge-spec'],
+        },
+      },
+    },
+  },
+  // No alias needed; core ESM uses relative imports
+  ssr: {
+    noExternal: ['llm-bridge-spec'],
   },
 });
