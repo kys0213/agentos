@@ -6,8 +6,7 @@
     "build": "pnpm -r build",
     "dev": "pnpm -r dev",
     "lint": "pnpm -r lint",
-    "test": "pnpm -r test:vitest",
-    "test:vitest": "pnpm -r test:vitest",
+    "test": "pnpm -r exec -- bash -lc 'pnpm run -s test:vitest'",
     "typecheck": "pnpm -r typecheck",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
   },

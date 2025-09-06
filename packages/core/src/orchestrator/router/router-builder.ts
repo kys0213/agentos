@@ -2,7 +2,7 @@ import type { Tokenizer, KeywordExtractor } from '../../knowledge/tokenizer';
 import type { BuildDocFn } from './types';
 import type { RoutingStrategyFn, LlmRoutingPolicy, LlmReranker, RankComparator } from './types';
 import type { LlmBridge } from 'llm-bridge-spec';
-import { EnglishSimpleTokenizer } from 'src/knowledge/english-simple-tokenizer';
+import { EnglishSimpleTokenizer } from '../../knowledge/english-simple-tokenizer';
 import { CompositeAgentRouter } from './composite-router';
 import { DefaultLlmReranker } from './llm/default-reranker';
 import { LlmBridgeKeywordExtractor } from '../../knowledge/llm/llm-keyword-extractor';

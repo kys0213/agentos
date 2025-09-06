@@ -1,5 +1,5 @@
 import type { KeywordExtractor, Tokenizer } from '../../knowledge/tokenizer';
-import { LlmKeywordTokenizer } from 'src/knowledge/llm-keyword-tokenizer';
+import { LlmKeywordTokenizer } from '../../knowledge/llm-keyword-tokenizer';
 import type { BuildDocFn, RouterQuery } from './types';
 import type { ReadonlyAgentMetadata } from '../../agent/agent-metadata';
 import { getQueryText } from './utils';

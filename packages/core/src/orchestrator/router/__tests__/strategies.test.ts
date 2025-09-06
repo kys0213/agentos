@@ -4,7 +4,7 @@ import { MentionStrategy } from '../strategies/mention-strategy';
 import { KeywordBoostStrategy } from '../strategies/keyword-boost-strategy';
 import { ToolHintStrategy } from '../strategies/tool-hint-strategy';
 import { FileTypeStrategy } from '../strategies/file-type-strategy';
-import { EnglishSimpleTokenizer } from 'src/knowledge/english-simple-tokenizer';
+import { EnglishSimpleTokenizer } from '../../../knowledge/english-simple-tokenizer';
 import type { Agent, AgentChatResult } from '../../../agent/agent';
 import type { AgentSession } from '../../../agent/agent-session';
 import type { ReadonlyAgentMetadata } from '../../../agent/agent-metadata';

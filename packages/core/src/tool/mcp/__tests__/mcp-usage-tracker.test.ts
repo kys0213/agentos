@@ -1,6 +1,5 @@
-import { NoOpUsageTracker } from '../no-op-usage-tracker';
 import { InMemoryUsageTracker } from '../in-memory-usage-tracker';
-import { McpUsageLog } from '../mcp-types';
+import { NoOpUsageTracker } from '../no-op-usage-tracker';
 
 describe('InMemoryUsageTracker', () => {
   let tracker: InMemoryUsageTracker;
