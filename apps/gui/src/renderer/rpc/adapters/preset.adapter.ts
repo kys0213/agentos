@@ -50,7 +50,9 @@ export class PresetServiceAdapter {
     return items.filter((p): p is NonNullable<typeof p> => Boolean(p)).map((p) => this.toPreset(p));
   }
 
-  async createPreset(preset: CreatePreset): Promise<Preset> {
+  async createPreset(
+    preset: CreatePreset
+  ): Promise<Preset> {
     // Map core CreatePreset → contract payload
     const payload = C.methods['create'].payload.parse({
       name: preset.name,
@@ -71,7 +73,10 @@ export class PresetServiceAdapter {
     throw new Error(res.error ?? 'Failed to create preset');
   }
 
-  async updatePreset(id: string, patch: Partial<Omit<Preset, 'id'>>): Promise<Preset> {
+  async updatePreset(
+    id: string,
+    patch: Partial<Omit<Preset, 'id'>>
+  ): Promise<Preset> {
     const current = C.methods['get'].response.parse(await this.client.get(id));
     if (!current) {
       throw new Error('Preset not found');

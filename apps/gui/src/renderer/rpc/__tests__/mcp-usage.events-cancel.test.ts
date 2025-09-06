@@ -42,7 +42,9 @@ describe('McpUsageRpcService.subscribeToUsageUpdates cancel semantics', () => {
         }
         if (frame.kind === 'can') {
           // server acknowledges cancel by ending the stream
-          if (interval) clearInterval(interval);
+          if (interval) {
+            clearInterval(interval);
+          }
           interval = null;
           onFrame?.({ kind: 'end', cid: frame.cid } as RpcFrame);
         }
