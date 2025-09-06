@@ -1,4 +1,5 @@
-import { FunctionPublisher, CompositePublisher } from '../../event/function-publisher';
+import { CompositePublisher } from '../composite-publisher';
+import { FunctionPublisher } from '../function-publisher';
 
 describe('FunctionPublisher', () => {
   test('publishes with prefix', () => {

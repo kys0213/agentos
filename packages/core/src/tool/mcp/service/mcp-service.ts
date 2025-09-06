@@ -42,7 +42,7 @@ export class McpService {
   constructor(
     private readonly repository: McpToolRepository,
     private readonly registry: McpMetadataRegistry,
-    private readonly usageService?: import('../usage/service/mcp-usage-service').McpUsageService
+    private readonly usageService?: McpUsageService
   ) {
     // Registry 이벤트를 서비스 이벤트로 전파
     this.setupEventForwarding();
@@ -456,3 +456,4 @@ export class McpService {
     }
   }
 }
+import type { McpUsageService } from '../usage/service/mcp-usage-service';
