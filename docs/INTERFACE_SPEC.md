@@ -19,7 +19,15 @@ Public exports are available via `@agentos/core`.
 Usage
 
 ```ts
-import { CompositeAgentRouter, BM25TextStrategy, MentionStrategy, KeywordBoostStrategy, ToolHintStrategy, FileTypeStrategy, EnglishSimpleTokenizer } from '@agentos/core';
+import {
+  CompositeAgentRouter,
+  BM25TextStrategy,
+  MentionStrategy,
+  KeywordBoostStrategy,
+  ToolHintStrategy,
+  FileTypeStrategy,
+  EnglishSimpleTokenizer,
+} from '@agentos/core';
 
 // Construct router with strategy set and DI tokenizer
 const router = new CompositeAgentRouter(
@@ -35,7 +43,10 @@ const query: RouterQuery = {
 };
 
 // Route among agents (assumes you have Agent instances)
-const { agents, scores } = await router.route(query, candidateAgents, { topK: 3, includeScores: true });
+const { agents, scores } = await router.route(query, candidateAgents, {
+  topK: 3,
+  includeScores: true,
+});
 // agents: sorted best → worst
 // scores: optional per-agent composite scores and breakdown metadata
 ```
