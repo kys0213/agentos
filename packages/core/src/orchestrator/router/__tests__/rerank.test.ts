@@ -7,38 +7,39 @@ import type { ReadonlyAgentMetadata } from '../../../agent/agent-metadata';
 import type { RouterQuery, LlmReranker, LlmRoutingPolicy } from '../types';
 import { RouterHelper } from '../helper';
 
-const makeStubAgent = (m: ReadonlyAgentMetadata): Agent => ({
+class StubAgent implements Agent {
+  constructor(private meta: ReadonlyAgentMetadata) {}
   get id() {
-    return m.id;
-  },
+    return this.meta.id;
+  }
   async chat(): Promise<AgentChatResult> {
     throw new Error('not used');
-  },
+  }
   async createSession(): Promise<AgentSession> {
     throw new Error('not used');
-  },
-  async getMetadata() {
-    return m;
-  },
+  }
+  async getMetadata(): Promise<ReadonlyAgentMetadata> {
+    return this.meta;
+  }
   async isActive() {
-    return m.status === 'active';
-  },
+    return this.meta.status === 'active';
+  }
   async isIdle() {
-    return m.status === 'idle';
-  },
+    return this.meta.status === 'idle';
+  }
   async isInactive() {
-    return m.status === 'inactive';
-  },
+    return this.meta.status === 'inactive';
+  }
   async isError() {
-    return m.status === 'error';
-  },
-  async idle() {},
-  async activate() {},
-  async inactive() {},
-  async update() {},
-  async delete() {},
-  async endSession() {},
-});
+    return this.meta.status === 'error';
+  }
+  async idle() {}
+  async activate() {}
+  async inactive() {}
+  async update() {}
+  async delete() {}
+  async endSession() {}
+}
 
 function meta(id: string, name: string, desc: string): ReadonlyAgentMetadata {
   return {
@@ -70,28 +71,29 @@ function meta(id: string, name: string, desc: string): ReadonlyAgentMetadata {
   } as ReadonlyAgentMetadata;
 }
 
-const makeReranker = (): LlmReranker => ({
+class FakeReranker implements LlmReranker {
   async rerank(args: {
     query: RouterQuery;
     candidates: Array<{ agentId: string; doc: string }>;
     helper: RouterHelper;
     policy: LlmRoutingPolicy;
   }) {
+    // Favor the agent whose doc contains the word "special"
     return args.candidates.map(({ agentId, doc }) => ({
       agentId,
       score: doc.includes('special') ? 1 : 0,
     }));
-  },
-});
+  }
+}
 
 test('LLM reranker adjusts top-N ordering with blending', async () => {
-  const a1 = makeStubAgent(meta('alpha', 'Alpha', 'generic helper'));
-  const a2 = makeStubAgent(meta('beta', 'Beta', 'special sorting arrays'));
+  const a1 = new StubAgent(meta('alpha', 'Alpha', 'generic helper'));
+  const a2 = new StubAgent(meta('beta', 'Beta', 'special sorting arrays'));
   const router = new CompositeAgentRouter([BM25TextStrategy], {
     tokenizer: new EnglishSimpleTokenizer(),
     llm: {
       policy: { enableKeyword: false, enableRerank: true, topN: 2, alphaBlend: 0.5 },
-      reranker: makeReranker(),
+      reranker: new FakeReranker(),
     },
   });
   const q: RouterQuery = { text: 'sort arrays quickly' };

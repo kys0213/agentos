@@ -63,3 +63,4 @@ Note: This document is promoted from the original plan after implementation and 
 ## 경계/아키텍처 원칙
 
 - 코어는 선택만 담당(실행/세션/캐시는 앱 계층). 플랫폼 ID 비노출.
+
