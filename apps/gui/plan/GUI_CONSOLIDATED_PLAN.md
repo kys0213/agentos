@@ -29,12 +29,12 @@
 
 ### Phase 2 — 타입 엄격화(어댑터/훅/ESLint)
 
-- [ ] 어댑터 any 제거 + 경계 zod.parse 적용
+- [x] 어댑터 any 제거 + 경계 zod.parse 적용
   - [x] agent.adapter.ts — payload/result 계약 타입 적용 (ref: 675c389)
   - [x] conversation.adapter.ts — CursorPagination 스키마 적용 (ref: 735baeb)
   - [x] preset.adapter.ts — Core Preset 매핑 엄격화(기본값 보강 제거)
   - [x] bridge.adapter.ts — 반환 타입 계약 일치 (ref: d991d31)
-- [ ] 훅 타입 정리 및 캐스팅 제거
+- [x] 훅 타입 정리 및 캐스팅 제거
   - [x] use-chat.ts
   - [x] use-conversation.ts
   - [x] useAppData.ts
@@ -48,7 +48,7 @@
 ### Phase 4 — 레거시/문서
 
 - [x] 레거시 컨트롤러 제거(bridge/mcp/preset/agent)
-- [ ] renderer IPC 잔여물/주석 제거
+- [x] renderer IPC 잔여물/주석 제거
 - [x] ELECTRON_MCP_IPC_SPEC: Stream/On 사용 가이드 + 취소/해제 예시 추가
 - [ ] 계획서 정리: 본 통합 계획만 유지, 구 문서는 Superseded 표기 유지
 
@@ -81,5 +81,5 @@
 ## 참고/링크
 
 - RPC 가이드(SSOT): `apps/gui/docs/rpc/GUIDE.md`
-- 스트리밍 컨벤션 상세: `apps/gui/plan/RPC_STREAMING_SERVER_CONVENTION_PLAN.md`
-- 문서 표준화 계획: `apps/gui/plan/DOCS_AND_PLANS_STANDARDIZATION_PLAN.md`
+- 스트리밍 컨벤션 상세: `apps/gui/docs/rpc/STREAMING_CONVENTION.md`
+- Plan→Docs 승격 체크리스트: `apps/gui/docs/PLAN_TO_DOCS_CHECKLIST.md`
