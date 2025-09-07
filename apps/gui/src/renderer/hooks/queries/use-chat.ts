@@ -37,10 +37,10 @@ export const useChatHistory = (agentId: string | undefined) => {
     queryKey: agentId ? CHAT_QUERY_KEYS.history(agentId) : ['chat', 'history', 'disabled'],
     queryFn: async () => {
       // 서버 저장 없음: 초기 빈 배열. 전송 시 캐시에 append.
-      return [] as Readonly<MessageHistory>[];
+      return [];
     },
     enabled: !!agentId,
-    initialData: [] as Readonly<MessageHistory>[],
+    initialData: [],
   });
 };
 
