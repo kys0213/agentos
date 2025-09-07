@@ -13,10 +13,7 @@ export default defineConfig({
       ['src/renderer/**', 'jsdom'],
       ['src/main/**', 'node'],
     ],
-    include: [
-      'src/**/__tests__/**/*.{test,spec}.ts',
-      'src/**/__tests__/**/*.{test,spec}.tsx',
-    ],
+    include: ['src/**/__tests__/**/*.{test,spec}.ts', 'src/**/__tests__/**/*.{test,spec}.tsx'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

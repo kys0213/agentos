@@ -9,7 +9,7 @@ describe('RpcEndpoint stream cancel posts can frame', () => {
     const posted: RpcFrame[] = [];
     let onFrame: ((f: RpcFrame) => void) | null = null;
     let interval: ReturnType<typeof setInterval> | null = null;
-    let reqCid: string | null = null;
+    // capture last request cid (observed via posted frames)
     let resolveReq: ((cid: string) => void) | null = null;
     const reqSeen = new Promise<string>((resolve) => (resolveReq = resolve));
 
@@ -20,7 +20,6 @@ describe('RpcEndpoint stream cancel posts can frame', () => {
       post(frame) {
         posted.push(frame);
         if (frame.kind === 'req') {
-          reqCid = frame.cid;
           resolveReq?.(frame.cid);
           // 데모 스트림: 일정 주기로 nxt 프레임 방출
           let n = 0;
@@ -30,7 +29,9 @@ describe('RpcEndpoint stream cancel posts can frame', () => {
         }
         if (frame.kind === 'can') {
           // 취소가 오면 스트림 종료 신호 전송 및 타이머 정리
-          if (interval) clearInterval(interval);
+          if (interval) {
+            clearInterval(interval);
+          }
           interval = null;
           onFrame?.({ kind: 'end', cid: frame.cid } as RpcFrame);
         }

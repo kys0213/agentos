@@ -52,14 +52,5 @@
     "arrow-parens": ["error", "always"]
   },
   "ignorePatterns": ["dist", "node_modules", "*.js"],
-  "overrides": [
-    {
-      "files": ["**/__tests__/**/*.{ts,tsx}", "**/?(*.)+(spec|test).{ts,tsx}"],
-      "rules": {
-        "@typescript-eslint/ban-ts-comment": "warn",
-        "no-nested-ternary": "warn",
-        "max-classes-per-file": ["warn", 2]
-      }
-    }
-  ]
+  "overrides": []
 }

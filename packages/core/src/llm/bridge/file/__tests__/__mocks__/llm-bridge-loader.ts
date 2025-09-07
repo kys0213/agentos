@@ -1,13 +1,7 @@
 import { BridgeLoadResult, BridgeLoader, ScanOptions } from 'llm-bridge-loader';
-import {
-  InvokeOption,
-  LlmBridge,
-  LlmBridgePrompt,
-  LlmBridgeResponse,
-  LlmManifest,
-  LlmMetadata,
-} from 'llm-bridge-spec';
+import { LlmManifest } from 'llm-bridge-spec';
 import z from 'zod';
+import { DummyBridge } from './dummy-bridge';
 
 export class LlmBridgeLoader implements BridgeLoader {
   scan<M extends LlmManifest>(_options?: ScanOptions): Promise<BridgeLoadResult<M>[]> {
@@ -15,19 +9,6 @@ export class LlmBridgeLoader implements BridgeLoader {
   }
 
   async load<M extends LlmManifest>(name: string): Promise<BridgeLoadResult<M>> {
-    class DummyBridge implements LlmBridge {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      constructor(_config: unknown) {}
-
-      invoke(_prompt: LlmBridgePrompt, _options?: InvokeOption): Promise<LlmBridgeResponse> {
-        throw new Error('Method not implemented.');
-      }
-
-      getMetadata(): Promise<LlmMetadata> {
-        throw new Error('Method not implemented.');
-      }
-    }
-
     const manifest: LlmManifest = {
       /** 스키마 버전 */
       schemaVersion: '1.0.0',

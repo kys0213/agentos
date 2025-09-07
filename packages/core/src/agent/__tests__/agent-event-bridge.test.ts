@@ -1,71 +1,96 @@
 import type { Agent } from '../agent';
+import type { UserMessage } from 'llm-bridge-spec';
 import type { AgentSession, AgentSessionEvent, AgentSessionEventMap } from '../agent-session';
 
 import { AgentEventBridge } from '../agent-event-bridge';
 import { Unsubscribe } from '../../common/event/event-subscriber';
 import type { AgentStatus, AgentChatResult } from '../agent';
-import type { AgentMetadata } from '../agent-metadata';
+import type { ReadonlyAgentMetadata } from '../agent-metadata';
 import type { AgentEvent } from '../agent-events';
 import type { AgentService } from '../agent.service';
 import type { ReadonlyPreset, Preset } from '../../preset/preset';
 import type { MessageHistory } from '../../chat/chat-session';
 
-class TestPublisher {
-  calls: Array<{ channel: string; payload: unknown }> = [];
-  publish(channel: string, payload: unknown) {
-    this.calls.push({ channel, payload });
-  }
-}
+const makePublisher = () => {
+  const calls: Array<{ channel: string; payload: unknown }> = [];
+  return {
+    calls,
+    publish(channel: string, payload: unknown) {
+      calls.push({ channel, payload });
+    },
+  };
+};
 
 type AgentHandler = (e: AgentEvent) => void;
 
-class FakeEventfulAgent implements Agent {
-  update(_patch: Partial<AgentMetadata>): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  delete(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  id = 'a-1';
-  private handlers = new Set<AgentHandler>();
-  getMetadata = async () => ({
-    id: this.id,
-    name: 'A',
-    description: '',
-    icon: '',
-    keywords: [],
-    preset: makePreset(),
-    status: 'active' as AgentStatus,
-    sessionCount: 0,
-    usageCount: 0,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
-  isActive = async () => true;
-  isIdle = async () => false;
-  isInactive = async () => false;
-  isError = async () => false;
-  idle = async () => {};
-  activate = async () => {};
-  inactive = async () => {};
-  chat = async (): Promise<AgentChatResult> => ({ messages: [], sessionId: 's-1' });
-  createSession = async (): Promise<AgentSession> => new FakeSession('s-1');
-  endSession = async () => {};
-  on(handler: AgentHandler): Unsubscribe {
-    this.handlers.add(handler);
-    return () => this.handlers.delete(handler);
-  }
-  emit(event: AgentEvent) {
-    for (const h of this.handlers) {
-      h(event);
-    }
-  }
-}
+const makeEventfulAgent = (): Agent & {
+  on: (h: AgentHandler) => Unsubscribe;
+  emit: (e: AgentEvent) => void;
+} => {
+  const id = 'a-1';
+  const handlers = new Set<AgentHandler>();
+  return {
+    id,
+    async update() {
+      throw new Error('Method not implemented.');
+    },
+    async delete() {
+      throw new Error('Method not implemented.');
+    },
+    async getMetadata() {
+      return {
+        id,
+        name: 'A',
+        description: '',
+        icon: '',
+        keywords: [],
+        preset: makePreset(),
+        status: 'active' as AgentStatus,
+        sessionCount: 0,
+        usageCount: 0,
+      } satisfies ReadonlyAgentMetadata;
+    },
+    async isActive() {
+      return true;
+    },
+    async isIdle() {
+      return false;
+    },
+    async isInactive() {
+      return false;
+    },
+    async isError() {
+      return false;
+    },
+    async idle() {},
+    async activate() {},
+    async inactive() {},
+    async chat(_messages: UserMessage[]): Promise<AgentChatResult> {
+      return { messages: [], sessionId: 's-1' };
+    },
+    async createSession(_options?: {
+      sessionId?: string;
+      presetId?: string;
+    }): Promise<AgentSession> {
+      return makeSession('s-1');
+    },
+    async endSession(_sessionId: string) {},
+    on(handler: AgentHandler): Unsubscribe {
+      handlers.add(handler);
+      return () => handlers.delete(handler);
+    },
+    emit(event: AgentEvent) {
+      for (const h of handlers) h(event);
+    },
+  };
+};
 
-class FakeSession implements AgentSession {
-  readonly id: string;
-  readonly sessionId: string;
-  private handlers: { [K in AgentSessionEvent]: Set<(p: AgentSessionEventMap[K]) => void> } = {
+const makeSession = (
+  id: string
+): AgentSession & {
+  emit: <E extends AgentSessionEvent>(event: E, payload: AgentSessionEventMap[E]) => void;
+} => {
+  const handlers: { [K in AgentSessionEvent]: Set<(p: AgentSessionEventMap[K]) => void> } = {
     message: new Set(),
     status: new Set(),
     error: new Set(),
@@ -74,35 +99,30 @@ class FakeSession implements AgentSession {
     consentRequest: new Set(),
     sensitiveInputRequest: new Set(),
   };
-  constructor(id: string) {
-    this.id = id;
-    this.sessionId = id;
-  }
-  agentId = 'a-1';
-  chat = async () => {
-    const out: Readonly<MessageHistory>[] = [];
-    return out;
+  return {
+    sessionId: id,
+    agentId: 'a-1',
+    async chat() {
+      return [] as Readonly<MessageHistory>[];
+    },
+    async getHistory() {
+      return { items: [], nextCursor: '', hasMore: false };
+    },
+    async terminate() {},
+    async providePromptResponse() {},
+    async provideConsentDecision() {},
+    async provideSensitiveInput() {},
+    on<E extends AgentSessionEvent>(event: E, handler: (p: AgentSessionEventMap[E]) => void) {
+      const set = handlers[event] as Set<(p: AgentSessionEventMap[E]) => void>;
+      set.add(handler);
+      return () => set.delete(handler);
+    },
+    emit<E extends AgentSessionEvent>(event: E, payload: AgentSessionEventMap[E]) {
+      const set = handlers[event] as Set<(p: AgentSessionEventMap[E]) => void>;
+      for (const h of set) h(payload);
+    },
   };
-  getHistory = async () => ({ items: [], nextCursor: '', hasMore: false });
-  terminate = async () => {};
-  providePromptResponse = async () => {};
-  provideConsentDecision = async () => {};
-  provideSensitiveInput = async () => {};
-  on<E extends AgentSessionEvent>(
-    event: E,
-    handler: (p: AgentSessionEventMap[E]) => void
-  ): Unsubscribe {
-    const set = this.handlers[event] as Set<(p: AgentSessionEventMap[E]) => void>;
-    set.add(handler);
-    return () => set.delete(handler);
-  }
-  emit<E extends AgentSessionEvent>(event: E, payload: AgentSessionEventMap[E]) {
-    const set = this.handlers[event] as Set<(p: AgentSessionEventMap[E]) => void>;
-    for (const h of set) {
-      h(payload);
-    }
-  }
-}
+};
 
 function makePreset(): ReadonlyPreset {
   const p: Preset = {
@@ -129,17 +149,17 @@ function makePreset(): ReadonlyPreset {
 describe('AgentEventBridge', () => {
   test('publishes agent events and session events', async () => {
     const manager: AgentService = {
-      createAgent: async () => new FakeEventfulAgent(),
+      createAgent: async () => makeEventfulAgent(),
       getAgent: async () => null,
       listAgents: async () => ({ items: [], nextCursor: '', hasMore: false }),
       searchAgents: async () => ({ items: [], nextCursor: '', hasMore: false }),
-      createSession: async () => new FakeSession('s-x'),
+      createSession: async () => makeSession('s-x'),
       execute: async () => ({ messages: [], sessionId: 's-x' }),
     };
-    const publisher = new TestPublisher();
+    const publisher = makePublisher();
     const bridge = new AgentEventBridge(manager, publisher);
 
-    const agent = new FakeEventfulAgent();
+    const agent = makeEventfulAgent();
     await bridge.attachAgent(agent);
 
     agent.emit({ type: 'statusChanged', agentId: agent.id, status: 'active' });
@@ -154,7 +174,7 @@ describe('AgentEventBridge', () => {
     expect(publisher.calls.some((c) => c.channel === 'agent/session/ended')).toBe(true);
     expect(publisher.calls.some((c) => c.channel === 'agent/error')).toBe(true);
 
-    const session = new FakeSession('s-1');
+    const session = makeSession('s-1');
     bridge.attachSession(agent.id, session);
     session.emit('status', { state: 'running' });
     const mh: MessageHistory = {

@@ -1,5 +1,4 @@
 import type {
-  AgentMetadata,
   AgentStatus,
   CreateAgentMetadata,
   McpConfig,
@@ -75,7 +74,7 @@ export interface UseAppDataReturn {
   error: Error | null; // 에러 상태 추가
   handleUpdateAgentStatus: (agentId: string, status: AgentStatus) => Promise<void>;
   handleCreateMCPTool: (mcpConfig: McpConfig) => Promise<unknown>;
-  handleCreateAgent: (agent: CreateAgentMetadata) => Promise<AgentMetadata>;
+  handleCreateAgent: (agent: CreateAgentMetadata) => Promise<ReadonlyAgentMetadata>;
   handleCreateCustomTool: (toolData: unknown) => Promise<unknown>;
   getMentionableAgents: () => ReadonlyAgentMetadata[];
   getActiveAgents: () => ReadonlyAgentMetadata[];

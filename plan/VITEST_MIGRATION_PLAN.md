@@ -5,20 +5,23 @@
 ## Requirements
 
 ### 성공 조건
+
 - [ ] 모든 패키지(core, lang, cli, gui, agent-slack-bot)의 유닛 테스트가 Vitest에서 통과한다.
 - [x] GUI 테스트는 jsdom(렌더러)와 node(메인) 환경을 파일 경로로 분리하여 동시에 실행 가능하다.
 - [ ] 커버리지(text, lcov)가 Vitest(v8)로 생성되고 CI에서 수집된다.
-- [ ] Jest/ts-jest 의존성과 jest.config.* 파일을 제거한다(최종 단계).
+- [ ] Jest/ts-jest 의존성과 jest.config.\* 파일을 제거한다(최종 단계).
 - [ ] `pnpm -r test`가 Vitest 기반으로 동작한다.
 
 ### 사용 시나리오
+
 - [x] 개발자는 `pnpm -r test:vitest`로 일회 실행(Non-watch)으로만 테스트를 실행한다. 워치 모드는 금지한다.
 - [x] GUI는 `environmentMatchGlobs`로 `src/renderer/**`는 jsdom, `src/main/**`는 node로 실행된다.
 - [x] 기존 jest.* 호출은 셋업에서 jest→vi 셰임으로 1차 호환(타이머 포함), 점진적으로 vi.*로 치환한다.
 
 ### 제약 조건
+
 - 타입 안전성/ESLint 규칙 유지(no-explicit-any, no-restricted-syntax 등).
-- 테스트 타입체킹 포함(tsconfig에서 __tests__ 제외 금지). 빌드(tsconfig.cjs/es m)는 테스트 제외 유지.
+- 테스트 타입체킹 포함(tsconfig에서 **tests** 제외 금지). 빌드(tsconfig.cjs/es m)는 테스트 제외 유지.
 - 대규모 테스트 리라이트 지양. 초기에는 jest-compat 셰임으로 마찰 최소화.
 
 ## Interface Sketch
@@ -58,10 +61,7 @@ export default defineConfig({
       ['src/main/**', 'node'],
     ],
     // 테스트 파일은 *.test.ts(x)만 사용 (spec 금지)
-    include: [
-      'src/**/__tests__/**/*.test.ts',
-      'src/**/__tests__/**/*.test.tsx',
-    ],
+    include: ['src/**/__tests__/**/*.test.ts', 'src/**/__tests__/**/*.test.tsx'],
     coverage: { provider: 'v8', reporter: ['text', 'lcov'] },
   },
 });
@@ -90,16 +90,19 @@ export default defineConfig({
 4. 전환: 기본 `test`를 Vitest로 교체, Jest 관련 의존성/설정 제거, 커버리지 업로드 경로 갱신 (대기)
 
 ## 백아웃 플랜
+
 - 병행 단계에서 `test:jest` 스크립트를 유지하여 문제 시 즉시 롤백 가능
 - 패키지 단위 전환이 어려운 경우, 문제가 되는 패키지만 임시 Jest 유지
 
 ## 현재 상태 요약
+
 - GUI: Vitest 전환 후 전체 녹색(일부 파일은 테스트 없음 허용). Electron/Nest/RPC 테스트 호환성 확보.
 - core: 테스트 자체는 대부분 통과하나, 스냅샷 9개 obsolete 표시. 일부 파일은 0 tests로 수집(의도된 skip/케이스 확인 필요).
 - CLI/LANG/Slack-bot: Vitest 통과.
 - Watch 금지: 모든 스크립트에서 watch 제거. CI는 Non-watch만 실행.
 
 ## 다음 작업
-1) packages/core 스냅샷 업데이트(`vitest -u`) 및 변경 검토/커밋
-2) 기본 `test` 스크립트를 Vitest로 전환 후 Jest 제거(PR 분리 권장)
-3) 커버리지(텍스트/LCOV) 업로드를 CI에 연동
+
+1. packages/core 스냅샷 업데이트(`vitest -u`) 및 변경 검토/커밋
+2. 기본 `test` 스크립트를 Vitest로 전환 후 Jest 제거(PR 분리 권장)
+3. 커버리지(텍스트/LCOV) 업로드를 CI에 연동

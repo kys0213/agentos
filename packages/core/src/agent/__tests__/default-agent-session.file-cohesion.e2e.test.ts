@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file -- Test file includes two small test doubles (Mcp subclass + registry subclass) for clarity */
 import fs from 'fs/promises';
 import path from 'path';
 import { mock } from 'vitest-mock-extended';
@@ -123,30 +124,25 @@ describe('DefaultAgentSession + FileBasedChatManager cohesion', () => {
       }
     }
 
+    /* eslint-disable max-classes-per-file -- include a minimal registry subclass for test-only wiring */
     class TestMcpRegistry extends McpRegistry {
       private readonly testMcp = new TestMcp();
       async getAll(): Promise<Mcp[]> {
         return [this.testMcp];
       }
-      async getToolOrThrow(name: string) {
+      async getToolOrThrow(_name: string) {
         const tool: Tool = {
           name: 'dummy.echo',
           description: 'echo',
           inputSchema: {
             type: 'object',
-            properties: {
-              text: { type: 'string' },
-            },
+            properties: { text: { type: 'string' } },
             required: ['text'],
           },
         };
-        return {
-          mcp: this.testMcp,
-          tool,
-        };
+        return { mcp: this.testMcp, tool };
       }
     }
-
     const mcp = new TestMcpRegistry();
 
     const session = new DefaultAgentSession(chatSession, llm, mcp, meta());

@@ -3,13 +3,13 @@ import type { CloseFn, RpcTransport } from '../../../shared/rpc/transport';
 import type { RpcFrame } from '../../../shared/rpc/rpc-frame';
 
 class MockTransport implements RpcTransport {
-  stream?<T = unknown>(channel: string, payload?: unknown): AsyncGenerator<T, void, unknown> {
+  stream?<T = unknown>(_channel: string, _payload?: unknown): AsyncGenerator<T, void, unknown> {
     throw new Error('Method not implemented.');
   }
   on<T = unknown>(
-    channel: string,
-    handler: (payload: T) => void,
-    onError?: (e: unknown) => void
+    _channel: string,
+    _handler: (payload: T) => void,
+    _onError?: (e: unknown) => void
   ): CloseFn {
     throw new Error('Method not implemented.');
   }
@@ -24,7 +24,7 @@ class MockTransport implements RpcTransport {
   stop(): void {
     /* no-op */
   }
-  async request<TRes = unknown, TReq = unknown>(channel: string, payload?: TReq): Promise<TRes> {
+  async request<TRes = unknown, TReq = unknown>(_channel: string, _payload?: TReq): Promise<TRes> {
     // not used directly in these tests
     throw new Error('not implemented');
   }
@@ -94,7 +94,9 @@ describe('RpcEndpoint', () => {
 
     const out: number[] = [];
     const first = await firstPromise;
-    if (!first.done) out.push(first.value);
+    if (!first.done) {
+      out.push(first.value);
+    }
 
     let next = await it.next();
     while (!next.done) {
@@ -161,7 +163,9 @@ describe('RpcEndpoint', () => {
 
     const out: number[] = [];
     const first = await firstPromise;
-    if (!first.done) out.push(first.value);
+    if (!first.done) {
+      out.push(first.value);
+    }
 
     let next = await it.next();
     while (!next.done) {

@@ -1,7 +1,5 @@
 import { mock } from 'vitest-mock-extended';
-import type { Agent, AgentChatResult } from '../agent';
-import type { AgentMetadata, ReadonlyAgentMetadata } from '../agent-metadata';
-import type { AgentSession } from '../agent-session';
+import type { ReadonlyAgentMetadata } from '../agent-metadata';
 import { SimpleAgentService } from '../simple-agent.service';
 import { LlmBridgeRegistry } from '../../llm/bridge/registry';
 import type { LlmBridge } from 'llm-bridge-spec';
@@ -10,66 +8,11 @@ import type { ChatManager } from '../../chat/chat.manager';
 import type { AgentMetadataRepository } from '../agent-metadata.repository';
 import type { ReadonlyPreset, Preset } from '../../preset/preset';
 import type { AgentStatus } from '../agent';
-import type { ChatSession, MessageHistory } from '../../chat/chat-session';
+import type { ChatSession } from '../../chat/chat-session';
 
-class FakeSession implements AgentSession {
-  constructor(public readonly sessionId: string) {}
-  agentId: string = 'a1';
-  get id() {
-    return this.sessionId;
-  }
-  async chat(): Promise<Readonly<MessageHistory>[]> {
-    return [] as Readonly<MessageHistory>[];
-  }
-  async getHistory() {
-    return { items: [] as Readonly<MessageHistory>[], nextCursor: '', hasMore: false };
-  }
-  async terminate(): Promise<void> {}
-  on(): () => void {
-    return () => {};
-  }
-  async providePromptResponse(): Promise<void> {}
-  async provideConsentDecision(): Promise<void> {}
-  async provideSensitiveInput(): Promise<void> {}
-}
+// Removed unused FakeSession type helper
 
-class FakeAgent implements Agent {
-  constructor(
-    public readonly id: string,
-    private readonly meta: ReadonlyAgentMetadata
-  ) {}
-  update(patch: Partial<AgentMetadata>): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  delete(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  async chat(): Promise<AgentChatResult> {
-    return { messages: [], sessionId: 's-1' };
-  }
-  async createSession(): Promise<AgentSession> {
-    return new FakeSession('s-1');
-  }
-  async getMetadata(): Promise<ReadonlyAgentMetadata> {
-    return this.meta;
-  }
-  async isActive(): Promise<boolean> {
-    return this.meta.status === 'active';
-  }
-  async isIdle(): Promise<boolean> {
-    return this.meta.status === 'idle';
-  }
-  async isInactive(): Promise<boolean> {
-    return this.meta.status === 'inactive';
-  }
-  async isError(): Promise<boolean> {
-    return this.meta.status === 'error';
-  }
-  async idle(): Promise<void> {}
-  async activate(): Promise<void> {}
-  async inactive(): Promise<void> {}
-  async endSession(): Promise<void> {}
-}
+// Removed unused FakeAgent to satisfy strict lint rules
 
 describe('SimpleAgentService', () => {
   function preset(): ReadonlyPreset {
@@ -120,7 +63,15 @@ describe('SimpleAgentService', () => {
     const m2 = meta('a2');
 
     repo.list.mockResolvedValue({ items: [m1, m2], nextCursor: '', hasMore: false });
-    repo.get.mockImplementation(async (id: string) => (id === 'a1' ? m1 : id === 'a2' ? m2 : null));
+    repo.get.mockImplementation(async (id: string) => {
+      if (id === 'a1') {
+        return m1;
+      }
+      if (id === 'a2') {
+        return m2;
+      }
+      return null;
+    });
     repo.getOrThrow.mockImplementation(async (id: string) => (id === 'a1' ? m1 : m2));
     const llm = mock<LlmBridge>();
     llm.invoke.mockResolvedValue({ content: { contentType: 'text', value: 'ok' }, toolCalls: [] });
