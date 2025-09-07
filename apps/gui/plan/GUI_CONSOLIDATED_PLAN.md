@@ -61,7 +61,7 @@
 ### 스트리밍 컨벤션(계약/코드젠)
 
 - [x] `usage.events.streamResponse` 구체 스키마 채택(McpUsageUpdateEventSchema) 검토/적용
-- [ ] 코드젠: streamResponse 존재 시 서버 컨트롤러 스텁을 동기 + `Observable<z.output<...>>`로 생성 규칙 반영
+- [x] 코드젠: streamResponse 존재 시 서버 컨트롤러 스텁을 동기 + `Observable<z.output<...>>`로 생성 규칙 반영
 - [x] GUIDE/SPEC에 서버 스트리밍 컨벤션(요소 스키마, 해제, Promise 금지) 명문화
 
 ## 산출물/정책
