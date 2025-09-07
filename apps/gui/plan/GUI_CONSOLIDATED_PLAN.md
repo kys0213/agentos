@@ -50,7 +50,7 @@
 - [x] 레거시 컨트롤러 제거(bridge/mcp/preset/agent)
 - [x] renderer IPC 잔여물/주석 제거
 - [x] ELECTRON_MCP_IPC_SPEC: Stream/On 사용 가이드 + 취소/해제 예시 추가
-- [ ] 계획서 정리: 본 통합 계획만 유지, 구 문서는 Superseded 표기 유지
+- [x] 계획서 정리: 본 통합 계획만 유지, 구 문서는 Superseded 표기 유지
 
 ### Docs & 표준화
 
