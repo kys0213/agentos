@@ -1,0 +1,2 @@
+# Ignore broken/in-progress generated stubs
+**/*.gen.new.ts
