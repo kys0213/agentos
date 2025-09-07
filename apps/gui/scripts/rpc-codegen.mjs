@@ -321,7 +321,8 @@ function main() {
   );
   for (const spec of specs) {
     writeRendererClient(spec, path.resolve(appRoot, 'src/renderer/rpc/gen'));
-    writeMainController(spec, path.resolve(appRoot, `src/main/${spec.namespace}/gen`));
+    // Server controllers are curated and already promoted as *.gen.new.ts
+    // Skip generating controller stubs to avoid overwriting wired implementations.
     writeSharedTypes(spec, path.resolve(appRoot, 'src/shared/rpc/gen'));
   }
 }
