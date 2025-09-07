@@ -28,20 +28,5 @@
       }
     ]
   },
-  "overrides": [
-    {
-      "files": ["src/main/**/dto/**/*.ts"],
-      "rules": {
-        "max-classes-per-file": ["warn", 8]
-      }
-    },
-    {
-      "files": ["src/renderer/**/*.{ts,tsx}"],
-      "rules": {
-        "no-restricted-syntax": "error",
-        "@typescript-eslint/no-explicit-any": "error",
-        "prettier/prettier": "warn"
-      }
-    }
-  ]
+  "overrides": []
 }
