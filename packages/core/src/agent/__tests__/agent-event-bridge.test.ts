@@ -1,10 +1,11 @@
 import type { Agent } from '../agent';
+import type { UserMessage } from 'llm-bridge-spec';
 import type { AgentSession, AgentSessionEvent, AgentSessionEventMap } from '../agent-session';
 
 import { AgentEventBridge } from '../agent-event-bridge';
 import { Unsubscribe } from '../../common/event/event-subscriber';
 import type { AgentStatus, AgentChatResult } from '../agent';
-import type { AgentMetadata } from '../agent-metadata';
+import type { ReadonlyAgentMetadata } from '../agent-metadata';
 import type { AgentEvent } from '../agent-events';
 import type { AgentService } from '../agent.service';
 import type { ReadonlyPreset, Preset } from '../../preset/preset';
@@ -47,8 +48,6 @@ const makeEventfulAgent = (): Agent & {
         status: 'active' as AgentStatus,
         sessionCount: 0,
         usageCount: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       } satisfies ReadonlyAgentMetadata;
     },
     async isActive() {
@@ -66,13 +65,16 @@ const makeEventfulAgent = (): Agent & {
     async idle() {},
     async activate() {},
     async inactive() {},
-    async chat(): Promise<AgentChatResult> {
+    async chat(_messages: UserMessage[]): Promise<AgentChatResult> {
       return { messages: [], sessionId: 's-1' };
     },
-    async createSession(): Promise<AgentSession> {
+    async createSession(_options?: {
+      sessionId?: string;
+      presetId?: string;
+    }): Promise<AgentSession> {
       return makeSession('s-1');
     },
-    async endSession() {},
+    async endSession(_sessionId: string) {},
     on(handler: AgentHandler): Unsubscribe {
       handlers.add(handler);
       return () => handlers.delete(handler);
@@ -98,7 +100,6 @@ const makeSession = (
     sensitiveInputRequest: new Set(),
   };
   return {
-    id,
     sessionId: id,
     agentId: 'a-1',
     async chat() {
@@ -148,11 +149,11 @@ function makePreset(): ReadonlyPreset {
 describe('AgentEventBridge', () => {
   test('publishes agent events and session events', async () => {
     const manager: AgentService = {
-      createAgent: async () => new FakeEventfulAgent(),
+      createAgent: async () => makeEventfulAgent(),
       getAgent: async () => null,
       listAgents: async () => ({ items: [], nextCursor: '', hasMore: false }),
       searchAgents: async () => ({ items: [], nextCursor: '', hasMore: false }),
-      createSession: async () => new FakeSession('s-x'),
+      createSession: async () => makeSession('s-x'),
       execute: async () => ({ messages: [], sessionId: 's-x' }),
     };
     const publisher = makePublisher();
