@@ -30,6 +30,20 @@ export const ToolInvokeResponseSchema = z.discriminatedUnion('success', [
   z.object({ success: z.literal(false), error: z.string() }),
 ]);
 
+// Concrete event schema for usage streaming
+export const McpUsageUpdateEventSchema = z.union([
+  z.object({
+    type: z.literal('mcp.usage.log.created'),
+    payload: McpUsageLogSchema,
+    ts: z.number().optional(),
+  }),
+  z.object({
+    type: z.literal('mcp.usage.stats.updated'),
+    payload: McpUsageStatsSchema,
+    ts: z.number().optional(),
+  }),
+]);
+
 export const McpContract = defineContract({
   namespace: 'mcp',
   methods: {
@@ -77,7 +91,7 @@ export const McpContract = defineContract({
     },
     'usage.events': {
       channel: 'mcp.usage.events',
-      streamResponse: z.unknown(),
+      streamResponse: McpUsageUpdateEventSchema,
     },
   },
 });
