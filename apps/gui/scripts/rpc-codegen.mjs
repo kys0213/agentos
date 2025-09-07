@@ -345,8 +345,13 @@ function main() {
   );
   for (const spec of specs) {
     writeRendererClient(spec, path.resolve(appRoot, 'src/renderer/rpc/gen'));
-    // Generate safe server stubs reflecting streamResponse→Observable rule without overwriting curated files
-    writeMainController(spec, path.resolve(appRoot, `src/main/${spec.namespace}/gen`));
+<<<<<<< HEAD
+    // Server controllers are curated and already promoted as *.gen.new.ts
+    // Skip generating controller stubs to avoid overwriting wired implementations.
+=======
+    // Server controllers are curated and already promoted as *.gen.new.ts
+    // Skip generating controller stubs to avoid overwriting wired implementations.
+>>>>>>> 911fa62 (chore(gui): rerun codegen after skipping controller generation)
     writeSharedTypes(spec, path.resolve(appRoot, 'src/shared/rpc/gen'));
   }
 }
