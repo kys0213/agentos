@@ -4,7 +4,7 @@ Welcome to the AgentOS repository. This file summarizes key resources and comman
 
 ## 🔒 Git Workflow — Mandatory
 
-- Always follow the [Git Workflow Guide](docs/GIT_WORKFLOW_GUIDE.md).
+- Always follow the [Git Workflow Guide](docs/40-process-policy/git-workflow.md).
 - Create a feature branch before changes: `git checkout main && git pull && git checkout -b feature/<task>`.
 - Make TODO-scoped commits with clear messages; no squashing unrelated changes.
 - Never merge locally; open a Pull Request and wait for review/merge on GitHub.
@@ -13,15 +13,15 @@ Welcome to the AgentOS repository. This file summarizes key resources and comman
 
 ## Table of Contents
 
-1. [Code Style Guide](docs/CODE_STYLE.md)
-2. [Interface Specifications](docs/INTERFACE_SPEC.md)
-3. [Testing Guide](docs/TESTING.md)
-4. [Documentation Standards](docs/DOCUMENTATION_STANDARDS.md)
-5. [TypeScript Typing Guidelines](docs/TYPESCRIPT_TYPING_GUIDELINES.md)
+1. [Code Style Guide](docs/30-developer-guides/code-style.md)
+2. [Interface Specifications](docs/30-developer-guides/interface-spec.md)
+3. [Testing Guide](docs/30-developer-guides/testing.md)
+4. [Documentation Standards](docs/40-process-policy/documentation-standards.md)
+5. [TypeScript Typing Guidelines](docs/30-developer-guides/typescript-typing-guidelines.md)
 6. **[Frontend Architect Guide](.claude/agents/frontend-architect.md)** ⭐ **프론트엔드 작업 필수**
-7. [AI Collaboration Guide](docs/AI_COLLABORATION_GUIDE.md)
-8. **[Git Workflow Guide](docs/GIT_WORKFLOW_GUIDE.md)** - 브랜치 전략 및 TODO별 커밋 필수
-9. [Docs & Plan Policy](docs/DOCS_POLICY.md) - 문서/계획서 구조·운영 원칙(SSOT)
+7. [AI Collaboration Guide](docs/30-developer-guides/ai-collaboration.md)
+8. **[Git Workflow Guide](docs/40-process-policy/git-workflow.md)** - 브랜치 전략 및 TODO별 커밋 필수
+9. [Docs & Plan Policy](docs/40-process-policy/docs-policy.md) - 문서/계획서 구조·운영 원칙(SSOT)
 
 ## Quick Commands
 
@@ -55,19 +55,19 @@ Root-level `docs/` contains shared conventions, 철학, 테스트 가이드, Git
 2. **복잡하면 분할정복**
    복잡도가 높은 문제라면 작업을 세분화하여 해결합니다.
 
-   > 📋 구체적인 판단 기준은 [복잡도 판단 가이드라인](docs/COMPLEXITY_GUIDE.md)을 참고하세요.
+   > 📋 구체적인 판단 기준은 [복잡도 판단 가이드라인](docs/30-developer-guides/complexity-guide.md)을 참고하세요.
 
 3. **계획서 작성 후 코드 작성**
    위 원칙을 토대로 계획서를 먼저 작성한 뒤 컨펌을 받은 다음에 코드를 작성합니다.
 4. **Git 브랜치 생성 및 TODO별 커밋 필수**
    - 작업 시작 전 적절한 브랜치 생성 (`feature/ux-command-palette` 등)
    - 각 TODO 완료 시마다 의미있는 커밋 메시지로 커밋
-   - 상세 가이드: [Git Workflow Guide](docs/GIT_WORKFLOW_GUIDE.md)
+   - 상세 가이드: [Git Workflow Guide](docs/40-process-policy/git-workflow.md)
 5. **계획서 필수 항목**
-   [템플릿](./docs/template/PLAN_TEMPLATE.md)을 참고하여 작성해주세요.
+   [템플릿](docs/90-templates/PLAN_TEMPLATE.md)을 참고하여 작성해주세요.
    - **요구사항**: 각 기능이 달성해야 하는 성공 조건과 사용 시나리오까지 명시합니다.
    - **인터페이스 초안**: 주요 타입, 메서드 시그니처 등의 예시를 간략히 적어 둡니다.
-   - **Todo 리스트**: 테스트 작성 포함하여 작업을 순서대로 정리합니다. (테스트 규칙은 `docs/TESTING.md` 참고)
+   - **Todo 리스트**: 테스트 작성 포함하여 작업을 순서대로 정리합니다. (테스트 규칙은 `docs/30-developer-guides/testing.md` 참고)
    - **작업 순서**: Todo 리스트를 기반으로 단계별 진행 순서를 정리합니다.
 
 ## 타입 안전성 원칙 (Type Safety Principles)
@@ -84,10 +84,10 @@ Root-level `docs/` contains shared conventions, 철학, 테스트 가이드, Git
    - ESLint 규칙으로 any 사용 방지 자동화
    - 코드 리뷰에서 타입 안전성 확인
 
-> 📋 자세한 내용은 [TypeScript 타이핑 지침](docs/TYPESCRIPT_TYPING_GUIDELINES.md)을 참고하세요. 5. **리뷰**
+> 📋 자세한 내용은 [TypeScript 타이핑 지침](docs/30-developer-guides/typescript-typing-guidelines.md)을 참고하세요. 5. **리뷰**
 > 작성한 계획서와 진행 상황은 작업 요청마다 리뷰하여 지속적으로 피드백을 반영합니다.
 
-> 🤝 AI 에이전트와의 협력 시에는 [AI 에이전트 협력 가이드라인](docs/AI_COLLABORATION_GUIDE.md)을 따라주세요.
+> 🤝 AI 에이전트와의 협력 시에는 [AI 에이전트 협력 가이드라인](docs/30-developer-guides/ai-collaboration.md)을 따라주세요.
 
 4. **작업계획서 Todo 체크**
    작업계획서의 Todo 항목을 하나씩 처리하고 완료된 항목은 체크 표시합니다.

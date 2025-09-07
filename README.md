@@ -1,51 +1,117 @@
 # AgentOS
 
-A modular agent framework built with TypeScript. This repository is a **pnpm**
-workspace containing several packages that together provide a flexible
-foundation for building agents.
+AI 발전 위에 올라탈 수 있는 오픈소스 에이전트 운영체제(Agent OS)를 목표로 하는 모듈러 프레임워크입니다. 이 레포는 pnpm 모노레포로 구성되어 있으며, 응용 앱(GUI/CLI/Bot)과 재사용 가능한 코어 모듈들을 조립해 다양한 에이전트 경험을 빠르게 구축할 수 있습니다.
 
-## Project Structure
+## 철학과 방향성
+
+- 모델 아그노스틱: 특정 LLM에 종속되지 않습니다. `llm-bridge-spec`을 통해 모델을 교체해도 동일한 Agent/Preset을 재사용할 수 있도록 추상화합니다.
+- 지식·기억 우선: Agent의 일관성과 재현성을 위해 Knowledge/Memory 모듈을 통해 컨텍스트를 구조화하고 장기 기억을 관리합니다.
+- 로컬 퍼스트 + 선택적 중앙화: 기본은 로컬(인메모리/파일 기반)에서 모든 상호작용이 동작합니다. 필요 시 중앙 수집 서버와 연결해 대화 이력/기억을 집계하고 개선에 활용합니다.
+- 플라이휠(Flywheel)과 역전파(Backpropagation) 준비: 수집된 상호작용 데이터를 안전하게 학습/튜닝 피드백으로 되돌리는 메커니즘을 제공해, 점진적으로 Agent의 품질을 향상합니다.
+- 컴포저블 모듈성: 스프링/리액트처럼 모듈 단위로 구성되어, 앱에서 필요한 블록들을 조립해 기능을 확장합니다.
+- 운영 친화(B2B Ready): 중앙 서버, 커스텀 GUI, 권한 제어, 운영 데이터 수집 등 AI Ops에 필요한 구성을 염두에 두고 설계합니다.
+
+추가적으로, 리더 Agent(또는 사람)가 표준화된 프로토콜(RACP, Remote Agent Command Protocol; 작업 지시/승인/상태 질의 등)로 여러 에이전트를 제어할 수 있도록 하는 제어면(Control Plane)도 설계 범위에 포함됩니다.
+
+## 모듈 지도(코드 기준)
+
+`packages/core`는 재사용 가능한 핵심 도메인 모듈로 구성되어 있습니다.
+
+- preset: 재사용 가능한 에이전트 설정(도메인, 정책, 초기 지식 등)을 구조화하고, 파일 기반 저장소로 관리합니다.
+- mcp: Model Context Protocol 관련 툴/메타데이터/사용량 추적. 외부 툴을 안전하게 연결하고, 사용량(usage)을 집계합니다.
+- agent: 에이전트 인터페이스/세션/이벤트. 동일한 인터페이스로 다양한 LLM 브리지와 상호작용합니다.
+- memory: 장·단기 기억 그래프/인덱싱/승격(프로모션) 로직. 세션·에이전트 단위 기억을 정규화하고 캐리오버합니다.
+- knowledge: 문서 분할/토크나이징/BM25 등 검색·지식화 도구 모음.
+- chat, chatSession: 메시지/컨텐츠 표준화 및 세션 관리. `llm-bridge-spec`의 메시지/컨텐츠 스키마를 채택합니다.
+- orchestrator: 라우팅/랭킹/리랭킹 엔진. 규칙 기반 + LLM 기반 전략을 조합하고, 후처리로 Rerank까지 적용합니다.
+
+LLM은 `llm-bridge-spec`(프로토콜/타입) + `llm-bridge-loader`(브릿지 로더)를 통해 연결합니다. 이 조합으로 새로운 LLM 브릿지를 추가해도 코어 API는 동일하게 유지됩니다.
+
+## 데이터 흐름(요약)
+
+1) 사용자 상호작용은 기본적으로 로컬에서 처리됩니다(GUI/CLI/Slack Bot).
+2) 코어는 Memory/Knowledge를 이용해 컨텍스트를 정규화하고, Orchestrator가 전략/정책으로 Agent를 라우팅합니다.
+3) 선택적으로 중앙 수집 서버가 대화 이력/메타데이터/사용량을 집계합니다.
+4) 수집된 데이터는 프롬프트 개선/프리셋 업데이트/정책 튜닝 등으로 역전파되어(Backprop) 플라이휠을 형성합니다.
+5) 리더 Agent/사람은 RACP로 멀티 에이전트를 제어(명령/승인/상태 추적)합니다. (설계/구현 진행 중)
+
+## 레포 구조
 
 ```
-packages/
-├── core/                # agent interfaces and file‑based implementations
-├── cli/                 # command line interface (work in progress)
-├── gui/                 # Electron + React GUI (work in progress)
-└── agent-slack-bot/     # Slack bot using Bolt
-
 apps/
-├── cli/                 # command line interface
-├── gui/                 # Electron + React GUI
-└── agent-slack-bot/     # Slack bot application
+├── gui/                 # Electron + React GUI (사용자 상호작용, 로컬 우선)
+├── cli/                 # 커맨드라인 앱 (진행 중)
+└── agent-slack-bot/     # Slack Bot (진행 중)
+
+packages/
+├── core/                # 에이전트/메모리/오케스트레이션 등 핵심 모듈
+└── lang/                # 언어 유틸리티/표준 타입/도우미
 ```
 
-Additional design documents for each package live under `packages/<name>/docs`.
+각 패키지별 상세 문서는 `packages/<name>/docs`, 공통 가이드는 `docs/`를 참고하세요.
 
-## Getting Started
+## 설계 원칙(코드에 반영된 규칙)
 
-### Prerequisites
+- 타입 안정성: any 금지, 명시적 타입/제네릭/유니온을 선호합니다. ESLint 규칙으로 강제합니다.
+- ESM 우선, 모델 아그노스틱: 콘텐츠/메시지/브릿지 타입은 `llm-bridge-spec`에 정렬합니다.
+- 모듈 경계 준수: 워크스페이스 간 참조는 패키지 별칭(`@agentos/*`)을 사용하고, 패키지 내부는 상대 경로를 사용합니다.
+- 테스트 우선: Vitest 기반의 통합/유닛 테스트. Orchestrator/Memory/Agent 전반에 걸쳐 케이스가 준비되어 있습니다.
+- 간결한 핵심, 점진적 확장: 먼저 단순한 구현으로 검증하고, 필요 시 전략/정책/리랭크 등으로 확장합니다.
 
-- Node.js ≥ 18
-- pnpm ≥ 8
+## 현재 상태와 로드맵
 
-### Installation
+- GUI: 로컬 우선 상호작용(인메모리/파일 스토리지) 중심으로 구현 진행 중.
+- CLI/Slack Bot: 스캐폴딩/핵심 유즈케이스 추가 필요.
+- 중앙 수집 서버: 데이터 수집/가공/보안/동기화 모델 설계 및 PoC 예정.
+- RACP(제어 프로토콜): 명령/승인/상태 질의/감사 추적 스펙 정의 및 초기 구현 예정.
+- 프리셋 배포/마켓: 공개 프리셋 생성/공유 및 피드백 루프 연결(초기 SaaS 형태 포함) 검토.
+
+### 우선순위 제안
+
+1) GUI 사용자 플로우 완성(프리셋 선택→상호작용→기억/지식 반영→재사용)
+2) 중앙 수집 서버 최소 기능(수집/동기화/프라이버시/옵트인)
+3) RACP 초안 및 리더 Agent/오케스트레이터 통합
+4) CLI/Slack Bot 공용 프리셋/기억 재사용 파이프라인 정리
+5) 플라이휠: 수집→개선→배포 주기 자동화(가이드/툴 체인)
+
+## 사용법(로컬)
+
+사전 요구사항
+
+- Node.js ≥ 20
+- pnpm ≥ 10
+
+설치 및 실행
 
 ```bash
-# Install dependencies
+# 의존성 설치
 pnpm install
 
-# Build all packages
+# 전체 빌드
 pnpm build
 
-# Run in development mode
-pnpm dev
+# 테스트 실행(워크스페이스 전체)
+pnpm test
+
+# GUI 개발 서버
+cd apps/gui && pnpm run dev
 ```
 
-Additional scripts are available:
+자세한 워크플로우/스타일/테스트 가이드는 아래 문서를 참고하세요.
 
-- `pnpm lint` – run ESLint
-- `pnpm format` – format the codebase with Prettier
+- Git Workflow: `docs/40-process-policy/git-workflow.md` (브랜치/TODO 커밋/PR)
+- Code Style: `docs/30-developer-guides/code-style.md`
+- Testing: `docs/30-developer-guides/testing.md`
+- 인터페이스/타이핑: `docs/30-developer-guides/interface-spec.md`, `docs/30-developer-guides/typescript-typing-guidelines.md`
 
-## License
+## 컨트리뷰션
+
+이 프로젝트는 “모듈을 조립해 나만의 Agent를 만드는 경험”을 지향합니다. 이 철학에 공감하신다면 아래 가이드를 참고해 주세요.
+
+- 이슈/PR은 작은 단위(TODO 스코프)로 명확히 구분합니다.
+- 새 기능은 먼저 `plan/`에 요구사항/인터페이스 초안/테스트 계획을 작성하고 논의합니다.
+- 구현 후에는 문서(`docs/`)를 최신화하고, 필요 시 프리셋/예제를 추가합니다.
+
+## 라이선스
 
 MIT

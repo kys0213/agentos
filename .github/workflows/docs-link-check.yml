@@ -1,0 +1,35 @@
+name: Docs Link Check
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - '**/*.md'
+      - '.github/workflows/docs-link-check.yml'
+  push:
+    branches: [ main, develop ]
+    paths:
+      - '**/*.md'
+      - '.github/workflows/docs-link-check.yml'
+
+jobs:
+  link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install markdown-link-check
+        run: |
+          npm i -g markdown-link-check@3
+
+      - name: Run link check
+        run: |
+          set -e
+          echo "Scanning markdown links..."
+          git ls-files "*.md" | xargs -I{} bash -lc 'markdown-link-check -q "{}"'

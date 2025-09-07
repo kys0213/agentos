@@ -66,7 +66,7 @@ export class FileBackedLlmUsageTracker implements LlmBridgeUsageTracker {
   usage-logs.jsonl     # (옵션) 1라인=1로그, 보존 개수/용량 제한
 ```
 
-## Test Plan (docs/TESTING.md 준수)
+## Test Plan (docs/30-developer-guides/testing.md 준수)
 
 - [ ] FS mocking: `@agentos/lang`의 `FileUtils`/`JsonFileHandler`를 jest.mock으로 대체
 - [ ] Fake timers: `jest.useFakeTimers()`로 인터벌/임계치 플러시 테스트
@@ -79,7 +79,7 @@ export class FileBackedLlmUsageTracker implements LlmBridgeUsageTracker {
 - [ ] 스냅샷 저장/로드 구현(요약 우선, 로그는 옵션)
 - [ ] 플러시 정책(시간/개수) 구현 + 종료 훅 처리(메서드 제공)
 - [ ] 단위 테스트 작성(모킹 FS + fake timers)
-- [ ] 문서 추가(`packages/core/docs/CORE_LLM_USAGE_PERSISTENCE.md`)
+- [ ] 문서 추가(`docs/packages/core/core-llm-usage-persistence.md`)
 
 ## 작업 순서
 

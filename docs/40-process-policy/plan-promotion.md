@@ -64,14 +64,14 @@
 
 - Plan: `packages/core/plan/GRAPH_RAG_PLAN.md`
 - Docs(공유 가이드): `docs/personalized-memory.md`
-- Docs(패키지 가이드): `packages/core/docs/memory.md`
+- Docs(패키지 가이드): `docs/packages/core/memory-api.md`
 
 ## 관련 문서
 
 - Git Workflow: `docs/GIT_WORKFLOW_GUIDE.md`
 - 문서 표준: `docs/DOCUMENTATION_STANDARDS.md`
-- 테스트: `docs/TESTING.md`
-- 타입 지침: `docs/TYPESCRIPT_TYPING_GUIDELINES.md`
+- 테스트: `docs/30-developer-guides/testing.md`
+- 타입 지침: `docs/30-developer-guides/typescript-typing-guidelines.md`
 
 ## 주의
 

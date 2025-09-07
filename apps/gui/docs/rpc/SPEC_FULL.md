@@ -518,7 +518,7 @@ export const mergedGlobal$ = merge(snap$, global$);
 
 ### 17. 코어 IPC 이벤트 연동
 
-packages/core/docs/IPC_EVENT_SPEC.md의 채널/가드를 그대로 사용합니다.
+docs/20-specs/ipc-event-spec.md의 채널/가드를 그대로 사용합니다.
 
 - 메인: `AgentEventBridge` + `FunctionPublisher`로 `agentos:<channel>` 브로드캐스트
 - 프리로드: (차기) `electronBridge.on(channel, handler)`로 구독 통로 노출
