@@ -3,7 +3,7 @@ import type { CloseFn, RpcTransport } from '../../../shared/rpc/transport';
 import type { RpcFrame } from '../../../shared/rpc/rpc-frame';
 
 class MockTransport implements RpcTransport {
-  stream?<T = unknown>(channel: string, payload?: unknown): AsyncGenerator<T, void, unknown> {
+  stream?<T = unknown>(_channel: string, _payload?: unknown): AsyncGenerator<T, void, unknown> {
     throw new Error('Method not implemented.');
   }
   on<T = unknown>(
@@ -24,7 +24,7 @@ class MockTransport implements RpcTransport {
   stop(): void {
     /* no-op */
   }
-  async request<TRes = unknown, TReq = unknown>(channel: string, payload?: TReq): Promise<TRes> {
+  async request<TRes = unknown, TReq = unknown>(_channel: string, _payload?: TReq): Promise<TRes> {
     // not used directly in these tests
     throw new Error('not implemented');
   }

@@ -18,7 +18,7 @@ export class MockMcpToolRepository implements McpToolRepository {
     return this.tools.get(id) || null;
   }
 
-  async list(pagination?: CursorPagination): Promise<CursorPaginationResult<McpToolMetadata>> {
+  async list(_pagination?: CursorPagination): Promise<CursorPaginationResult<McpToolMetadata>> {
     const items = Array.from(this.tools.values());
     return {
       items,

@@ -128,7 +128,7 @@ describe('DefaultAgentSession + FileBasedChatManager cohesion', () => {
       async getAll(): Promise<Mcp[]> {
         return [this.testMcp];
       }
-      async getToolOrThrow(name: string) {
+      async getToolOrThrow(_name: string) {
         const tool: Tool = {
           name: 'dummy.echo',
           description: 'echo',

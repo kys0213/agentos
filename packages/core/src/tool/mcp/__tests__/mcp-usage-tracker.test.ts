@@ -1,5 +1,5 @@
-import { InMemoryUsageTracker } from '../in-memory-usage-tracker';
-import { NoOpUsageTracker } from '../no-op-usage-tracker';
+import { InMemoryUsageTracker, NoOpUsageTracker } from '../mcp-usage-tracker';
+// removed unused import McpUsageLog
 
 describe('InMemoryUsageTracker', () => {
   let tracker: InMemoryUsageTracker;
@@ -207,7 +207,7 @@ describe('InMemoryUsageTracker', () => {
   describe('utility methods', () => {
     beforeEach(() => {
       // Add logs across different times of a day
-      const baseDate = new Date('2024-01-01T10:30:00.000Z');
+      // base date not needed; keeping scenario minimal
 
       tracker.trackUsage({
         toolId: 'tool1',

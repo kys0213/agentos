@@ -1,4 +1,4 @@
-import { AgentEventBridge, type AgentEventPayload } from '../agent-event-bridge';
+import { AgentEventBridge } from '../agent-event-bridge';
 import { OutboundChannel } from '../../../common/event/outbound-channel';
 import type { Message } from 'llm-bridge-spec';
 import type { OutboundEvent } from '../../../common/event/outbound-channel';

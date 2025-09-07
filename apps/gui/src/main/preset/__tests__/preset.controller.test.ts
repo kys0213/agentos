@@ -78,11 +78,11 @@ describe('PresetController', () => {
     expect(created.success).toBe(true);
     expect(created.result?.id).toBeDefined();
 
-    const one = await ctrl.get(created.result!.id!);
-    expect(one?.id).toBe(created.result!.id!);
+    const one = await ctrl.get(created.result!.id);
+    expect(one?.id).toBe(created.result!.id);
 
     const list = await ctrl.list();
-    expect(list.items.some((s) => s.id === created.result!.id!)).toBe(true);
+    expect(list.items.some((s) => s.id === created.result!.id)).toBe(true);
 
     type UpdatePayload = z.input<(typeof C.methods)['update']['payload']>;
     const prev = created.result!;
@@ -98,7 +98,7 @@ describe('PresetController', () => {
         enabledMcps: [],
         llmBridgeName: prev.llmBridgeName,
         llmBridgeConfig: prev.llmBridgeConfig ?? {},
-        status: (prev as { status?: string }).status ?? 'active',
+        status: prev.status ?? 'active',
         category: prev.category ?? ['general'],
         createdAt: prev.createdAt,
         updatedAt: prev.updatedAt,

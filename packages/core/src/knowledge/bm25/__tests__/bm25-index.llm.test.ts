@@ -1,7 +1,5 @@
 import { InMemoryBM25Index } from '../../bm25/bm25-index';
-import { LlmBridgeKeywordExtractor } from '../../llm/llm-keyword-extractor';
-import { Tokenizer, KeywordExtractor } from '../../tokenizer';
-import { LlmKeywordTokenizer } from 'src/knowledge/llm-keyword-tokenizer';
+import { LlmKeywordTokenizer, KeywordExtractor } from '../../tokenizer';
 
 // Mock LlmBridge and extractor for deterministic test
 class MockExtractor implements KeywordExtractor {

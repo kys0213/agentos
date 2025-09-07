@@ -48,9 +48,7 @@ export class GeneratedAgentController {
     z.output<(typeof C.methods)['get-all-metadatas']['response']>
   > {
     const page = await this.svc.getAllMetadatas();
-    return page.items as unknown as z.output<
-      (typeof C.methods)['get-all-metadatas']['response']
-    >;
+    return page.items as unknown as z.output<(typeof C.methods)['get-all-metadatas']['response']>;
   }
 
   @EventPattern('agent.update')

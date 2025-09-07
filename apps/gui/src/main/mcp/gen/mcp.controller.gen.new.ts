@@ -108,9 +108,7 @@ export class GeneratedMcpController {
   }
 
   @EventPattern('mcp.usage.events')
-  usage_events(): Observable<
-    z.output<(typeof C.methods)['usage.events']['streamResponse']>
-  > {
+  usage_events(): Observable<z.output<(typeof C.methods)['usage.events']['streamResponse']>> {
     return this.outbound
       .ofType('mcp.usage.')
       .pipe(map((ev) => ev as z.output<(typeof C.methods)['usage.events']['streamResponse']>));

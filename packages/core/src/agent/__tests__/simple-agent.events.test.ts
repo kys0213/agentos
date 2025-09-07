@@ -3,41 +3,11 @@ import type { LlmBridge, LlmBridgeResponse } from 'llm-bridge-spec';
 import type { ChatManager } from '../../chat/chat.manager';
 import type { ChatSession } from '../../chat/chat-session';
 import { McpRegistry } from '../../tool/mcp/mcp.registery';
-import type { AgentMetadata } from '../agent-metadata';
+// removed unused AgentMetadata import
 import { SimpleAgent } from '../simple-agent';
 import { AgentMetadataRepository } from '../agent-metadata.repository';
 
-function meta(): AgentMetadata {
-  return {
-    id: 'a-evt',
-    name: 'Agent',
-    description: '',
-    icon: '',
-    keywords: [],
-    preset: {
-      id: 'p-1',
-      name: 'p',
-      description: '',
-      author: '',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      version: '1.0.0',
-      systemPrompt: '',
-      enabledMcps: [],
-      llmBridgeName: 'x',
-      llmBridgeConfig: {},
-      status: 'active',
-      usageCount: 0,
-      knowledgeDocuments: 0,
-      knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 },
-      category: [],
-    },
-    sessionCount: 0,
-    lastUsed: new Date(),
-    status: 'active',
-    usageCount: 0,
-  };
-}
+// meta() was unused; removed to keep tests minimal
 
 describe('SimpleAgent events', () => {
   it('emits sessionCreated/sessionEnded and status changes', async () => {
@@ -61,7 +31,7 @@ describe('SimpleAgent events', () => {
     const events: AgentEvent[] = [];
     const off = agent.on((e) => events.push(e));
 
-    const session = await agent.createSession();
+    await agent.createSession();
     expect(events.some((e) => e.type === 'sessionCreated' && e.sessionId === 's-evt')).toBe(true);
 
     await agent.endSession('s-evt');
