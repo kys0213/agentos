@@ -55,14 +55,14 @@
 ### Docs & 표준화
 
 - [x] 스텁/인덱스 정비: `apps/gui/docs/RPC_AND_STREAMING_GUIDE.md`, `apps/gui/docs/README.md`, `apps/gui/docs/rpc/README.md`
-- [ ] `apps/gui/plan/*` 내 404 링크 점검 및 수정
-- [ ] Plan→Docs 승격 체크리스트 작성(기여자 가이드 반영)
+- [x] `apps/gui/plan/*` 내 404 링크 점검 및 수정
+- [x] Plan→Docs 승격 체크리스트 작성(기여자 가이드 반영)
 
 ### 스트리밍 컨벤션(계약/코드젠)
 
 - [ ] `usage.events.streamResponse` 구체 스키마 채택(McpUsageUpdateEventSchema) 검토/적용
 - [ ] 코드젠: streamResponse 존재 시 서버 컨트롤러 스텁을 동기 + `Observable<z.output<...>>`로 생성 규칙 반영
-- [ ] GUIDE/SPEC에 서버 스트리밍 컨벤션(요소 스키마, 해제, Promise 금지) 명문화
+- [x] GUIDE/SPEC에 서버 스트리밍 컨벤션(요소 스키마, 해제, Promise 금지) 명문화
 
 ## 산출물/정책
 
