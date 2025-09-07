@@ -263,7 +263,7 @@ function writeSharedTypes(spec, outDir) {
 }
 
 function writeMainController(spec, outDir) {
-  const className = `Generated${capitalize(spec.namespace)}Controller`;
+  const className = `Generated${capitalize(spec.namespace)}ControllerStub`;
   const contractConst = `${capitalize(spec.namespace)}Contract`;
   const contractImportPath = `../../../shared/rpc/contracts/${spec.namespace}.contract`;
   const lines = [];
@@ -271,6 +271,10 @@ function writeMainController(spec, outDir) {
   lines.push(`import { Controller } from '@nestjs/common';`);
   lines.push(`import { EventPattern, Payload } from '@nestjs/microservices';`);
   lines.push(`import { z } from 'zod';`);
+  const hasAnyStream = Object.values(spec.methods).some((m) => m.hasStreamResponse);
+  if (hasAnyStream) {
+    lines.push(`import type { Observable } from 'rxjs';`);
+  }
   lines.push(`import { ZodValidationPipe } from '../../common/zod-validation.pipe';`);
   lines.push(`import { ${contractConst} as C } from '${contractImportPath}';`);
   lines.push('');
@@ -283,15 +287,35 @@ function writeMainController(spec, outDir) {
     const payloadType = info.hasPayload
       ? `z.input<typeof C.methods['${name}']['payload']>`
       : 'void';
-    const returnType = info.hasResponse
+    const responseType = info.hasResponse
       ? `z.output<typeof C.methods['${name}']['response']>`
       : 'void';
+    const streamType = info.hasStreamResponse
+      ? `z.output<typeof C.methods['${name}']['streamResponse']>`
+      : 'void';
+    if (info.hasStreamResponse) {
+      // Streaming endpoint: return Observable of element schema
+      if (info.hasPayload) {
+        lines.push(
+          `  ${mname}(@Payload(new ZodValidationPipe(C.methods['${name}']['payload'])) payload: ${payloadType}): Observable<${streamType}> {`
+        );
+      } else {
+        lines.push(`  ${mname}(): Observable<${streamType}> {`);
+      }
+      lines.push(
+        `    // Expected return: Observable<z.output<typeof C.methods['${name}']['streamResponse']>>`
+      );
+      lines.push(`    throw new Error('NotImplemented: stream ${spec.namespace}.${name}');`);
+      lines.push('  }');
+      continue;
+    }
+    // Non-streaming endpoint: Promise of response
     if (info.hasPayload) {
       lines.push(
-        `  async ${mname}(@Payload(new ZodValidationPipe(C.methods['${name}']['payload'])) payload: ${payloadType}): Promise<${returnType}> {`
+        `  async ${mname}(@Payload(new ZodValidationPipe(C.methods['${name}']['payload'])) payload: ${payloadType}): Promise<${responseType}> {`
       );
     } else {
-      lines.push(`  async ${mname}(): Promise<${returnType}> {`);
+      lines.push(`  async ${mname}(): Promise<${responseType}> {`);
     }
     if (info.hasResponse) {
       lines.push(`    // Expected return: z.output<typeof C.methods['${name}']['response']>`);
@@ -300,7 +324,7 @@ function writeMainController(spec, outDir) {
     lines.push('  }');
   }
   lines.push('}');
-  const file = path.join(outDir, `${spec.namespace}.controller.ts`);
+  const file = path.join(outDir, `${spec.namespace}.controller.gen.stub.ts`);
   writeFileGenerated(file, lines.join('\n') + '\n');
 }
 
@@ -316,21 +340,12 @@ function main() {
   const files = findContractFiles(contractsRoot);
   const specs = files.map(extractSpec);
   writeChannelsFile(specs, channelsOut);
-<<<<<<< HEAD
-<<<<<<< HEAD
   console.log(
     `[rpc-codegen] Wrote ${path.relative(appRoot, channelsOut)} from ${files.length} contract(s).`
   );
-=======
-  console.log(`[rpc-codegen] Wrote ${path.relative(appRoot, channelsOut)} from ${files.length} contract(s).`);
->>>>>>> 2c78373 (chore(gui): move RPC codegen into apps/gui; add local codegen script and update root proxy\n\n- New: apps/gui/scripts/rpc-codegen.mjs (ESM) with app-root paths\n- apps/gui/package.json: add "codegen" script\n- root package.json: "rpc:codegen" proxies to GUI codegen\n- remove old scripts/rpc-codegen.js)
-=======
-  console.log(
-    `[rpc-codegen] Wrote ${path.relative(appRoot, channelsOut)} from ${files.length} contract(s).`
-  );
->>>>>>> 3c2e2da (chore(gui): remove unused generated controllers (*.controller.ts) in gen folders; keep active *.gen.new.ts)
   for (const spec of specs) {
     writeRendererClient(spec, path.resolve(appRoot, 'src/renderer/rpc/gen'));
+    // Generate safe server stubs reflecting streamResponse→Observable rule without overwriting curated files
     writeMainController(spec, path.resolve(appRoot, `src/main/${spec.namespace}/gen`));
     writeSharedTypes(spec, path.resolve(appRoot, 'src/shared/rpc/gen'));
   }

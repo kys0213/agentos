@@ -11,7 +11,7 @@
 - 새 섹션 스캐폴드: 00-start-here, 10-architecture, 20-specs, 30-developer-guides, 40-process-policy, 90-templates, packages/core|lang
 - Start-Here: 로드맵/방향성 이동, 허브 추가
 - Specs: batch-collection, ipc-event-spec 이관 + capability/RACP/storage/privacy/observability 스텁 추가
-- Core: packages/core/docs/* → docs/packages/core/* (git mv), 아키텍처 허브 링크 교정
+- Core: packages/core/docs/_ → docs/packages/core/_ (git mv), 아키텍처 허브 링크 교정
 - Guides: TESTING/Typing/Code-Style/Complexity/Interface/AI-협업 이동
 - Process-Policy: Docs/Standards/Git/Plan-Promotion 이동
 - Templates: Plan Template 이동

@@ -8,13 +8,13 @@ packages/core의 이벤트/세션/사용량 정보를 배치 수집 레코드(JS
 
 ## 매핑 스케치
 
-| Core 타입/이벤트               | 수집 도메인        | 주요 필드(아이디어)                                      |
-|------------------------------|-------------------|---------------------------------------------------------|
-| MessageHistory (chat)        | interactions/*.jl | session_id, agent_id, route, model, ts, role, summary  |
-| LlmUsage (tokens/latency)    | usage/*.jl        | ts, agent_id, model, route, tokens_in/out, latency_ms  |
-| Tool call (MCP)              | tools/*.jl        | ts, agent_id, tool, ok, error_code                      |
-| Session status change        | events/*.jl       | ts, agent_id, session_id, state, detail                 |
-| Domain errors                | errors/*.jl       | ts, code, message, domain, agent_id, session_id         |
+| Core 타입/이벤트          | 수집 도메인        | 주요 필드(아이디어)                                   |
+| ------------------------- | ------------------ | ----------------------------------------------------- |
+| MessageHistory (chat)     | interactions/\*.jl | session_id, agent_id, route, model, ts, role, summary |
+| LlmUsage (tokens/latency) | usage/\*.jl        | ts, agent_id, model, route, tokens_in/out, latency_ms |
+| Tool call (MCP)           | tools/\*.jl        | ts, agent_id, tool, ok, error_code                    |
+| Session status change     | events/\*.jl       | ts, agent_id, session_id, state, detail               |
+| Domain errors             | errors/\*.jl       | ts, code, message, domain, agent_id, session_id       |
 
 ## idempotency_key 아이디어
 
@@ -32,7 +32,7 @@ function mapMessageHistory(h: MessageHistory): InteractionRecord {
     model: h.model,
     ts: isoNow(),
     role: h.role,
-    summary: summarize(h.content) // 본문은 기본 비수집(meta_only)
+    summary: summarize(h.content), // 본문은 기본 비수집(meta_only)
   };
 }
 ```

@@ -5,42 +5,93 @@
 ## TypeScript 인터페이스(스케치)
 
 ```ts
-export interface Cursor { after?: string; limit?: number }
-export interface Page<T> { items: T[]; next?: string }
+export interface Cursor {
+  after?: string;
+  limit?: number;
+}
+export interface Page<T> {
+  items: T[];
+  next?: string;
+}
 
-export interface SessionSummary { id: string; agentId: string; updatedAt: string; title?: string; status?: string }
-export interface MessageRecord { sessionId: string; ts: string; role: 'user'|'assistant'|'tool'; content: unknown }
+export interface SessionSummary {
+  id: string;
+  agentId: string;
+  updatedAt: string;
+  title?: string;
+  status?: string;
+}
+export interface MessageRecord {
+  sessionId: string;
+  ts: string;
+  role: 'user' | 'assistant' | 'tool';
+  content: unknown;
+}
 
 export interface SessionStore {
-  create(agentId: string, opts?: { sessionId?: string; presetId?: string }): Promise<{ id: string }>
-  get(id: string): Promise<SessionSummary|null>
-  list(filter?: { agentId?: string }, cursor?: Cursor): Promise<Page<SessionSummary>>
-  appendMessages(sessionId: string, msgs: MessageRecord[]): Promise<void>
-  history(sessionId: string, cursor?: Cursor): Promise<Page<MessageRecord>>
-  terminate(sessionId: string): Promise<void>
+  create(
+    agentId: string,
+    opts?: { sessionId?: string; presetId?: string }
+  ): Promise<{ id: string }>;
+  get(id: string): Promise<SessionSummary | null>;
+  list(filter?: { agentId?: string }, cursor?: Cursor): Promise<Page<SessionSummary>>;
+  appendMessages(sessionId: string, msgs: MessageRecord[]): Promise<void>;
+  history(sessionId: string, cursor?: Cursor): Promise<Page<MessageRecord>>;
+  terminate(sessionId: string): Promise<void>;
 }
 
-export interface MemoryNode { id: string; kind: 'short'|'long'|'agent'; text: string; score?: number; meta?: any }
+export interface MemoryNode {
+  id: string;
+  kind: 'short' | 'long' | 'agent';
+  text: string;
+  score?: number;
+  meta?: any;
+}
 export interface MemoryStore {
-  upsert(nodes: MemoryNode[]): Promise<void>
-  search(query: string, k: number, opts?: { agentId?: string }): Promise<MemoryNode[]>
-  evict(policy: { maxNodes?: number }): Promise<number>
+  upsert(nodes: MemoryNode[]): Promise<void>;
+  search(query: string, k: number, opts?: { agentId?: string }): Promise<MemoryNode[]>;
+  evict(policy: { maxNodes?: number }): Promise<number>;
 }
 
-export interface KnowledgeDoc { id: string; text: string; embedding?: number[]; meta?: any }
+export interface KnowledgeDoc {
+  id: string;
+  text: string;
+  embedding?: number[];
+  meta?: any;
+}
 export interface KnowledgeIndex {
-  add(docs: KnowledgeDoc[]): Promise<void>
-  query(q: string, k: number, opts?: { hybrid?: boolean }): Promise<Array<{ id: string; score: number }>>
+  add(docs: KnowledgeDoc[]): Promise<void>;
+  query(
+    q: string,
+    k: number,
+    opts?: { hybrid?: boolean }
+  ): Promise<Array<{ id: string; score: number }>>;
 }
 
-export interface UsageRecord { ts: string; agentId: string; model: string; tokensIn: number; tokensOut: number; costUsd?: number; latencyMs?: number }
+export interface UsageRecord {
+  ts: string;
+  agentId: string;
+  model: string;
+  tokensIn: number;
+  tokensOut: number;
+  costUsd?: number;
+  latencyMs?: number;
+}
 export interface UsageStore {
-  add(records: UsageRecord[]): Promise<void>
-  aggregate(range: { from: string; to: string }, by: 'day'|'agent'|'model'): Promise<any>
+  add(records: UsageRecord[]): Promise<void>;
+  aggregate(range: { from: string; to: string }, by: 'day' | 'agent' | 'model'): Promise<any>;
 }
 
-export interface EventRecord { id: string; ts: string; type: string; payload: any }
-export interface EventStore { append(events: EventRecord[]): Promise<void>; tail(cursor?: Cursor): Promise<Page<EventRecord>> }
+export interface EventRecord {
+  id: string;
+  ts: string;
+  type: string;
+  payload: any;
+}
+export interface EventStore {
+  append(events: EventRecord[]): Promise<void>;
+  tail(cursor?: Cursor): Promise<Page<EventRecord>>;
+}
 ```
 
 ## 어댑터 규약(가이드)
@@ -55,7 +106,11 @@ export interface EventStore { append(events: EventRecord[]): Promise<void>; tail
 {
   "batch_id": "2025-09-06-001",
   "cursor": { "events_after": "evt_123" },
-  "payload": { "events": [ /* EventRecord[] */ ] },
+  "payload": {
+    "events": [
+      /* EventRecord[] */
+    ]
+  },
   "idempotency_key": "hash(batch)"
 }
 ```

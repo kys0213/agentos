@@ -53,7 +53,7 @@
 ```yaml
 collector:
   mode: sidecar
-  schedule: "*/15 * * * *"
+  schedule: '*/15 * * * *'
   journal_dir: ~/.agentos/journal
   outbox_dir: ~/.agentos/outbox
   max_batch_bytes: 5242880
