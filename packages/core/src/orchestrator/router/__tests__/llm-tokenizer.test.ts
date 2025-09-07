@@ -7,39 +7,38 @@ import type { AgentSession } from '../../../agent/agent-session';
 import type { ReadonlyAgentMetadata } from '../../../agent/agent-metadata';
 import type { RouterQuery } from '../types';
 
-class StubAgent implements Agent {
-  constructor(private meta: ReadonlyAgentMetadata) {}
+const makeStubAgent = (m: ReadonlyAgentMetadata): Agent => ({
   get id() {
-    return this.meta.id;
-  }
+    return m.id;
+  },
   async chat(): Promise<AgentChatResult> {
     throw new Error('not used');
-  }
+  },
   async createSession(): Promise<AgentSession> {
     throw new Error('not used');
-  }
-  async getMetadata(): Promise<ReadonlyAgentMetadata> {
-    return this.meta;
-  }
+  },
+  async getMetadata() {
+    return m;
+  },
   async isActive() {
-    return this.meta.status === 'active';
-  }
+    return m.status === 'active';
+  },
   async isIdle() {
-    return this.meta.status === 'idle';
-  }
+    return m.status === 'idle';
+  },
   async isInactive() {
-    return this.meta.status === 'inactive';
-  }
+    return m.status === 'inactive';
+  },
   async isError() {
-    return this.meta.status === 'error';
-  }
-  async idle() {}
-  async activate() {}
-  async inactive() {}
-  async update() {}
-  async delete() {}
-  async endSession() {}
-}
+    return m.status === 'error';
+  },
+  async idle() {},
+  async activate() {},
+  async inactive() {},
+  async update() {},
+  async delete() {},
+  async endSession() {},
+});
 
 function meta(
   init: Partial<ReadonlyAgentMetadata> & { id: string; name: string }
@@ -75,22 +74,27 @@ function meta(
   } as ReadonlyAgentMetadata;
 }
 
-class FakeExtractor implements KeywordExtractor {
-  public calls = 0;
-  async extractKeywords(text: string): Promise<string[]> {
-    this.calls++;
-    // Return tokens based on input to differentiate docs
-    if (text.includes('정렬') || text.includes('배열')) {
-      return ['정렬', '배열', '방법'];
-    }
-    return ['마크다운'];
-  }
-}
+const makeExtractor = () => {
+  let calls = 0;
+  const extractor: KeywordExtractor & { calls: number } = {
+    get calls() {
+      return calls;
+    },
+    async extractKeywords(text: string): Promise<string[]> {
+      calls++;
+      if (text.includes('정렬') || text.includes('배열')) {
+        return ['정렬', '배열', '방법'];
+      }
+      return ['마크다운'];
+    },
+  };
+  return extractor;
+};
 
 test('uses LLM keyword tokenizer for ko locale when enabled', async () => {
-  const a1 = new StubAgent(meta({ id: 'vision', name: '비전', description: '정렬 배열 도우미' }));
-  const a2 = new StubAgent(meta({ id: 'md', name: '마크다운', description: '마크다운 도우미' }));
-  const extractor = new FakeExtractor();
+  const a1 = makeStubAgent(meta({ id: 'vision', name: '비전', description: '정렬 배열 도우미' }));
+  const a2 = makeStubAgent(meta({ id: 'md', name: '마크다운', description: '마크다운 도우미' }));
+  const extractor = makeExtractor();
   const router = new CompositeAgentRouter([BM25TextStrategy], {
     tokenizer: new EnglishSimpleTokenizer(),
     llmKeyword: { extractor, when: 'locale_cjk' },

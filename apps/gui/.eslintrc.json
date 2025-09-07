@@ -28,5 +28,12 @@
       }
     ]
   },
-  "overrides": []
+  "overrides": [
+    {
+      "files": ["src/main/**/dto/**/*.ts"],
+      "rules": {
+        "max-classes-per-file": ["warn", 12]
+      }
+    }
+  ]
 }

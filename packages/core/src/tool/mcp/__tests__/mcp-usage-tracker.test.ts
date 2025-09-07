@@ -1,4 +1,4 @@
-import { InMemoryUsageTracker, NoOpUsageTracker } from '../mcp-usage-tracker';
+import { InMemoryUsageTracker, NoOpUsageTracker } from '..';
 // removed unused import McpUsageLog
 
 describe('InMemoryUsageTracker', () => {

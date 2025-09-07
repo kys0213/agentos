@@ -123,31 +123,35 @@ describe('DefaultAgentSession + FileBasedChatManager cohesion', () => {
       }
     }
 
-    class TestMcpRegistry extends McpRegistry {
-      private readonly testMcp = new TestMcp();
+    const testMcp = new TestMcp();
+    const mcp: McpRegistry = {
       async getAll(): Promise<Mcp[]> {
-        return [this.testMcp];
-      }
-      async getToolOrThrow(_name: string) {
+        return [testMcp];
+      },
+      async get(name: string) {
+        return name === testMcp.name ? testMcp : undefined;
+      },
+      async getOrThrow(_name: string) {
+        return testMcp;
+      },
+      async getTool(_name: string) {
         const tool: Tool = {
           name: 'dummy.echo',
           description: 'echo',
           inputSchema: {
             type: 'object',
-            properties: {
-              text: { type: 'string' },
-            },
+            properties: { text: { type: 'string' } },
             required: ['text'],
           },
         };
-        return {
-          mcp: this.testMcp,
-          tool,
-        };
-      }
-    }
-
-    const mcp = new TestMcpRegistry();
+        return { mcp: testMcp, tool };
+      },
+      async getToolOrThrow(name: string) {
+        const res = await this.getTool(name);
+        if (!res) throw new Error('tool not found');
+        return res;
+      },
+    } as McpRegistry;
 
     const session = new DefaultAgentSession(chatSession, llm, mcp, meta());
 
