@@ -1,7 +1,17 @@
 import type { RouterQuery, BuildDocFn } from './types';
 import type { ReadonlyAgentMetadata } from '../../agent/agent-metadata';
 
-import { MultiModalContentHelper } from 'llm-bridge-spec';
+// Avoid runtime dependency on 'llm-bridge-spec' in CJS build path.
+// Implement minimal string-content guard locally to preserve behavior.
+type BridgeContent = { contentType: string; value: unknown };
+function isStringContent(c: unknown): c is BridgeContent & { value: string } {
+  return (
+    !!c &&
+    typeof c === 'object' &&
+    (c as { contentType?: unknown }).contentType === 'text' &&
+    typeof (c as { value?: unknown }).value === 'string'
+  );
+}
 
 export function getQueryText(query: RouterQuery): string {
   if (query.text && query.text.trim().length > 0) {
@@ -10,7 +20,7 @@ export function getQueryText(query: RouterQuery): string {
   if (query.content && query.content.length > 0) {
     const texts: string[] = [];
     for (const c of query.content) {
-      if (MultiModalContentHelper.isStringContent(c)) {
+      if (isStringContent(c)) {
         const v = c.value;
         if (v.trim().length > 0) {
           texts.push(v);
