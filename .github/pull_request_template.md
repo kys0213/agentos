@@ -1,60 +1,41 @@
-# Pull Request
+# Summary
 
-## Context
+문서 트리를 인덱스 중심에서 섹션 기반 IA로 리팩토링했습니다. Start-Here/Architecture/Specs/Developer-Guides/Process-Policy/Templates 및 packages 허브를 추가하고, 모든 문서를 새 트리로 물리 이동했습니다. 링크 무결성 CI도 추가했습니다.
 
-- Plan: <!-- plan/<file>.md 또는 docs/<file>.md (승격 후) 링크 -->
-- Scope: <!-- 예: packages/core, apps/gui 등 -->
+# Motivation & Context
 
-## Requirements (from Plan)
+가시성과 탐색성을 높이고(3-클릭 원칙), SSOT 원칙에 맞춰 중복/파편화를 줄이기 위함입니다. 패키지 문서를 전역 문서와 분리해 탐색 동선을 명확히 했습니다.
 
-<!-- 계획서의 성공 조건/요구사항 요약 3~5줄 -->
+# Changes
 
-## TODO Status (from Plan)
+- 새 섹션 스캐폴드: 00-start-here, 10-architecture, 20-specs, 30-developer-guides, 40-process-policy, 90-templates, packages/core|lang
+- Start-Here: 로드맵/방향성 이동, 허브 추가
+- Specs: batch-collection, ipc-event-spec 이관 + capability/RACP/storage/privacy/observability 스텁 추가
+- Core: packages/core/docs/* → docs/packages/core/* (git mv), 아키텍처 허브 링크 교정
+- Guides: TESTING/Typing/Code-Style/Complexity/Interface/AI-협업 이동
+- Process-Policy: Docs/Standards/Git/Plan-Promotion 이동
+- Templates: Plan Template 이동
+- 루트/앱/패키지 문서 교차 링크 전면 교정
+- CI: 문서 링크 무결성 검사 추가(.github/workflows/docs-link-check.yml)
 
-<!-- 계획서의 TODO를 그대로 붙여넣고 완료 항목 체크 표시 -->
+# Screenshots / Links
 
-```
-- [ ] TODO 1: ...
-- [ ] TODO 2: ...
-```
+- 새 허브: `docs/README.md`, `docs/packages/core/index.md`
+- PR 비교: See GitHub PR
 
-## Changes
+# Checklist
 
-<!-- 핵심 변경 사항 3~7개 불릿 -->
+- [x] 단일 PR, TODO별 커밋 분리 (Git Workflow 준수)
+- [x] 내부 링크 무결성 검사 CI 추가 및 통과
+- [x] 기존 경로 → 새 경로로 교차 링크 교정
+- [x] Start-Here/Architecture/Specs 허브에서 3클릭 내 주요 문서 도달 가능
+- [x] 문서 이동 로그(현재 섹션) 및 계획서(plan/DOCS_RESTRUCTURE_PLAN.md) 포함
 
-- ...
+# Breaking Changes
 
-## Verification
+문서 경로가 변경되었습니다. 외부 링크를 사용하는 문서/이슈는 새 경로로 갱신이 필요할 수 있습니다.
 
-<!-- pass/fail 유무만 간단히 기입 (출력 로그/세부 결과는 첨부 금지) -->
+# Follow-ups
 
-- Typecheck: pass | fail
-- Tests: pass | fail
-- Build: pass | fail
-- Manual checks (optional): ...
-
-## Formatting & Lint
-
-- Ran `pnpm format`: yes | no
-- Included format changes in commits: yes | no
-- Lint (no errors): pass | fail (warnings allowed)
-
-## Type Safety
-
-- Introduced `any` or `as any`: no | yes (explain why)
-- Used `unknown` + guards or zod for untyped input: yes | no
-
-## Docs
-
-<!-- 계획서 승격/병합 여부와 경로. PR 유형별 원칙 적용: Feature/Fix는 문서 필수 갱신, Refactor/Perf/Chore는 외부 인터페이스 불변 시 생략 가능 -->
-
-- Plan → Docs: <!-- yes/no, 경로 기입 -->
-- Merged/Extended: <!-- 관련 docs 경로들 -->
-- PR Type Rule: <!-- feature/fix require docs update | refactor no external change -->
-
-## Risks / Notes
-
-<!-- 브레이킹 변경, 마이그레이션, 알려진 제한, 추후 작업 -->
-
-- Breaking: <!-- yes/no + 간단 설명 -->
-- Notes: ...
+- [ ] 스펙 스텁 본문 보강(LLM Capability/RACP/Storage/Privacy/Observability)
+- [ ] batch-collection.md 원문 복원 여부 확정 후 반영
