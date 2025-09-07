@@ -14,4 +14,3 @@ References
 
 - Repo docs policy: `docs/40-process-policy/documentation-standards.md`
 - Git workflow: `docs/40-process-policy/git-workflow.md`
-

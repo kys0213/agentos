@@ -10,7 +10,7 @@
 - Content Standardization: `./content-standardization.md`
 - IPC Event Spec: `../../20-specs/ipc-event-spec.md`
 - Tree Shaking Refactor: `./tree-shaking-refactor.md`
- - Collector Mapping (Directional): `./collector-mapping.md`
- - MCP Usage Layer: `./mcp-usage-layer.md`
+- Collector Mapping (Directional): `./collector-mapping.md`
+- MCP Usage Layer: `./mcp-usage-layer.md`
 
 이 인덱스는 core 패키지 문서 허브입니다.

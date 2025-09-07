@@ -18,11 +18,21 @@
     {
       "batch_id": "2025-09-06-001",
       "journal": {
-        "interactions": [ /* 요약 메시지(메타/익명화) */ ],
-        "usage": [ /* tokens/latency/cost */ ],
-        "errors": [ /* code/message/domain */ ],
-        "tools": [ /* tool call meta */ ],
-        "events": [ /* 상태 이벤트(옵션) */ ]
+        "interactions": [
+          /* 요약 메시지(메타/익명화) */
+        ],
+        "usage": [
+          /* tokens/latency/cost */
+        ],
+        "errors": [
+          /* code/message/domain */
+        ],
+        "tools": [
+          /* tool call meta */
+        ],
+        "events": [
+          /* 상태 이벤트(옵션) */
+        ]
       },
       "cursor": { "events_after": "evt_123" },
       "meta": { "source": "gui|cli|slackbot", "client": "agentos-collector/0.1" }

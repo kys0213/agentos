@@ -32,7 +32,7 @@ privacy:
         regex: "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"
         replace: "<EMAIL>"
       - name: phone
-        regex: "\+?[0-9][0-9\- ]{7,}" 
+        regex: "\+?[0-9][0-9\- ]{7,}"
         replace: "<PHONE>"
 ```
 

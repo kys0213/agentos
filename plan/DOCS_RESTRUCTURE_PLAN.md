@@ -26,10 +26,10 @@
 ```typescript
 // (선택) docs/sidebar.manifest.ts (정적 사이트/사이드바를 고려한 선언적 구조)
 export interface DocEntry {
-  id: string;            // stable id (e.g., architecture/orchestrator)
-  title: string;         // 문서명
-  path: string;          // 실제 파일 경로 (상대)
-  tags?: string[];       // 검색/필터 태그
+  id: string; // stable id (e.g., architecture/orchestrator)
+  title: string; // 문서명
+  path: string; // 실제 파일 경로 (상대)
+  tags?: string[]; // 검색/필터 태그
   children?: DocEntry[]; // 트리 구조
 }
 

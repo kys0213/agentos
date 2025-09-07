@@ -17,7 +17,7 @@
 {
   "id": "cmd_01HXXX...",
   "created_at": "2025-09-06T10:00:00Z",
-  "idempotency_key": "c6b2a...",  
+  "idempotency_key": "c6b2a...",
   "tenant_id": "org_abc",
   "actor": { "type": "user|agent", "id": "u_123" }
 }
@@ -32,8 +32,12 @@
   "priority": 0,
   "timeout_ms": 60000,
   "payload": {
-    "messages": [ /* llm-bridge-spec UserMessage[] */ ],
-    "tools": [ /* optional tool call allowances */ ]
+    "messages": [
+      /* llm-bridge-spec UserMessage[] */
+    ],
+    "tools": [
+      /* optional tool call allowances */
+    ]
   }
 }
 ```
@@ -46,7 +50,7 @@
 {
   "command_id": "cmd_...",
   "required": 1,
-  "grants": [ { "by": "u_777", "at": "2025-09-06T10:01:00Z", "method": "acl|signature" } ]
+  "grants": [{ "by": "u_777", "at": "2025-09-06T10:01:00Z", "method": "acl|signature" }]
 }
 ```
 

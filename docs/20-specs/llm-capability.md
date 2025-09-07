@@ -17,14 +17,29 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://agentos.dev/schemas/llm-capability.json",
   "type": "object",
-  "required": ["id", "family", "max_context", "tokenizer", "modes", "cost_profile", "latency_profile"],
+  "required": [
+    "id",
+    "family",
+    "max_context",
+    "tokenizer",
+    "modes",
+    "cost_profile",
+    "latency_profile"
+  ],
   "properties": {
     "id": { "type": "string", "description": "unique model id (bridge specific)" },
-    "family": { "type": "string", "enum": ["openai", "anthropic", "local", "vertex", "azureopenai", "other"] },
+    "family": {
+      "type": "string",
+      "enum": ["openai", "anthropic", "local", "vertex", "azureopenai", "other"]
+    },
     "display_name": { "type": "string" },
     "version": { "type": "string" },
     "region": { "type": "string", "description": "hosting region (if applicable)" },
-    "compliance": { "type": "array", "items": { "type": "string" }, "description": "e.g., HIPAA, SOC2" },
+    "compliance": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "e.g., HIPAA, SOC2"
+    },
     "max_context": { "type": "integer", "minimum": 1024 },
     "tokenizer": { "type": "string", "enum": ["tiktoken", "anthropic", "sentencepiece", "other"] },
     "supports": {
@@ -105,7 +120,12 @@ export interface LlmCapability {
     audio?: boolean;
   };
   modes: Array<'chat' | 'completion' | 'tool' | 'embed'>;
-  cost_profile: { currency: string; input_per_1k: number; output_per_1k: number; embed_per_1k?: number };
+  cost_profile: {
+    currency: string;
+    input_per_1k: number;
+    output_per_1k: number;
+    embed_per_1k?: number;
+  };
   latency_profile: { p50_ms?: number; p95_ms?: number };
   rate_limits?: { rpm?: number; tpm?: number };
   limits?: { max_tools?: number; max_output_tokens?: number };
@@ -115,6 +135,7 @@ export interface LlmCapability {
 ## 예시 (비규범)
 
 OpenAI GPT-4o mini:
+
 ```json
 {
   "id": "gpt-4o-mini",
@@ -122,15 +143,21 @@ OpenAI GPT-4o mini:
   "display_name": "GPT‑4o mini",
   "max_context": 128000,
   "tokenizer": "tiktoken",
-  "supports": { "function_calling": true, "json_mode": true, "system_prompt": true, "stream": true },
+  "supports": {
+    "function_calling": true,
+    "json_mode": true,
+    "system_prompt": true,
+    "stream": true
+  },
   "modes": ["chat", "completion", "tool"],
-  "cost_profile": { "currency": "USD", "input_per_1k": 0.15, "output_per_1k": 0.60 },
+  "cost_profile": { "currency": "USD", "input_per_1k": 0.15, "output_per_1k": 0.6 },
   "latency_profile": { "p50_ms": 800, "p95_ms": 3000 },
   "rate_limits": { "rpm": 3000, "tpm": 200000 }
 }
 ```
 
 Anthropic Claude 3.5 Sonnet:
+
 ```json
 {
   "id": "claude-3-5-sonnet",
@@ -138,14 +165,20 @@ Anthropic Claude 3.5 Sonnet:
   "display_name": "Claude 3.5 Sonnet",
   "max_context": 200000,
   "tokenizer": "anthropic",
-  "supports": { "function_calling": true, "json_mode": true, "system_prompt": true, "stream": true },
+  "supports": {
+    "function_calling": true,
+    "json_mode": true,
+    "system_prompt": true,
+    "stream": true
+  },
   "modes": ["chat", "tool"],
-  "cost_profile": { "currency": "USD", "input_per_1k": 3.00, "output_per_1k": 15.00 },
+  "cost_profile": { "currency": "USD", "input_per_1k": 3.0, "output_per_1k": 15.0 },
   "latency_profile": { "p50_ms": 1200, "p95_ms": 4000 }
 }
 ```
 
 로컬 LLM (GPU)
+
 ```json
 {
   "id": "local-qwen2.5-7b-instruct",
@@ -153,7 +186,12 @@ Anthropic Claude 3.5 Sonnet:
   "display_name": "Qwen2.5 7B Instruct (GPU)",
   "max_context": 32768,
   "tokenizer": "sentencepiece",
-  "supports": { "function_calling": false, "json_mode": false, "system_prompt": true, "stream": true },
+  "supports": {
+    "function_calling": false,
+    "json_mode": false,
+    "system_prompt": true,
+    "stream": true
+  },
   "modes": ["chat", "completion"],
   "cost_profile": { "currency": "USD", "input_per_1k": 0.0, "output_per_1k": 0.0 },
   "latency_profile": { "p50_ms": 500, "p95_ms": 2000 }
@@ -185,10 +223,14 @@ function score(cap: LlmCapability, p: RoutingPolicy): number {
   if (p.hard_limits?.max_cost_usd && cost > p.hard_limits.max_cost_usd) return -Infinity;
   if (p.hard_limits?.max_latency_ms && p95 > p.hard_limits.max_latency_ms) return -Infinity;
   switch (p.objective) {
-    case 'low_cost': return -cost * 10 - p95 / 1000;
-    case 'low_latency': return -p95 - cost;
-    case 'balanced': return -(cost * 3 + p95 / 2);
-    case 'capability_required': return - (cost + p95 / 1000);
+    case 'low_cost':
+      return -cost * 10 - p95 / 1000;
+    case 'low_latency':
+      return -p95 - cost;
+    case 'balanced':
+      return -(cost * 3 + p95 / 2);
+    case 'capability_required':
+      return -(cost + p95 / 1000);
   }
 }
 ```

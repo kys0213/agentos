@@ -19,4 +19,3 @@ Related docs
 - `apps/gui/docs/rpc/GUIDE.md`
 - `apps/gui/docs/rpc/SPEC_FULL.md`
 - `apps/gui/docs/rpc/ELECTRON_MCP_IPC_SPEC.md`
-
