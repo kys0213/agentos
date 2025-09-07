@@ -99,7 +99,7 @@ cd apps/gui && pnpm run dev
 
 자세한 워크플로우/스타일/테스트 가이드는 아래 문서를 참고하세요.
 
-- Git Workflow: `docs/GIT_WORKFLOW_GUIDE.md` (브랜치/TODO 커밋/PR)
+- Git Workflow: `docs/40-process-policy/git-workflow.md` (브랜치/TODO 커밋/PR)
 - Code Style: `docs/30-developer-guides/code-style.md`
 - Testing: `docs/30-developer-guides/testing.md`
 - 인터페이스/타이핑: `docs/30-developer-guides/interface-spec.md`, `docs/30-developer-guides/typescript-typing-guidelines.md`
