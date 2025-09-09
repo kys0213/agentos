@@ -37,6 +37,7 @@ The `MockRpcTransport` class (`src/renderer/rpc/mock-rpc-transport.ts`) provides
 ### 3. Available Mock Services
 
 #### Agent Service
+
 - `agent.get-all-metadatas` - Returns list of mock agents
 - `agent.get-metadata` - Returns single agent details
 - `agent.create` - Creates new agent (in-memory)
@@ -46,6 +47,7 @@ The `MockRpcTransport` class (`src/renderer/rpc/mock-rpc-transport.ts`) provides
 - `agent.end-session` - Ends chat session
 
 #### Preset Service
+
 - `preset.list` - Returns available presets
 - `preset.get` - Returns preset details
 - `preset.create` - Creates new preset
@@ -53,11 +55,13 @@ The `MockRpcTransport` class (`src/renderer/rpc/mock-rpc-transport.ts`) provides
 - `preset.delete` - Deletes preset
 
 #### Chat Service
+
 - `chat.list-sessions` - Returns chat sessions
 - `chat.get-messages` - Returns messages for a session
 - `chat.delete-session` - Deletes a session
 
 #### Other Services
+
 - `bridge.list` - Returns available LLM bridges
 - `mcp.list-servers` - Returns MCP servers
 - `model.list` - Returns available models
@@ -75,7 +79,7 @@ this.handlers.set('agent.get-all-metadatas', async () => {
       name: 'Your Custom Agent',
       description: 'Custom description',
       // ... other required fields
-    }
+    },
   ];
 });
 ```
@@ -83,6 +87,7 @@ this.handlers.set('agent.get-all-metadatas', async () => {
 ## Features Supported in Mock Mode
 
 ✅ **Fully Functional:**
+
 - Dark/Light theme switching
 - Navigation between views
 - Agent listing and status
@@ -91,12 +96,14 @@ this.handlers.set('agent.get-all-metadatas', async () => {
 - All UI components
 
 ⚠️ **Simulated (not persisted):**
+
 - Agent creation/updates
 - Chat messages
 - Settings changes
 - Preset modifications
 
 ❌ **Not Available:**
+
 - Real LLM responses
 - File system access
 - Persistent data storage
@@ -112,6 +119,7 @@ this.handlers.set('agent.get-all-metadatas', async () => {
 ## Troubleshooting
 
 ### Port Already in Use
+
 ```bash
 # Find process using port 5173
 lsof -i :5173
@@ -120,11 +128,13 @@ kill -9 <PID>
 ```
 
 ### Mock Data Not Loading
+
 1. Check browser console for errors
 2. Ensure MockRpcTransport handlers match contract channels
 3. Verify schema compatibility with `@agentos/core` types
 
 ### Theme Not Persisting
+
 - Theme is stored in localStorage
 - Check browser dev tools > Application > Local Storage
 - Key: `agentOS-theme`
@@ -134,6 +144,7 @@ kill -9 <PID>
 When adding new RPC methods:
 
 1. Check the contract file for exact channel name:
+
    ```typescript
    // src/shared/rpc/contracts/[service].contract.ts
    export const ServiceContract = defineContract({
@@ -141,12 +152,13 @@ When adding new RPC methods:
        'method-name': {
          channel: 'service.method-name', // Use this exact string
          // ...
-       }
-     }
+       },
+     },
    });
    ```
 
 2. Add handler in MockRpcTransport:
+
    ```typescript
    this.handlers.set('service.method-name', async (data) => {
      return {

@@ -236,7 +236,9 @@ export const ChatView: React.FC<ChatViewProps> = ({
             >
               <div
                 className={`max-w-[80%] p-4 rounded-lg ${
-                  message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-background border'
+                  message.role === 'user'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-background border'
                 }`}
               >
                 {message.role === 'assistant' && (

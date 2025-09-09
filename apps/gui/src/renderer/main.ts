@@ -15,12 +15,12 @@ async function initializeApp() {
   // Skip RPC in development mode for UI testing
   if (process.env.NODE_ENV === 'development' && !window.electronAPI) {
     console.log('🔧 Running in development mode with Mock RPC');
-    
+
     const rpcTransport = createRpcTransport();
     console.log('📡 Mock Rpc transport created:', rpcTransport.constructor.name);
 
     await bootstrap(rpcTransport);
-    
+
     const container = document.getElementById('root');
     if (container) {
       const root = createRoot(container);

@@ -10,7 +10,7 @@ import {
 import { Moon, Sun, Monitor } from 'lucide-react';
 
 const ColorModeToggle: React.FC = () => {
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
 
   return (
     <DropdownMenu>

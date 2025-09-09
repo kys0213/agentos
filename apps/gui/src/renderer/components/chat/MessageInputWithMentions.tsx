@@ -240,7 +240,10 @@ export function MessageInputWithMentions({
         <div className="mt-2 flex flex-wrap gap-1">
           <span className="text-xs text-muted-foreground">Mentioned:</span>
           {mentionedAgents.map((agent) => (
-            <span key={agent.id} className="text-xs bg-accent text-accent-foreground px-2 py-1 rounded">
+            <span
+              key={agent.id}
+              className="text-xs bg-accent text-accent-foreground px-2 py-1 rounded"
+            >
               @{agent.name}
             </span>
           ))}

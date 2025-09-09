@@ -1,5 +1,4 @@
 import {
-  AlertTriangle,
   BookOpen,
   Bot,
   Brain,
@@ -172,12 +171,12 @@ export function SettingsManager() {
 
   // Sync theme changes with settings state
   useEffect(() => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       general: {
         ...prev.general,
         theme: theme,
-      }
+      },
     }));
   }, [theme]);
 
@@ -190,7 +189,7 @@ export function SettingsManager() {
     if (category === 'general' && key === 'theme') {
       setTheme(value as 'light' | 'dark' | 'system');
     }
-    
+
     setSettings((prev) => ({
       ...prev,
       [category]: {
@@ -241,12 +240,7 @@ export function SettingsManager() {
               <Download className="w-4 h-4" />
               Export
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleReset}
-              className="gap-2"
-            >
+            <Button variant="outline" size="sm" onClick={handleReset} className="gap-2">
               <RotateCcw className="w-4 h-4" />
               Reset
             </Button>
@@ -256,7 +250,6 @@ export function SettingsManager() {
             </Button>
           </div>
         </div>
-
       </div>
 
       {/* Content */}

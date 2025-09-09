@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useEffect, useReducer, useCallback, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useCallback,
+  ReactNode,
+} from 'react';
 
 export type Theme = 'light' | 'dark' | 'system';
 
@@ -13,7 +20,7 @@ interface ThemeContextValue {
   setTheme: (theme: Theme) => void;
 }
 
-type ThemeAction = 
+type ThemeAction =
   | { type: 'SET_THEME'; payload: Theme }
   | { type: 'UPDATE_EFFECTIVE_THEME'; payload: 'light' | 'dark' };
 
@@ -56,30 +63,32 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   // Apply theme to document
   useEffect(() => {
     const root = document.documentElement;
-    
+
     // Remove existing theme classes
     root.classList.remove('light', 'dark');
-    
+
     const effectiveTheme = getEffectiveTheme(state.theme);
-    
+
     // Apply theme class
     root.classList.add(effectiveTheme);
-    
+
     // Update effective theme if different
     if (effectiveTheme !== state.effectiveTheme) {
       dispatch({ type: 'UPDATE_EFFECTIVE_THEME', payload: effectiveTheme });
     }
-    
+
     // Save to localStorage
     localStorage.setItem('agentOS-theme', state.theme);
   }, [state.theme, state.effectiveTheme]);
 
   // Listen for system theme changes when using system theme
   useEffect(() => {
-    if (state.theme !== 'system') return;
+    if (state.theme !== 'system') {
+      return;
+    }
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
+
     const handleChange = () => {
       const newEffectiveTheme = mediaQuery.matches ? 'dark' : 'light';
       dispatch({ type: 'UPDATE_EFFECTIVE_THEME', payload: newEffectiveTheme });
@@ -111,11 +120,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     setTheme,
   };
 
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {

@@ -1,13 +1,15 @@
 import { RpcClient, CloseFn } from '../../shared/rpc/transport';
+import type { AgentMetadata, CreateAgentMetadata, AgentStatus, Preset } from '@agentos/core';
+import type { UserMessage } from 'llm-bridge-spec';
 
 /**
  * Mock RPC Transport for development mode
  * Simulates RPC communication without actual backend
  */
 export class MockRpcTransport implements RpcClient {
-  private handlers = new Map<string, (data: any) => Promise<any>>();
+  private handlers = new Map<string, (data: unknown) => Promise<unknown>>();
   private mockDelay = 100; // Simulate network delay
-  private listeners = new Map<string, Set<(payload: any) => void>>();
+  private listeners = new Map<string, Set<(payload: unknown) => void>>();
 
   constructor() {
     this.setupMockHandlers();
@@ -91,14 +93,19 @@ export class MockRpcTransport implements RpcClient {
       ];
     });
 
-    this.handlers.set('agent.create', async (data: any) => {
+    this.handlers.set('agent.create', async (data: unknown) => {
+      const input = data as CreateAgentMetadata & {
+        presetId?: string;
+        status?: AgentStatus;
+        icon?: string;
+      };
       return {
         id: crypto.randomUUID(),
-        name: data.name || 'New Agent',
-        description: data.description || '',
-        status: data.status || 'active',
-        icon: data.icon || '🤖',
-        keywords: data.keywords || [],
+        name: input.name || 'New Agent',
+        description: input.description || '',
+        status: input.status || 'active',
+        icon: input.icon || '🤖',
+        keywords: input.keywords || [],
         preset: {
           id: 'preset-1',
           name: 'Default Assistant',
@@ -121,7 +128,7 @@ export class MockRpcTransport implements RpcClient {
           },
           category: ['general'],
         },
-        presetId: data.presetId || 'preset-1',
+        presetId: input.presetId || 'preset-1',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         sessionCount: 0,
@@ -129,7 +136,8 @@ export class MockRpcTransport implements RpcClient {
       };
     });
 
-    this.handlers.set('agent.get-metadata', async (agentId: string) => {
+    this.handlers.set('agent.get-metadata', async (data: unknown) => {
+      const agentId = data as string;
       return {
         id: agentId,
         name: 'Assistant',
@@ -168,14 +176,15 @@ export class MockRpcTransport implements RpcClient {
       };
     });
 
-    this.handlers.set('agent.update', async (data: any) => {
+    this.handlers.set('agent.update', async (data: unknown) => {
+      const input = data as { agentId: string; patch: Partial<AgentMetadata> };
       return {
-        id: data.agentId,
-        name: data.patch.name || 'Updated Agent',
-        description: data.patch.description || 'Updated description',
-        status: data.patch.status || 'active',
-        icon: data.patch.icon || '🤖',
-        keywords: data.patch.keywords || ['general', 'assistant'],
+        id: input.agentId,
+        name: input.patch.name || 'Updated Agent',
+        description: input.patch.description || 'Updated description',
+        status: (input.patch.status as AgentStatus) || 'active',
+        icon: input.patch.icon || '🤖',
+        keywords: input.patch.keywords || ['general', 'assistant'],
         preset: {
           id: 'preset-1',
           name: 'Default Assistant',
@@ -198,7 +207,7 @@ export class MockRpcTransport implements RpcClient {
           },
           category: ['general'],
         },
-        presetId: data.patch.presetId || 'preset-1',
+        presetId: 'preset-1', // Note: presetId not in AgentMetadata
         createdAt: new Date(Date.now() - 86400000).toISOString(),
         updatedAt: new Date().toISOString(),
         sessionCount: 5,
@@ -206,7 +215,8 @@ export class MockRpcTransport implements RpcClient {
       };
     });
 
-    this.handlers.set('agent.delete', async (agentId: string) => {
+    this.handlers.set('agent.delete', async (data: unknown) => {
+      const agentId = data as string;
       return {
         id: agentId,
         name: 'Deleted Agent',
@@ -244,7 +254,12 @@ export class MockRpcTransport implements RpcClient {
       };
     });
 
-    this.handlers.set('agent.chat', async (data: any) => {
+    this.handlers.set('agent.chat', async (data: unknown) => {
+      const input = data as {
+        agentId: string;
+        messages: UserMessage[];
+        options?: { sessionId?: string };
+      };
       return {
         messages: [
           {
@@ -257,11 +272,11 @@ export class MockRpcTransport implements RpcClient {
             ],
           },
         ],
-        sessionId: data.options?.sessionId || crypto.randomUUID(),
+        sessionId: input.options?.sessionId || crypto.randomUUID(),
       };
     });
 
-    this.handlers.set('agent.end-session', async (data: any) => {
+    this.handlers.set('agent.end-session', async (_data: unknown) => {
       // No response needed for end-session
       return;
     });
@@ -288,28 +303,30 @@ export class MockRpcTransport implements RpcClient {
       };
     });
 
-    this.handlers.set('preset.create', async (data: any) => {
+    this.handlers.set('preset.create', async (data: unknown) => {
+      const input = data as Partial<Preset>;
       return {
         success: true,
         result: {
           id: crypto.randomUUID(),
-          name: data.name,
-          description: data.description || '',
-          author: data.author || 'System',
+          name: input.name || 'New Preset',
+          description: input.description || '',
+          author: input.author || 'System',
           version: '1.0.0',
-          systemPrompt: data.systemPrompt,
-          enabledMcps: data.enabledMcps || [],
-          llmBridgeName: data.llmBridgeName,
-          llmBridgeConfig: data.llmBridgeConfig || {},
-          status: 'active',
-          category: data.category || ['general'],
+          systemPrompt: input.systemPrompt || '',
+          enabledMcps: input.enabledMcps || [],
+          llmBridgeName: input.llmBridgeName || 'openai',
+          llmBridgeConfig: input.llmBridgeConfig || {},
+          status: 'active' as const,
+          category: input.category || ['general'],
           createdAt: new Date(),
           updatedAt: new Date(),
         },
       };
     });
 
-    this.handlers.set('preset.get', async (presetId: string) => {
+    this.handlers.set('preset.get', async (data: unknown) => {
+      const presetId = data as string;
       if (presetId === 'preset-1') {
         return {
           id: 'preset-1',
@@ -346,25 +363,26 @@ export class MockRpcTransport implements RpcClient {
       return null;
     });
 
-    this.handlers.set('preset.update', async (data: any) => {
+    this.handlers.set('preset.update', async (data: unknown) => {
+      const input = data as { id: string; preset: Partial<Preset> };
       return {
         success: true,
         result: {
-          id: data.id,
-          ...data.preset,
+          id: input.id,
+          ...input.preset,
           updatedAt: new Date(),
         },
       };
     });
 
-    this.handlers.set('preset.delete', async (presetId: string) => {
+    this.handlers.set('preset.delete', async (_data: unknown) => {
       return {
         success: true,
       };
     });
 
     // Chat/Conversation service handlers
-    this.handlers.set('chat.list-sessions', async (pagination?: any) => {
+    this.handlers.set('chat.list-sessions', async (_pagination?: unknown) => {
       return {
         items: [
           {
@@ -388,7 +406,7 @@ export class MockRpcTransport implements RpcClient {
       };
     });
 
-    this.handlers.set('chat.get-messages', async (data: any) => {
+    this.handlers.set('chat.get-messages', async (_data: unknown) => {
       return {
         items: [
           {
@@ -409,7 +427,8 @@ export class MockRpcTransport implements RpcClient {
             content: [
               {
                 contentType: 'text',
-                value: 'Of course! I\'d be happy to help with coding. What specific programming task or challenge are you working on?',
+                value:
+                  "Of course! I'd be happy to help with coding. What specific programming task or challenge are you working on?",
               },
             ],
           },
@@ -431,7 +450,8 @@ export class MockRpcTransport implements RpcClient {
             content: [
               {
                 contentType: 'text',
-                value: 'Great! Here\'s a comprehensive approach to implementing dark mode in React...',
+                value:
+                  "Great! Here's a comprehensive approach to implementing dark mode in React...",
               },
             ],
           },
@@ -441,13 +461,13 @@ export class MockRpcTransport implements RpcClient {
       };
     });
 
-    this.handlers.set('chat.delete-session', async (sessionId: string) => {
+    this.handlers.set('chat.delete-session', async (_data: unknown) => {
       return {
         success: true,
       };
     });
 
-    // Bridge service handlers  
+    // Bridge service handlers
     this.handlers.set('bridge.list', async () => {
       return [
         {
@@ -530,13 +550,13 @@ export class MockRpcTransport implements RpcClient {
     if (!this.listeners.has(channel)) {
       this.listeners.set(channel, new Set());
     }
-    this.listeners.get(channel)!.add(handler);
+    this.listeners.get(channel)!.add(handler as (payload: unknown) => void);
 
     // Return close function
     return async () => {
       const handlers = this.listeners.get(channel);
       if (handlers) {
-        handlers.delete(handler);
+        handlers.delete(handler as (payload: unknown) => void);
         if (handlers.size === 0) {
           this.listeners.delete(channel);
         }
@@ -548,7 +568,7 @@ export class MockRpcTransport implements RpcClient {
   emit(channel: string, payload: unknown): void {
     const handlers = this.listeners.get(channel);
     if (handlers) {
-      handlers.forEach(handler => {
+      handlers.forEach((handler) => {
         try {
           handler(payload);
         } catch (error) {
