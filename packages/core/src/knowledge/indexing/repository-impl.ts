@@ -15,7 +15,7 @@ function asKnowledgeId(id: string): KnowledgeId {
 }
 
 function ensureDir(p: string): Promise<void> {
-  return fs.mkdir(p, { recursive: true });
+  return fs.mkdir(p, { recursive: true }).then(() => undefined);
 }
 
 async function exists(p: string): Promise<boolean> {
