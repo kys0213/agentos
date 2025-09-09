@@ -45,39 +45,39 @@ module.exports = {
           800: '#991B1B',
           900: '#7F1D1D',
         },
-        // shadcn/ui semantic colors
-        border: '#E2E8F0', // gray-200 - 모든 기본 border 색상 통일
-        input: '#E2E8F0',
-        ring: '#3182CE',
-        background: '#FFFFFF',
-        foreground: '#1A202C',
+        // shadcn/ui semantic colors - Use CSS variables for theme support
+        border: 'var(--border)',
+        input: 'var(--input)',
+        ring: 'var(--ring)',
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
         primary: {
-          DEFAULT: '#3182CE',
-          foreground: '#FFFFFF',
+          DEFAULT: 'var(--primary)',
+          foreground: 'var(--primary-foreground)',
         },
         secondary: {
-          DEFAULT: '#EDF2F7',
-          foreground: '#1A202C',
+          DEFAULT: 'var(--secondary)',
+          foreground: 'var(--secondary-foreground)',
         },
         destructive: {
-          DEFAULT: '#EF4444',
-          foreground: '#FFFFFF',
+          DEFAULT: 'var(--destructive)',
+          foreground: 'var(--destructive-foreground)',
         },
         muted: {
-          DEFAULT: '#F7FAFC',
-          foreground: '#718096',
+          DEFAULT: 'var(--muted)',
+          foreground: 'var(--muted-foreground)',
         },
         accent: {
-          DEFAULT: '#EDF2F7',
-          foreground: '#1A202C',
+          DEFAULT: 'var(--accent)',
+          foreground: 'var(--accent-foreground)',
         },
         popover: {
-          DEFAULT: '#FFFFFF',
-          foreground: '#1A202C',
+          DEFAULT: 'var(--popover)',
+          foreground: 'var(--popover-foreground)',
         },
         card: {
-          DEFAULT: '#FFFFFF',
-          foreground: '#1A202C',
+          DEFAULT: 'var(--card)',
+          foreground: 'var(--card-foreground)',
         },
         // New design sidebar colors with CSS variable support
         sidebar: {
@@ -89,6 +89,37 @@ module.exports = {
           'accent-foreground': 'var(--sidebar-accent-foreground)',
           border: 'var(--sidebar-border)',
           ring: 'var(--sidebar-ring)',
+        },
+        // Status colors with CSS variable support
+        'status-active': {
+          DEFAULT: 'var(--status-active)',
+          foreground: 'var(--status-active-foreground)',
+          background: 'var(--status-active-background)',
+        },
+        'status-idle': {
+          DEFAULT: 'var(--status-idle)',
+          foreground: 'var(--status-idle-foreground)',
+          background: 'var(--status-idle-background)',
+        },
+        'status-inactive': {
+          DEFAULT: 'var(--status-inactive)',
+          foreground: 'var(--status-inactive-foreground)',
+          background: 'var(--status-inactive-background)',
+        },
+        'status-error': {
+          DEFAULT: 'var(--status-error)',
+          foreground: 'var(--status-error-foreground)',
+          background: 'var(--status-error-background)',
+        },
+        'status-success': {
+          DEFAULT: 'var(--status-success)',
+          foreground: 'var(--status-success-foreground)',
+          background: 'var(--status-success-background)',
+        },
+        'status-warning': {
+          DEFAULT: 'var(--status-warning)',
+          foreground: 'var(--status-warning-foreground)',
+          background: 'var(--status-warning-background)',
         },
       },
       gridTemplateColumns: {
