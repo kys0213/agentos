@@ -58,3 +58,10 @@ export interface BM25Index {
   ): Promise<SearchResult[]>;
   stats(): Promise<{ docCount: number; lastBuiltAt?: Date }>;
 }
+
+// Re-export modern indexing architecture under the knowledge subpath for convenience
+export * as Indexing from './indexing/interfaces';
+export { DefaultIndexSet } from './indexing/index-set';
+export { FileDocStore } from './indexing/file-doc-store';
+export { Bm25SearchIndex } from './indexing/bm25-search-index';
+export { KnowledgeRepositoryImpl } from './indexing/repository-impl';
