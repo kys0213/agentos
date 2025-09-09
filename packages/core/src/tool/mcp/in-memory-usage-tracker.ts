@@ -1,4 +1,4 @@
-import { isNonEmptyArray } from '@agentos/lang';
+import { isNonEmptyArray } from '@agentos/lang/validation';
 import { McpUsageTracker, McpUsageLog, McpUsageStats } from './mcp-types';
 
 /**

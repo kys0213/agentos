@@ -1,7 +1,6 @@
 import type { Agent } from '../../agent/agent';
 import type { ReadonlyAgentMetadata } from '../../agent/agent-metadata';
 import type { CoreContent } from '../../chat/content';
-import type { Tokenizer } from '../../knowledge/tokenizer';
 import type { RouterHelper } from './helper';
 
 // 플랫폼 비의존 라우팅 입력(최소 신호 + 선택적 파생 피처)

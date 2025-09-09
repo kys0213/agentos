@@ -80,7 +80,9 @@ const makeEventfulAgent = (): Agent & {
       return () => handlers.delete(handler);
     },
     emit(event: AgentEvent) {
-      for (const h of handlers) h(event);
+      for (const h of handlers) {
+        h(event);
+      }
     },
   };
 };
@@ -119,7 +121,9 @@ const makeSession = (
     },
     emit<E extends AgentSessionEvent>(event: E, payload: AgentSessionEventMap[E]) {
       const set = handlers[event] as Set<(p: AgentSessionEventMap[E]) => void>;
-      for (const h of set) h(payload);
+      for (const h of set) {
+        h(payload);
+      }
     },
   };
 };

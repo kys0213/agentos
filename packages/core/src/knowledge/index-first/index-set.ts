@@ -54,11 +54,14 @@ export class DefaultIndexSet implements IndexSet {
     docs: AsyncIterable<KnowledgeDoc>,
     target?: string | string[]
   ): Promise<void> {
-    const targets = !target
-      ? this.indexes
-      : Array.isArray(target)
-      ? this.indexes.filter((i) => target.includes(i.name))
-      : this.indexes.filter((i) => i.name === target);
+    let targets: SearchIndex[];
+    if (!target) {
+      targets = this.indexes;
+    } else if (Array.isArray(target)) {
+      targets = this.indexes.filter((i) => target.includes(i.name));
+    } else {
+      targets = this.indexes.filter((i) => i.name === target);
+    }
 
     for await (const doc of docs) {
       const records: AsyncIterable<IndexRecord> = mapper.toRecords(doc);
@@ -84,4 +87,3 @@ export function rrfMerge(resultsByIndex: Record<string, SearchHit[]>, topK: numb
     .slice(0, topK)
     .map((x) => x.hit);
 }
-

@@ -55,12 +55,21 @@ export const KnowledgeContract = defineContract({
   methods: {
     createDoc: {
       channel: 'kb.create-doc',
-      payload: z.object({ agentId: z.string(), title: z.string(), source: KnowledgeDocSourceSchema, tags: z.array(z.string()).optional() }),
+      payload: z.object({
+        agentId: z.string(),
+        title: z.string(),
+        source: KnowledgeDocSourceSchema,
+        tags: z.array(z.string()).optional(),
+      }),
       response: KnowledgeDocSchema,
     },
     listDocs: {
       channel: 'kb.list-docs',
-      payload: z.object({ agentId: z.string(), cursor: z.string().optional(), limit: z.number().optional() }),
+      payload: z.object({
+        agentId: z.string(),
+        cursor: z.string().optional(),
+        limit: z.number().optional(),
+      }),
       response: PageOfKnowledgeDocSchema,
     },
     deleteDoc: {
@@ -70,7 +79,10 @@ export const KnowledgeContract = defineContract({
     },
     reindex: {
       channel: 'kb.reindex',
-      payload: z.object({ agentId: z.string(), index: z.union([z.string(), z.array(z.string())]).optional() }),
+      payload: z.object({
+        agentId: z.string(),
+        index: z.union([z.string(), z.array(z.string())]).optional(),
+      }),
       response: z.object({ success: z.boolean() }),
     },
     stats: {
@@ -80,7 +92,11 @@ export const KnowledgeContract = defineContract({
     },
     search: {
       channel: 'kb.search',
-      payload: z.object({ agentIds: z.array(z.string()), query: z.string(), topK: z.number().optional() }),
+      payload: z.object({
+        agentIds: z.array(z.string()),
+        query: z.string(),
+        topK: z.number().optional(),
+      }),
       response: z.array(SearchHitSchema),
     },
   },
@@ -179,6 +195,7 @@ export const KnowledgeContract = defineContract({
 - [ ] (Tests) 단위/통합 테스트 보강
 
 ## 용어 정리
+
 - collectionId → knowledgeId: 지식베이스(여러 문서 묶음) 단위 식별자
 - 외부 계약: agentId 중심, 내부 코어: knowledgeId 중심(파사드에서 매핑)
 - Index-first: BM25/Vector 등 인덱스가 1급 구성 요소, 하이브리드 검색은 IndexSet에서 병합

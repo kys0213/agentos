@@ -36,7 +36,10 @@ export interface KnowledgeStore {
     fileRef?: string;
     tags?: string[];
   }): Promise<KnowledgeDoc>;
-  listDocs(agentId: string, options?: { cursor?: string; limit?: number }): Promise<{
+  listDocs(
+    agentId: string,
+    options?: { cursor?: string; limit?: number }
+  ): Promise<{
     items: KnowledgeDoc[];
     hasMore: boolean;
     nextCursor: string;
@@ -55,4 +58,3 @@ export interface BM25Index {
   ): Promise<SearchResult[]>;
   stats(): Promise<{ docCount: number; lastBuiltAt?: Date }>;
 }
-

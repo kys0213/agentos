@@ -61,11 +61,17 @@ export interface IndexSet {
   list(): SearchIndex[];
   get(name: string): SearchIndex | undefined;
   search(q: Query, opts?: { indexes?: string[]; merge?: MergePolicy }): Promise<SearchHit[]>;
-  reindex(mapper: DocumentMapper, docs: AsyncIterable<KnowledgeDoc>, target?: string | string[]): Promise<void>;
+  reindex(
+    mapper: DocumentMapper,
+    docs: AsyncIterable<KnowledgeDoc>,
+    target?: string | string[]
+  ): Promise<void>;
 }
 
 export interface DocStore {
-  create(input: Omit<KnowledgeDoc, 'id' | 'createdAt' | 'updatedAt' | 'status'>): Promise<KnowledgeDoc>;
+  create(
+    input: Omit<KnowledgeDoc, 'id' | 'createdAt' | 'updatedAt' | 'status'>
+  ): Promise<KnowledgeDoc>;
   get(id: DocId): Promise<KnowledgeDoc | null>;
   list(cursor?: string, limit?: number): Promise<{ items: KnowledgeDoc[]; nextCursor?: string }>;
   delete(id: DocId): Promise<void>;
@@ -73,9 +79,16 @@ export interface DocStore {
 
 export interface Knowledge {
   id: KnowledgeId;
-  addDoc(input: { title: string; source: KnowledgeDoc['source']; tags?: string[] }): Promise<KnowledgeDoc>;
+  addDoc(input: {
+    title: string;
+    source: KnowledgeDoc['source'];
+    tags?: string[];
+  }): Promise<KnowledgeDoc>;
   deleteDoc(id: DocId): Promise<void>;
-  listDocs(p?: { cursor?: string; limit?: number }): Promise<{ items: KnowledgeDoc[]; nextCursor?: string }>;
+  listDocs(p?: {
+    cursor?: string;
+    limit?: number;
+  }): Promise<{ items: KnowledgeDoc[]; nextCursor?: string }>;
   query(q: Query, opts?: { indexes?: string[]; merge?: MergePolicy }): Promise<SearchHit[]>;
   reindex(opts?: { indexes?: string | string[] }): Promise<void>;
   stats(): Promise<Record<string, IndexStats>>;
@@ -84,7 +97,9 @@ export interface Knowledge {
 export interface KnowledgeRepository {
   create(params?: { name?: string; initialIndexes?: string[] }): Promise<Knowledge>;
   get(id: KnowledgeId): Promise<Knowledge | null>;
-  list(p?: { cursor?: string; limit?: number }): Promise<{ items: Knowledge[]; nextCursor?: string }>;
+  list(p?: {
+    cursor?: string;
+    limit?: number;
+  }): Promise<{ items: Knowledge[]; nextCursor?: string }>;
   delete(id: KnowledgeId): Promise<void>;
 }
-
