@@ -21,7 +21,7 @@
 - KnowledgeRepository: 지식베이스 수명주기 관리(create/get/list/delete)
 - Knowledge: 문서 저장소 + 인덱스 세트 오케스트레이션(addDoc/deleteDoc/listDocs/query/reindex/stats)
 - DocStore: 원문/메타 저장, 페이지네이션 제공
-- KnowledgeIndex: BM25/Vector/Keyword 등 공통 인터페이스(addOrUpdate/remove*/search/reindex/stats)
+- KnowledgeIndex: BM25/Vector/Keyword 등 공통 인터페이스(addOrUpdate/remove\*/search/reindex/stats)
 - IndexSet: 복수 인덱스 검색 병합(RRF 등), 선택적 재인덱싱 대상 지정
 - Facade: agentId → knowledgeId 매핑 후 코어 호출(공개 계약은 agentId 중심)
 

@@ -40,4 +40,3 @@ describe('Bm25SearchIndex deletions API', () => {
     expect((await idx.stats()).docCount).toBe(0);
   });
 });
-

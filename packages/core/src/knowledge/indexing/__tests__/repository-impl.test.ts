@@ -21,7 +21,9 @@ function randomDir() {
 async function rimraf(p: string) {
   try {
     await fs.rm(p, { recursive: true, force: true });
-  } catch {}
+  } catch {
+    /* noop */
+  }
 }
 
 describe('KnowledgeRepositoryImpl', () => {
@@ -50,7 +52,7 @@ describe('KnowledgeRepositoryImpl', () => {
     const listed = await repo.list();
     expect(listed.items.length).toBe(1);
 
-    const same = await repo.get(kb.id as any);
+    const same = await repo.get(kb.id);
     expect(same).not.toBeNull();
 
     // add doc and query
@@ -68,7 +70,7 @@ describe('KnowledgeRepositoryImpl', () => {
     }
     expect(seen).toContain(String(doc.id));
 
-    await repo.delete(kb.id as any);
+    await repo.delete(kb.id);
     const listed2 = await repo.list();
     expect(listed2.items.length).toBe(0);
   });

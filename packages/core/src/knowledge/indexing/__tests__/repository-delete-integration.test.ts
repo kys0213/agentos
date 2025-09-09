@@ -15,7 +15,11 @@ const mapper: DocumentMapper = {
 };
 
 async function rimraf(p: string) {
-  try { await fs.rm(p, { recursive: true, force: true }); } catch {}
+  try {
+    await fs.rm(p, { recursive: true, force: true });
+  } catch {
+    /* noop */
+  }
 }
 
 describe('Repository + Bm25SearchIndex deletion integration', () => {
@@ -26,7 +30,9 @@ describe('Repository + Bm25SearchIndex deletion integration', () => {
     await fs.mkdir(base, { recursive: true });
   });
 
-  afterEach(async () => { await rimraf(base); });
+  afterEach(async () => {
+    await rimraf(base);
+  });
 
   it('reflects bm25 stats after add and delete', async () => {
     const repo = new KnowledgeRepositoryImpl({
@@ -48,4 +54,3 @@ describe('Repository + Bm25SearchIndex deletion integration', () => {
     expect(stats2['bm25']?.docCount).toBe(0);
   });
 });
-

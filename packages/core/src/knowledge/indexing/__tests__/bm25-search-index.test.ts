@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { Bm25SearchIndex } from '../bm25-search-index';
-import type { IndexRecord } from '../interfaces';
+import type { IndexRecord, DocId } from '../interfaces';
 
 async function* recs(): AsyncIterable<IndexRecord> {
-  yield { id: 'a' as any, fields: { title: 'Alpha', text: 'quick brown fox' } } as IndexRecord;
-  yield { id: 'b' as any, fields: { title: 'Beta', text: 'slow blue whale' } } as IndexRecord;
+  yield { id: 'a' as DocId, fields: { title: 'Alpha', text: 'quick brown fox' } };
+  yield { id: 'b' as DocId, fields: { title: 'Beta', text: 'slow blue whale' } };
 }
 
 describe('Bm25SearchIndex (adapter)', () => {

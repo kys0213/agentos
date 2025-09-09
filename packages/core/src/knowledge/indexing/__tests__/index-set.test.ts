@@ -50,10 +50,22 @@ class StubIndex implements SearchIndex {
     this.upserts.push(batch);
   }
 
-  async remove(id: DocId): Promise<void> { this.removes.push(id); }
-  async removeMany(ids: DocId[] | Iterable<DocId>): Promise<void> { for (const id of ids) this.removes.push(id); }
-  async removeByGenerator(ids: AsyncIterable<DocId>): Promise<void> { for await (const id of ids) this.removes.push(id); }
-  async removeAll(): Promise<void> { this.removes = []; }
+  async remove(id: DocId): Promise<void> {
+    this.removes.push(id);
+  }
+  async removeMany(ids: DocId[] | Iterable<DocId>): Promise<void> {
+    for (const id of ids) {
+      this.removes.push(id);
+    }
+  }
+  async removeByGenerator(ids: AsyncIterable<DocId>): Promise<void> {
+    for await (const id of ids) {
+      this.removes.push(id);
+    }
+  }
+  async removeAll(): Promise<void> {
+    this.removes = [];
+  }
 
   async search(_query: Query): Promise<SearchHit[]> {
     return this.fixedResults ? [...this.fixedResults] : [];

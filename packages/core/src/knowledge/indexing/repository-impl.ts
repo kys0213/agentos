@@ -1,6 +1,12 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import type { DocumentMapper, IndexSet, Knowledge, KnowledgeId, KnowledgeRepository } from './interfaces';
+import type {
+  DocumentMapper,
+  IndexSet,
+  Knowledge,
+  KnowledgeId,
+  KnowledgeRepository,
+} from './interfaces';
 import { FileDocStore } from './file-doc-store';
 import { KnowledgeImpl } from './knowledge-impl';
 
@@ -26,7 +32,11 @@ export class KnowledgeRepositoryImpl implements KnowledgeRepository {
   private readonly mapper: DocumentMapper;
   private readonly makeIndexSet: (kbDir: string) => IndexSet;
 
-  constructor(params: { rootDir: string; mapper: DocumentMapper; makeIndexSet: (kbDir: string) => IndexSet }) {
+  constructor(params: {
+    rootDir: string;
+    mapper: DocumentMapper;
+    makeIndexSet: (kbDir: string) => IndexSet;
+  }) {
     this.rootDir = params.rootDir;
     this.mapper = params.mapper;
     this.makeIndexSet = params.makeIndexSet;
@@ -66,7 +76,9 @@ export class KnowledgeRepositoryImpl implements KnowledgeRepository {
 
   async get(id: KnowledgeId): Promise<Knowledge | null> {
     const dir = this.kbDir(String(id));
-    if (!(await exists(dir))) return null;
+    if (!(await exists(dir))) {
+      return null;
+    }
     const store = new FileDocStore({ baseDir: dir });
     const indexSet = this.makeIndexSet(dir);
     return new KnowledgeImpl({
@@ -77,7 +89,10 @@ export class KnowledgeRepositoryImpl implements KnowledgeRepository {
     });
   }
 
-  async list(p?: { cursor?: string; limit?: number }): Promise<{ items: Knowledge[]; nextCursor?: string }> {
+  async list(p?: {
+    cursor?: string;
+    limit?: number;
+  }): Promise<{ items: Knowledge[]; nextCursor?: string }> {
     await ensureDir(this.kbRoot());
     const dirs = (await fs.readdir(this.kbRoot(), { withFileTypes: true }))
       .filter((d) => d.isDirectory())
@@ -88,16 +103,21 @@ export class KnowledgeRepositoryImpl implements KnowledgeRepository {
     const limit = p?.limit ?? 20;
     if (p?.cursor) {
       const idx = Number(Buffer.from(p.cursor, 'base64').toString('utf-8'));
-      if (!Number.isNaN(idx)) start = idx;
+      if (!Number.isNaN(idx)) {
+        start = idx;
+      }
     }
     const slice = dirs.slice(start, start + limit);
     const items: Knowledge[] = [];
     for (const id of slice) {
       const kb = await this.get(asKnowledgeId(id));
-      if (kb) items.push(kb);
+      if (kb) {
+        items.push(kb);
+      }
     }
     const nextIndex = start + slice.length;
-    const nextCursor = nextIndex < dirs.length ? Buffer.from(String(nextIndex)).toString('base64') : undefined;
+    const nextCursor =
+      nextIndex < dirs.length ? Buffer.from(String(nextIndex)).toString('base64') : undefined;
     return { items, nextCursor };
   }
 
