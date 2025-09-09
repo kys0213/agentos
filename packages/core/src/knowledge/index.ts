@@ -75,11 +75,7 @@ export type { DocumentSplitter, SplitterOptions } from './splitter/document-spli
 export { MarkdownSplitter } from './splitter/markdown-splitter';
 
 // Expose in-memory BM25 building blocks for advanced consumers
-export {
-  InMemoryBM25Index,
-  type BM25IndexOptions,
-  type BM25SearchResult,
-} from './bm25/bm25-index';
+export { InMemoryBM25Index, type BM25IndexOptions, type BM25SearchResult } from './bm25/bm25-index';
 
 // Expose core knowledge domain types used by splitters
 export type {
