@@ -20,8 +20,9 @@ import {
   Upload,
   Zap,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
+import { useTheme } from '../../hooks/useTheme';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -99,11 +100,12 @@ interface SettingsData {
 }
 
 export function SettingsManager() {
+  const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState('general');
   const [settings, setSettings] = useState<SettingsData>({
     general: {
       language: 'ko',
-      theme: 'light',
+      theme: theme,
       startupScreen: 'chat',
       notifications: true,
       autoSave: true,
@@ -169,11 +171,27 @@ export function SettingsManager() {
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Sync theme changes with settings state
+  useEffect(() => {
+    setSettings(prev => ({
+      ...prev,
+      general: {
+        ...prev.general,
+        theme: theme,
+      }
+    }));
+  }, [theme]);
+
   const updateSetting = <C extends keyof SettingsData, K extends keyof SettingsData[C]>(
     category: C,
     key: K,
     value: SettingsData[C][K]
   ) => {
+    // Special handling for theme changes
+    if (category === 'general' && key === 'theme') {
+      setTheme(value as 'light' | 'dark' | 'system');
+    }
+    
     setSettings((prev) => ({
       ...prev,
       [category]: {
