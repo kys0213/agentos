@@ -294,3 +294,102 @@ const setTheme = (theme) => {
 **마이그레이션 시작일**: 2025-01-09
 **예상 완료일**: 2025-01-30 (3주)
 **담당자**: Frontend Architect Agent
+
+---
+
+## 🔧 Phase 4: Mock 서비스 구현 (추가)
+
+다크 모드 테스트 중 발견된 서비스 연결 문제를 해결하기 위해 웹 개발 모드에서 사용할 Mock 서비스를 구현합니다.
+
+### 문제점
+- `pnpm dev:web` 실행 시 RPC 연결 불가
+- ServiceContainer에서 서비스를 찾을 수 없음 (agent, preset 등)
+- 개발 및 테스트 환경에서 UI 개발이 어려움
+
+### 구현 계획
+
+#### 1. Mock 서비스 인터페이스 생성
+```typescript
+// src/renderer/services/mocks/index.ts
+export * from './mock-agent-service';
+export * from './mock-preset-service';
+export * from './mock-chat-service';
+export * from './mock-model-service';
+```
+
+#### 2. Bootstrap 수정
+```typescript
+// src/renderer/bootstrap.ts
+export async function bootstrapMockServices() {
+  // Mock 서비스들을 ServiceContainer에 등록
+  ServiceContainer.register('agent', new MockAgentService());
+  ServiceContainer.register('preset', new MockPresetService());
+  ServiceContainer.register('chat', new MockChatService());
+  ServiceContainer.register('model', new MockModelService());
+}
+```
+
+#### 3. RPC Channel Factory 수정
+```typescript
+// src/renderer/rpc/rpc-channel.factory.ts
+export function createRpcTransport() {
+  if (process.env.NODE_ENV === 'development' && !window.electronAPI) {
+    // Mock transport for web development
+    return new MockRpcTransport();
+  }
+  // ... 기존 로직
+}
+```
+
+### TODO 리스트 (Phase 4)
+
+#### 🔴 긴급
+1. **[ ] Mock RPC Transport 구현**
+   - MockRpcTransport 클래스 생성
+   - 기본 RPC 메서드 스텁 구현
+
+2. **[ ] Mock Agent Service 구현**
+   - 샘플 에이전트 데이터
+   - CRUD 작업 시뮬레이션
+
+3. **[ ] Mock Preset Service 구현**
+   - 샘플 프리셋 데이터
+   - 프리셋 관리 기능
+
+#### 🟡 중요
+4. **[ ] Mock Chat Service 구현**
+   - 채팅 세션 관리
+   - 메시지 히스토리
+
+5. **[ ] Mock Model Service 구현**
+   - 샘플 모델 리스트
+   - 모델 설정 기능
+
+6. **[ ] Bootstrap 로직 수정**
+   - 환경별 서비스 초기화
+   - Mock 서비스 자동 등록
+
+#### 🟢 보통
+7. **[ ] Mock 데이터 관리**
+   - localStorage 기반 영속성
+   - 초기 데이터 시드
+
+8. **[ ] 개발 가이드 작성**
+   - Mock 서비스 사용법
+   - 새 Mock 서비스 추가 방법
+
+### 예상 효과
+- `pnpm dev:web`으로 전체 UI 개발 가능
+- RPC/Electron 없이도 프론트엔드 개발 및 테스트
+- 다크 모드 포함 모든 UI 기능 검증 가능
+- 빠른 개발 사이클
+
+### 위험 요소
+- Mock과 실제 서비스 간 인터페이스 불일치
+- Mock 데이터 관리의 복잡성
+- 실제 환경과의 동작 차이
+
+---
+
+**Phase 4 시작일**: TBD
+**예상 소요 시간**: 1주

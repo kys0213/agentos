@@ -12,6 +12,18 @@ import './styles/globals.css';
 import { waitForRpcReady } from './rpc/waitForReady';
 
 async function initializeApp() {
+  // Skip RPC in development mode for UI testing
+  if (process.env.NODE_ENV === 'development' && !window.electronAPI) {
+    console.log('🔧 Running in development mode without RPC');
+    const container = document.getElementById('root');
+    if (container) {
+      const root = createRoot(container);
+      root.render(React.createElement(QueryProvider, null, React.createElement(NewAppLayout)));
+      console.log('⚛️ React app mounted successfully');
+    }
+    return;
+  }
+
   await waitForRpcReady();
 
   const envInfo = getEnvironmentInfo();
