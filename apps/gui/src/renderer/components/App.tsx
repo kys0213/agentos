@@ -2,6 +2,7 @@ import React from 'react';
 
 // Import new design hooks for Chat mode only
 import { useAppNavigation } from '../hooks/useAppNavigation';
+import { useTheme } from '../hooks/useTheme';
 
 // Chat 컨테이너 적용
 import { ChatViewContainer } from './chat/ChatViewContainer';
@@ -17,6 +18,9 @@ import ManagementView from './layout/ManagementView';
  */
 const NewAppLayout: React.FC = () => {
   const navigation = useAppNavigation();
+  
+  // Initialize theme
+  useTheme();
 
   const { activeSection, setActiveSection } = navigation;
 
