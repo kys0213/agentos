@@ -2,11 +2,11 @@ import React from 'react';
 
 // Import new design hooks for Chat mode only
 import { useAppNavigation } from '../hooks/useAppNavigation';
-import { useTheme } from '../hooks/useTheme';
 
 // Chat 컨테이너 적용
 import { ChatViewContainer } from './chat/ChatViewContainer';
 import ManagementView from './layout/ManagementView';
+import { ThemeProvider } from '../contexts/ThemeContext';
 
 /**
  * New App Layout - 새 디자인 기반으로 완전히 재작성된 버전
@@ -18,10 +18,6 @@ import ManagementView from './layout/ManagementView';
  */
 const NewAppLayout: React.FC = () => {
   const navigation = useAppNavigation();
-  
-  // Initialize theme
-  useTheme();
-
   const { activeSection, setActiveSection } = navigation;
 
   // Chat Mode: Full screen ChatView with integrated ChatHistory sidebar
@@ -38,4 +34,12 @@ const NewAppLayout: React.FC = () => {
   return <ManagementView navigation={navigation} />;
 };
 
-export default NewAppLayout;
+const App: React.FC = () => {
+  return (
+    <ThemeProvider>
+      <NewAppLayout />
+    </ThemeProvider>
+  );
+};
+
+export default App;
