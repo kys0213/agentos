@@ -8,6 +8,7 @@ interface UIState {
   rightSidebarOpen: boolean;
   activeView: 'chat' | 'settings' | 'history' | 'mcp-list';
   commandPaletteOpen: boolean;
+  theme: 'light' | 'dark' | 'system';
 }
 
 // 채팅 상태 인터페이스 (클라이언트 상태만)
@@ -41,6 +42,7 @@ interface AppActions {
   toggleRightSidebar: () => void;
   setActiveView: (view: UIState['activeView']) => void;
   toggleCommandPalette: () => void;
+  setTheme: (theme: 'light' | 'dark' | 'system') => void;
 
   // 채팅 액션
   setActiveSession: (sessionId: string | null) => void;
@@ -64,6 +66,7 @@ const initialState: AppState = {
     rightSidebarOpen: false, // 기본적으로 우측 사이드바는 숨김
     activeView: 'chat',
     commandPaletteOpen: false,
+    theme: (localStorage.getItem('agentOS-theme') as 'light' | 'dark' | 'system') || 'system',
   },
   chat: {
     activeSessionId: null,
@@ -128,6 +131,19 @@ export const useAppStore = create<AppState & AppActions>()(
           }),
           false,
           'toggleCommandPalette'
+        ),
+
+      setTheme: (theme) =>
+        set(
+          (state) => {
+            // localStorage에 저장
+            localStorage.setItem('agentOS-theme', theme);
+            return {
+              ui: { ...state.ui, theme },
+            };
+          },
+          false,
+          'setTheme'
         ),
 
       // 채팅 액션
@@ -258,6 +274,7 @@ export const useUIActions = () =>
     toggleRightSidebar: state.toggleRightSidebar,
     setActiveView: state.setActiveView,
     toggleCommandPalette: state.toggleCommandPalette,
+    setTheme: state.setTheme,
   }));
 
 export const useChatActions = () =>
