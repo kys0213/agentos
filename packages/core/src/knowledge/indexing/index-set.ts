@@ -74,6 +74,7 @@ export class DefaultIndexSet implements IndexSet {
 export function rrfMerge(resultsByIndex: Record<string, SearchHit[]>, topK: number): SearchHit[] {
   const k = 60; // typical RRF constant
   const scoreMap = new Map<string, { score: number; hit: SearchHit }>();
+
   for (const list of Object.values(resultsByIndex)) {
     list.forEach((hit, rank) => {
       const inc = 1 / (k + rank + 1);

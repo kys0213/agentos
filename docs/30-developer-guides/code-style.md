@@ -34,6 +34,15 @@ This project uses **TypeScript** with ESLint and Prettier to keep the codebase c
     ```
 - **Ternary usage**: Avoid nested ternaries; prefer multiline formatting for readability.
 
+## Naming Conventions
+
+- **Conventional first**: 보편적으로 통용되는 이름을 우선합니다. 특별한 설명 없이도 이해 가능한 용어를 선택하세요.
+- **Avoid internal jargon**: 팀 내부 은어/메타포 대신, 외부 기여자가 이해할 수 있는 일반 용어를 사용합니다.
+- **Disambiguate "index"**: 디렉터리 이름으로 `index`를 지양합니다. 검색/색인 맥락은 `indexing` 또는 `search-index` 같은 명확한 용어를 사용합니다.
+- **No clever abbreviations**: 축약/암호화된 네이밍을 피하고, 의미가 드러나는 전체 단어를 사용합니다.
+- **Consistency across code/docs**: 코드와 문서에서 동일한 용어를 사용합니다. 명칭 변경 시 코드/문서/ToC를 함께 갱신합니다.
+- **English identifiers**: 코드 식별자는 영어를 사용합니다. 필요 시 주석에 한글 병기 가능합니다.
+
 ## Frontend Architecture
 
 - **Container/Presentation Split**

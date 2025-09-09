@@ -1,10 +1,10 @@
-# Knowledge System Plan (Index-first, File-based MVP)
+# Knowledge System Plan (Indexing, File-based MVP)
 
-본 문서는 Knowledge(지식베이스)와 Index(검색 인덱스)를 1급 개념으로 설계하는 Index-first 아키텍처를 정의합니다. 외부 계약(RPC/GUI)은 agentId 중심으로, 내부 코어는 knowledgeId(지식베이스 ID) 중심으로 동작하며, 파사드 계층에서 agentId → knowledgeId 매핑을 수행합니다.
+본 문서는 Knowledge(지식베이스)와 Index(검색 인덱스)를 1급 개념으로 다루는 Indexing 아키텍처를 정의합니다. 외부 계약(RPC/GUI)은 agentId 중심으로, 내부 코어는 knowledgeId(지식베이스 ID) 중심으로 동작하며, 파사드 계층에서 agentId → knowledgeId 매핑을 수행합니다.
 
 ## Principles
 
-- Index-first: Knowledge 하위에 BM25/Vector 등 복수 인덱스를 보유하고, 하이브리드 검색은 IndexSet에서 병합.
+- Indexing: Knowledge 하위에 BM25/Vector 등 복수 인덱스를 보유하고, 하이브리드 검색은 IndexSet에서 병합.
 - Boundary: 공개 계약은 agentId만 노출, 내부 코어는 knowledgeId 사용(역전파 차단).
 - File-based MVP: 문서는 파일로 저장(DocStore), 인덱스는 파생물로 분리 관리.
 - Non-blocking: 인덱싱은 큐/워커 기반 비차단 증분 처리, knowledgeId 단위 파일락.
@@ -21,7 +21,7 @@
 - KnowledgeRepository: 지식베이스 수명주기 관리(create/get/list/delete)
 - Knowledge: 문서 저장소 + 인덱스 세트 오케스트레이션(addDoc/deleteDoc/listDocs/query/reindex/stats)
 - DocStore: 원문/메타 저장, 페이지네이션 제공
-- KnowledgeIndex: BM25/Vector/Keyword 등 공통 인터페이스(addOrUpdate/remove/search/reindex/stats)
+- KnowledgeIndex: BM25/Vector/Keyword 등 공통 인터페이스(addOrUpdate/remove*/search/reindex/stats)
 - IndexSet: 복수 인덱스 검색 병합(RRF 등), 선택적 재인덱싱 대상 지정
 - Facade: agentId → knowledgeId 매핑 후 코어 호출(공개 계약은 agentId 중심)
 
@@ -56,9 +56,9 @@
 아래 인터페이스는 벤더/백엔드에 독립적인 최소 공통 표면입니다. Core는 이 표면만 의존하고, 실제 벡터/키워드/외부 DB 어댑터는 앱 레이어에서 주입합니다.
 
 ```ts
-// 식별자
-type KnowledgeId = string & { readonly __brand: 'KnowledgeId' };
-type DocId = string & { readonly __brand: 'DocId' };
+// 식별자 (브랜드 제거: 외부 시스템/DB와의 상호 운용성 우선)
+type KnowledgeId = string;
+type DocId = string;
 
 // 도메인 문서
 interface KnowledgeDoc {
@@ -107,8 +107,14 @@ interface IndexStats {
 interface SearchIndex {
   readonly name: string; // 예: 'bm25', 'vector:custom'
   upsert(records: AsyncIterable<IndexRecord>): Promise<void>;
-  remove(docIds: AsyncIterable<DocId>): Promise<void>;
+  // Deletions
+  remove(id: DocId): Promise<void>;
+  removeMany(ids: DocId[] | Iterable<DocId>): Promise<void>;
+  removeByGenerator(ids: AsyncIterable<DocId>): Promise<void>;
+  removeAll(): Promise<void>;
+  // Querying
   search(query: Query): Promise<SearchHit[]>;
+  // Rebuild from a full record stream
   reindex(allRecords: AsyncIterable<IndexRecord>): Promise<void>;
   stats(): Promise<IndexStats>;
 }
@@ -151,6 +157,8 @@ interface Knowledge {
     cursor?: string;
     limit?: number;
   }): Promise<{ items: KnowledgeDoc[]; nextCursor?: string }>;
+  // Batch iterator: yields arrays of KnowledgeDoc with bounded chunk size
+  allDocs(p?: { chunkSize?: number }): AsyncIterable<KnowledgeDoc[]>;
   query(q: Query, opts?: { indexes?: string[]; merge?: MergePolicy }): Promise<SearchHit[]>;
   reindex(opts?: { indexes?: string | string[] }): Promise<void>;
   stats(): Promise<Record<string, IndexStats>>;
@@ -174,7 +182,7 @@ interface KnowledgeRepository {
 
 ```ts
 // 1) 인덱스 준비(앱 레이어)
-const bm25: SearchIndex = new Bm25Index({ baseDir: '/data/kb' });
+const bm25: SearchIndex = new Bm25SearchIndex();
 const vector: SearchIndex = new CustomVectorIndex({
   /* 외부 연결 설정 */
 });
@@ -190,14 +198,10 @@ const mapper: DocumentMapper = {
     yield { id: doc.id, fields, extensions: { embedding } };
   },
 };
-const store: DocStore = new FileDocStore({ baseDir: '/data/kb' });
-
-// 3) 리포지토리 생성
 const repo = new KnowledgeRepositoryImpl({
-  docStore: store,
-  indexSet,
+  rootDir: '/data/kb',
   mapper,
-  defaultMerge: new RRFPolicy(),
+  makeIndexSet: () => indexSet,
 });
 const kb = (await repo.get('kb-123')) ?? (await repo.create({ name: 'AgentA KB' }));
 ```
@@ -240,8 +244,17 @@ const hits3 = await kb.query(
 재인덱싱/삭제
 
 ```ts
+// 재인덱싱: 내부적으로 allDocs({ chunkSize: 1 }) 순회 후 스트림 재생성
 await kb.reindex({ indexes: ['vector:custom'] });
 await kb.deleteDoc(doc.id);
+```
+
+전체 문서 순회(배치)
+
+```ts
+for await (const batch of kb.allDocs({ chunkSize: 50 })) {
+  // batch: KnowledgeDoc[] (최대 50개, 내부 상한 100)
+}
 ```
 
 외부 계약(RPC/GUI) 경계
@@ -268,7 +281,7 @@ return await kb.addDoc({ title, source, tags });
 - kind: `bm25`
 - manifest: `{ version, tokenizer, stopwords?, lang, k1, b, weights, docCount, lastBuiltAt }`
 - 파일: `postings.bin`, `docmap.json`, `manifest.json`
-- 메서드: `addOrUpdate/remove/search/reindex/stats`
+- 메서드: `addOrUpdate/remove|removeMany|removeByGenerator|removeAll/search/reindex/stats`
 - 비고: 문서별 인덱스는 IDF/랭킹 품질 저하로 비권장, knowledge 단일 인덱스 유지
 
 ## Incremental & Locking
@@ -288,6 +301,9 @@ return await kb.addDoc({ title, source, tags });
 - [ ] 증분 전략/락 정책(knowledge 단위 큐 + 파일락) 구체화
 - [ ] BM25 파라미터 기본값(k1,b,weights) 및 토크나이저 초기값
 - [ ] Knowledge/Repository/Index/DocStore 인터페이스 스켈레톤 작성 및 단위 테스트 틀
+- [x] Knowledge/Repository/Index/DocStore 인터페이스 스켈레톤 작성 및 단위 테스트 틀
+  - Added: FileDocStore, Bm25SearchIndex adapter, KnowledgeImpl, KnowledgeRepositoryImpl
+  - Tests: bm25 adapter basic search, repository create/get/list/delete + query
 - [ ] 공개 계약을 agentId 기반으로 정리하고, 파사드 매핑 설계/문서화
 - [ ] GUI Knowledge 연동(로컬스토리지 제거, 계약 교체)
 

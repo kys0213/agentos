@@ -1,8 +1,8 @@
 // Minimal, backend-agnostic interfaces for Knowledge indexing/search.
 // Keep dependency surface small and avoid vendor coupling.
 
-export type KnowledgeId = string & { readonly __brand: 'KnowledgeId' };
-export type DocId = string & { readonly __brand: 'DocId' };
+export type KnowledgeId = string;
+export type DocId = string;
 
 export interface KnowledgeDoc {
   id: DocId;
@@ -47,7 +47,11 @@ export interface IndexStats {
 export interface SearchIndex {
   readonly name: string;
   upsert(records: AsyncIterable<IndexRecord>): Promise<void>;
-  remove(docIds: AsyncIterable<DocId>): Promise<void>;
+  // Deletion APIs
+  remove(id: DocId): Promise<void>;
+  removeMany(ids: DocId[] | Iterable<DocId>): Promise<void>;
+  removeByGenerator(ids: AsyncIterable<DocId>): Promise<void>;
+  removeAll(): Promise<void>;
   search(query: Query): Promise<SearchHit[]>;
   reindex(allRecords: AsyncIterable<IndexRecord>): Promise<void>;
   stats(): Promise<IndexStats>;
@@ -89,6 +93,7 @@ export interface Knowledge {
     cursor?: string;
     limit?: number;
   }): Promise<{ items: KnowledgeDoc[]; nextCursor?: string }>;
+  allDocs(p?: { chunkSize?: number }): AsyncIterable<KnowledgeDoc[]>;
   query(q: Query, opts?: { indexes?: string[]; merge?: MergePolicy }): Promise<SearchHit[]>;
   reindex(opts?: { indexes?: string | string[] }): Promise<void>;
   stats(): Promise<Record<string, IndexStats>>;
