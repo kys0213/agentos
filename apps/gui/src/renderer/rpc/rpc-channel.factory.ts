@@ -1,6 +1,7 @@
 import type { RpcFrame } from '../../shared/rpc/rpc-frame';
 import type { FrameTransport, RpcClient } from '../../shared/rpc/transport';
 import { RpcEndpoint } from './rpc-endpoint';
+import { MockRpcTransport } from './mock-rpc-transport';
 
 /**
  * 환경별 RpcClient(Frame transport) 구현체를 생성하는 팩토리
@@ -46,6 +47,14 @@ export class RpcTransportFactory {
         this._instance = endpoint;
 
         return this._instance;
+      }
+
+      case 'web': {
+        // Use mock transport for web development
+        console.log('🎭 Using Mock RPC Transport for web development');
+        const mockTransport = new MockRpcTransport();
+        this._instance = mockTransport;
+        return mockTransport;
       }
 
       default:
