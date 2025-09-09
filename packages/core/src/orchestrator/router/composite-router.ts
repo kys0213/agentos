@@ -1,21 +1,20 @@
 import type { Agent } from '../../agent/agent';
 import type { ReadonlyAgentMetadata } from '../../agent/agent-metadata';
-import type { Tokenizer, KeywordExtractor } from '../../knowledge/tokenizer';
 import { EnglishSimpleTokenizer } from '../../knowledge/english-simple-tokenizer';
+import type { KeywordExtractor, Tokenizer } from '../../knowledge/tokenizer';
+import { RouterContextBuilder } from './context-builder';
+import { aggregateResults, rankCandidates, toRouterOutput } from './engine';
 import type {
   AgentRouter,
   BuildDocFn,
+  LlmReranker,
+  LlmRoutingPolicy,
+  RankComparator,
   RouterOutput,
   RouterQuery,
   RoutingStrategyFn,
-  LlmRoutingPolicy,
-  LlmReranker,
 } from './types';
-import type { RankComparator } from './types';
 import { allowByStatus, buildSafeDoc } from './utils';
-import { aggregateResults, rankCandidates, toRouterOutput } from './engine';
-import { RouterHelper } from './helper';
-import { RouterContextBuilder } from './context-builder';
 
 export interface CompositeAgentRouterOptions {
   tokenizer?: Tokenizer;

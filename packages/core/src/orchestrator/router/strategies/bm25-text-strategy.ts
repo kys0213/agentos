@@ -1,6 +1,5 @@
-import type { RoutingStrategyFn, ScoreResult } from '../types';
-import { getQueryText } from '../utils';
 import { InMemoryBM25Index } from '../../../knowledge/bm25/bm25-index';
+import type { RoutingStrategyFn, ScoreResult } from '../types';
 
 // BM25TextStrategy: index safe docs, search by normalized text, min-max normalize to [0,1]
 export const BM25TextStrategy: RoutingStrategyFn = async ({ query, metas, helper }) => {

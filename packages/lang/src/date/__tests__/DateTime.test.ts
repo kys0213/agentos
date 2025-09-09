@@ -1,6 +1,5 @@
-import { date } from '../../..';
-
-const { ZonedDateTime, Format, asTimeZone } = date;
+import { Format, ZonedDateTime } from '../DateTime';
+import { asTimeZone } from '../timezone';
 
 describe('ZonedDateTime', () => {
   const SEOUL = asTimeZone('Asia/Seoul');
