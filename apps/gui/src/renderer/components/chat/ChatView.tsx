@@ -101,7 +101,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
   return (
     <div className="h-full flex">
       {/* Chat History Sidebar */}
-      <div className="w-80 border-r bg-white flex flex-col">
+      <div className="w-80 border-r bg-background flex flex-col">
         <div className="p-4 border-b">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-foreground">Chat History</h2>
@@ -152,7 +152,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Chat Header */}
-        <div className="p-4 border-b bg-white">
+        <div className="p-4 border-b bg-background">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <MessageSquare className="w-5 h-5 text-muted-foreground" />
@@ -163,7 +163,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
                     {activeAgents.map((a) => (
                       <span
                         key={a.id}
-                        className="inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 bg-white shadow-sm"
+                        className="inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 bg-background shadow-sm"
                       >
                         <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-[10px] text-gray-600">
                           {a.name.slice(0, 2).toUpperCase()}
@@ -189,7 +189,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
         </div>
 
         {/* Available Agents Panel */}
-        <div className="p-4 bg-gray-50/50 border-b">
+        <div className="p-4 bg-muted/30 border-b">
           <div className="flex items-center gap-2 mb-3">
             <Bot className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm font-medium">Available Agents</span>
@@ -202,7 +202,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
             {mentionableAgents.slice(0, 6).map((agent) => (
               <div
                 key={agent.id}
-                className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 bg-background px-3 py-2 rounded-lg border hover:bg-muted transition-colors"
               >
                 <div className="w-6 h-6 bg-gray-100 rounded flex items-center justify-center">
                   {getCategoryIcon(agent.preset.category[0])}
@@ -236,7 +236,9 @@ export const ChatView: React.FC<ChatViewProps> = ({
             >
               <div
                 className={`max-w-[80%] p-4 rounded-lg ${
-                  message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-white border'
+                  message.role === 'user'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-background border'
                 }`}
               >
                 {message.role === 'assistant' && (
@@ -282,7 +284,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
         </div>
 
         {/* Message Input */}
-        <div className="p-4 border-t bg-white">
+        <div className="p-4 border-t bg-background">
           <MessageInputWithMentions
             mentionableAgents={mentionableAgents}
             onSendMessage={handleSendMessage}

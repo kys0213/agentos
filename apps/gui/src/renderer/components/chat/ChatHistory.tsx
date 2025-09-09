@@ -40,7 +40,7 @@ export const ChatHistory = React.memo(function ChatHistory({
   const visibleAgents = filteredAgents;
 
   return (
-    <div className="w-80 border-r bg-white flex flex-col h-full">
+    <div className="w-80 border-r bg-background flex flex-col h-full">
       <div className="p-4 border-b">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold">Chats</h2>
@@ -100,8 +100,8 @@ export const ChatHistory = React.memo(function ChatHistory({
                     key={agent.id}
                     className={`p-3 rounded-lg cursor-pointer transition-colors group ${
                       selectedChatId === agent.id
-                        ? 'bg-blue-50 border border-blue-200'
-                        : 'hover:bg-gray-50'
+                        ? 'bg-accent border border-accent'
+                        : 'hover:bg-muted'
                     }`}
                     onClick={() => onSelectChat(agent.id)}
                   >
@@ -162,8 +162,8 @@ export const ChatHistory = React.memo(function ChatHistory({
                     key={agent.id}
                     className={`p-3 rounded-lg cursor-pointer transition-colors group ${
                       selectedChatId === agent.id
-                        ? 'bg-blue-50 border border-blue-200'
-                        : 'hover:bg-gray-50'
+                        ? 'bg-accent border border-accent'
+                        : 'hover:bg-muted'
                     }`}
                     onClick={() => onSelectChat(agent.id)}
                   >

@@ -203,7 +203,7 @@ export function MessageInputWithMentions({
       {/* Simple mention autocomplete without external component */}
       {showMentions && filteredAgents.length > 0 && (
         <div
-          className="absolute z-50 w-full mt-2 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto"
+          className="absolute z-50 w-full mt-2 bg-popover border rounded-lg shadow-lg max-h-48 overflow-y-auto"
           style={{
             position: 'fixed',
             top: mentionPosition.top,
@@ -214,8 +214,8 @@ export function MessageInputWithMentions({
           {filteredAgents.slice(0, 5).map((agent, index) => (
             <div
               key={agent.id}
-              className={`p-3 cursor-pointer hover:bg-gray-50 border-b last:border-b-0 ${
-                index === selectedMentionIndex ? 'bg-blue-50' : ''
+              className={`p-3 cursor-pointer hover:bg-accent border-b last:border-b-0 ${
+                index === selectedMentionIndex ? 'bg-accent' : ''
               }`}
               onClick={() => selectAgent(agent)}
             >
@@ -240,7 +240,10 @@ export function MessageInputWithMentions({
         <div className="mt-2 flex flex-wrap gap-1">
           <span className="text-xs text-muted-foreground">Mentioned:</span>
           {mentionedAgents.map((agent) => (
-            <span key={agent.id} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+            <span
+              key={agent.id}
+              className="text-xs bg-accent text-accent-foreground px-2 py-1 rounded"
+            >
               @{agent.name}
             </span>
           ))}

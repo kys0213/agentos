@@ -54,3 +54,6 @@ apps/gui/design/current/image.png
 
 # Generated runtime type helpers (use .d.ts instead)
 apps/gui/src/shared/rpc/gen/*.types.ts
+
+
+.playwright-mcp/

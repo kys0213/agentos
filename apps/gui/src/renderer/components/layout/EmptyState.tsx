@@ -53,7 +53,7 @@ export function EmptyState({
       case 'agents':
         return (
           <div className="relative mb-6">
-            <div className="w-24 h-24 mx-auto bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl flex items-center justify-center mb-4">
+            <div className="w-24 h-24 mx-auto bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 rounded-2xl flex items-center justify-center mb-4">
               <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
                 <Users className="w-8 h-8 text-white" />
               </div>
@@ -66,7 +66,7 @@ export function EmptyState({
       case 'presets':
         return (
           <div className="relative mb-6">
-            <div className="w-24 h-24 mx-auto bg-gradient-to-br from-purple-50 to-violet-100 rounded-2xl flex items-center justify-center mb-4">
+            <div className="w-24 h-24 mx-auto bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-950 dark:to-violet-900 rounded-2xl flex items-center justify-center mb-4">
               <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center">
                 <Brain className="w-8 h-8 text-white" />
               </div>
@@ -79,19 +79,19 @@ export function EmptyState({
       case 'chat':
         return (
           <div className="relative mb-6">
-            <div className="w-24 h-24 mx-auto bg-gradient-to-br from-emerald-50 to-teal-100 rounded-2xl flex items-center justify-center mb-4">
+            <div className="w-24 h-24 mx-auto bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-emerald-950 dark:to-teal-900 rounded-2xl flex items-center justify-center mb-4">
               <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
                 <MessageSquare className="w-8 h-8 text-white" />
               </div>
             </div>
-            <div className="absolute -bottom-1 -left-1 w-8 h-8 bg-white rounded-lg shadow-md flex items-center justify-center">
-              <Bot className="w-4 h-4 text-gray-600" />
+            <div className="absolute -bottom-1 -left-1 w-8 h-8 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center">
+              <Bot className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </div>
           </div>
         );
       default:
         return (
-          <div className="w-16 h-16 mx-auto bg-gray-100 rounded-2xl flex items-center justify-center mb-6">
+          <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-6">
             {getIcon()}
           </div>
         );
@@ -99,7 +99,7 @@ export function EmptyState({
   };
 
   return (
-    <Card className="border-dashed border-2 border-gray-200 bg-gray-50/50 hover:bg-gray-50/80 transition-colors duration-200">
+    <Card className="border-dashed border-2 border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 hover:bg-gray-50/80 dark:hover:bg-gray-900/80 transition-colors duration-200">
       <div className="p-12 text-center">
         {getIllustration()}
 
@@ -130,7 +130,7 @@ export function EmptyState({
 
         {/* Additional help text for agents */}
         {type === 'agents' && (
-          <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
             <p className="text-sm text-muted-foreground">
               💡 <strong>Quick Start:</strong> Create your first agent to enable AI-powered
               conversations and automation
@@ -140,7 +140,7 @@ export function EmptyState({
 
         {/* Additional help text for presets */}
         {type === 'presets' && (
-          <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
             <p className="text-sm text-muted-foreground">
               🧠 <strong>Tip:</strong> Presets define your AI agent's behavior, knowledge, and
               capabilities
