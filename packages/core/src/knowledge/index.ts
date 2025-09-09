@@ -65,3 +65,29 @@ export { DefaultIndexSet } from './indexing/index-set';
 export { FileDocStore } from './indexing/file-doc-store';
 export { Bm25SearchIndex } from './indexing/bm25-search-index';
 export { KnowledgeRepositoryImpl } from './indexing/repository-impl';
+
+// Expose tokenizer and splitter utilities
+export type { Tokenizer, KeywordExtractor } from './tokenizer';
+export { EnglishSimpleTokenizer } from './english-simple-tokenizer';
+export { LlmKeywordTokenizer } from './llm-keyword-tokenizer';
+
+export type { DocumentSplitter, SplitterOptions } from './splitter/document-splitter';
+export { MarkdownSplitter } from './splitter/markdown-splitter';
+
+// Expose in-memory BM25 building blocks for advanced consumers
+export {
+  InMemoryBM25Index,
+  type BM25IndexOptions,
+  type BM25SearchResult,
+} from './bm25/bm25-index';
+
+// Expose core knowledge domain types used by splitters
+export type {
+  KnowledgeChunk,
+  KnowledgeDocumentMeta,
+  BreadcrumbNode,
+  SourceRange,
+  TocItem,
+  PresetId,
+  KnowledgeDocId,
+} from './types';
