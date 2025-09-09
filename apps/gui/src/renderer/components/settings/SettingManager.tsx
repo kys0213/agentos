@@ -168,7 +168,6 @@ export function SettingsManager() {
     },
   });
 
-  const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Sync theme changes with settings state
@@ -199,7 +198,6 @@ export function SettingsManager() {
         [key]: value,
       },
     }));
-    setHasChanges(true);
   };
 
   const handleSave = async () => {
@@ -207,12 +205,11 @@ export function SettingsManager() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSaving(false);
-    setHasChanges(false);
   };
 
   const handleReset = () => {
     // Reset to default values
-    setHasChanges(false);
+    // Implementation would reset settings to defaults
   };
 
   const exportSettings = () => {
@@ -248,25 +245,18 @@ export function SettingsManager() {
               variant="outline"
               size="sm"
               onClick={handleReset}
-              disabled={!hasChanges}
               className="gap-2"
             >
               <RotateCcw className="w-4 h-4" />
               Reset
             </Button>
-            <Button onClick={handleSave} disabled={!hasChanges || isSaving} className="gap-2">
+            <Button onClick={handleSave} disabled={isSaving} className="gap-2">
               <Save className="w-4 h-4" />
               {isSaving ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </div>
 
-        {hasChanges && (
-          <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <AlertTriangle className="w-4 h-4 text-yellow-600" />
-            <span className="text-sm text-yellow-800">You have unsaved changes</span>
-          </div>
-        )}
       </div>
 
       {/* Content */}
