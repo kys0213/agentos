@@ -9,6 +9,7 @@ import { McpRegistryModule } from './common/mcp/mcp-registry.module';
 import { McpApiModule } from './mcp/mcp.api.module';
 import { BridgeApiModule } from './bridge/bridge.api.module';
 import { OutboundChannelModule } from './common/event/outbound-channel.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { OutboundChannelModule } from './common/event/outbound-channel.module';
     OutboundChannelModule,
     McpApiModule,
     BridgeApiModule,
+    ChatModule,
   ],
   providers: [
     {
