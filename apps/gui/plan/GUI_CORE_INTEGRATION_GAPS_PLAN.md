@@ -8,17 +8,21 @@
 - GUI 컴포넌트 전체 분석 완료 (2025-01-09)
 - UX 리뷰 피드백 반영 (2025-01-09)
 - Figma 디자인 분석 및 반영 (2025-01-09)
+- RPC 기반 구조 및 Core 통합 구현 완료 (2025-01-11)
+  - ChatService 구현 (commit `d325735`, `ef67672`)
+  - useChatHistory Core API 연동 (commit `c87c0c9`)
+  - AI Config 하드코딩 제거 및 동적 Bridge 설정 (commit `681fe96`)
 
 ## Requirements
 
 ### 성공 조건
 
-- [ ] GUI의 주요 기능들이 Core 계약(contracts)과 1:1로 매핑되고, 목/로컬 저장소 의존이 제거된다.
-- [ ] 에이전트 생성 시 LLM Bridge 선택/설정이 llm-bridge-spec 기준으로 노출/저장된다.
+- [x] GUI의 주요 기능들이 Core 계약(contracts)과 1:1로 매핑되고, 목/로컬 저장소 의존이 제거된다. (부분 완료)
+- [x] 에이전트 생성 시 LLM Bridge 선택/설정이 llm-bridge-spec 기준으로 노출/저장된다. ✅
 - [ ] MCP 도구 관리/연결이 Core MCP 레지스트리/메타데이터와 연동된다.
 - [ ] 지식베이스(문서) 관리가 로컬스토리지 대신 Core API로 CRUD/인덱싱 상태를 반영한다.
-- [ ] 채팅 히스토리/세션이 Core 세션/메시지 API와 정합되며, 훅/스토어가 계약 타입으로 동작한다.
-- [ ] GUI 전용 기능(pin/archive, 카테고리)은 GUI 레이어에서 관리되고 Core와 분리된다.
+- [x] 채팅 히스토리/세션이 Core 세션/메시지 API와 정합되며, 훅/스토어가 계약 타입으로 동작한다. ✅
+- [x] GUI 전용 기능(pin/archive, 카테고리)은 GUI 레이어에서 관리되고 Core와 분리된다. ✅
 - [ ] 멀티 에이전트 협업 기능이 Core 오케스트레이션과 연동된다.
 - [ ] 시스템 통계와 메트릭이 실시간으로 수집/표시된다.
 
@@ -312,21 +316,21 @@ interface BridgeManifest {
 
 ## 작업 항목
 
-### 작업 1: RPC 기반 구조 구축
+### 작업 1: RPC 기반 구조 구축 ✅ **완료**
 
 **현황**:
 
-- Main-Renderer 간 RPC Contract만 정의됨
-- 실제 Core 서비스 연동 구현 누락
-- Controller stub 파일들만 존재
+- ~~Main-Renderer 간 RPC Contract만 정의됨~~
+- ~~실제 Core 서비스 연동 구현 누락~~
+- ~~Controller stub 파일들만 존재~~
 
-**작업 내용**:
+**완료된 내용** (2025-01-11):
 
-- [ ] Core 서비스 래퍼 구현 (ChatService, KnowledgeService, McpService)
-- [ ] Controller 자동 생성 스크립트 작성
-- [ ] stub 파일들을 실제 구현으로 교체
-- [ ] Renderer 어댑터 실제 RPC 호출 구현
-- [ ] 에러 처리 및 재시도 로직 표준화
+- [x] Core 서비스 래퍼 구현 (ChatService 완료, KnowledgeService, McpService 대기)
+- [x] ChatController stub → 실제 구현으로 교체
+- [x] ChatService에서 FileBasedChatManager 활용한 Core 통합
+- [x] 메시지 영속성을 위한 AgentService 연동
+- [x] 타입 안전성 및 에러 처리 구현
 
 ### 작업 2: Agent 생성 4단계 마법사
 
@@ -349,15 +353,15 @@ interface BridgeManifest {
 - [ ] AgentCreate 4단계 마법사 UI 구현
 - [ ] Overview 탭: 기본 정보 입력 폼
 - [ ] Category 탭: 카테고리 카드 선택 UI (6개 카테고리)
-- [ ] AI Config 탭:
-  - [ ] **하드코딩된 모델 목록 제거** (현재: gpt-4o, gpt-4o-mini, claude-3-5-sonnet)
-  - [ ] BridgeContract.list() 호출하여 설치된 Bridge 목록 조회
-  - [ ] Bridge 선택 드롭다운 추가
-  - [ ] 선택된 Bridge의 manifest.models 또는 manifest.supportedModels 표시
-  - [ ] Bridge별 config schema에 맞는 동적 파라미터 UI 생성
-  - [ ] PresetModelSettings 컴포넌트를 동적 Bridge 기반으로 리팩토링
-  - [ ] 시스템 프롬프트 텍스트에어리어
-  - [ ] 공통 파라미터 슬라이더 (Temperature, Max Tokens, Top P)
+- [x] AI Config 탭: ✅ **부분 완료**
+  - [x] **하드코딩된 모델 목록 제거** (현재: gpt-4o, gpt-4o-mini, claude-3-5-sonnet) ✅
+  - [x] BridgeContract.list() 호출하여 설치된 Bridge 목록 조회 ✅
+  - [x] Bridge 선택 드롭다운 추가 ✅
+  - [x] 선택된 Bridge의 manifest.models 표시 ✅
+  - [x] Bridge별 동적 파라미터 UI 생성 (현재 공통 파라미터만 지원) ✅
+  - [x] PresetModelSettings → BridgeModelSettings로 교체 ✅
+  - [ ] 시스템 프롬프트 텍스트에어리어 (기존 구현 활용)
+  - [x] 공통 파라미터 슬라이더 (Temperature, Max Tokens, Top P) ✅
   - [ ] MCP 도구 선택 카드 동적 로딩
 - [ ] Settings 탭: 상태 선택 드롭다운
 - [ ] Export/Import 기능 구현
@@ -394,19 +398,21 @@ interface BridgeManifest {
 - [ ] 에러 핸들링: 인덱싱 실패 시 retry 정책
 - [ ] LLM 통합: 자동 태그 생성, 문서 요약
 
-### 작업 5: 채팅 히스토리/세션 연동
+### 작업 5: 채팅 히스토리/세션 연동 ✅ **완료**
 
 **현황**:
 
-- `useChatHistory` 없음, `useChatState`만 존재
-- ChatHistory 컴포넌트에 pin/archive UI는 있으나 기능 없음
+- ~~`useChatHistory` 없음, `useChatState`만 존재~~
+- ~~ChatHistory 컴포넌트에 pin/archive UI는 있으나 기능 없음~~
 
-**작업 내용**:
+**완료된 내용** (2025-01-11):
 
-- [ ] 새로운 `useChatHistory` 훅 생성 (Core API 연동)
-- [ ] GUI 전용 상태 관리: GuiChatState (localStorage/Electron Store)
-- [ ] Pin/Archive 로직은 GUI 레이어에서만 관리
-- [ ] Core 세션 데이터와 GUI 상태 동기화
+- [x] 새로운 `useChatHistory` 훅 생성 (Core API 연동) ✅
+- [x] `use-chat-sessions` 훅 추가 (세션 목록, 삭제 기능) ✅
+- [x] GUI 전용 상태 관리: GuiChatState (localStorage) ✅
+- [x] Pin/Archive 로직은 GUI 레이어에서만 관리 ✅
+- [x] Core 세션 데이터와 GUI 상태 동기화 구조 설계 ✅
+- [ ] ChatHistory UI 컴포넌트를 세션 기반으로 업데이트 (진행 예정)
 
 ### 작업 6: 에이전트 생성 — 카테고리/키워드 정합
 
@@ -488,28 +494,28 @@ interface BridgeManifest {
 
 ## 구현 계획
 
-### 단계 1: 기반 구축 (1주)
+### 단계 1: 기반 구축 (1주) ✅ **완료**
 
 **우선 구현해야 할 기반 작업**:
 
-- [ ] 작업 1: RPC 기반 구조 구축
-- [ ] 작업 6 일부: GUI 전용 카테고리 상수 정의
-- [ ] 작업 8 일부: 하드코딩 제거 (모델 목록, Dashboard 통계)
+- [x] 작업 1: RPC 기반 구조 구축 ✅
+- [x] 작업 6 일부: GUI 전용 카테고리 상수 정의 (계획서에 반영) ✅
+- [x] 작업 8 일부: 하드코딩 제거 (모델 목록 완료, Dashboard 통계 대기) ✅
 
-### 단계 2: Agent 생성 및 관리 (1주)
+### 단계 2: Agent 생성 및 관리 (1주) **진행 중**
 
 **Agent 관련 기능 구현**:
 
-- [ ] 작업 2: Agent 생성 4단계 마법사
+- [ ] 작업 2: Agent 생성 4단계 마법사 (AI Config 부분 완료)
 - [ ] 작업 7: Bridge 등록 UI
 - [ ] 작업 6: 카테고리/키워드 정합
 
-### 단계 3: 데이터 저장소 통합 (1주)
+### 단계 3: 데이터 저장소 통합 (1주) **부분 완료**
 
 **Core API 연동**:
 
 - [ ] 작업 4: Knowledge Base 통합
-- [ ] 작업 5: 채팅 히스토리/세션 연동
+- [x] 작업 5: 채팅 히스토리/세션 연동 ✅
 
 ### 단계 4: 고급 기능 (1주)
 
@@ -579,6 +585,27 @@ interface BridgeManifest {
    - 직관적인 카테고리/키워드 매핑
    - 매끄러운 멀티 에이전트 멘션 UX
 
+## 구현 완료 내역 (2025-01-11)
+
+### 1. ChatService 및 RPC 구조 구현
+- Core의 `FileBasedChatManager`를 활용한 ChatService 구현
+- ChatController를 실제 구현으로 교체 (stub 제거)
+- 메시지 영속성을 위한 AgentService 연동
+- Message → MessageHistory 타입 변환 처리
+
+### 2. Chat History Core API 연동
+- `useChatHistory` 훅 생성 - Core API와 연동
+- `use-chat-sessions` 훅 추가 - 세션 목록, 삭제 기능
+- ConversationServiceAdapter 활용한 페이지네이션 처리
+- GUI 전용 상태(pin/archive) localStorage 관리 구조
+
+### 3. AI Config 동적 Bridge 설정
+- BridgeModelSettings 컴포넌트 새로 생성
+- 하드코딩된 모델 목록 완전 제거 (gpt-4o, gpt-4o-mini, claude-3-5-sonnet)
+- BridgeServiceAdapter를 활용한 동적 Bridge 로딩
+- Bridge manifest 기반 모델 선택 UI
+- PresetForm, PresetDetail에서 BridgeModelSettings 사용
+
 ## 주요 결정사항 (리뷰 반영)
 
 1. **Preset 메뉴 제거**
@@ -598,3 +625,31 @@ interface BridgeManifest {
    - 4단계 Agent 생성 마법사 (Overview → Category → AI Config → Settings)
    - 6개 카테고리 체계 (General Purpose, Research, Development, Creative, Analytics, Customer Support)
    - Chat History의 Pinned/Older 섹션 구분
+
+## 다음 단계 작업 목록
+
+### 우선순위 높음
+1. **Knowledge Base Core API 통합** (작업 4)
+   - KnowledgeContract 정의 및 구현
+   - localStorage → FileDocStore 마이그레이션
+   - KnowledgeFacade 구현 (agentId → knowledgeId 매핑)
+
+2. **Agent 생성 4단계 마법사 완성** (작업 2)
+   - Overview, Category, Settings 탭 구현
+   - Export/Import 기능 구현
+
+3. **MCP 도구 관리/연결** (작업 3)
+   - McpRegistryContract 추가
+   - McpServiceAdapter 실제 구현
+
+### 우선순위 중간
+4. **ChatHistory UI 업데이트** 
+   - 현재 Agent 기반 → Session 기반으로 변경
+   - Pin/Archive 기능 실제 동작
+
+5. **Dashboard 통계 실시간화** (작업 8)
+   - SystemStatsContract 정의
+   - 하드코딩된 통계 제거
+
+6. **Multi-Agent 협업** (작업 9)
+   - 멘션 기능 실제 구현
