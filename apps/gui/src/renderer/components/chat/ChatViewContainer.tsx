@@ -45,13 +45,13 @@ export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) =>
     }
   }, [selectedAgentId, activeAgents, mentionableAgents]);
 
-  const { data: messages = [] } = useChatHistory(selectedAgentId);
-
   // Maintain sessionId per agent for consecutive turns
   const sessionIdMapRef = useRef<Map<string, string>>(new Map());
   const currentSessionId = selectedAgentId
     ? sessionIdMapRef.current.get(selectedAgentId)
     : undefined;
+
+  const { data: messages = [] } = useChatHistory(selectedAgentId, currentSessionId);
 
   const sendMutation = useSendChatMessage(selectedAgentId, {
     sessionId: currentSessionId,

@@ -32,14 +32,36 @@ export const useActiveAgents = () => {
   });
 };
 
-export const useChatHistory = (agentId: string | undefined) => {
+export const useChatHistory = (agentId: string | undefined, sessionId?: string) => {
   return useQuery<Readonly<MessageHistory>[]>({
-    queryKey: agentId ? CHAT_QUERY_KEYS.history(agentId) : ['chat', 'history', 'disabled'],
+    queryKey: agentId && sessionId ? CHAT_QUERY_KEYS.history(agentId) : ['chat', 'history', 'disabled'],
     queryFn: async () => {
-      // 서버 저장 없음: 초기 빈 배열. 전송 시 캐시에 append.
-      return [];
+      if (!agentId || !sessionId) {
+        return [];
+      }
+      
+      const conversationService = ServiceContainer.getOrThrow('conversation');
+      
+      // 전체 메시지 조회 (페이지네이션 처리)
+      const allMessages: MessageHistory[] = [];
+      let cursor: string | undefined = undefined;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const result = await conversationService.getMessages(sessionId, {
+          cursor: cursor || '',
+          limit: 100,
+          direction: 'forward',
+        });
+        
+        allMessages.push(...result.items as MessageHistory[]);
+        cursor = result.nextCursor;
+        hasMore = result.hasMore;
+      }
+      
+      return allMessages;
     },
-    enabled: !!agentId,
+    enabled: !!agentId && !!sessionId,
     initialData: [],
   });
 };
