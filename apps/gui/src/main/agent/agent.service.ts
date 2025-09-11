@@ -36,13 +36,19 @@ export class AgentSessionService {
 
     // ChatService에 메시지 저장
     try {
+      // 에이전트 메타데이터 조회
+      const agentMetadata = await agent.getMetadata();
+      
       // 모든 메시지를 ChatService에 저장
-      for (const message of result.messages) {
-        await this.chatService.appendMessageToSession(
-          result.sessionId,
-          agentId,
-          message
-        );
+      for (let i = 0; i < result.messages.length; i++) {
+        const message = result.messages[i];
+        const messageHistory = {
+          ...message,
+          messageId: `${result.sessionId}-${Date.now()}-${i}`,
+          createdAt: new Date(),
+          agentMetadata,
+        };
+        await this.chatService.appendMessageToSession(result.sessionId, agentId, messageHistory);
       }
     } catch (error) {
       console.error('Failed to save messages to ChatService:', error);

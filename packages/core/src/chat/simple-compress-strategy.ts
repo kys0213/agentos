@@ -16,9 +16,9 @@ export class SimpleCompressStrategy implements CompressStrategy {
       content: [
         {
           contentType: 'text',
-          value: `Summary of ${messages.length} messages from ${messages[0].createdAt.toISOString()} to ${
-            messages[messages.length - 1].createdAt.toISOString()
-          }`,
+          value: `Summary of ${messages.length} messages from ${messages[0].createdAt.toISOString()} to ${messages[
+            messages.length - 1
+          ].createdAt.toISOString()}`,
         },
       ],
     };

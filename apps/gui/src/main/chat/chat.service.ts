@@ -1,14 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { z } from 'zod';
 import { ChatContract as C } from '../../shared/rpc/contracts/chat.contract';
-import { 
-  FileBasedChatManager, 
+import {
+  FileBasedChatManager,
   FileBasedSessionStorage,
   CursorPagination,
   CompressStrategy,
   CompressionResult,
   MessageHistory,
-  ChatSessionDescription
 } from '@agentos/core';
 import path from 'path';
 import { app } from 'electron';
@@ -23,7 +22,7 @@ export class ChatService {
     // 사용자 데이터 디렉토리에 chat 저장
     const baseDir = path.join(app.getPath('userData'), 'sessions');
     const storage = new FileBasedSessionStorage(baseDir);
-    
+
     // 임시 압축 전략 - 추후 실제 LLM 기반 압축으로 교체
     const compressStrategy: CompressStrategy = {
       async compress(messages: MessageHistory[]): Promise<CompressionResult> {
@@ -33,21 +32,23 @@ export class ChatService {
         return {
           summary: {
             role: 'assistant',
-            content: [{
-              contentType: 'text',
-              value: `Summary of ${messages.length} messages`
-            }]
+            content: [
+              {
+                contentType: 'text',
+                value: `Summary of ${messages.length} messages`,
+              },
+            ],
           },
           compressedCount: messages.length,
-          discardedMessages: messages.map(m => m.messageId)
+          discardedMessages: messages.map((m) => m.messageId),
         };
-      }
+      },
     };
-    
+
     this.chatManager = new FileBasedChatManager(storage, compressStrategy, compressStrategy, {
       maxCachedSessions: 100,
     });
-    
+
     this.logger.log(`Chat service initialized with baseDir: ${baseDir}`);
   }
 
@@ -63,35 +64,22 @@ export class ChatService {
           }
         : undefined;
 
-      // FileBasedSessionStorage를 직접 사용하여 세션 목록 조회
-      const storage = (this.chatManager as any).storage as FileBasedSessionStorage;
-      const sessionList = await storage.getSessionList(this.currentAgentId);
-      
-      // 페이지네이션 적용
-      let filtered = sessionList;
-      if (options) {
-        filtered = sessionList.filter(session => {
-          if (options.cursor && options.direction === 'forward') {
-            return session.id > options.cursor;
-          } else if (options.cursor && options.direction === 'backward') {
-            return session.id < options.cursor;
-          }
-          return true;
-        });
-        
-        if (options.limit) {
-          filtered = filtered.slice(0, options.limit);
-        }
-      }
+      // chatManager의 list 메서드 사용
+      // TODO: Core의 ChatListOption 타입이 sessionId를 필수로 요구하지만 실제로는 사용하지 않음
+      const result = await this.chatManager.list({
+        sessionId: '', // list에서는 사용되지 않음
+        agentId: this.currentAgentId,
+        pagination: options,
+      });
 
       return {
-        items: filtered.map((session) => ({
+        items: result.items.map((session) => ({
           id: session.id,
           title: session.title || 'Untitled Session',
           updatedAt: session.updatedAt,
         })),
-        nextCursor: filtered[filtered.length - 1]?.id || '',
-        hasMore: filtered.length === (options?.limit || 20),
+        nextCursor: result.nextCursor,
+        hasMore: result.hasMore,
       };
     } catch (error) {
       this.logger.error('Failed to list sessions:', error);
@@ -104,7 +92,7 @@ export class ChatService {
   ): Promise<z.output<(typeof C.methods)['getMessages']['response']>> {
     try {
       const { sessionId, pagination } = params;
-      
+
       // 세션 로드 또는 생성
       const session = await this.chatManager.getSession({
         sessionId,
@@ -166,7 +154,7 @@ export class ChatService {
       agentId,
       sessionId,
     });
-    
+
     return session.sessionId;
   }
 
@@ -176,7 +164,7 @@ export class ChatService {
   async appendMessageToSession(
     sessionId: string,
     agentId: string,
-    message: any
+    message: MessageHistory
   ): Promise<void> {
     const session = await this.chatManager.getSession({
       sessionId,
