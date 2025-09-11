@@ -22,7 +22,7 @@ export const useChatSessions = (pagination?: {
     queryFn: async () => {
       const conversationService = ServiceContainer.getOrThrow('conversation');
       const result = await conversationService.listSessions(pagination);
-      
+
       return {
         items: result.items.map((item) => ({
           ...item,
@@ -38,7 +38,7 @@ export const useChatSessions = (pagination?: {
 
 export const useDeleteChatSession = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (sessionId: string) => {
       const conversationService = ServiceContainer.getOrThrow('conversation');
@@ -50,7 +50,7 @@ export const useDeleteChatSession = () => {
         queryClient.invalidateQueries({
           queryKey: CHAT_SESSION_QUERY_KEYS.list,
         });
-        
+
         // Remove session from cache
         queryClient.removeQueries({
           queryKey: CHAT_SESSION_QUERY_KEYS.session(sessionId),
@@ -76,11 +76,13 @@ export const useGuiChatStates = () => {
     queryKey: ['gui', 'chat', 'states'],
     queryFn: async (): Promise<GuiChatState[]> => {
       const storedData = localStorage.getItem(GUI_CHAT_STATE_KEY);
-      if (!storedData) return [];
-      
+      if (!storedData) {
+        return [];
+      }
+
       try {
         const states = JSON.parse(storedData) as GuiChatState[];
-        return states.map(state => ({
+        return states.map((state) => ({
           ...state,
           archivedAt: state.archivedAt ? new Date(state.archivedAt) : undefined,
         }));
@@ -94,19 +96,20 @@ export const useGuiChatStates = () => {
 
 export const useUpdateGuiChatState = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (update: Partial<GuiChatState> & { sessionId: string }) => {
-      const currentStates = queryClient.getQueryData<GuiChatState[]>(['gui', 'chat', 'states']) || [];
-      
-      const updatedStates = currentStates.some(state => state.sessionId === update.sessionId)
-        ? currentStates.map(state =>
+      const currentStates =
+        queryClient.getQueryData<GuiChatState[]>(['gui', 'chat', 'states']) || [];
+
+      const updatedStates = currentStates.some((state) => state.sessionId === update.sessionId)
+        ? currentStates.map((state) =>
             state.sessionId === update.sessionId ? { ...state, ...update } : state
           )
         : [...currentStates, { isPinned: false, isArchived: false, ...update } as GuiChatState];
-      
+
       localStorage.setItem(GUI_CHAT_STATE_KEY, JSON.stringify(updatedStates));
-      
+
       return updatedStates;
     },
     onSuccess: (data) => {

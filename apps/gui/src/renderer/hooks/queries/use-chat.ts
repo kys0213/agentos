@@ -34,31 +34,32 @@ export const useActiveAgents = () => {
 
 export const useChatHistory = (agentId: string | undefined, sessionId?: string) => {
   return useQuery<Readonly<MessageHistory>[]>({
-    queryKey: agentId && sessionId ? CHAT_QUERY_KEYS.history(agentId) : ['chat', 'history', 'disabled'],
+    queryKey:
+      agentId && sessionId ? CHAT_QUERY_KEYS.history(agentId) : ['chat', 'history', 'disabled'],
     queryFn: async () => {
       if (!agentId || !sessionId) {
         return [];
       }
-      
+
       const conversationService = ServiceContainer.getOrThrow('conversation');
-      
+
       // 전체 메시지 조회 (페이지네이션 처리)
       const allMessages: MessageHistory[] = [];
       let cursor: string | undefined = undefined;
       let hasMore = true;
-      
+
       while (hasMore) {
         const result = await conversationService.getMessages(sessionId, {
           cursor: cursor || '',
           limit: 100,
           direction: 'forward',
         });
-        
-        allMessages.push(...result.items as MessageHistory[]);
+
+        allMessages.push(...(result.items as MessageHistory[]));
         cursor = result.nextCursor;
         hasMore = result.hasMore;
       }
-      
+
       return allMessages;
     },
     enabled: !!agentId && !!sessionId,

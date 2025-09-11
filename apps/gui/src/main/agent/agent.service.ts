@@ -38,7 +38,7 @@ export class AgentSessionService {
     try {
       // 에이전트 메타데이터 조회
       const agentMetadata = await agent.getMetadata();
-      
+
       // 모든 메시지를 ChatService에 저장
       for (let i = 0; i < result.messages.length; i++) {
         const message = result.messages[i];

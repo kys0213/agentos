@@ -8,7 +8,7 @@ import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Textarea } from '../ui/textarea';
-import PresetModelSettings from './PresetModelSettings';
+import BridgeModelSettings from './BridgeModelSettings';
 import PresetBasicFields from './PresetBasicFields';
 
 interface DynamicFormRendererProps {
@@ -161,7 +161,7 @@ export function PrestForm({
           {currentStep === 2 && (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Model Configuration</h2>
-              <PresetModelSettings
+              <BridgeModelSettings
                 config={formData.llmBridgeConfig}
                 onChange={(u) => setFormData((prev) => ({ ...prev, ...u }))}
                 showModel
@@ -228,7 +228,7 @@ export function PrestForm({
           {currentStep === 5 && (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Model Parameters</h2>
-              <PresetModelSettings
+              <BridgeModelSettings
                 config={formData.llmBridgeConfig}
                 onChange={(u) => setFormData((prev) => ({ ...prev, ...u }))}
                 showModel={false}
@@ -301,7 +301,7 @@ export function PrestForm({
 
         <TabsContent value="model">
           <Card className="p-6">
-            <PresetModelSettings
+            <BridgeModelSettings
               config={formData.llmBridgeConfig}
               onChange={(u) => setFormData((prev) => ({ ...prev, ...u }))}
             />
