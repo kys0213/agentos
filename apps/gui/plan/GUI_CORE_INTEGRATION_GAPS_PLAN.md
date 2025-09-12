@@ -382,8 +382,8 @@ interface BridgeManifest {
   - [x] 브릿지/모델 동적 로딩: `useInstalledBridges`(ID 목록 + 개별 config) 훅 기반 ✅
   - [x] Bridge 선택/모델 선택 UI ✅
   - [x] Bridge별 동적 파라미터 UI(현재 공통 파라미터) ✅
-  - [ ] 시스템 프롬프트 텍스트에어리어(기존 구현 연계)
-  - [ ] MCP 도구 선택 카드 동적 로딩
+  - [x] 시스템 프롬프트 텍스트에어리어(프리셋 systemPrompt 오버라이드) ✅
+  - [x] MCP 도구 선택 카드 동적 로딩(선택 결과 preset.enabledMcps 반영) ✅
 - [ ] Settings 탭: 상태 선택 드롭다운
 - [ ] Export/Import 기능 구현
 
