@@ -76,37 +76,42 @@ export function Dashboard({
     },
   ];
 
-  // Generate recent activity from actual data
+  // Add MCP 24h card when available
+  if (!statsLoading && !statsError && ds?.mcp24h?.requests != null) {
+    cards.push({
+      title: 'MCP (24h)',
+      value: String(ds.mcp24h.requests),
+      change: '',
+      icon: Activity,
+      color: 'text-blue-600',
+    });
+  }
+
+  // Derive recent activity-like insights from actual data
+  const topAgent = [...currentAgents].sort((a, b) => (b.usageCount ?? 0) - (a.usageCount ?? 0))[0];
   const recentActivity = [
-    {
+    topAgent && {
       id: 1,
-      type: 'chat',
-      title: `Chat available with ${currentAgents.find((a) => a.keywords.includes('general'))?.name || 'General'}`,
-      time: 'Ready now',
-      agent: currentAgents.find((a) => a.keywords.includes('general'))?.name || 'General',
-    },
-    {
-      id: 2,
       type: 'agent',
-      title: `${currentAgents.find((a) => a.keywords.includes('general'))?.name || 'General'} agent ready`,
-      time: 'Available',
-      agent: currentAgents.find((a) => a.keywords.includes('general'))?.name || 'General',
+      title: `Top agent: ${topAgent.name}`,
+      time: `${topAgent.usageCount ?? 0} uses`,
+      agent: topAgent.name,
     },
-    {
-      id: 3,
+    presets[0] && {
+      id: 2,
       type: 'preset',
-      title: `${presets[0]?.name || 'Default'} preset ready`,
-      time: `Used ${presets[0]?.usageCount || 0} times`,
+      title: `Popular preset: ${presets[0].name}`,
+      time: `${presets[0].usageCount ?? 0} uses`,
       agent: 'System',
     },
-    {
-      id: 4,
-      type: 'model',
-      title: 'Models connected and ready',
-      time: 'All systems operational',
+    ds?.bridges.total != null && {
+      id: 3,
+      type: 'bridge',
+      title: `Installed bridges: ${ds.bridges.total}`,
+      time: 'Configured',
       agent: 'System',
     },
-  ];
+  ].filter(Boolean) as Array<{ id: number; type: string; title: string; time: string; agent: string }>;
 
   // Smart quick actions based on available agents and presets
   const bestAgent = currentAgents.find((a) => a.status === 'active') || currentAgents[0];

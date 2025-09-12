@@ -7,6 +7,7 @@ type DashboardStats = {
   bridges: { total: number | null; models: number | null };
   presets: { total: number | null; inUse: number | null };
   mcp?: { requests?: number | null; tokens?: number | null };
+  mcp24h?: { requests?: number | null };
 };
 
 const QK = {
@@ -25,7 +26,7 @@ export function useDashboardStats() {
       const mcpUsage = ServiceContainer.get('mcpUsageLog');
 
       // Run available requests in parallel; each guarded for absence/errors
-      const [agentsRes, bridgesRes, chatsRes, presetsRes, mcpStats] = await Promise.all([
+      const [agentsRes, bridgesRes, chatsRes, presetsRes, mcpStats, mcpHourly] = await Promise.all([
         (async () => {
           if (!agent) return null as const;
           try {
@@ -83,6 +84,18 @@ export function useDashboardStats() {
             return null as const;
           }
         })(),
+        (async () => {
+          if (!mcpUsage) return null as const;
+          try {
+            const { hourlyData } = await mcpUsage.getHourlyStats(new Date());
+            const total = Array.isArray(hourlyData)
+              ? hourlyData.reduce((sum, t) => sum + (Array.isArray(t) ? Number(t[1]) || 0 : 0), 0)
+              : 0;
+            return total;
+          } catch {
+            return null as const;
+          }
+        })(),
       ]);
 
       const agentsTotal = agentsRes ? agentsRes.length : null;
@@ -102,8 +115,8 @@ export function useDashboardStats() {
 
       const mcpSummary = mcpStats
         ? {
-            // Core usage service returns totalUsage etc.
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          	// Core usage service returns totalUsage etc.
+          	// eslint-disable-next-line @typescript-eslint/no-explicit-any
             requests: (mcpStats as any)?.totalUsage ?? null,
             tokens: null,
           }
@@ -115,6 +128,7 @@ export function useDashboardStats() {
         bridges: { total: bridgesTotal, models: modelsTotal },
         presets: { total: presetsTotal, inUse: presetsInUse },
         mcp: mcpSummary,
+        mcp24h: { requests: (mcpHourly as number | null) ?? null },
       } satisfies DashboardStats;
     },
     staleTime: 30_000,
