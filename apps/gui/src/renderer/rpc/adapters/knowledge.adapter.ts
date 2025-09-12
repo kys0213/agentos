@@ -24,5 +24,28 @@ export class KnowledgeServiceAdapter {
     const payload = C.methods['listDocuments'].payload.parse({ knowledgeId, pagination });
     return this.client.listDocuments(payload);
   }
-}
 
+  async removeDoc(agentId: string, docId: string) {
+    const knowledgeId = await this.ensureKnowledgeForAgent(agentId);
+    const payload = C.methods['removeDocument'].payload.parse({ knowledgeId, docId });
+    return this.client.removeDocument(payload);
+  }
+
+  async indexAll(agentId: string) {
+    const knowledgeId = await this.ensureKnowledgeForAgent(agentId);
+    const payload = C.methods['indexAll'].payload.parse({ knowledgeId });
+    return this.client.indexAll(payload);
+  }
+
+  async search(agentId: string, query: string, limit?: number) {
+    const knowledgeId = await this.ensureKnowledgeForAgent(agentId);
+    const payload = C.methods['search'].payload.parse({ knowledgeId, query, limit });
+    return this.client.search(payload);
+  }
+
+  async getStats(agentId: string) {
+    const knowledgeId = await this.ensureKnowledgeForAgent(agentId);
+    const payload = C.methods['getStats'].payload.parse({ knowledgeId });
+    return this.client.getStats(payload);
+  }
+}

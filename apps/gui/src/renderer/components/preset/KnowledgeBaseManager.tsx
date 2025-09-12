@@ -26,6 +26,7 @@ import { Progress } from '../ui/progress';
 import { ScrollArea } from '../ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { ServiceContainer } from '../../../shared/di/service-container';
 import { Textarea } from '../ui/textarea';
 
 interface KnowledgeDocument {
@@ -141,63 +142,47 @@ export function KnowledgeBaseManager({
   const [knowledgeStats, setKnowledgeStats] = useState<PresetKnowledgeStats | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const knowledge = ServiceContainer.get('knowledge');
 
-  // Storage keys for preset-specific data (completely isolated)
-  const getStorageKey = (type: 'documents' | 'index' | 'stats') =>
-    `agentos_project_${agentId}_${type}`;
-
-  // Load preset-specific data (project isolation)
+  // Initial load from Core and templates
   useEffect(() => {
-    if (!agentId) {
-      return;
-    }
-
-    // Load documents from localStorage (project-specific)
-    const savedDocuments = localStorage.getItem(getStorageKey('documents'));
-    if (savedDocuments) {
+    if (!agentId) return;
+    (async () => {
       try {
-        const parsed: unknown = JSON.parse(savedDocuments);
-        const arr = Array.isArray(parsed) ? parsed : [];
-        const next: KnowledgeDocument[] = (arr as unknown[])
-          .filter(isStoredKnowledgeDocument)
-          .map((doc) => ({
-            id: doc.id,
-            title: doc.title,
-            content: doc.content,
-            filename: doc.filename,
-            size: doc.size,
-            type: doc.type,
-            createdAt: new Date(doc.createdAt ?? Date.now()),
-            updatedAt: new Date(doc.updatedAt ?? Date.now()),
-            tags: Array.isArray(doc.tags) ? doc.tags : [],
+        if (knowledge) {
+          const page = await knowledge.listDocs(agentId, { limit: 100 });
+          const next: KnowledgeDocument[] = page.items.map((d) => ({
+            id: d.id,
+            title: d.title,
+            content: '',
+            filename: undefined,
+            size: 0,
+            type: 'markdown',
+            createdAt: new Date(d.updatedAt),
+            updatedAt: new Date(d.updatedAt),
+            tags: d.tags ?? [],
             chunks: [],
-            indexed: !!doc.indexed,
-            vectorized: !!doc.vectorized,
+            indexed: false,
+            vectorized: false,
             agentId: agentId ?? '',
             agentName: agentName ?? '',
-            isTemplate: !!doc.isTemplate,
+            isTemplate: false,
           }));
-
-        setDocuments(next);
-      } catch (error) {
-        console.error('Failed to load documents:', error);
+          setDocuments(next);
+        } else {
+          initializeWithStarterContent();
+        }
+      } finally {
+        loadAvailableTemplates();
+        calculateKnowledgeStats();
       }
-    } else {
-      // Initialize with category-specific starter content if it's a new project
-      initializeWithStarterContent();
-    }
-
-    // Load available templates
-    loadAvailableTemplates();
-
-    // Calculate knowledge stats
-    calculateKnowledgeStats();
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentId]);
 
-  // Save documents to project-specific storage
+  // Recompute stats when documents change
   useEffect(() => {
-    if (agentId && documents.length > 0) {
-      localStorage.setItem(getStorageKey('documents'), JSON.stringify(documents));
+    if (agentId) {
       calculateKnowledgeStats();
     }
   }, [documents, agentId]);
@@ -336,22 +321,35 @@ export function KnowledgeBaseManager({
     setDocuments([welcomeDoc]);
   };
 
-  const calculateKnowledgeStats = () => {
-    if (!documents.length) {
-      return;
+  const calculateKnowledgeStats = async () => {
+    if (!agentId) return;
+    try {
+      if (knowledge) {
+        const s = await knowledge.getStats(agentId);
+        setKnowledgeStats({
+          totalDocuments: s.totalDocuments,
+          indexedDocuments: s.totalChunks,
+          vectorizedDocuments: 0,
+          totalChunks: s.totalChunks,
+          lastUpdated: s.lastUpdated ? new Date(s.lastUpdated) : new Date(0),
+          storageSize: s.storageSize,
+        });
+        return;
+      }
+    } catch (e) {
+      console.error('Failed to load stats', e);
     }
-
-    const stats: PresetKnowledgeStats = {
-      totalDocuments: documents.length,
-      indexedDocuments: documents.filter((d) => d.indexed).length,
-      vectorizedDocuments: documents.filter((d) => d.vectorized).length,
-      totalChunks: documents.reduce((sum, doc) => sum + (doc.chunks?.length || 0), 0),
-      lastUpdated: new Date(Math.max(...documents.map((d) => d.updatedAt.getTime()))),
-      storageSize: documents.reduce((sum, doc) => sum + doc.size, 0),
-    };
-
-    setKnowledgeStats(stats);
-    localStorage.setItem(getStorageKey('stats'), JSON.stringify(stats));
+    // Fallback local calc
+    if (documents.length) {
+      setKnowledgeStats({
+        totalDocuments: documents.length,
+        indexedDocuments: documents.filter((d) => d.indexed).length,
+        vectorizedDocuments: documents.filter((d) => d.vectorized).length,
+        totalChunks: documents.reduce((sum, doc) => sum + (doc.chunks?.length || 0), 0),
+        lastUpdated: new Date(Math.max(...documents.map((d) => d.updatedAt.getTime()))),
+        storageSize: documents.reduce((sum, doc) => sum + doc.size, 0),
+      });
+    }
   };
 
   const handleFileUpload = useCallback(
