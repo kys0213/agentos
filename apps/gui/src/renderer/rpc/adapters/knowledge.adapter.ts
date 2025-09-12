@@ -25,6 +25,12 @@ export class KnowledgeServiceAdapter {
     return this.client.listDocuments(payload);
   }
 
+  async readDoc(agentId: string, docId: string) {
+    const knowledgeId = await this.ensureKnowledgeForAgent(agentId);
+    const payload = C.methods['readDocument'].payload.parse({ knowledgeId, docId });
+    return this.client.readDocument(payload);
+  }
+
   async removeDoc(agentId: string, docId: string) {
     const knowledgeId = await this.ensureKnowledgeForAgent(agentId);
     const payload = C.methods['removeDocument'].payload.parse({ knowledgeId, docId });

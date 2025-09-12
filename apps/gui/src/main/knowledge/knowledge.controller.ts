@@ -45,6 +45,13 @@ export class KnowledgeController {
     return this.svc.listDocuments(payload);
   }
 
+  @MessagePattern('knowledge.read-document')
+  readDocument(
+    payload: z.infer<KMethods['readDocument']['payload']>
+  ): Promise<z.infer<KMethods['readDocument']['response']>> {
+    return this.svc.readDocument(payload);
+  }
+
   @MessagePattern('knowledge.index-all')
   indexAll(
     payload: z.infer<KMethods['indexAll']['payload']>
@@ -66,4 +73,3 @@ export class KnowledgeController {
     return this.svc.getStats(payload);
   }
 }
-

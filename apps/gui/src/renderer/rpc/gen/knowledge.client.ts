@@ -21,6 +21,9 @@ export class KnowledgeClient {
   listDocuments(payload: z.input<typeof C.methods['listDocuments']['payload']>) {
     return this.transport.request(C.methods['listDocuments'].channel, payload);
   }
+  readDocument(payload: z.input<typeof C.methods['readDocument']['payload']>) {
+    return this.transport.request(C.methods['readDocument'].channel, payload);
+  }
   indexAll(payload: z.input<typeof C.methods['indexAll']['payload']>) {
     return this.transport.request(C.methods['indexAll'].channel, payload);
   }
@@ -31,4 +34,3 @@ export class KnowledgeClient {
     return this.transport.request(C.methods['getStats'].channel, payload);
   }
 }
-

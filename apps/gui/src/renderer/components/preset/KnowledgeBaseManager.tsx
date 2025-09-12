@@ -987,7 +987,7 @@ export function KnowledgeBaseManager({
 
                       <ScrollArea className="h-[400px]">
                         <div className="whitespace-pre-wrap text-sm text-foreground">
-                          {selectedDocument.content}
+                          {selectedDocument.content || '—'}
                         </div>
                       </ScrollArea>
                     </Card>

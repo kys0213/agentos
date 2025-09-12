@@ -118,6 +118,28 @@ export class KnowledgeService {
     return { items, nextCursor: page.nextCursor, hasMore: !!page.nextCursor } as any;
   }
 
+  async readDocument(
+    payload: z.infer<KMethods['readDocument']['payload']>
+  ): Promise<z.infer<KMethods['readDocument']['response']>> {
+    const kb = await this.repo.get(payload.knowledgeId as any);
+    if (!kb) {
+      throw new Error('Knowledge not found');
+    }
+    const page = await kb.listDocs({});
+    const doc = page.items.find((d) => d.id === (payload.docId as any));
+    if (!doc) {
+      throw new Error('Document not found');
+    }
+    const content = doc.source?.kind === 'text' ? doc.source.text : '';
+    return {
+      id: doc.id,
+      title: doc.title,
+      tags: doc.tags ?? [],
+      content,
+      updatedAt: doc.updatedAt ?? doc.createdAt,
+    } as any;
+  }
+
   async indexAll(
     payload: z.infer<KMethods['indexAll']['payload']>
   ): Promise<z.infer<KMethods['indexAll']['response']>> {

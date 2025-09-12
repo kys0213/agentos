@@ -18,6 +18,14 @@ const DocumentSummary = z.object({
   updatedAt: z.coerce.date(),
 });
 
+const DocumentDetail = z.object({
+  id: z.string(),
+  title: z.string(),
+  tags: z.array(z.string()).default([]),
+  content: z.string(),
+  updatedAt: z.coerce.date(),
+});
+
 const Pagination = z.object({ cursor: z.string().optional(), limit: z.number().int().positive().optional() });
 
 export const KnowledgeContract = defineContract({
@@ -52,6 +60,11 @@ export const KnowledgeContract = defineContract({
         hasMore: z.boolean().default(false),
       }),
     },
+    'readDocument': {
+      channel: 'knowledge.read-document',
+      payload: z.object({ knowledgeId: KnowledgeId, docId: z.string() }),
+      response: DocumentDetail,
+    },
     'indexAll': {
       channel: 'knowledge.index-all',
       payload: z.object({ knowledgeId: KnowledgeId }),
@@ -74,4 +87,3 @@ export const KnowledgeContract = defineContract({
     },
   },
 });
-
