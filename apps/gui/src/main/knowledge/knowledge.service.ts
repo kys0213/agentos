@@ -4,10 +4,10 @@ import * as path from 'path';
 import * as fs from 'node:fs/promises';
 import {
   KnowledgeRepositoryImpl,
-  FileDocStore,
   Bm25SearchIndex,
   DefaultIndexSet,
 } from '@agentos/core/knowledge';
+import type { DocumentMapper, IndexRecord } from '@agentos/core/knowledge/indexing/interfaces';
 import type { z } from 'zod';
 import type { KnowledgeContract } from '../../shared/rpc/contracts/knowledge.contract';
 
@@ -22,16 +22,17 @@ export class KnowledgeService {
 
   constructor(env: ElectronAppEnvironment) {
     this.root = path.join(env.userDataPath, 'knowledge-store');
-    const makeIndexSet = (kbDir: string) =>
-      new DefaultIndexSet({
-        indexes: [new Bm25SearchIndex({ baseDir: path.join(kbDir, 'indexes', 'bm25') })],
-      });
+    // Simple mapper: index title + text content (fileRef not yet supported)
+    const mapper: DocumentMapper = {
+      async *toRecords(doc): AsyncIterable<IndexRecord> {
+        const text = doc.source.kind === 'text' ? doc.source.text : '';
+        yield { id: doc.id, fields: { title: doc.title, text } };
+      },
+    };
 
-    this.repo = new KnowledgeRepositoryImpl({
-      rootDir: this.root,
-      mapper: new FileDocStore({ baseDir: this.root }).getMapper(),
-      makeIndexSet,
-    });
+    const makeIndexSet = (_kbDir: string) => new DefaultIndexSet([new Bm25SearchIndex()]);
+
+    this.repo = new KnowledgeRepositoryImpl({ rootDir: this.root, mapper, makeIndexSet });
 
     this.agentMapFile = path.join(this.root, 'agent-knowledge.json');
   }
@@ -169,4 +170,3 @@ export class KnowledgeService {
     };
   }
 }
-

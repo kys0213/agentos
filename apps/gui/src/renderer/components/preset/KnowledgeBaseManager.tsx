@@ -140,6 +140,7 @@ export function KnowledgeBaseManager({
   const [availableTemplates, setAvailableTemplates] = useState<KnowledgeTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [knowledgeStats, setKnowledgeStats] = useState<PresetKnowledgeStats | null>(null);
+  const [searchResults, setSearchResults] = useState<Array<{ id: string; title: string; updatedAt: Date; tags: string[] }>>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const knowledge = ServiceContainer.get('knowledge');
@@ -1014,6 +1015,8 @@ export function KnowledgeBaseManager({
                       <Input
                         placeholder="Enter search query to test retrieval..."
                         className="flex-1"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                       />
                       <Select defaultValue="bm25">
                         <SelectTrigger className="w-40">
@@ -1025,7 +1028,29 @@ export function KnowledgeBaseManager({
                           <SelectItem value="hybrid">Hybrid</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button className="gap-2">
+                      <Button
+                        className="gap-2"
+                        onClick={async () => {
+                          if (!agentId || !knowledge || !searchQuery.trim()) {
+                            setSearchResults([]);
+                            return;
+                          }
+                          try {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const res: any = await knowledge.search(agentId, searchQuery, 20);
+                            const items = (res.items || []).map((d: any) => ({
+                              id: d.id,
+                              title: d.title,
+                              updatedAt: new Date(d.updatedAt),
+                              tags: Array.isArray(d.tags) ? d.tags : [],
+                            }));
+                            setSearchResults(items);
+                          } catch (e) {
+                            console.error('Search failed:', e);
+                            setSearchResults([]);
+                          }
+                        }}
+                      >
                         <Search className="w-4 h-4" />
                         Search
                       </Button>
@@ -1039,10 +1064,35 @@ export function KnowledgeBaseManager({
 
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Search Results</h3>
-                  <div className="text-center text-muted-foreground py-8">
-                    <Search className="w-12 h-12 mx-auto mb-4" />
-                    <p>Enter a search query above to see results</p>
-                  </div>
+                  {searchResults.length === 0 ? (
+                    <div className="text-center text-muted-foreground py-8">
+                      <Search className="w-12 h-12 mx-auto mb-4" />
+                      <p>Enter a search query above to see results</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {searchResults.map((r) => (
+                        <div key={r.id} className="flex items-center justify-between border rounded-md p-3">
+                          <div>
+                            <div className="font-medium">{r.title}</div>
+                            <div className="text-xs text-muted-foreground">
+                              Updated {r.updatedAt.toLocaleDateString()} • {r.tags.join(', ')}
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const doc = documents.find((d) => d.id === r.id);
+                              if (doc) setSelectedDocument(doc);
+                            }}
+                          >
+                            Open
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </Card>
               </div>
             </TabsContent>
@@ -1111,10 +1161,7 @@ export function KnowledgeBaseManager({
                           <span>Project ID:</span>
                           <span className="font-medium text-xs">{agentId}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Storage Key:</span>
-                          <span className="font-medium text-xs">{getStorageKey('documents')}</span>
-                        </div>
+                        {/* Storage details omitted after Core integration */}
                       </div>
                     </div>
 
