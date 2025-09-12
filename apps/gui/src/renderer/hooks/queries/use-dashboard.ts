@@ -116,6 +116,7 @@ export function useDashboardStats() {
       } satisfies DashboardStats;
     },
     staleTime: 30_000,
+    refetchInterval: 15_000,
   });
 }
 
