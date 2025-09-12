@@ -419,7 +419,10 @@ interface BridgeManifest {
 - [x] 컨트롤러 구현: Registry/Service 래핑 완료
 - [x] 어댑터: `McpServiceAdapter` 메서드 구현 완료(list/register/unregister/connect/disconnect/invoke/usage)
 - [x] GUI: `McpToolManager` 폴백 샘플 데이터 제거(Empty state 처리). 어댑터 연동 유지
-- [ ] 이벤트: `usage.events` 스트리밍(Observable/Emitter) 구현 및 렌더러 구독 훅 연결
+- [x] 이벤트: `usage.events` 스트리밍(Observable/Emitter) 구현 및 렌더러 구독 훅 연결
+  - 메인: OutboundChannel 기반 스트림 노출(`mcp.usage.events`) — stats.updated 이벤트 우선 구현
+  - 렌더러: `useMcpUsageStream` 훅 추가(최신 이벤트 구독)
+  - 주: 개별 log.created 페이로드는 추후 Core hook 노출 시 확장
 - [x] 사용량: `renderer/rpc/services/mcp-usage.service.ts` 제공(렌더러) — 화면 반영은 추가 필요
 
 **예상 난이도**: 중상 (Core 기능은 완비, 통합 작업만 필요)
