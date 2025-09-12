@@ -102,8 +102,10 @@ export function useDashboardStats() {
 
       const mcpSummary = mcpStats
         ? {
-            requests: (mcpStats as any)?.totalRequests ?? null,
-            tokens: (mcpStats as any)?.totalTokens ?? null,
+            // Core usage service returns totalUsage etc.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            requests: (mcpStats as any)?.totalUsage ?? null,
+            tokens: null,
           }
         : undefined;
 
@@ -119,4 +121,3 @@ export function useDashboardStats() {
     refetchInterval: 15_000,
   });
 }
-

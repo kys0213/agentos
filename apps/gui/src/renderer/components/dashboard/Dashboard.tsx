@@ -52,7 +52,10 @@ export function Dashboard({
         statsLoading || statsError || ds?.bridges.models == null
           ? '—'
           : String(ds.bridges.models),
-      change: '',
+      change:
+        statsLoading || statsError || ds?.bridges.total == null
+          ? ''
+          : `Bridges: ${ds.bridges.total}`,
       icon: Cpu,
       color: 'text-purple-600',
     },
@@ -190,6 +193,17 @@ export function Dashboard({
         </div>
       </div>
     );
+  }
+
+  // Optionally include MCP requests card if available
+  if (!statsLoading && !statsError && ds?.mcp?.requests != null) {
+    cards.push({
+      title: 'MCP Requests',
+      value: String(ds.mcp.requests),
+      change: '',
+      icon: Activity,
+      color: 'text-blue-600',
+    });
   }
 
   return (
