@@ -358,40 +358,63 @@ export function KnowledgeBaseManager({
       setIsUploading(true);
       setUploadProgress(0);
 
-      Array.from(files).forEach(async (file, index) => {
-        if (
-          file.type === 'text/markdown' ||
-          file.name.endsWith('.md') ||
-          file.type === 'text/plain'
-        ) {
-          const content = await file.text();
-          const newDoc: KnowledgeDocument = {
-            id: `${agentId}-doc-${Date.now()}-${index}`,
-            title: file.name.replace(/\.(md|txt)$/, ''),
-            content,
-            filename: file.name,
-            size: file.size,
-            type: file.name.endsWith('.md') ? 'markdown' : 'text',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            tags: [],
-            indexed: false,
-            vectorized: false,
-            agentId: agentId!,
-            agentName: agentName!,
-          };
-
-          setDocuments((prev) => [...prev, newDoc]);
-          setUploadProgress(((index + 1) / files.length) * 100);
+      (async () => {
+        const list = Array.from(files);
+        for (let index = 0; index < list.length; index++) {
+          const file = list[index];
+          try {
+            if (
+              file.type === 'text/markdown' ||
+              file.name.endsWith('.md') ||
+              file.type === 'text/plain'
+            ) {
+              const content = await file.text();
+              if (knowledge && agentId) {
+                await knowledge.addDoc(agentId, {
+                  title: file.name.replace(/\.(md|txt)$/, ''),
+                  content,
+                  tags: [],
+                });
+              }
+            }
+          } catch (e) {
+            console.error('Upload failed for', file.name, e);
+          } finally {
+            setUploadProgress(((index + 1) / list.length) * 100);
+          }
         }
-      });
 
-      setTimeout(() => {
-        setIsUploading(false);
-        setUploadProgress(0);
-      }, 1000);
+        // Refresh list from Core after upload
+        try {
+          if (knowledge && agentId) {
+            const page = await knowledge.listDocs(agentId, { limit: 100 });
+            const next: KnowledgeDocument[] = page.items.map((d) => ({
+              id: d.id,
+              title: d.title,
+              content: '',
+              filename: undefined,
+              size: 0,
+              type: 'markdown',
+              createdAt: new Date(d.updatedAt),
+              updatedAt: new Date(d.updatedAt),
+              tags: d.tags ?? [],
+              chunks: [],
+              indexed: false,
+              vectorized: false,
+              agentId: agentId ?? '',
+              agentName: agentName ?? '',
+              isTemplate: false,
+            }));
+            setDocuments(next);
+          }
+        } finally {
+          setIsUploading(false);
+          setUploadProgress(0);
+          await calculateKnowledgeStats();
+        }
+      })();
     },
-    [agentId, agentName]
+    [agentId, agentName, knowledge, calculateKnowledgeStats]
   );
 
   const handleDrop = useCallback(
