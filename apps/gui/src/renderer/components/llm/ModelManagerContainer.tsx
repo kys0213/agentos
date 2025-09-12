@@ -6,6 +6,7 @@ import {
   useCurrentBridge,
   useInstalledBridges,
   useSwitchBridge,
+  useRegisterBridge,
 } from '../../hooks/queries/use-bridge';
 import { toCapabilityLabels } from '../../hooks/queries/normalize';
 
@@ -23,6 +24,7 @@ export const ModelManagerContainer: React.FC<ModelManagerContainerProps> = ({ re
   const { data: installed = [], isLoading } = useInstalledBridges();
   const { data: current } = useCurrentBridge();
   const switchBridge = useSwitchBridge();
+  const registerBridge = useRegisterBridge();
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: BRIDGE_QK.bridgeIds });
@@ -51,12 +53,18 @@ export const ModelManagerContainer: React.FC<ModelManagerContainerProps> = ({ re
     handleRefresh();
   };
 
+  const onRegister = async (manifest: any) => {
+    await registerBridge.mutateAsync(manifest);
+    handleRefresh();
+  };
+
   return (
     <ModelManager
       items={items}
       isLoading={isLoading}
       onRefresh={handleRefresh}
       onSwitch={onSwitch}
+      onRegister={onRegister}
     />
   );
 };
