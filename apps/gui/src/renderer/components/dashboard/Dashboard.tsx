@@ -1,6 +1,7 @@
 import type { AgentMetadata, Preset } from '@agentos/core';
 import { Activity, Bot, Cpu, Layers, MessageSquare } from 'lucide-react';
 import { useDashboardStats } from '../../hooks/queries/use-dashboard';
+import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -21,13 +22,15 @@ export function Dashboard({
   onCreateAgent,
 }: DashboardProps) {
   const { data: ds, isLoading: statsLoading, isError: statsError } = useDashboardStats();
+  const qc = useQueryClient();
+  const retry = () => qc.invalidateQueries({ queryKey: ['dashboard','stats'] });
   // Real-time stats from actual data (with graceful fallbacks)
   const cards = [
     {
       title: 'Active Chats',
       value:
         statsLoading || statsError || ds?.activeChats == null ? '—' : String(ds.activeChats),
-      change: '+2 from yesterday',
+      change: statsLoading || statsError ? '' : (ds?.meta.chatsOk ? '+2 from yesterday' : 'Error • Retry'),
       icon: MessageSquare,
       color: 'text-blue-600',
     },
@@ -42,7 +45,7 @@ export function Dashboard({
       change:
         statsLoading || statsError
           ? `${currentAgents.filter((a) => a.status === 'active').length} active`
-          : `${ds?.agents.active ?? '—'} active`;
+          : (ds?.meta.agentsOk ? `${ds?.agents.active ?? '—'} active` : 'Error • Retry');
       icon: Bot,
       color: 'text-green-600',
     },
@@ -55,7 +58,7 @@ export function Dashboard({
       change:
         statsLoading || statsError || ds?.bridges.total == null
           ? ''
-          : `Bridges: ${ds.bridges.total}`,
+          : (ds?.meta.bridgesOk ? `Bridges: ${ds.bridges.total}` : 'Error • Retry'),
       icon: Cpu,
       color: 'text-purple-600',
     },
@@ -70,7 +73,7 @@ export function Dashboard({
       change:
         statsLoading || statsError
           ? `${presets.filter((p) => p.usageCount && p.usageCount > 0).length} in use`
-          : `${ds?.presets.inUse ?? 0} in use`,
+          : (ds?.meta.presetsOk ? `${ds?.presets.inUse ?? 0} in use` : 'Error • Retry'),
       icon: Layers,
       color: 'text-orange-600',
     },
@@ -81,7 +84,7 @@ export function Dashboard({
     cards.push({
       title: 'MCP (24h)',
       value: String(ds.mcp24h.requests),
-      change: '',
+      change: ds.meta.mcpOk ? '' : 'Error • Retry',
       icon: Activity,
       color: 'text-blue-600',
     });
@@ -205,7 +208,7 @@ export function Dashboard({
     cards.push({
       title: 'MCP Requests',
       value: String(ds.mcp.requests),
-      change: '',
+      change: ds.meta.mcpOk ? '' : 'Error • Retry',
       icon: Activity,
       color: 'text-blue-600',
     });
@@ -231,7 +234,14 @@ export function Dashboard({
                 <div>
                   <p className="text-sm text-muted-foreground">{stat.title}</p>
                   <p className="text-2xl font-semibold">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">{stat.change}</p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{stat.change}</span>
+                    {!statsLoading && !statsError && String(stat.change).includes('Retry') && (
+                      <Button variant="outline" size="sm" onClick={retry} className="h-7 px-2">
+                        Retry
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <Icon className={`w-8 h-8 ${stat.color}`} />
               </div>

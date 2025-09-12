@@ -8,6 +8,14 @@ type DashboardStats = {
   presets: { total: number | null; inUse: number | null };
   mcp?: { requests?: number | null; tokens?: number | null };
   mcp24h?: { requests?: number | null };
+  meta: {
+    agentsOk: boolean;
+    bridgesOk: boolean;
+    chatsOk: boolean;
+    presetsOk: boolean;
+    mcpOk: boolean;
+    mcpHourlyOk: boolean;
+  };
 };
 
 const QK = {
@@ -129,6 +137,14 @@ export function useDashboardStats() {
         presets: { total: presetsTotal, inUse: presetsInUse },
         mcp: mcpSummary,
         mcp24h: { requests: (mcpHourly as number | null) ?? null },
+        meta: {
+          agentsOk: !!agentsRes,
+          bridgesOk: !!bridgesRes,
+          chatsOk: chatsRes !== null,
+          presetsOk: !!presetsRes,
+          mcpOk: !!mcpStats,
+          mcpHourlyOk: mcpHourly !== null,
+        },
       } satisfies DashboardStats;
     },
     staleTime: 30_000,
