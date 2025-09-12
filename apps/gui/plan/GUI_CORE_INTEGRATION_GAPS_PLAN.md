@@ -316,6 +316,30 @@ interface BridgeManifest {
 
 ## 작업 항목
 
+### 작업 상태 범례
+
+- ✅ **완료**: 구현 완료
+- 🟡 **진행 가능**: Core 기능 존재, GUI 작업만 필요
+- 🚧 **차단됨**: Core 의존성으로 인해 진행 불가
+- 🤔 **결정 필요**: 아키텍처/설계 결정 필요
+- ❓ **불명확**: 요구사항 자체가 불명확
+
+### 작업 요약
+
+| 작업                      | 상태        | 난이도   | 차단 사유 / 비고         |
+| ------------------------- | ----------- | -------- | ------------------------ |
+| 작업 1: RPC 구조          | ✅ 완료     | -        | -                        |
+| 작업 2: Agent 생성 마법사 | 🟡 부분완료 | 중간     | 5단계 마법사 진행, AI Config 부분완료 |
+| 작업 3: MCP 도구 관리     | 🟡 부분완료 | 중간     | Core/컨트롤러/어댑터 구현됨, 스트림/매니저 연동 일부 남음 |
+| 작업 4: Knowledge Base    | 🤔 결정필요 | 중상     | Core Agent 변경 필요     |
+| 작업 5: Chat History      | ✅ 완료     | -        | -                        |
+| 작업 6: 카테고리/키워드   | 🟡 진행가능 | 낮음     | GUI 전용 작업            |
+| 작업 7: Bridge 등록 UI    | 🟡 진행가능 | 중간     | GUI 작업                 |
+| 작업 8: Dashboard 통계    | 🟡 진행가능 | 중간     | 기존 API 조합 가능       |
+| 작업 9: Multi-Agent       | 🟡 진행가능 | 높음     | Orchestrator 활용 가능   |
+| 작업 10: Tool Builder     | 🟡 진행가능 | 중간     | Built-in Tools로 전환    |
+| 작업 11: RACP             | 🗑️ 제거     | -        | 향후 재검토              |
+
 ### 작업 1: RPC 기반 구조 구축 ✅ **완료**
 
 **현황**:
@@ -332,14 +356,13 @@ interface BridgeManifest {
 - [x] 메시지 영속성을 위한 AgentService 연동
 - [x] 타입 안전성 및 에러 처리 구현
 
-### 작업 2: Agent 생성 4단계 마법사
+### 작업 2: Agent 생성 5단계 마법사
 
 **현황**:
 
-- Preset 메뉴가 제거되고 Agent 생성이 4단계 프로세스로 변경됨
-- Agent 생성 단계: Overview → Category → AI Config → Settings
-- AI Config 단계에서 모델 선택이 하드코딩됨
-- 실제 설치 브릿지/manifest를 노출하지 않음
+- 실제 구현은 5단계: Overview → Category → Preset → AI Config → Settings (`SubAgentCreate.tsx`)
+- AI Config의 하드코딩 제거 및 동적 브릿지/모델 연동은 진행됨
+- 설치된 브릿지는 `bridge.list`(ID) + `bridge.get-config` 조합으로 로드하여 모델을 표시함
 
 **디자인 분석 (Figma)**:
 
@@ -350,53 +373,93 @@ interface BridgeManifest {
 
 **작업 내용**:
 
-- [ ] AgentCreate 4단계 마법사 UI 구현
-- [ ] Overview 탭: 기본 정보 입력 폼
+- [ ] AgentCreate 5단계 마법사 UI 정합성 확인(Overview/Category/Preset/AI Config/Settings)
+- [ ] Overview 탭: 기본 정보 입력 폼(검증 포함)
 - [ ] Category 탭: 카테고리 카드 선택 UI (6개 카테고리)
+- [ ] Preset 탭: 프리셋 선택/미리보기(현재 유지, 추후 제거 여부 결정)
 - [x] AI Config 탭: ✅ **부분 완료**
-  - [x] **하드코딩된 모델 목록 제거** (현재: gpt-4o, gpt-4o-mini, claude-3-5-sonnet) ✅
-  - [x] BridgeContract.list() 호출하여 설치된 Bridge 목록 조회 ✅
-  - [x] Bridge 선택 드롭다운 추가 ✅
-  - [x] 선택된 Bridge의 manifest.models 표시 ✅
-  - [x] Bridge별 동적 파라미터 UI 생성 (현재 공통 파라미터만 지원) ✅
-  - [x] PresetModelSettings → BridgeModelSettings로 교체 ✅
-  - [ ] 시스템 프롬프트 텍스트에어리어 (기존 구현 활용)
-  - [x] 공통 파라미터 슬라이더 (Temperature, Max Tokens, Top P) ✅
+  - [x] 하드코딩된 모델 목록 제거 ✅
+  - [x] 브릿지/모델 동적 로딩: `useInstalledBridges`(ID 목록 + 개별 config) 훅 기반 ✅
+  - [x] Bridge 선택/모델 선택 UI ✅
+  - [x] Bridge별 동적 파라미터 UI(현재 공통 파라미터) ✅
+  - [ ] 시스템 프롬프트 텍스트에어리어(기존 구현 연계)
   - [ ] MCP 도구 선택 카드 동적 로딩
 - [ ] Settings 탭: 상태 선택 드롭다운
 - [ ] Export/Import 기능 구현
 
-### 작업 3: MCP 도구 관리/연결
+참고:
+- 기존 문서의 “BridgeModelSettings” 컴포넌트 언급은 현재 소스에 존재하지 않으며, 훅 기반(`hooks/queries/use-bridge.ts`) + `ModelManager*` 조합으로 대체됨. 문서 용어를 훅 기반 접근으로 정정함.
+- `useAIConfigurations.ts`는 `BridgeServiceAdapter.listInstalled()`를 가정하나 실제 어댑터에는 없음. `use-bridge` 훅으로 교체 또는 훅 시그니처 수정 필요(TODO 추가).
+
+### 작업 3: MCP 도구 관리/연결 🟡 **부분 완료** (Core/어댑터 구현)
 
 **현황**:
 
-- `McpServiceAdapter` 대부분 placeholder(`getAllMcp/connectMcp/disconnectMcp` 미구현)
-- `MCPToolsManager`는 실패 시 샘플 데이터로 폴백
+- ✅ Core MCP Registry/Service/Repository/Usage 레이어 완비 (`packages/core/src/tool/mcp/*`)
+- ✅ Main 프로세스 API: `apps/gui/src/main/mcp/{mcp.controller.ts,mcp.api.module.ts,mcp.service.ts}`
+- ✅ Renderer 어댑터: `apps/gui/src/renderer/rpc/adapters/mcp.adapter.ts`에 목록/등록/해제/연결/호출/사용량 구현
+- 🟡 이벤트 스트림(`usage.events`)은 컨트롤러에서 미구현(TODO)
+- 🟡 GUI 매니저 컴포넌트는 `McpToolManager.tsx`(단수 명칭)로 존재하며, 실패 시 샘플 데이터 폴백 로직 유지
+
+**발견된 Core 기능**:
+
+- ✅ `McpRegistry`: MCP 연결 관리 (register/unregister/get/getTool)
+- ✅ `McpMetadataRegistry`: 메타데이터와 실제 MCP 통합 관리
+- ✅ `McpToolRepository`: 도구 메타데이터 영속화
+- ✅ `McpService`: MCP 서비스 계층
+- ✅ 사용량 추적: `McpUsageService`, `McpUsageRepository`
+- ✅ 이벤트 기반 아키텍처 완비
+
+**구현 가능 여부**: ✅ 즉시 가능(스트림/폴백 제거 등 남음)
 
 **작업 내용**:
 
-- [ ] 계약: `McpRegistryContract` 추가(도구 목록/연결/해제)
-- [ ] 서버: main/mcp 모듈에 Registry service 바인딩 및 컨트롤러 추가
-- [ ] 어댑터: `McpServiceAdapter`에 list/connect/disconnect 메서드 구현
-- [ ] GUI: `MCPToolsManager` 데이터 로딩을 실제 계약으로 교체
-- [ ] 사용량: `setUsageTracking` 채널 불일치 수정
+- [x] 계약: `McpContract` 정의/사용(목록/등록/해제/연결/호출/사용량)
+- [x] Main 바인딩: `McpApiModule` 통해 서비스/컨트롤러 연결
+- [x] 컨트롤러 구현: Registry/Service 래핑 완료
+- [x] 어댑터: `McpServiceAdapter` 메서드 구현 완료(list/register/unregister/connect/disconnect/invoke/usage)
+- [x] GUI: `McpToolManager` 폴백 샘플 데이터 제거(Empty state 처리). 어댑터 연동 유지
+- [ ] 이벤트: `usage.events` 스트리밍(Observable/Emitter) 구현 및 렌더러 구독 훅 연결
+- [x] 사용량: `renderer/rpc/services/mcp-usage.service.ts` 제공(렌더러) — 화면 반영은 추가 필요
 
-### 작업 4: Knowledge Base(문서) — 로컬스토리지 → Core API
+**예상 난이도**: 중상 (Core 기능은 완비, 통합 작업만 필요)
+
+### 작업 4: Knowledge Base(문서) — 로컬스토리지 → Core API 🤔 **설계 결정 필요**
 
 **현황**:
 
 - `KnowledgeBaseManager`는 localStorage 기반
 - Core Knowledge 인덱싱 아키텍처 구현 완료
+- agentId → knowledgeId 매핑 필요
+
+**리뷰 피드백 반영**:
+
+- 🔍 **"agent별 knowledge 매핑은 GUI가 아닌 Core의 agent가 지원해야 맞는 것 같다"**
+- ✅ 타당한 지적: Agent와 Knowledge의 관계는 Core 레벨에서 관리되어야 함
+- 현재 Core의 Agent 인터페이스에는 Knowledge 연결이 없음
+
+**필요한 Core 변경사항**:
+
+1. Agent 메타데이터에 `knowledgeId` 필드 추가
+2. AgentService에서 Agent 생성 시 Knowledge 자동 생성
+3. Agent API에 Knowledge 접근 메서드 추가
+
+**구현 방향**:
+
+- **Option A**: Core Agent 변경을 기다림 (권장)
+- **Option B**: GUI에서 임시 매핑 관리 (기술 부채)
 
 **작업 내용**:
 
-- [ ] 계약: `KnowledgeContract` 정의 (Core 타입 재사용)
+- [x] 계약: `KnowledgeContract` 정의 (스켈레톤 추가: `apps/gui/src/shared/rpc/contracts/knowledge.contract.ts`)
 - [ ] 파사드: `KnowledgeFacade` 구현 (agentId → knowledgeId 매핑)
 - [ ] 마이그레이션: localStorage → FileDocStore 헬퍼 구현
 - [ ] GUI 컴포넌트: `KnowledgeBaseManager` 전면 개편
 - [ ] 성능 최적화: `allDocs({ chunkSize })` 활용
 - [ ] 에러 핸들링: 인덱싱 실패 시 retry 정책
 - [ ] LLM 통합: 자동 태그 생성, 문서 요약
+
+**예상 난이도**: 중상 (복잡한 매핑 로직)
 
 ### 작업 5: 채팅 히스토리/세션 연동 ✅ **완료**
 
@@ -405,14 +468,15 @@ interface BridgeManifest {
 - ~~`useChatHistory` 없음, `useChatState`만 존재~~
 - ~~ChatHistory 컴포넌트에 pin/archive UI는 있으나 기능 없음~~
 
-**완료된 내용** (2025-01-11):
+**완료된 내용** (2025-01-11 업데이트 반영):
 
 - [x] 새로운 `useChatHistory` 훅 생성 (Core API 연동) ✅
 - [x] `use-chat-sessions` 훅 추가 (세션 목록, 삭제 기능) ✅
 - [x] GUI 전용 상태 관리: GuiChatState (localStorage) ✅
 - [x] Pin/Archive 로직은 GUI 레이어에서만 관리 ✅
 - [x] Core 세션 데이터와 GUI 상태 동기화 구조 설계 ✅
-- [ ] ChatHistory UI 컴포넌트를 세션 기반으로 업데이트 (진행 예정)
+- [x] ChatHistory UI를 세션 기반 컴포넌트로 업데이트
+  - `SessionBasedChatHistory.tsx`, `SessionBasedChatView*.tsx` 적용
 
 ### 작업 6: 에이전트 생성 — 카테고리/키워드 정합
 
@@ -437,28 +501,69 @@ interface BridgeManifest {
 **작업 내용**:
 
 - [ ] 등록 다이얼로그: manifest 입력(JSON/file)
-- [ ] `useRegisterBridge` 호출 연동
+- [ ] `BridgeServiceAdapter.registerBridge` 연동(현재 어댑터 메서드 존재)
+- [ ] `useInstalledBridges` 재검증 및 등록 후 캐시 무효화 처리
 - [ ] 에러 처리/검증
 
-### 작업 8: Dashboard 통계 — 실시간 데이터
+### 작업 8: Dashboard 통계 — 실시간 데이터 🟡 **진행 가능** (기존 API 활용)
 
 **현황**:
 
 - Active Chats: '3', Models: '5' 등 하드코딩
 - 실시간 통계 API 없음
 
+**리뷰 피드백 반영**:
+
+- 🔍 **"이미 등록된 상태 정보들을 보여주는 거니까 꼭 core에 필요한가?"**
+- ✅ 타당한 지적: 각 기능별 조회 API를 조합하면 충분
+- Core에 별도 메트릭 서비스를 만드는 것은 성급할 수 있음
+
+**활용 가능한 기존 API**:
+
+- AgentService: 에이전트 수, 상태별 카운트
+- BridgeService: 설치된 Bridge/Model 수
+- ConversationService: 활성 채팅 수
+- PresetService: Preset 통계
+- MCP 관련: 연결된 도구 수 (McpMetadataRegistry)
+
+**구현 가능 여부**: ✅ 즉시 가능
+
 **작업 내용**:
 
-- [ ] SystemStatsContract 정의
-- [ ] 메트릭 수집 서비스 구현
-- [ ] Dashboard 실시간 업데이트
+- [ ] 각 서비스 어댑터 조합으로 통계 구성(agents/bridges/models/sessions/presets/mcp usage)
+- [ ] `Dashboard.tsx`의 하드코딩 지표 제거(Active Chats/Models 등)
+- [x] 질의 훅 작성 및 캐싱 정책 설정 (`use-dashboard.ts` 추가)
+- [x] 1차 적용: `Dashboard.tsx`에 Active Chats/Models 실데이터 반영
+- [ ] Dashboard에서 여러 API 조합하여 통계 표시
+- [ ] 주기적 업데이트 (폴링 방식)
+- [ ] 캐싱 전략으로 성능 최적화
 
-### 작업 9: Message Mentions — Multi-Agent 협업
+**예상 난이도**: 중간
+
+### 작업 9: Message Mentions — Multi-Agent 협업 🟡 **진행 가능** (Orchestrator 활용)
 
 **현황**:
 
 - `MessageInputWithMentions`에서 멘션 UI는 있으나
 - 멘션된 에이전트들에게 메시지 전달 로직 없음
+
+**리뷰 피드백 반영**:
+
+- 🔍 **"packages/src/orchestrator를 활용하는 agent만 구현하면 될 듯한데"**
+- ✅ **Core에 Orchestrator 존재 확인** (`packages/core/src/orchestrator/router/`)
+
+**발견된 Core 기능**:
+
+- ✅ `RouterEngine`: Agent 라우팅 및 순위 결정
+- ✅ 전략 패턴: BM25, Mention, Keyword 등 다양한 전략
+- ✅ `aggregateResults`: 여러 전략 점수 집계
+- ✅ `rankCandidates`: Agent 우선순위 결정
+
+**구현 방향**:
+
+- Orchestrator를 활용하는 "Multi-Agent Coordinator" Agent 생성
+- 멘션된 에이전트들을 RouterEngine으로 처리
+- 응답 병합은 Coordinator Agent가 담당
 
 **작업 내용**:
 
@@ -468,29 +573,67 @@ interface BridgeManifest {
 - [ ] 응답 병합 전략 (순차/병렬)
 - [ ] UI: 멀티 에이전트 응답 구분 표시
 
-### 작업 10: Tool Builder vs MCP 통합
+**예상 난이도**: 높음 (Orchestrator 활용으로 단순화)
+
+### 작업 10: Tool Builder — Built-in Tools 관리 🟡 **진행 가능**
 
 **현황**:
 
 - `ToolBuilder`는 커스텀 도구 개념
 - MCP와 별개로 존재
 
+**리뷰 피드백 반영**:
+
+- 🔍 **"MCP와 유사하지만 내부에서 제공하는 일종의 built-in tool"**
+- ✅ **명확한 차별화**: 실행환경에 따른 고유한 내부 도구
+- 예시: Electron webview 검색, 파일 시스템 접근 등
+- 장기 계획: GraphRAG, 대화 분석 기반 도구 자동 생성
+
+**Core에 발견된 기능**:
+
+- ✅ `BuiltinTool` 인터페이스 (`packages/core/src/tool/builtin/`)
+- ✅ `BuiltinToolManager` 클래스
+
+**구현 방향**:
+
+- Tool Builder를 Built-in Tool 생성/관리 UI로 전환
+- Electron 환경 특화 도구 구현
+- MCP와 명확히 구분되는 UI/UX 제공
+
 **작업 내용**:
 
-- [ ] 커스텀 도구를 MCP로 통합할지 결정
-- [ ] 별도 유지 시 CustomToolContract 정의
-- [ ] 도구 생성/테스트 API
+- [ ] BuiltinTool Contract 정의
+- [ ] Electron 특화 도구 구현 (webview 검색 등)
+- [ ] Tool Builder UI를 Built-in Tool 관리로 개편
+- [ ] 도구 생성/편집/테스트 워크플로우
 
-### 작업 11: RACP Manager
+**예상 난이도**: 중간
+
+### 작업 11: RACP Manager 🗑️ **제거 권장**
 
 **현황**:
 
 - 로드맵만 표시하는 placeholder
+- RACP(Remote Agent Communication Protocol) 정의 없음
+
+**리뷰 피드백 반영**:
+
+- 🔍 **"당장은 제거해도 좋을 것 같다"**
+- **RACP 개념 설명**: 고비용 GPU 리소스 없을 때 스케일아웃 용도
+- 관리자가 여러 노트북을 연결하여 병렬 작업 처리
+- 원격 질의 및 결과 전달 아키텍처
+
+**향후 방향**:
+
+- 현재는 제거하고 향후 요구사항이 명확해지면 재검토
+- 분산 처리가 필요한 시점에 아키텍처 설계
 
 **작업 내용**:
 
-- [ ] RACP 구현 여부 결정
-- [ ] 제거 또는 실제 구현
+- [x] RACPManager 컴포넌트 제거
+- [x] 메뉴에서 RACP 항목 제거
+
+**예상 난이도**: 없음 (제거만 필요)
 
 ## 구현 계획
 
@@ -585,26 +728,173 @@ interface BridgeManifest {
    - 직관적인 카테고리/키워드 매핑
    - 매끄러운 멀티 에이전트 멘션 UX
 
+## 리뷰 반영 주요 발견사항 (2025-01-11)
+
+### Core 기능 재발견
+
+1. **MCP 완전 구현 존재**
+   - `McpRegistry`, `McpMetadataRegistry`, `McpService` 등 완전한 구조
+   - 사용량 추적, 이벤트 기반 아키텍처 포함
+   - GUI 통합만 필요한 상태
+
+2. **Orchestrator 존재**
+   - Multi-Agent 협업을 위한 Router/Engine 구현
+   - 다양한 전략 패턴 지원
+   - GUI에서 활용만 하면 됨
+
+3. **Built-in Tools 지원**
+   - MCP와 별개의 내부 도구 시스템
+   - Electron 환경 특화 가능
+
+### 아키텍처 개선 사항
+
+1. **Knowledge ↔ Agent 연결**
+   - Core Agent 레벨에서 관리되어야 함
+   - GUI 매핑은 임시방편일 뿐
+
+2. **Dashboard 통계**
+   - 별도 메트릭 서비스 불필요
+   - 기존 API 조합으로 충분
+
+3. **RACP 개념 정리**
+   - GPU 리소스 없을 때 스케일아웃
+   - 당장 제거, 향후 재검토
+
 ## 구현 완료 내역 (2025-01-11)
 
 ### 1. ChatService 및 RPC 구조 구현
+
 - Core의 `FileBasedChatManager`를 활용한 ChatService 구현
 - ChatController를 실제 구현으로 교체 (stub 제거)
 - 메시지 영속성을 위한 AgentService 연동
 - Message → MessageHistory 타입 변환 처리
 
 ### 2. Chat History Core API 연동
+
 - `useChatHistory` 훅 생성 - Core API와 연동
 - `use-chat-sessions` 훅 추가 - 세션 목록, 삭제 기능
 - ConversationServiceAdapter 활용한 페이지네이션 처리
 - GUI 전용 상태(pin/archive) localStorage 관리 구조
 
 ### 3. AI Config 동적 Bridge 설정
-- BridgeModelSettings 컴포넌트 새로 생성
+
+- 훅 기반 설계로 전환: `hooks/queries/use-bridge.ts` 활용
 - 하드코딩된 모델 목록 완전 제거 (gpt-4o, gpt-4o-mini, claude-3-5-sonnet)
-- BridgeServiceAdapter를 활용한 동적 Bridge 로딩
-- Bridge manifest 기반 모델 선택 UI
-- PresetForm, PresetDetail에서 BridgeModelSettings 사용
+- BridgeServiceAdapter를 통한 동적 Bridge/Manifest 로딩(`getBridgeIds` + `getBridgeConfig`)
+- Bridge manifest 기반 모델 선택 UI 구현
+- 모델/브릿지 관리는 `ModelManager*.tsx` 중심으로 구성
+
+## 레포 구조 매핑 (Source of Truth)
+
+- Core Chat: `packages/core/src/chat/file/file-based-chat.manager.ts`
+- Core MCP: `packages/core/src/tool/mcp/{mcp.ts,mcp.registery.ts,mcp-service.ts,...}`
+- Core Orchestrator: `packages/core/src/orchestrator/router/*`
+- GUI Main(API): `apps/gui/src/main/{chat,bridge,mcp}/*`
+- GUI Contracts: `apps/gui/src/shared/rpc/contracts/{chat,agent,bridge,mcp}.contract.ts`
+- GUI RPC 어댑터: `apps/gui/src/renderer/rpc/adapters/{conversation,agent,bridge,mcp}.adapter.ts`
+- GUI MCP 매니저: `apps/gui/src/renderer/components/mcp/McpToolManager.tsx`
+- GUI 대시보드: `apps/gui/src/renderer/components/dashboard/Dashboard.tsx`
+- GUI 지식베이스(현행): `apps/gui/src/renderer/components/preset/KnowledgeBaseManager.tsx`(localStorage 기반)
+
+주의: Core MCP 레지스트리 파일명은 `mcp.registery.ts`로 표기되어 있으며 철자에 유의 필요.
+
+## 추가 TODO 정리
+
+- [ ] Knowledge 계약/모듈/어댑터 추가: `knowledge.contract.ts` → Main API → Renderer 어댑터/훅 → GUI 마이그레이션
+- [ ] `McpToolManager` 폴백 샘플 데이터 제거 및 어댑터 연동 완성
+- [ ] 대시보드 지표 실데이터화(어댑터 조합) 및 하드코딩 제거
+- [ ] `useAIConfigurations.ts`를 `use-bridge` 훅 기반으로 교체 또는 시그니처 수정
+
+---
+
+## 실행 계획 상세 (Dashboard/Knowledge/MCP)
+
+### A. Dashboard 지표 수집 훅 (하드코딩 제거)
+
+목표:
+- `Dashboard.tsx`의 하드코딩 지표(Active Chats/Models 등)를 실데이터로 전환.
+
+파일/구조:
+- 새 훅: `apps/gui/src/renderer/hooks/queries/use-dashboard.ts`
+  - `useDashboardStats()`
+    - 데이터 소스 조합: 
+      - Agents: `AgentServiceAdapter.getAllAgentMetadatas()`
+      - Bridges/Models: `BridgeServiceAdapter.getBridgeIds()` + `getBridgeConfig(id)`
+      - Chats: `ConversationServiceAdapter.listSessions(pagination?)`
+      - Presets: `PresetServiceAdapter.getAllPresets()`
+      - MCP Usage: `McpUsageRpcService.getUsageStats()`
+    - 쿼리 키: `['dashboard','stats']`, `staleTime: 10_000 ~ 60_000ms`
+    - 반환 타입 예시:
+      - `{ activeChats: number; agents: { total: number; active: number }; bridges: { total: number; models: number }; presets: { total: number; inUse: number }; mcp?: { requests?: number; tokens?: number } }`
+  - `useDashboardActivity()` (초기 버전 간단 구현) 
+    - 최근 활동: 에이전트/프리셋 기반 메시지 생성 → 추후 실제 이벤트 연동
+
+적용:
+- `apps/gui/src/renderer/components/dashboard/Dashboard.tsx`에서 상기 훅 사용으로 하드코딩 제거
+
+수용 기준:
+- 로딩/성공/에러 상태 구분 렌더링
+- 최소 4개 지표(Active Chats/Agents/Models/Presets) 실데이터 표시
+- 새 훅 유닛 테스트: 빈 상태/에러 상태 처리
+
+비고:
+- 정확한 세션 수 집계를 위해 필요 시 `chat.countSessions` API를 별도 PR로 제안(선택)
+
+### B. Knowledge 계약 스켈레톤 (localStorage → Core API)
+
+목표:
+- `KnowledgeBaseManager.tsx`의 localStorage 의존 제거를 위한 RPC 골격 추가. 초기엔 임시 매핑(knowledgeId = agentId)로 운영.
+
+계약/메인/어댑터/훅:
+- 계약(신규): `apps/gui/src/shared/rpc/contracts/knowledge.contract.ts`
+  - 메서드(초안):
+    - `createForAgent`: `{ agentId } → { knowledgeId }`
+    - `getByAgent`: `{ agentId } → { knowledgeId|null }`
+    - `addDocument`: `{ knowledgeId, doc: { title, content, tags[] } } → { docId }`
+    - `removeDocument`: `{ knowledgeId, docId } → { success }`
+    - `listDocuments`: `{ knowledgeId, cursor?, limit? } → { items, nextCursor?, hasMore }`
+    - `indexAll`: `{ knowledgeId } → { success }`
+    - `search`: `{ knowledgeId, query, limit? } → { items }`
+    - `getStats`: `{ knowledgeId } → { totalDocuments, totalChunks, lastUpdated, storageSize }`
+- 메인(API):
+  - `apps/gui/src/main/knowledge/knowledge.api.module.ts`
+  - `apps/gui/src/main/knowledge/knowledge.controller.ts`
+  - `apps/gui/src/main/knowledge/knowledge.service.ts`
+  - Core의 `packages/core/src/knowledge/indexing/*` 사용, 임시 매핑: `knowledgeId = agentId`
+- 렌더러:
+  - 어댑터: `apps/gui/src/renderer/rpc/adapters/knowledge.adapter.ts`
+  - 훅: `apps/gui/src/renderer/hooks/queries/use-knowledge.ts`
+    - `useKnowledge(agentId)`/`useKnowledgeDocuments(knowledgeId, pg?)`
+    - `useAddKnowledgeDocument`/`useRemoveKnowledgeDocument`/`useIndexAll`/`useKnowledgeStats`/`useKnowledgeSearch`
+
+마이그레이션 단계:
+1) 훅 주입(병행 모드) — localStorage + RPC 선택 가능
+2) CRUD/인덱싱/검색을 RPC로 대체
+3) localStorage 코드 제거 및 데이터 마이그레이션 검증
+
+수용 기준:
+- 계약 스키마(Zod) 유효성 검증
+- 기본 CRUD/인덱싱/검색/통계 happy path 동작
+- `KnowledgeBaseManager`가 훅을 통해 문서 목록/추가/삭제를 수행(병행 모드 OK)
+
+### C. McpToolManager 폴백 제거 (샘플 데이터 삭제)
+
+목표:
+- `McpToolManager.tsx`에서 샘플 데이터 폴백을 제거하고 실제 어댑터만 사용.
+
+대상/변경:
+- 대상 파일: `apps/gui/src/renderer/components/mcp/McpToolManager.tsx`
+- 목록 로딩: `McpServiceAdapter.listTools()`/`getAllToolMetadata()` 실패 시 폴백 대신 Empty state + 에러 메시지/재시도 버튼 표시
+- 연결/해제: `connectTool(id)`/`disconnectTool(id)`로 통일
+- 등록 플로우: 등록 다이얼로그 → `registerTool(payload)` → 성공 시 `connectTool(registered.id)` → 목록 invalidate
+- 사용량 표기: `McpUsageRpcService.getAllUsageLogs()`/`getUsageStats()` 적용(없으면 “No usage yet”)
+- ID/Name 정합성: 계약 스키마 기준, ID 없는 항목은 비활성 또는 제외
+- 이벤트: `usage.events` 구현 전까지는 수동 새로고침, 구현 후 구독 훅으로 전환
+
+수용 기준:
+- 폴백 데이터 제거됨
+- 에러/빈 상태 UI 정상 동작
+- 등록/연결/해제/새로고침 플로우 검증
 
 ## 주요 결정사항 (리뷰 반영)
 
@@ -628,28 +918,79 @@ interface BridgeManifest {
 
 ## 다음 단계 작업 목록
 
-### 우선순위 높음
-1. **Knowledge Base Core API 통합** (작업 4)
-   - KnowledgeContract 정의 및 구현
-   - localStorage → FileDocStore 마이그레이션
-   - KnowledgeFacade 구현 (agentId → knowledgeId 매핑)
+### 🟢 즉시 진행 가능 (Core 의존성 없음)
 
-2. **Agent 생성 4단계 마법사 완성** (작업 2)
-   - Overview, Category, Settings 탭 구현
-   - Export/Import 기능 구현
+#### 1. **Agent 생성 4단계 마법사 완성** (작업 2) - 우선순위: 높음
 
-3. **MCP 도구 관리/연결** (작업 3)
-   - McpRegistryContract 추가
-   - McpServiceAdapter 실제 구현
+- Overview, Category, Settings 탭 구현
+- Export/Import 기능 구현
+- **예상 소요 시간**: 3-4일
 
-### 우선순위 중간
-4. **ChatHistory UI 업데이트** 
-   - 현재 Agent 기반 → Session 기반으로 변경
-   - Pin/Archive 기능 실제 동작
+#### 2. **카테고리/키워드 정합** (작업 6) - 우선순위: 높음
 
-5. **Dashboard 통계 실시간화** (작업 8)
-   - SystemStatsContract 정의
-   - 하드코딩된 통계 제거
+- GUI 전용 카테고리 상수 구현
+- SubAgentCreate에 카테고리 선택 UI
+- **예상 소요 시간**: 1-2일
 
-6. **Multi-Agent 협업** (작업 9)
-   - 멘션 기능 실제 구현
+#### 3. **ChatHistory UI 업데이트** - 우선순위: 중간
+
+- Agent 기반 → Session 기반으로 변경
+- Pin/Archive 기능 실제 동작
+- **예상 소요 시간**: 2-3일
+
+### 🟡 진행 가능하나 복잡도 높음
+
+#### 4. **Knowledge Base Core API 통합** (작업 4) - 우선순위: 높음
+
+- KnowledgeContract 정의 및 구현
+- agentId → knowledgeId 매핑 파사드
+  // review: agent 별 knowledge 의 매핑은 gui 에서 할게 아니라 core 의 agent 가 지원해야 맞는거 같아.
+- localStorage 마이그레이션
+- **예상 소요 시간**: 1주
+
+#### 5. **Bridge 등록 UI** (작업 7) - 우선순위: 중간
+
+- Bridge manifest 입력 다이얼로그
+- 검증 및 에러 처리
+- **예상 소요 시간**: 2-3일
+
+### 🟡 진행 가능하나 복잡도 높음 (추가 발견)
+
+#### 6. **MCP 도구 관리** (작업 3) - 우선순위: 높음
+
+- Core에 완전한 MCP 기능 존재 확인
+- McpService/Registry 통합 작업 필요
+- **예상 소요 시간**: 4-5일
+
+#### 7. **Dashboard 통계** (작업 8) - 우선순위: 중간
+
+- 기존 API 조합으로 구현 가능
+- 별도 메트릭 서비스 불필요
+- **예상 소요 시간**: 2-3일
+
+#### 8. **Multi-Agent 협업** (작업 9) - 우선순위: 높음
+
+- Core Orchestrator 활용 가능
+- Multi-Agent Coordinator 구현
+- **예상 소요 시간**: 5-7일
+
+#### 9. **Tool Builder** (작업 10) - 우선순위: 낮음
+
+- Built-in Tools로 재정의
+- Electron 환경 특화 도구
+- **예상 소요 시간**: 3-4일
+
+### 🤔 Core 변경 대기
+
+#### 10. **Knowledge Base** (작업 4) - Core Agent 변경 필요
+
+- Agent ↔ Knowledge 연결은 Core 레벨 설계
+- GUI에서 임시 매핑은 기술 부채
+- **권장**: Core 변경 대기
+
+### 🗑️ 제거 완료
+
+#### 11. **RACP Manager** (작업 11)
+
+- 향후 요구사항 명확화 시 재검토
+- 스케일아웃 필요 시점에 재설계
