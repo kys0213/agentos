@@ -20,37 +20,54 @@ export function Dashboard({
   loading,
   onCreateAgent,
 }: DashboardProps) {
-  const { data: stats, isLoading: statsLoading, isError: statsError } = useDashboardStats();
-  // Real-time stats from actual data
-  const stats = [
+  const { data: ds, isLoading: statsLoading, isError: statsError } = useDashboardStats();
+  // Real-time stats from actual data (with graceful fallbacks)
+  const cards = [
     {
       title: 'Active Chats',
-      value: statsLoading || statsError || stats?.activeChats == null ? '—' : String(stats.activeChats),
+      value:
+        statsLoading || statsError || ds?.activeChats == null ? '—' : String(ds.activeChats),
       change: '+2 from yesterday',
       icon: MessageSquare,
       color: 'text-blue-600',
     },
     {
       title: 'Agents',
-      value: currentAgents.length?.toString(),
-      change: `${currentAgents.filter((a) => a.status === 'active').length} active`,
+      value:
+        statsLoading || statsError
+          ? String(currentAgents.length)
+          : ds?.agents.total != null
+          ? String(ds.agents.total)
+          : String(currentAgents.length),
+      change:
+        statsLoading || statsError
+          ? `${currentAgents.filter((a) => a.status === 'active').length} active`
+          : `${ds?.agents.active ?? '—'} active`;
       icon: Bot,
       color: 'text-green-600',
     },
     {
       title: 'Models',
       value:
-        statsLoading || statsError || stats?.bridges.models == null
+        statsLoading || statsError || ds?.bridges.models == null
           ? '—'
-          : String(stats.bridges.models),
-      change: 'All connected',
+          : String(ds.bridges.models),
+      change: '',
       icon: Cpu,
       color: 'text-purple-600',
     },
     {
       title: 'Presets',
-      value: presets.length.toString(),
-      change: `${presets.filter((p) => p.usageCount && p.usageCount > 0).length} in use`,
+      value:
+        statsLoading || statsError
+          ? String(presets.length)
+          : ds?.presets.total != null
+          ? String(ds.presets.total)
+          : String(presets.length),
+      change:
+        statsLoading || statsError
+          ? `${presets.filter((p) => p.usageCount && p.usageCount > 0).length} in use`
+          : `${ds?.presets.inUse ?? 0} in use`,
       icon: Layers,
       color: 'text-orange-600',
     },
@@ -187,7 +204,7 @@ export function Dashboard({
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, index) => {
+        {cards.map((stat, index) => {
           const Icon = stat.icon;
           return (
             <Card key={index} className="p-6">
