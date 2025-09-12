@@ -1,5 +1,6 @@
 import type { AgentMetadata, Preset } from '@agentos/core';
 import { Activity, Bot, Cpu, Layers, MessageSquare } from 'lucide-react';
+import { useDashboardStats } from '../../hooks/queries/use-dashboard';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -19,11 +20,12 @@ export function Dashboard({
   loading,
   onCreateAgent,
 }: DashboardProps) {
+  const { data: stats, isLoading: statsLoading, isError: statsError } = useDashboardStats();
   // Real-time stats from actual data
   const stats = [
     {
       title: 'Active Chats',
-      value: '3',
+      value: statsLoading || statsError || stats?.activeChats == null ? '—' : String(stats.activeChats),
       change: '+2 from yesterday',
       icon: MessageSquare,
       color: 'text-blue-600',
@@ -37,7 +39,10 @@ export function Dashboard({
     },
     {
       title: 'Models',
-      value: '5',
+      value:
+        statsLoading || statsError || stats?.bridges.models == null
+          ? '—'
+          : String(stats.bridges.models),
       change: 'All connected',
       icon: Cpu,
       color: 'text-purple-600',
