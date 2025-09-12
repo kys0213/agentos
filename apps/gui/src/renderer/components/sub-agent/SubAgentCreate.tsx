@@ -15,7 +15,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -27,6 +27,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Textarea } from '../ui/textarea';
 import { agentMetadataSchema } from '../../../shared/schema/agent.schemas';
 import PresetPicker from '../preset/PresetPicker';
+import {
+  GuiAgentCategories,
+  type GuiAgentCategory,
+  GuiCategoryKeywordsMap,
+} from '../../../shared/constants/agent-categories';
 
 interface AgentCreateProps {
   onBack: () => void;
@@ -49,6 +54,9 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
     keywords: [],
   });
   const [selectedPresetId, setSelectedPresetId] = useState<string | undefined>(undefined);
+  const [selectedCategory, setSelectedCategory] = useState<GuiAgentCategory | undefined>(
+    undefined
+  );
 
   // Tags management
   const [newTag, setNewTag] = useState('');
@@ -139,6 +147,19 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
       setActiveTab(getTabFromStep(prevStep));
     }
   };
+
+  const categoryDisplayName = useMemo(() => {
+    if (!selectedCategory) return 'Not specified';
+    const map: Record<GuiAgentCategory, string> = {
+      general: 'General Purpose',
+      research: 'Research',
+      development: 'Development',
+      creative: 'Creative',
+      analytics: 'Analytics',
+      customer_support: 'Customer Support',
+    };
+    return map[selectedCategory];
+  }, [selectedCategory]);
 
   return (
     <div className="h-full flex flex-col">
@@ -379,6 +400,28 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                     Select the primary category that best describes your agent's purpose and
                     capabilities.
                   </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {GuiAgentCategories.map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategory(cat);
+                          updateFormData({ keywords: GuiCategoryKeywordsMap[cat] });
+                        }}
+                        className={`text-left border rounded-lg p-4 hover:bg-accent transition ${
+                          selectedCategory === cat ? 'border-primary ring-1 ring-primary' : ''
+                        }`}
+                      >
+                        <div className="font-medium capitalize">
+                          {cat.replace('_', ' ')}
+                        </div>
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          {'# ' + GuiCategoryKeywordsMap[cat].slice(0, 4).join('  # ')}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </Card>
 
                 {/* Navigation */}
@@ -387,7 +430,7 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                     <ArrowLeft className="w-4 h-4" />
                     Previous: Overview
                   </Button>
-                  <Button onClick={handleNextStep} className="gap-2">
+                  <Button onClick={handleNextStep} className="gap-2" disabled={!selectedCategory}>
                     Next: Choose Preset
                     <ArrowLeft className="w-4 h-4 rotate-180" />
                   </Button>
@@ -504,9 +547,7 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                       </div>
                       <div>
                         <Label className="text-sm text-muted-foreground">Category</Label>
-                        <p className="font-medium capitalize">
-                          {formData.preset?.category || 'Not specified'}
-                        </p>
+                        <p className="font-medium">{categoryDisplayName}</p>
                       </div>
                       <div>
                         <Label className="text-sm text-muted-foreground">Base Preset</Label>
