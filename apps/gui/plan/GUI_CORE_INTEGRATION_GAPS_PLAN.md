@@ -19,8 +19,8 @@
 
 - [x] GUI의 주요 기능들이 Core 계약(contracts)과 1:1로 매핑되고, 목/로컬 저장소 의존이 제거된다. (부분 완료)
 - [x] 에이전트 생성 시 LLM Bridge 선택/설정이 llm-bridge-spec 기준으로 노출/저장된다. ✅
-- [ ] MCP 도구 관리/연결이 Core MCP 레지스트리/메타데이터와 연동된다.
-- [ ] 지식베이스(문서) 관리가 로컬스토리지 대신 Core API로 CRUD/인덱싱 상태를 반영한다.
+- [x] MCP 도구 관리/연결이 Core MCP 레지스트리/메타데이터와 연동된다.
+- [x] 지식베이스(문서) 관리가 로컬스토리지 대신 Core API로 CRUD/인덱싱 상태를 반영한다.
 - [x] 채팅 히스토리/세션이 Core 세션/메시지 API와 정합되며, 훅/스토어가 계약 타입으로 동작한다. ✅
 - [x] GUI 전용 기능(pin/archive, 카테고리)은 GUI 레이어에서 관리되고 Core와 분리된다. ✅
 - [ ] 멀티 에이전트 협업 기능이 Core 오케스트레이션과 연동된다.
@@ -329,9 +329,9 @@ interface BridgeManifest {
 | 작업                      | 상태        | 난이도   | 차단 사유 / 비고         |
 | ------------------------- | ----------- | -------- | ------------------------ |
 | 작업 1: RPC 구조          | ✅ 완료     | -        | -                        |
-| 작업 2: Agent 생성 마법사 | 🟡 부분완료 | 중간     | 5단계 마법사 진행, AI Config 부분완료 |
-| 작업 3: MCP 도구 관리     | 🟡 부분완료 | 중간     | Core/컨트롤러/어댑터 구현됨, 스트림/매니저 연동 일부 남음 |
-| 작업 4: Knowledge Base    | 🤔 결정필요 | 중상     | Core Agent 변경 필요     |
+| 작업 2: Agent 생성 마법사 | 🟡 부분완료 | 중간     | 5단계 마법사 진행, AI Config/카테고리 부분완료 |
+| 작업 3: MCP 도구 관리     | ✅ 완료     | 중간     | 스트리밍/폴백 제거 포함 완료 |
+| 작업 4: Knowledge Base    | 🟡 부분완료 | 중상     | Core 연동/GUI 마이그레이션 완료, 성능/추가기능 후속 |
 | 작업 5: Chat History      | ✅ 완료     | -        | -                        |
 | 작업 6: 카테고리/키워드   | 🟡 진행가능 | 낮음     | GUI 전용 작업            |
 | 작업 7: Bridge 등록 UI    | 🟡 진행가능 | 중간     | GUI 작업                 |
@@ -491,9 +491,9 @@ interface BridgeManifest {
 
 **작업 내용**:
 
-- [ ] GUI 전용 카테고리 상수 정의 (GuiAgentCategories)
-- [ ] 카테고리 → keywords 매핑 테이블 구현 (GuiCategoryKeywordsMap)
-- [ ] SubAgentCreate: 카테고리 선택 시 keywords 자동 설정
+- [x] GUI 전용 카테고리 상수 정의 (GuiAgentCategories)
+- [x] 카테고리 → keywords 매핑 테이블 구현 (GuiCategoryKeywordsMap)
+- [x] SubAgentCreate: 카테고리 선택 시 keywords 자동 설정
 - [ ] SubAgentManager: 카테고리 기반 필터링 (keywords 활용)
 
 ### 작업 7: Bridge 등록 UI
@@ -535,7 +535,7 @@ interface BridgeManifest {
 **작업 내용**:
 
 - [ ] 각 서비스 어댑터 조합으로 통계 구성(agents/bridges/models/sessions/presets/mcp usage)
-- [ ] `Dashboard.tsx`의 하드코딩 지표 제거(Active Chats/Models 등)
+- [x] `Dashboard.tsx`의 하드코딩 지표 제거(Active Chats/Models 등 부분 제거)
 - [x] 질의 훅 작성 및 캐싱 정책 설정 (`use-dashboard.ts` 추가)
 - [x] 1차 적용: `Dashboard.tsx`에 Active Chats/Models 실데이터 반영
 - [ ] Dashboard에서 여러 API 조합하여 통계 표시
@@ -804,8 +804,8 @@ interface BridgeManifest {
 
 ## 추가 TODO 정리
 
-- [ ] Knowledge 계약/모듈/어댑터 추가: `knowledge.contract.ts` → Main API → Renderer 어댑터/훅 → GUI 마이그레이션
-- [ ] `McpToolManager` 폴백 샘플 데이터 제거 및 어댑터 연동 완성
+- [x] Knowledge 계약/모듈/어댑터 추가: `knowledge.contract.ts` → Main API → Renderer 어댑터/훅 → GUI 마이그레이션
+- [x] `McpToolManager` 폴백 샘플 데이터 제거 및 어댑터 연동 완성
 - [ ] 대시보드 지표 실데이터화(어댑터 조합) 및 하드코딩 제거
 - [ ] `useAIConfigurations.ts`를 `use-bridge` 훅 기반으로 교체 또는 시그니처 수정
 
