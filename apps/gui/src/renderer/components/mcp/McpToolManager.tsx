@@ -146,37 +146,8 @@ export function MCPToolsManager() {
             }
           } catch (mcpError) {
             console.warn('MCP tools not available:', mcpError);
-
-            // Fallback to sample data when MCP service has no tools
-            const fallbackTools: GuiMcpTool[] = [
-              {
-                id: 'web-search',
-                name: 'Web Search',
-                description: 'Search the web for current information and news',
-                category: 'search',
-                status: 'disconnected',
-                version: '2.1.0',
-                provider: 'SearchAPI',
-                usageCount: 0,
-                endpoint: 'https://api.searchapi.com/v2',
-                permissions: ['search', 'read'],
-                icon: <Globe className="w-5 h-5" />,
-              },
-              {
-                id: 'code-executor',
-                name: 'Code Executor',
-                description: 'Execute Python, JavaScript, and other code snippets safely',
-                category: 'development',
-                status: 'disconnected',
-                version: '1.5.2',
-                provider: 'CodeSandbox',
-                usageCount: 0,
-                permissions: ['execute', 'file-system'],
-                icon: <Code className="w-5 h-5" />,
-              },
-            ];
-
-            setTools(fallbackTools);
+            // 폴백 데이터 제거: 빈 상태 유지, 에러는 콘솔/상태로 확인
+            setTools([]);
             setUsageLogs([]);
           }
         } else {
@@ -229,6 +200,38 @@ export function MCPToolsManager() {
     const matchesCategory = selectedCategory === 'all' || tool.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  // Empty state when no tools and not loading
+  if (!isLoading && tools.length === 0) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">MCP Tool Manager</h1>
+            <p className="text-muted-foreground">
+              No registered tools. Register a tool to get started.
+            </p>
+          </div>
+          <Button variant="outline" className="gap-2" onClick={handleRefresh}>
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </Button>
+        </div>
+
+        <Card className="p-6">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-gray-500" />
+            <div>
+              <h3 className="font-semibold">No tools found</h3>
+              <p className="text-sm text-muted-foreground">
+                Use the register dialog to add a tool, then connect it.
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
