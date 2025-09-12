@@ -457,7 +457,7 @@ interface BridgeManifest {
 - [x] 계약: `KnowledgeContract` 정의 (스켈레톤: `apps/gui/src/shared/rpc/contracts/knowledge.contract.ts`)
 - [x] API 스캐폴딩: 메인 모듈/컨트롤러/서비스 추가(파일 기반 저장 + 에이전트 매핑) ✅
 - [x] 렌더러 어댑터/클라이언트 추가 및 bootstrap 등록 ✅
-- [ ] GUI 컴포넌트: `KnowledgeBaseManager` 전면 개편(목 제거) ⬅ 다음
+- [x] GUI 컴포넌트: `KnowledgeBaseManager` Core 어댑터로 전환(목 제거) ✅
 - [ ] 마이그레이션: localStorage → FileDocStore 헬퍼 구현
 - [ ] 성능 최적화: `allDocs({ chunkSize })` 활용
 - [ ] 에러 핸들링: 인덱싱 실패 시 retry 정책
