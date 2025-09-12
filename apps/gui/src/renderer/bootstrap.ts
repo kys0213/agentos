@@ -12,6 +12,8 @@ import { AgentServiceAdapter } from './rpc/adapters/agent.adapter';
 import { ConversationServiceAdapter } from './rpc/adapters/conversation.adapter';
 import { McpServiceAdapter } from './rpc/adapters/mcp.adapter';
 import { McpUsageRpcService as McpUsageLogService } from './rpc/services/mcp-usage.service';
+import { KnowledgeClient } from './rpc/gen/knowledge.client';
+import { KnowledgeServiceAdapter } from './rpc/adapters/knowledge.adapter';
 
 /**
  * Bootstrap 결과 타입
@@ -40,6 +42,7 @@ export async function bootstrap(rpcTransport: RpcClient): Promise<BootstrapResul
   const agentService = new AgentServiceAdapter(new AgentService(rpcTransport));
   const conversationService = new ConversationServiceAdapter(new ConversationService(rpcTransport));
   const mcpUsageLogService = new McpUsageLogService(rpcTransport);
+  const knowledgeService = new KnowledgeServiceAdapter(new KnowledgeClient(rpcTransport));
 
   console.log('⚙️ All services created with Rpc transport dependency injection');
 
@@ -50,6 +53,7 @@ export async function bootstrap(rpcTransport: RpcClient): Promise<BootstrapResul
   ServiceContainer.register('agent', agentService);
   ServiceContainer.register('mcpUsageLog', mcpUsageLogService);
   ServiceContainer.register('conversation', conversationService);
+  ServiceContainer.register('knowledge', knowledgeService);
 
   console.log('📦 All services registered in ServiceContainer');
   console.log('✅ Bootstrap completed successfully');
@@ -66,6 +70,7 @@ export async function bootstrap(rpcTransport: RpcClient): Promise<BootstrapResul
     presetService,
     agentService,
     conversationService,
+    // knowledgeService intentionally omitted from return type for now
   };
 }
 

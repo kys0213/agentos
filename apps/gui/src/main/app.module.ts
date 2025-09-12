@@ -11,6 +11,7 @@ import { McpUsageApiModule } from './mcp/mcp-usage.api.module';
 import { BridgeApiModule } from './bridge/bridge.api.module';
 import { OutboundChannelModule } from './common/event/outbound-channel.module';
 import { ChatModule } from './chat/chat.module';
+import { KnowledgeApiModule } from './knowledge/knowledge.api.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ChatModule } from './chat/chat.module';
     McpUsageApiModule,
     BridgeApiModule,
     ChatModule,
+    KnowledgeApiModule,
   ],
   providers: [
     {
