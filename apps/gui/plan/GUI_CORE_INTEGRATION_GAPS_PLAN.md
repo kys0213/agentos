@@ -503,10 +503,10 @@ interface BridgeManifest {
 
 **작업 내용**:
 
-- [ ] 등록 다이얼로그: manifest 입력(JSON/file)
-- [ ] `BridgeServiceAdapter.registerBridge` 연동(현재 어댑터 메서드 존재)
-- [ ] `useInstalledBridges` 재검증 및 등록 후 캐시 무효화 처리
-- [ ] 에러 처리/검증
+- [x] 등록 다이얼로그: manifest JSON 입력(파일 업로드는 후속) ✅
+- [x] `BridgeServiceAdapter.registerBridge` 연동(훅 기반) ✅
+- [x] `useInstalledBridges` 재검증 및 등록 후 캐시 무효화 처리 ✅
+- [x] 에러 처리/검증(간단한 JSON 검사 및 메시지 표시) ✅
 
 ### 작업 8: Dashboard 통계 — 실시간 데이터 🟡 **진행 가능** (기존 API 활용)
 
