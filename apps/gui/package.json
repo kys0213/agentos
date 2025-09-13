@@ -131,7 +131,11 @@
     "react-test-renderer": "^18.2.0",
     "tailwindcss": "^4.1.11",
     "typescript": "^5.3.3",
-    "vite": "^7.0.6"
+    "vite": "^7.0.6",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/user-event": "^14.6.1",
+    "jsdom": "^25.0.1"
   },
   "volta": {
     "node": "22.18.0"
