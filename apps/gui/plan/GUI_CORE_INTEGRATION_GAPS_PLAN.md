@@ -324,6 +324,13 @@ interface BridgeManifest {
 - 🤔 **결정 필요**: 아키텍처/설계 결정 필요
 - ❓ **불명확**: 요구사항 자체가 불명확
 
+### 테스트 방침
+
+- 단위/훅/어댑터 테스트를 우선 추가하고, 통합(E2E)은 핵심 플로우 중심으로 추후 보강
+- ServiceContainer 기반 훅은 스텁 어댑터로 검증(useDashboardStats, useMcpUsageStream 등)
+- 어댑터는 호출 플로우(ensure→list/add 등) 단위 테스트로 회귀 방지
+- UI는 최소 스냅샷/상태 전이(필수) + 핵심 상호작용(재시도/적용) 위주로 추가
+
 ### 작업 요약
 
 | 작업                      | 상태        | 난이도   | 차단 사유 / 비고         |
@@ -385,7 +392,12 @@ interface BridgeManifest {
   - [x] 시스템 프롬프트 텍스트에어리어(프리셋 systemPrompt 오버라이드) ✅
   - [x] MCP 도구 선택 카드 동적 로딩(선택 결과 preset.enabledMcps 반영) ✅
 - [ ] Settings 탭: 상태 선택 드롭다운
-- [ ] Export/Import 기능 구현
+- [x] Export/Import 기능(텍스트 기반) 구현
+
+**테스트**
+- [x] Export/Import 유틸 직렬화/파싱/적용 단위 테스트 추가
+- [ ] SubAgentCreate 단계 전이/검증 최소 UI 테스트
+- [ ] Import 실패(잘못된 JSON) 에러 표시 테스트
 
 참고:
 - 기존 문서의 “BridgeModelSettings” 컴포넌트 언급은 현재 소스에 존재하지 않으며, 훅 기반(`hooks/queries/use-bridge.ts`) + `ModelManager*` 조합으로 대체됨. 문서 용어를 훅 기반 접근으로 정정함.
@@ -427,6 +439,10 @@ interface BridgeManifest {
 
 **예상 난이도**: 중상 (Core 기능은 완비, 통합 작업만 필요)
 
+**테스트**
+- [x] `useMcpUsageStream` 이벤트 수신 시 lastEvent 업데이트 단위 테스트
+- [ ] MCP 매니저 UI: 빈 상태/에러/재시도 경로(후속)
+
 ### 작업 4: Knowledge Base(문서) — 로컬스토리지 → Core API 🤔 **설계 결정 필요**
 
 **현황**:
@@ -465,6 +481,11 @@ interface BridgeManifest {
 
 **예상 난이도**: 중상 (복잡한 매핑 로직)
 
+**테스트**
+- [x] knowledge.adapter: `ensure→list/add` 콜 플로우 단위 테스트
+- [ ] KnowledgeBaseManager: 검색/미리보기 연동 UI 테스트(후속)
+- [ ] 인덱싱 진행률 스트림(events) 구독 훅/표시 테스트(후속)
+
 ### 작업 5: 채팅 히스토리/세션 연동 ✅ **완료**
 
 **현황**:
@@ -496,6 +517,9 @@ interface BridgeManifest {
 - [x] SubAgentCreate: 카테고리 선택 시 keywords 자동 설정
 - [ ] SubAgentManager: 카테고리 기반 필터링 (keywords 활용)
 
+**테스트**
+- [ ] SubAgentManager: 카테고리 선택 시 필터링 결과가 매핑대로 적용되는지 단위 테스트
+
 ### 작업 7: Bridge 등록 UI
 
 **현황**:
@@ -508,6 +532,10 @@ interface BridgeManifest {
 - [x] `BridgeServiceAdapter.registerBridge` 연동(훅 기반) ✅
 - [x] `useInstalledBridges` 재검증 및 등록 후 캐시 무효화 처리 ✅
 - [x] 에러 처리/검증(간단한 JSON 검사 및 메시지 표시) ✅
+
+**테스트**
+- [ ] 등록 다이얼로그: 유효/무효 JSON 입력 시 동작(등록/에러 메시지) 테스트
+- [ ] 등록 성공 후 캐시 무효화 호출 여부 검증 테스트
 
 ### 작업 8: Dashboard 통계 — 실시간 데이터 🟡 **진행 가능** (기존 API 활용)
 
@@ -543,6 +571,10 @@ interface BridgeManifest {
 - [ ] 캐싱 전략으로 성능 최적화
 
 **예상 난이도**: 중간
+
+**테스트**
+- [x] useDashboardStats 훅: 지표 집계 및 MCP 24h 합계 단위 테스트
+- [ ] Dashboard 카드: 에러 표시/Retry 상호작용(컴포넌트 테스트)
 
 ### 작업 9: Message Mentions — Multi-Agent 협업 🟡 **진행 가능** (Orchestrator 활용)
 
@@ -612,6 +644,10 @@ interface BridgeManifest {
 - [ ] 도구 생성/편집/테스트 워크플로우
 
 **예상 난이도**: 중간
+
+**테스트**
+- [x] useDashboardStats 훅: 지표 집계 및 MCP 24h 합계 단위 테스트
+- [ ] Dashboard 카드: 에러 표시/Retry 상호작용(컴포넌트 테스트)
 
 ### 작업 11: RACP Manager 🗑️ **제거 권장**
 
