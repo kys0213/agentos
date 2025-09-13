@@ -399,6 +399,24 @@ interface BridgeManifest {
 - [ ] SubAgentCreate 단계 전이/검증 최소 UI 테스트
 - [ ] Import 실패(잘못된 JSON) 에러 표시 테스트
 
+**UX/구현 방침(심플 버전 — Clipboard/입력창 기반)**
+- Export: “Generate JSON” → 미리보기(TextArea) → “Copy to Clipboard”만 지원(파일 저장은 보류)
+  - JSON은 pretty-print(2 spaces) + `schemaVersion: 1` 포함
+  - 성공/실패 Toast 제공
+- Import: 파일 선택 대신 입력창(TextArea) 중심
+  - 붙여넣기 → “Validate”/“Apply” 버튼
+  - 검증 실패 시: Invalid JSON/스키마 위배 항목을 사람이 읽기 쉬운 메시지로 표출
+  - 성공 시: 현재 값 vs 적용될 값 간단 비교(이름/상태/브릿지/enabledMcps 등) 후 Apply
+- 스키마/검증
+  - Agent: name/description/status, preset.name 필수. 선택 필드는 기본값 대입
+  - Preset-only JSON도 수용(자동으로 Agent 껍데기에 감싸는 보정 로직 — 기본 name/description 적용)
+- 제한/보안
+  - 입력 길이/크기 제한(예: 1–2MB), XSS 방지를 위한 안전한 렌더링
+  - Clipboard 실패 시 안내(권한/브라우저 정책)
+
+**향후 확장(후속)**
+- 파일 업/다운로드(대화상자/IPC) 추가, 스키마 버전 마이그레이션, 포맷팅/샘플 템플릿 제공 등
+
 참고:
 - 기존 문서의 “BridgeModelSettings” 컴포넌트 언급은 현재 소스에 존재하지 않으며, 훅 기반(`hooks/queries/use-bridge.ts`) + `ModelManager*` 조합으로 대체됨. 문서 용어를 훅 기반 접근으로 정정함.
 - `useAIConfigurations.ts`는 `BridgeServiceAdapter.listInstalled()`를 가정하나 실제 어댑터에는 없음. `use-bridge` 훅으로 교체 또는 훅 시그니처 수정 필요(TODO 추가).
