@@ -33,6 +33,7 @@ import {
   GuiCategoryKeywordsMap,
 } from '../../../shared/constants/agent-categories';
 import { useMcpTools } from '../../hooks/queries/use-mcp';
+import { applyAgentExport, serializeAgent, tryParseAgentExport } from '../../utils/agent-export';
 
 interface AgentCreateProps {
   onBack: () => void;
@@ -60,6 +61,9 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
   );
   const [systemPrompt, setSystemPrompt] = useState<string>('');
   const [selectedMcpIds, setSelectedMcpIds] = useState<Set<string>>(new Set());
+  const [exportJson, setExportJson] = useState<string>('');
+  const [importJson, setImportJson] = useState<string>('');
+  const [importError, setImportError] = useState<string>('');
 
   const { data: mcpList, isLoading: mcpLoading } = useMcpTools();
 
@@ -645,6 +649,74 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                           </SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Export / Import */}
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Export / Import</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Export */}
+                    <div>
+                      <Label className="text-sm">Export Agent as JSON</Label>
+                      <div className="mt-2 flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            if (!validateFormData(formData)) return;
+                            const json = JSON.stringify(serializeAgent(formData as any), null, 2);
+                            setExportJson(json);
+                          }}
+                        >
+                          Generate JSON
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(exportJson);
+                            } catch {}
+                          }}
+                          disabled={!exportJson}
+                        >
+                          Copy
+                        </Button>
+                      </div>
+                      <Textarea className="mt-2 h-40" value={exportJson} readOnly placeholder="Generated JSON will appear here" />
+                    </div>
+                    {/* Import */}
+                    <div>
+                      <Label className="text-sm">Import Preset JSON</Label>
+                      <Textarea
+                        className="mt-2 h-40"
+                        value={importJson}
+                        onChange={(e) => {
+                          setImportJson(e.target.value);
+                          setImportError('');
+                        }}
+                        placeholder="Paste exported agent JSON here"
+                      />
+                      {importError && (
+                        <p className="text-xs text-red-600 mt-1">{importError}</p>
+                      )}
+                      <div className="mt-2 flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            const parsed = tryParseAgentExport(importJson);
+                            if (!parsed) {
+                              setImportError('Invalid JSON');
+                              return;
+                            }
+                            const next = applyAgentExport(formData, parsed);
+                            setSystemPrompt(parsed.preset.systemPrompt ?? '');
+                            updateFormData(next as any);
+                          }}
+                        >
+                          Apply
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Card>
