@@ -94,11 +94,11 @@ describe('useDashboardStats', () => {
       getHourlyStats: async () => ({ hourlyData: Array.from({ length: 24 }, (_, h) => [h, 1]) }),
     };
 
-    ServiceContainer.register('agent', agent as unknown as AgentServiceAdapter);
-    ServiceContainer.register('bridge', bridge as unknown as BridgeServiceAdapter);
-    ServiceContainer.register('conversation', conversation as unknown as ConversationServiceAdapter);
-    ServiceContainer.register('preset', preset as unknown as PresetServiceAdapter);
-    ServiceContainer.register('mcpUsageLog', mcpUsage as unknown as McpUsageRpcService);
+    ServiceContainer.register('agent', agent as AgentServiceAdapter);
+    ServiceContainer.register('bridge', bridge as BridgeServiceAdapter);
+    ServiceContainer.register('conversation', conversation as ConversationServiceAdapter);
+    ServiceContainer.register('preset', preset as PresetServiceAdapter);
+    ServiceContainer.register('mcpUsageLog', mcpUsage as McpUsageRpcService);
 
     const qc = new QueryClient();
     let latest: DS | null = null;

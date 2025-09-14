@@ -380,10 +380,6 @@ export function MCPToolsManager() {
     }
   };
 
-  
-
-  const connectedTools = tools.filter((t) => t.status === 'connected').length;
-  const errorTools = tools.filter((t) => t.status === 'error').length;
   const totalUsage = tools.reduce((sum, tool) => sum + tool.usageCount, 0);
 
   return (

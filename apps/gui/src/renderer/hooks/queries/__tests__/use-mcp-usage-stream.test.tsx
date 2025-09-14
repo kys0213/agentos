@@ -28,7 +28,7 @@ describe('useMcpUsageStream', () => {
         };
       },
     };
-    ServiceContainer.register('mcpUsageLog', fakeSvc as unknown as McpUsageRpcService);
+    ServiceContainer.register('mcpUsageLog', fakeSvc as McpUsageRpcService);
 
     let got: Ev | null = null;
     await act(async () => {
