@@ -3,12 +3,21 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { create, act } from 'react-test-renderer';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ServiceContainer } from '../../../../shared/di/service-container';
-import type { AgentServiceAdapter } from '../../../rpc/adapters/agent.adapter';
-import type { BridgeServiceAdapter } from '../../../rpc/adapters/bridge.adapter';
-import type { ConversationServiceAdapter } from '../../../rpc/adapters/conversation.adapter';
-import type { PresetServiceAdapter } from '../../../rpc/adapters/preset.adapter';
-import type { McpUsageRpcService } from '../../../rpc/services/mcp-usage.service';
+import { AgentServiceAdapter } from '../../../rpc/adapters/agent.adapter';
+import { BridgeServiceAdapter } from '../../../rpc/adapters/bridge.adapter';
+import { ConversationServiceAdapter } from '../../../rpc/adapters/conversation.adapter';
+import { PresetServiceAdapter } from '../../../rpc/adapters/preset.adapter';
+import { McpUsageRpcService } from '../../../rpc/services/mcp-usage.service';
 import { useDashboardStats } from '../use-dashboard';
+import type { AgentClient } from '../../../rpc/gen/agent.client';
+import type { BridgeClient } from '../../../rpc/gen/bridge.client';
+import type { ChatClient } from '../../../rpc/gen/chat.client';
+import type { PresetClient } from '../../../rpc/gen/preset.client';
+import type { ReadonlyAgentMetadata, Preset } from '@agentos/core';
+import type { LlmManifest } from 'llm-bridge-spec';
+import { z } from 'zod';
+import type { RpcClient } from '../../../../shared/rpc/transport';
+import { ChatContract as CC } from '../../../../shared/rpc/contracts/chat.contract';
 
 function waitFor(predicate: () => boolean, timeoutMs = 1000): Promise<void> {
   const start = Date.now();
@@ -51,54 +60,122 @@ describe('useDashboardStats', () => {
   });
 
   it('computes stats from adapters and aggregates MCP 24h usage', async () => {
-    const agent: {
-      getAllAgentMetadatas: () => Promise<
-        Array<{
-          id: string;
-          name: string;
-          description: string;
-          status: 'active' | 'idle' | 'inactive';
-          usageCount: number;
-          keywords: string[];
-        }>
-      >;
-    } = {
-      getAllAgentMetadatas: async () => [
-        { id: 'a1', name: 'A1', description: 'x', status: 'active', usageCount: 2, keywords: [] },
-        { id: 'a2', name: 'A2', description: 'y', status: 'idle', usageCount: 1, keywords: [] },
+    const agent = new AgentServiceAdapter({} as AgentClient);
+    const basePreset: Preset = {
+      id: 'p0',
+      name: 'P',
+      description: '',
+      author: '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      version: '1',
+      systemPrompt: '',
+      enabledMcps: [],
+      llmBridgeName: 'test',
+      llmBridgeConfig: {},
+      status: 'active',
+      usageCount: 0,
+      knowledgeDocuments: 0,
+      knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 },
+      category: [],
+    };
+    const m1: ReadonlyAgentMetadata = {
+      id: 'a1',
+      name: 'A1',
+      description: 'x',
+      icon: '',
+      keywords: [],
+      preset: basePreset,
+      status: 'active',
+      sessionCount: 0,
+      usageCount: 2,
+    } as ReadonlyAgentMetadata;
+    const m2: ReadonlyAgentMetadata = {
+      id: 'a2',
+      name: 'A2',
+      description: 'y',
+      icon: '',
+      keywords: [],
+      preset: basePreset,
+      status: 'idle',
+      sessionCount: 0,
+      usageCount: 1,
+    } as ReadonlyAgentMetadata;
+    Object.assign(agent, {
+      getAllAgentMetadatas: async (): Promise<ReadonlyAgentMetadata[]> => [m1, m2],
+    });
+    const bridge = new BridgeServiceAdapter({} as BridgeClient);
+    Object.assign(bridge, { getBridgeIds: async (): Promise<string[]> => ['b1'] });
+    const manifest: LlmManifest = {
+      schemaVersion: '1.0',
+      name: 'dummy',
+      language: 'ts',
+      entry: 'index.js',
+      configSchema: z.object({}),
+      capabilities: {
+        modalities: [],
+        supportsToolCall: false,
+        supportsFunctionCall: false,
+        supportsMultiTurn: false,
+        supportsStreaming: false,
+        supportsVision: false,
+      },
+      models: [
+        {
+          name: 'm1',
+          contextWindowTokens: 1000,
+          pricing: { unit: 1, currency: 'USD', prompt: 0, completion: 0 },
+        },
+        {
+          name: 'm2',
+          contextWindowTokens: 1000,
+          pricing: { unit: 1, currency: 'USD', prompt: 0, completion: 0 },
+        },
       ],
+      description: '',
     };
-    const bridge: {
-      getBridgeIds: () => Promise<string[]>;
-      getBridgeConfig: (id: string) => Promise<{ models?: string[] }>;
-    } = {
-      getBridgeIds: async () => ['b1'],
-      getBridgeConfig: async (_id: string) => ({ models: ['m1', 'm2'] }),
+    Object.assign(bridge, {
+      getBridgeConfig: async (_id: string): Promise<LlmManifest | null> => manifest,
+    });
+    const conversation = new ConversationServiceAdapter({} as ChatClient);
+    type ListOut = z.output<(typeof CC.methods)['listSessions']['response']>;
+    Object.assign(conversation, {
+      listSessions: async (): Promise<ListOut> => ({
+        items: [
+          { id: 's1', title: 'S1', updatedAt: new Date() },
+          { id: 's2', title: 'S2', updatedAt: new Date() },
+        ],
+        nextCursor: '',
+        hasMore: false,
+      }),
+    });
+    const preset = new PresetServiceAdapter({} as PresetClient);
+    const preset1: Preset = { ...basePreset, id: 'p1', name: 'P1', usageCount: 3 };
+    const preset2: Preset = { ...basePreset, id: 'p2', name: 'P2', usageCount: 0 };
+    Object.assign(preset, {
+      getAllPresets: async (): Promise<Preset[]> => [preset1, preset2],
+    });
+    const dummyTransport: RpcClient = {
+      async request<TRes = unknown, _TReq = unknown>(): Promise<TRes> {
+        return undefined as never as TRes;
+      },
+      on<T = unknown>(_ch: string, _h: (p: T) => void) {
+        return async () => {};
+      },
     };
-    const conversation: { listSessions: () => Promise<{ items: Array<{ id: string }> }> } = {
-      listSessions: async () => ({ items: [{ id: 's1' }, { id: 's2' }] }),
-    };
-    const preset: {
-      getAllPresets: () => Promise<Array<{ id: string; name: string; usageCount?: number }>>;
-    } = {
-      getAllPresets: async () => [
-        { id: 'p1', name: 'P1', usageCount: 3 },
-        { id: 'p2', name: 'P2', usageCount: 0 },
-      ],
-    };
-    const mcpUsage: {
-      getUsageStats: () => Promise<{ totalUsage: number }>;
-      getHourlyStats: (d: Date) => Promise<{ hourlyData: Array<[number, number]> }>;
-    } = {
+    const mcpUsage = new McpUsageRpcService(dummyTransport);
+    Object.assign(mcpUsage, {
       getUsageStats: async () => ({ totalUsage: 5 }),
-      getHourlyStats: async () => ({ hourlyData: Array.from({ length: 24 }, (_, h) => [h, 1]) }),
-    };
+      getHourlyStats: async () => ({
+        hourlyData: Array.from({ length: 24 }, (_, h) => [h, 1]),
+      }),
+    });
 
-    ServiceContainer.register('agent', agent as AgentServiceAdapter);
-    ServiceContainer.register('bridge', bridge as BridgeServiceAdapter);
-    ServiceContainer.register('conversation', conversation as ConversationServiceAdapter);
-    ServiceContainer.register('preset', preset as PresetServiceAdapter);
-    ServiceContainer.register('mcpUsageLog', mcpUsage as McpUsageRpcService);
+    ServiceContainer.register('agent', agent);
+    ServiceContainer.register('bridge', bridge);
+    ServiceContainer.register('conversation', conversation);
+    ServiceContainer.register('preset', preset);
+    ServiceContainer.register('mcpUsageLog', mcpUsage);
 
     const qc = new QueryClient();
     let latest: DS | null = null;
