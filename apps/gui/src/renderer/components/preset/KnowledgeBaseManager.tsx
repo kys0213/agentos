@@ -27,6 +27,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ServiceContainer } from '../../../shared/di/service-container';
+import { KnowledgeContract as KC } from '../../../shared/rpc/contracts/knowledge.contract';
 import { Textarea } from '../ui/textarea';
 
 interface KnowledgeDocument {
@@ -82,42 +83,7 @@ interface KnowledgeTemplate {
   }>;
 }
 
-// Runtime type guard for stored document shape from localStorage (JSON)
-type StoredKnowledgeDocument = {
-  id: string;
-  title: string;
-  content: string;
-  filename?: string;
-  size: number;
-  type: 'markdown' | 'text';
-  createdAt?: string;
-  updatedAt?: string;
-  tags?: string[];
-  indexed?: boolean;
-  vectorized?: boolean;
-  agentId?: string;
-  agentName?: string;
-  isTemplate?: boolean;
-};
-
-function isStoredKnowledgeDocument(o: unknown): o is StoredKnowledgeDocument {
-  if (!o || typeof o !== 'object') {
-    return false;
-  }
-
-  const v = o as Record<string, unknown>;
-  const has = (k: string) => Object.prototype.hasOwnProperty.call(v, k);
-  return (
-    typeof v.id === 'string' &&
-    typeof v.title === 'string' &&
-    typeof v.content === 'string' &&
-    typeof v.size === 'number' &&
-    (v.type === 'markdown' || v.type === 'text') &&
-    (!has('createdAt') || typeof v.createdAt === 'string') &&
-    (!has('updatedAt') || typeof v.updatedAt === 'string') &&
-    (!has('tags') || Array.isArray(v.tags))
-  );
-}
+// (Note) Stored document guards removed; not used currently.
 
 export function KnowledgeBaseManager({
   agentId,
@@ -140,14 +106,18 @@ export function KnowledgeBaseManager({
   const [availableTemplates, setAvailableTemplates] = useState<KnowledgeTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [knowledgeStats, setKnowledgeStats] = useState<PresetKnowledgeStats | null>(null);
-  const [searchResults, setSearchResults] = useState<Array<{ id: string; title: string; updatedAt: Date; tags: string[] }>>([]);
+  const [searchResults, setSearchResults] = useState<
+    Array<{ id: string; title: string; updatedAt: Date; tags: string[] }>
+  >([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const knowledge = ServiceContainer.get('knowledge');
 
   // Initial load from Core and templates
   useEffect(() => {
-    if (!agentId) return;
+    if (!agentId) {
+      return;
+    }
     (async () => {
       try {
         if (knowledge) {
@@ -178,7 +148,6 @@ export function KnowledgeBaseManager({
         calculateKnowledgeStats();
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentId]);
 
   // Recompute stats when documents change
@@ -323,7 +292,9 @@ export function KnowledgeBaseManager({
   };
 
   const calculateKnowledgeStats = async () => {
-    if (!agentId) return;
+    if (!agentId) {
+      return;
+    }
     try {
       if (knowledge) {
         const s = await knowledge.getStats(agentId);
@@ -1059,9 +1030,9 @@ export function KnowledgeBaseManager({
                             return;
                           }
                           try {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const res: any = await knowledge.search(agentId, searchQuery, 20);
-                            const items = (res.items || []).map((d: any) => ({
+                            const res = await knowledge.search(agentId, searchQuery, 20);
+                            const parsed = KC.methods['search'].response.parse(res);
+                            const items = (parsed.items || []).map((d) => ({
                               id: d.id,
                               title: d.title,
                               updatedAt: new Date(d.updatedAt),
@@ -1095,7 +1066,10 @@ export function KnowledgeBaseManager({
                   ) : (
                     <div className="space-y-2">
                       {searchResults.map((r) => (
-                        <div key={r.id} className="flex items-center justify-between border rounded-md p-3">
+                        <div
+                          key={r.id}
+                          className="flex items-center justify-between border rounded-md p-3"
+                        >
                           <div>
                             <div className="font-medium">{r.title}</div>
                             <div className="text-xs text-muted-foreground">
@@ -1107,7 +1081,9 @@ export function KnowledgeBaseManager({
                             variant="outline"
                             onClick={() => {
                               const doc = documents.find((d) => d.id === r.id);
-                              if (doc) setSelectedDocument(doc);
+                              if (doc) {
+                                setSelectedDocument(doc);
+                              }
                             }}
                           >
                             Open
