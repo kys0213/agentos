@@ -1,10 +1,12 @@
 import type { AgentMetadata, Preset } from '@agentos/core';
 import { Activity, Bot, Cpu, Layers, MessageSquare } from 'lucide-react';
+import { useEffect } from 'react';
 import { useDashboardStats } from '../../hooks/queries/use-dashboard';
 import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
+import { useMcpUsageStream } from '../../hooks/queries/use-mcp-usage-stream';
 
 interface DashboardProps {
   presets: Preset[];
@@ -24,6 +26,13 @@ export function Dashboard({
   const { data: ds, isLoading: statsLoading, isError: statsError } = useDashboardStats();
   const qc = useQueryClient();
   const retry = () => qc.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
+  const { lastEvent } = useMcpUsageStream();
+  useEffect(() => {
+    if (lastEvent) {
+      // Any usage event should refresh dashboard stats
+      qc.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
+    }
+  }, [lastEvent, qc]);
   // Real-time stats from actual data (with graceful fallbacks)
   const cards = [
     {
