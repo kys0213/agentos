@@ -65,6 +65,16 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
 
   const { data: mcpList, isLoading: mcpLoading } = useMcpTools();
 
+  const statusBadgeClass = (status: string) => {
+    if (status === 'connected') {
+      return 'text-green-600 border-green-600';
+    }
+    if (status === 'error') {
+      return 'text-red-600 border-red-600';
+    }
+    return 'text-muted-foreground border-muted';
+  };
+
   // Tags management
   const [newTag, setNewTag] = useState('');
 
@@ -568,13 +578,9 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                               <div className="flex items-center gap-2">
                                 <span className="font-medium">{t.name}</span>
                                 <span
-                                  className={`text-xs rounded px-2 py-0.5 border ${
-                                    t.status === 'connected'
-                                      ? 'text-green-600 border-green-600'
-                                      : t.status === 'error'
-                                        ? 'text-red-600 border-red-600'
-                                        : 'text-muted-foreground border-muted'
-                                  }`}
+                                  className={`text-xs rounded px-2 py-0.5 border ${statusBadgeClass(
+                                    t.status as string
+                                  )}`}
                                 >
                                   {t.status}
                                 </span>
