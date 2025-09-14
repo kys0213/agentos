@@ -632,13 +632,13 @@ interface BridgeManifest {
 
 **작업 내용**:
 
-- [ ] 각 서비스 어댑터 조합으로 통계 구성(agents/bridges/models/sessions/presets/mcp usage)
+- [x] 각 서비스 어댑터 조합으로 통계 구성(agents/bridges/models/sessions/presets/mcp usage)
 - [x] `Dashboard.tsx`의 하드코딩 지표 제거(Active Chats/Models 등 부분 제거)
 - [x] 질의 훅 작성 및 캐싱 정책 설정 (`use-dashboard.ts` 추가)
 - [x] 1차 적용: `Dashboard.tsx`에 Active Chats/Models 실데이터 반영
-- [ ] Dashboard에서 여러 API 조합하여 통계 표시
-- [ ] 주기적 업데이트 (폴링 방식)
-- [ ] 캐싱 전략으로 성능 최적화
+- [x] Dashboard에서 여러 API 조합하여 통계 표시
+- [x] 주기적 업데이트 (폴링 방식)
+- [x] 캐싱 전략으로 성능 최적화
 
 **예상 난이도**: 중간
 
@@ -914,7 +914,7 @@ interface BridgeManifest {
 
 - [x] Knowledge 계약/모듈/어댑터 추가: `knowledge.contract.ts` → Main API → Renderer 어댑터/훅 → GUI 마이그레이션
 - [x] `McpToolManager` 폴백 샘플 데이터 제거 및 어댑터 연동 완성
-- [ ] 대시보드 지표 실데이터화(어댑터 조합) 및 하드코딩 제거 — 훅/테스트 완료, UI 잔여 치환 진행
+- [x] 대시보드 지표 실데이터화(어댑터 조합) 및 하드코딩 제거 — 훅/테스트/UI 치환 완료
 - [ ] `useAIConfigurations.ts`를 `use-bridge` 훅 기반으로 교체 또는 시그니처 수정
 
 ### 품질 게이트(현재 상태)
@@ -1103,9 +1103,9 @@ interface BridgeManifest {
 
 ### 이번 스프린트 권장 우선순위(요약)
 
-- [ ] Dashboard UI의 하드코딩 지표 전량 치환 및 로딩/에러 상태 마감
-- [ ] KnowledgeBaseManager 업로드/삭제/검색을 RPC 경로로 전환 (단계적 플래그 → 완전 이행)
-- [ ] MCP `usage.events` 실시간 스트림 메인 구현 및 훅 구독 전환
+- [x] Dashboard UI의 하드코딩 지표 전량 치환 및 로딩/에러 상태 마감
+- [x] KnowledgeBaseManager 업로드/삭제/검색을 RPC 경로로 전환 (단계적 플래그 → 완전 이행)
+- [x] MCP `usage.events` 실시간 스트림 메인 구현 및 훅 구독 전환
 - [ ] Electron 의존 경계 mock 정리(main 테스트 안정화)
 
 #### 8. **Multi-Agent 협업** (작업 9) - 우선순위: 높음
