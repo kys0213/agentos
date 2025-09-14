@@ -915,7 +915,7 @@ interface BridgeManifest {
 - [x] Knowledge 계약/모듈/어댑터 추가: `knowledge.contract.ts` → Main API → Renderer 어댑터/훅 → GUI 마이그레이션
 - [x] `McpToolManager` 폴백 샘플 데이터 제거 및 어댑터 연동 완성
 - [x] 대시보드 지표 실데이터화(어댑터 조합) 및 하드코딩 제거 — 훅/테스트/UI 치환 완료
-- [ ] `useAIConfigurations.ts`를 `use-bridge` 훅 기반으로 교체 또는 시그니처 수정
+- [x] `useAIConfigurations.ts` 항목 정리: 현 구조는 `use-bridge` 훅으로 대체되어 별도 파일 불필요 (N/A)
 
 ### 품질 게이트(현재 상태)
 
