@@ -34,59 +34,86 @@ export function Dashboard({
     }
   }, [lastEvent, qc]);
   // Real-time stats from actual data (with graceful fallbacks)
+  const isReady = !statsLoading && !statsError;
+
+  const valueOrDash = (val?: number | null, fallback?: number): string => {
+    if (!isReady) {
+      return fallback != null ? String(fallback) : '—';
+    }
+    if (val == null) {
+      return '—';
+    }
+    return String(val);
+  };
+
+  const agentsValue = valueOrDash(ds?.agents.total ?? null, currentAgents.length);
+  const agentsChange = (() => {
+    if (!isReady) {
+      const active = currentAgents.filter((a) => a.status === 'active').length;
+      return `${active} active`;
+    }
+    if (ds?.meta.agentsOk) {
+      const active = ds?.agents.active ?? '—';
+      return `${active} active`;
+    } else {
+      return 'Error • Retry';
+    }
+  })();
+
+  const chatsValue = valueOrDash(ds?.activeChats ?? null);
+  const chatsChange = (() => {
+    if (!isReady) {
+      return '';
+    }
+    return ds?.meta.chatsOk ? '+2 from yesterday' : 'Error • Retry';
+  })();
+
+  const modelsValue = valueOrDash(ds?.bridges.models ?? null);
+  const modelsChange = (() => {
+    if (!isReady) {
+      return '';
+    }
+    if (ds?.bridges.total == null) {
+      return '';
+    }
+    return ds?.meta.bridgesOk ? `Bridges: ${ds.bridges.total}` : 'Error • Retry';
+  })();
+
+  const presetsValue = valueOrDash(ds?.presets.total ?? null, presets.length);
+  const presetsChange = (() => {
+    if (!isReady) {
+      const inUse = presets.filter((p) => p.usageCount && p.usageCount > 0).length;
+      return `${inUse} in use`;
+    }
+    return ds?.meta.presetsOk ? `${ds?.presets.inUse ?? 0} in use` : 'Error • Retry';
+  })();
+
   const cards = [
     {
       title: 'Active Chats',
-      value: statsLoading || statsError || ds?.activeChats == null ? '—' : String(ds.activeChats),
-      change:
-        statsLoading || statsError ? '' : ds?.meta.chatsOk ? '+2 from yesterday' : 'Error • Retry',
+      value: chatsValue,
+      change: chatsChange,
       icon: MessageSquare,
       color: 'text-blue-600',
     },
     {
       title: 'Agents',
-      value:
-        statsLoading || statsError
-          ? String(currentAgents.length)
-          : ds?.agents.total != null
-            ? String(ds.agents.total)
-            : String(currentAgents.length),
-      change:
-        statsLoading || statsError
-          ? `${currentAgents.filter((a) => a.status === 'active').length} active`
-          : ds?.meta.agentsOk
-            ? `${ds?.agents.active ?? '—'} active`
-            : 'Error • Retry',
+      value: agentsValue,
+      change: agentsChange,
       icon: Bot,
       color: 'text-green-600',
     },
     {
       title: 'Models',
-      value:
-        statsLoading || statsError || ds?.bridges.models == null ? '—' : String(ds.bridges.models),
-      change:
-        statsLoading || statsError || ds?.bridges.total == null
-          ? ''
-          : ds?.meta.bridgesOk
-            ? `Bridges: ${ds.bridges.total}`
-            : 'Error • Retry',
+      value: modelsValue,
+      change: modelsChange,
       icon: Cpu,
       color: 'text-purple-600',
     },
     {
       title: 'Presets',
-      value:
-        statsLoading || statsError
-          ? String(presets.length)
-          : ds?.presets.total != null
-            ? String(ds.presets.total)
-            : String(presets.length),
-      change:
-        statsLoading || statsError
-          ? `${presets.filter((p) => p.usageCount && p.usageCount > 0).length} in use`
-          : ds?.meta.presetsOk
-            ? `${ds?.presets.inUse ?? 0} in use`
-            : 'Error • Retry',
+      value: presetsValue,
+      change: presetsChange,
       icon: Layers,
       color: 'text-orange-600',
     },
