@@ -71,12 +71,12 @@ Status: Draft (Phase-ready)
 
 ## Phased Implementation
 
-1) Add Summary/Validation cards (skeleton using existing Card/Badge components)
-2) Diff computation (shallow over name/status/preset.systemPrompt/enabledMcps)
-3) Inline validation + Validation card integration
-4) Hook Import Apply → compute diff + update formData + summary
-5) Final validation on Create Agent → banner + focus behavior
-6) Tests for import/validation/diff essentials
+1. Add Summary/Validation cards (skeleton using existing Card/Badge components)
+2. Diff computation (shallow over name/status/preset.systemPrompt/enabledMcps)
+3. Inline validation + Validation card integration
+4. Hook Import Apply → compute diff + update formData + summary
+5. Final validation on Create Agent → banner + focus behavior
+6. Tests for import/validation/diff essentials
 
 ## Future Enhancements (later phase)
 

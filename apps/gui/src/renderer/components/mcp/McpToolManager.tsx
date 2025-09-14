@@ -201,6 +201,46 @@ export function MCPToolsManager() {
     return matchesSearch && matchesCategory;
   });
 
+  const handleRefresh = async () => {
+    setIsLoading(true);
+    try {
+      if (ServiceContainer.has('mcp')) {
+        const mcpService = ServiceContainer.getOrThrow('mcp');
+        const mcpTools = await mcpService.getAllToolMetadata();
+
+        const computeId = (raw: Record<string, unknown>, name: string) =>
+          typeof raw['id'] === 'string'
+            ? (raw['id'] as string)
+            : name.toLowerCase().replace(/\s+/g, '-');
+        const guiTools: GuiMcpTool[] = (mcpTools as Record<string, unknown>[]).map((raw) => {
+          const name = typeof raw['name'] === 'string' ? (raw['name'] as string) : 'Unknown Tool';
+          const id = computeId(raw, name);
+          const category =
+            typeof raw['category'] === 'string' ? (raw['category'] as string) : 'other';
+          return {
+            id,
+            name,
+            description: (raw['description'] as string) ?? '',
+            category,
+            status: ((raw['status'] as string) ?? 'disconnected') as GuiMcpTool['status'],
+            version: (raw['version'] as string) ?? '1.0.0',
+            provider: raw['provider'] as string | undefined,
+            usageCount: (raw['usageCount'] as number) ?? 0,
+            endpoint: raw['endpoint'] as string | undefined,
+            permissions: Array.isArray(raw['permissions']) ? (raw['permissions'] as string[]) : [],
+            icon: getIconForCategory(category),
+          };
+        });
+
+        setTools(guiTools);
+      }
+    } catch (error) {
+      console.error('Failed to refresh tools:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Empty state when no tools and not loading
   if (!isLoading && tools.length === 0) {
     return (
@@ -340,45 +380,7 @@ export function MCPToolsManager() {
     }
   };
 
-  const handleRefresh = async () => {
-    setIsLoading(true);
-    try {
-      if (ServiceContainer.has('mcp')) {
-        const mcpService = ServiceContainer.getOrThrow('mcp');
-        const mcpTools = await mcpService.getAllToolMetadata();
-
-        const computeId = (raw: Record<string, unknown>, name: string) =>
-          typeof raw['id'] === 'string'
-            ? (raw['id'] as string)
-            : name.toLowerCase().replace(/\s+/g, '-');
-        const guiTools: GuiMcpTool[] = (mcpTools as Record<string, unknown>[]).map((raw) => {
-          const name = typeof raw['name'] === 'string' ? (raw['name'] as string) : 'Unknown Tool';
-          const id = computeId(raw, name);
-          const category =
-            typeof raw['category'] === 'string' ? (raw['category'] as string) : 'other';
-          return {
-            id,
-            name,
-            description: (raw['description'] as string) ?? '',
-            category,
-            status: ((raw['status'] as string) ?? 'disconnected') as GuiMcpTool['status'],
-            version: (raw['version'] as string) ?? '1.0.0',
-            provider: raw['provider'] as string | undefined,
-            usageCount: (raw['usageCount'] as number) ?? 0,
-            endpoint: raw['endpoint'] as string | undefined,
-            permissions: Array.isArray(raw['permissions']) ? (raw['permissions'] as string[]) : [],
-            icon: getIconForCategory(category),
-          };
-        });
-
-        setTools(guiTools);
-      }
-    } catch (error) {
-      console.error('Failed to refresh tools:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  
 
   const connectedTools = tools.filter((t) => t.status === 'connected').length;
   const errorTools = tools.filter((t) => t.status === 'error').length;

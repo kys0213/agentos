@@ -53,7 +53,7 @@ export const ModelManagerContainer: React.FC<ModelManagerContainerProps> = ({ re
     handleRefresh();
   };
 
-  const onRegister = async (manifest: any) => {
+  const onRegister = async (manifest: import('llm-bridge-spec').LlmManifest) => {
     await registerBridge.mutateAsync(manifest);
     handleRefresh();
   };

@@ -1,6 +1,30 @@
 import { describe, it, expect } from 'vitest';
-import type { CreateAgentMetadata, ReadonlyPreset } from '@agentos/core';
+import type { CreateAgentMetadata, ReadonlyPreset, EnabledMcp } from '@agentos/core';
 import { applyAgentExport, serializeAgent, tryParseAgentExport } from '../agent-export';
+
+function makePreset(): ReadonlyPreset {
+  const enabledMcps: EnabledMcp[] = [
+    { name: 'tool.a', enabledTools: [], enabledResources: [], enabledPrompts: [] },
+  ];
+  return {
+    id: 'p1',
+    name: 'P1',
+    description: 'Pres',
+    author: 'tester',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    version: '1',
+    systemPrompt: 'You are great',
+    enabledMcps,
+    llmBridgeName: 'bridge.x',
+    llmBridgeConfig: { key: 'v' },
+    status: 'active',
+    usageCount: 0,
+    knowledgeDocuments: 0,
+    knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 },
+    category: [],
+  } as const;
+}
 
 const makeAgent = (): CreateAgentMetadata => ({
   name: 'Agent',
@@ -8,16 +32,7 @@ const makeAgent = (): CreateAgentMetadata => ({
   status: 'active',
   icon: 'icon.png',
   keywords: ['k1', 'k2'],
-  // @ts-expect-error partial preset shape for test
-  preset: {
-    id: 'p1',
-    name: 'P1',
-    description: 'Pres',
-    systemPrompt: 'You are great',
-    enabledMcps: ['tool.a'],
-    llmBridgeName: 'bridge.x',
-    llmBridgeConfig: { key: 'v' },
-  } as unknown as ReadonlyPreset,
+  preset: makePreset(),
 });
 
 describe('agent-export utils', () => {

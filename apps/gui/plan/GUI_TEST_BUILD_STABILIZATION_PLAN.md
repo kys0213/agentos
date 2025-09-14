@@ -17,24 +17,25 @@ Owner: GUI team
 
 ## High-Level Strategy
 
-1) Document compatibility guidelines (Added)
+1. Document compatibility guidelines (Added)
    - See `docs/40-process-policy/testing-compat-guidelines.md`.
-2) Prefer compatibility fixes before rollback
+2. Prefer compatibility fixes before rollback
    - Scope jsdom/jest-dom to Vitest only, avoid global expect pollution.
    - Split test runners/patterns if needed (unit vs legacy).
-3) Typecheck-first remediation (source of truth)
+3. Typecheck-first remediation (source of truth)
    - Fix imports/types to remove casts and unknowns.
    - Normalize dates, API payload/returns matching contracts.
-4) Lint remediation
+4. Lint remediation
    - Remove `as any/unknown`, fix style, keep tests type-safe.
-5) Green legacy tests
+5. Green legacy tests
    - Adjust environment or mocks where necessary, without changing behaviors.
-6) CI order: unit → legacy → (optional) e2e
+6. CI order: unit → legacy → (optional) e2e
    - Catch regressions early with fast suites.
 
 ## Work Breakdown (Detailed)
 
 A. Test Environment & Scope
+
 - A1. Keep Vitest jsdom setup local to apps/gui (Already done):
   - apps/gui/src/test/vitest.setup.ts uses `@testing-library/jest-dom/vitest`.
 - A2. Split execution targets:
@@ -43,6 +44,7 @@ A. Test Environment & Scope
   - Update root `test` to run both in sequence.
 
 B. Typecheck Fixes (apps/gui)
+
 - B1. knowledge.service
   - Replace deep imports with public exports or stable paths.
   - Remove `any/unknown` casts; use explicit types; convert `updatedAt` to Date where needed.
@@ -62,17 +64,20 @@ B. Typecheck Fixes (apps/gui)
   - Correct import (e.g., `FileMcpUsageRepository` vs non-existent types).
 
 C. Lint Fixes
+
 - C1. Remove unsafe casts in prod code; prefer contract types or helpers.
 - C2. In tests, define minimal test-only interfaces instead of `any`.
 - C3. Minor style (`curly`, etc.).
 
 D. Legacy Tests – Compatibility
+
 - D1. Identify failing suites & causes (env/mocks/global setup).
 - D2. For jsdom conflicts, keep node env and avoid jsdom setup load path.
 - D3. Provide local mocks where global side-effects happen.
 - D4. Mark truly obsolete cases for later refactor (but keep green now).
 
 E. CI & Scripts
+
 - E1. Add scripts:
   - `test:unit` (apps/gui, vitest, jsdom, new patterns)
   - `test:legacy` (apps/gui, legacy patterns, node/electron env)

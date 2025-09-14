@@ -1,5 +1,4 @@
 import { McpUsageService as CoreMcpUsageService } from '@agentos/core';
-import type { McpUsageRepository } from '@agentos/core';
 import { OutboundChannel } from '../common/event/outbound-channel';
 
 /**
@@ -7,7 +6,10 @@ import { OutboundChannel } from '../common/event/outbound-channel';
  * Emits: 'mcp.usage.stats.updated' after each recordEnd, carrying latest stats payload.
  */
 export class McpUsageEventingService extends CoreMcpUsageService {
-  constructor(repo: McpUsageRepository, private readonly outbound: OutboundChannel) {
+  constructor(
+    repo: ConstructorParameters<typeof CoreMcpUsageService>[0],
+    private readonly outbound: OutboundChannel
+  ) {
     super(repo);
   }
 
@@ -27,4 +29,3 @@ export class McpUsageEventingService extends CoreMcpUsageService {
     }
   }
 }
-

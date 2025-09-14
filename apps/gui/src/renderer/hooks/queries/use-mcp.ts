@@ -6,9 +6,12 @@ export function useMcpTools() {
     queryKey: ['mcp', 'tools'],
     queryFn: async () => {
       const mcp = ServiceContainer.get('mcp');
-      if (!mcp) return { items: [], nextCursor: '', hasMore: false } as const;
+      if (!mcp) {
+        return { items: [], nextCursor: '', hasMore: false } as const;
+      }
       try {
-        return await mcp.listTools({ limit: 100 });
+        const items = await mcp.getAllToolMetadata();
+        return { items, nextCursor: '', hasMore: false } as const;
       } catch {
         return { items: [], nextCursor: '', hasMore: false } as const;
       }
@@ -16,4 +19,3 @@ export function useMcpTools() {
     staleTime: 30_000,
   });
 }
-

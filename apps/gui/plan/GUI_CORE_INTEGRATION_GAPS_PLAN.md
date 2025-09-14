@@ -26,6 +26,41 @@
 - [ ] 멀티 에이전트 협업 기능이 Core 오케스트레이션과 연동된다.
 - [ ] 시스템 통계와 메트릭이 실시간으로 수집/표시된다.
 
+## 테스트 환경 분리/전략 (보강)
+
+### 목표
+
+- GUI 테스트를 `renderer(jsdom)`와 `main(node)`로 분리하여 각 레이어 특성에 맞는 환경에서 검증한다.
+- CI에서는 `pnpm test`로 두 프로젝트가 모두 수행되도록 구성한다.
+
+### 구성
+
+- 러너: Vitest Workspace(`vitest.config.ts`)
+  - 프로젝트 `renderer`
+    - 환경: `jsdom`
+    - setup: `src/test/vitest.setup.ts` (`@testing-library/jest-dom/vitest`)
+    - 포함: `src/renderer/**/__tests__/**/*.(test|spec).ts(x)`
+  - 프로젝트 `main`
+    - 환경: `node`
+    - 포함: `src/main/**/__tests__/**/*.(test|spec).ts(x)`
+- 스크립트(`apps/gui/package.json`)
+  - `test` → 워크스페이스 전체 실행(두 프로젝트 모두)
+  - `test:renderer` → `--project renderer`
+  - `test:main` → `--project main`
+
+### 운영 원칙
+
+- `vitest.config.ts`는 Vitest `defineWorkspace` 기반으로 유지하며, 별도 단일용 설정 파일은 두지 않는다(혼선 방지).
+- renderer 테스트는 DOM 상호작용 중심의 단위/통합 테스트를 포함하고, main 테스트는 Electron/Nest 로직 및 IPC/이벤트 브리지 단위 테스트를 포함한다.
+- e2e는 Playwright로 별도 디렉터리(`apps/gui/e2e`)에서 운영한다.
+
+### TODO
+
+- [x] Vitest 멀티 프로젝트 구성 (renderer/main)
+- [x] CI에서 `pnpm test`로 두 프로젝트 동시 실행 보장
+- [ ] main 레이어에서 Electron 의존 모듈은 필요한 곳에 한해 mock 또는 경계 어댑터로 대체
+- [ ] renderer 테스트 커버리지 기준 수립 및 주요 시나리오(프리셋 임포트, MCP 사용량 스트림, 대시보드) 보장
+
 ### 사용 시나리오
 
 - 사용자는 4단계 마법사를 통해 에이전트를 생성한다 (Overview → Category → AI Config → Settings).

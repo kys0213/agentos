@@ -7,16 +7,19 @@ export function useMcpUsageStream() {
 
   useEffect(() => {
     const svc = ServiceContainer.get('mcpUsageLog');
-    if (!svc) return;
+    if (!svc) {
+      return;
+    }
     let close: (() => void) | undefined;
     (async () => {
       close = await svc.subscribeToUsageUpdates((ev) => setLastEvent(ev));
     })();
     return () => {
-      if (close) close();
+      if (close) {
+        close();
+      }
     };
   }, []);
 
   return { lastEvent };
 }
-

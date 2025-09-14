@@ -56,9 +56,7 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
     keywords: [],
   });
   const [selectedPresetId, setSelectedPresetId] = useState<string | undefined>(undefined);
-  const [selectedCategory, setSelectedCategory] = useState<GuiAgentCategory | undefined>(
-    undefined
-  );
+  const [selectedCategory, setSelectedCategory] = useState<GuiAgentCategory | undefined>(undefined);
   const [systemPrompt, setSystemPrompt] = useState<string>('');
   const [selectedMcpIds, setSelectedMcpIds] = useState<Set<string>>(new Set());
   const [exportJson, setExportJson] = useState<string>('');
@@ -100,8 +98,13 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
       preset = {
         ...preset,
         systemPrompt: systemPrompt || preset.systemPrompt,
-        enabledMcps: Array.from(selectedMcpIds),
-      } as any;
+        enabledMcps: Array.from(selectedMcpIds).map((id) => ({
+          name: id,
+          enabledTools: [],
+          enabledResources: [],
+          enabledPrompts: [],
+        })),
+      };
     }
 
     const newAgent: CreateAgentMetadata = {
@@ -181,14 +184,19 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
   const toggleMcpSelection = (id: string) => {
     setSelectedMcpIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   };
 
   const categoryDisplayName = useMemo(() => {
-    if (!selectedCategory) return 'Not specified';
+    if (!selectedCategory) {
+      return 'Not specified';
+    }
     const map: Record<GuiAgentCategory, string> = {
       general: 'General Purpose',
       research: 'Research',
@@ -454,9 +462,7 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                           selectedCategory === cat ? 'border-primary ring-1 ring-primary' : ''
                         }`}
                       >
-                        <div className="font-medium capitalize">
-                          {cat.replace('_', ' ')}
-                        </div>
+                        <div className="font-medium capitalize">{cat.replace('_', ' ')}</div>
                         <div className="mt-2 text-xs text-muted-foreground">
                           {'# ' + GuiCategoryKeywordsMap[cat].slice(0, 4).join('  # ')}
                         </div>
@@ -533,10 +539,13 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">MCP Tools</h3>
                   <p className="text-muted-foreground mb-3">
-                    Select tools to enable for this agent. You can connect/disconnect tools in the MCP manager.
+                    Select tools to enable for this agent. You can connect/disconnect tools in the
+                    MCP manager.
                   </p>
                   <div className="space-y-2">
-                    {mcpLoading && <div className="text-sm text-muted-foreground">Loading tools...</div>}
+                    {mcpLoading && (
+                      <div className="text-sm text-muted-foreground">Loading tools...</div>
+                    )}
                     {!mcpLoading && (mcpList?.items?.length ?? 0) === 0 && (
                       <div className="text-sm text-muted-foreground">No tools found.</div>
                     )}
@@ -558,13 +567,15 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
                                 <span className="font-medium">{t.name}</span>
-                                <span className={`text-xs rounded px-2 py-0.5 border ${
-                                  t.status === 'connected'
-                                    ? 'text-green-600 border-green-600'
-                                    : t.status === 'error'
-                                    ? 'text-red-600 border-red-600'
-                                    : 'text-muted-foreground border-muted'
-                                }`}>
+                                <span
+                                  className={`text-xs rounded px-2 py-0.5 border ${
+                                    t.status === 'connected'
+                                      ? 'text-green-600 border-green-600'
+                                      : t.status === 'error'
+                                        ? 'text-red-600 border-red-600'
+                                        : 'text-muted-foreground border-muted'
+                                  }`}
+                                >
                                   {t.status}
                                 </span>
                               </div>
@@ -664,8 +675,10 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                         <Button
                           variant="outline"
                           onClick={() => {
-                            if (!validateFormData(formData)) return;
-                            const json = JSON.stringify(serializeAgent(formData as any), null, 2);
+                            if (!validateFormData(formData)) {
+                              return;
+                            }
+                            const json = JSON.stringify(serializeAgent(formData), null, 2);
                             setExportJson(json);
                           }}
                         >
@@ -676,14 +689,21 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                           onClick={async () => {
                             try {
                               await navigator.clipboard.writeText(exportJson);
-                            } catch {}
+                            } catch {
+                              // ignore clipboard errors
+                            }
                           }}
                           disabled={!exportJson}
                         >
                           Copy
                         </Button>
                       </div>
-                      <Textarea className="mt-2 h-40" value={exportJson} readOnly placeholder="Generated JSON will appear here" />
+                      <Textarea
+                        className="mt-2 h-40"
+                        value={exportJson}
+                        readOnly
+                        placeholder="Generated JSON will appear here"
+                      />
                     </div>
                     {/* Import */}
                     <div>
@@ -697,9 +717,7 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                         }}
                         placeholder="Paste exported agent JSON here"
                       />
-                      {importError && (
-                        <p className="text-xs text-red-600 mt-1">{importError}</p>
-                      )}
+                      {importError && <p className="text-xs text-red-600 mt-1">{importError}</p>}
                       <div className="mt-2 flex gap-2">
                         <Button
                           variant="outline"
@@ -711,7 +729,7 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                             }
                             const next = applyAgentExport(formData, parsed);
                             setSystemPrompt(parsed.preset.systemPrompt ?? '');
-                            updateFormData(next as any);
+                            updateFormData(next);
                           }}
                         >
                           Apply

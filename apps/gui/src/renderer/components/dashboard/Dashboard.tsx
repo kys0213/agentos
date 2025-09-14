@@ -23,14 +23,14 @@ export function Dashboard({
 }: DashboardProps) {
   const { data: ds, isLoading: statsLoading, isError: statsError } = useDashboardStats();
   const qc = useQueryClient();
-  const retry = () => qc.invalidateQueries({ queryKey: ['dashboard','stats'] });
+  const retry = () => qc.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
   // Real-time stats from actual data (with graceful fallbacks)
   const cards = [
     {
       title: 'Active Chats',
-      value:
-        statsLoading || statsError || ds?.activeChats == null ? '—' : String(ds.activeChats),
-      change: statsLoading || statsError ? '' : (ds?.meta.chatsOk ? '+2 from yesterday' : 'Error • Retry'),
+      value: statsLoading || statsError || ds?.activeChats == null ? '—' : String(ds.activeChats),
+      change:
+        statsLoading || statsError ? '' : ds?.meta.chatsOk ? '+2 from yesterday' : 'Error • Retry',
       icon: MessageSquare,
       color: 'text-blue-600',
     },
@@ -40,25 +40,27 @@ export function Dashboard({
         statsLoading || statsError
           ? String(currentAgents.length)
           : ds?.agents.total != null
-          ? String(ds.agents.total)
-          : String(currentAgents.length),
+            ? String(ds.agents.total)
+            : String(currentAgents.length),
       change:
         statsLoading || statsError
           ? `${currentAgents.filter((a) => a.status === 'active').length} active`
-          : (ds?.meta.agentsOk ? `${ds?.agents.active ?? '—'} active` : 'Error • Retry');
+          : ds?.meta.agentsOk
+            ? `${ds?.agents.active ?? '—'} active`
+            : 'Error • Retry',
       icon: Bot,
       color: 'text-green-600',
     },
     {
       title: 'Models',
       value:
-        statsLoading || statsError || ds?.bridges.models == null
-          ? '—'
-          : String(ds.bridges.models),
+        statsLoading || statsError || ds?.bridges.models == null ? '—' : String(ds.bridges.models),
       change:
         statsLoading || statsError || ds?.bridges.total == null
           ? ''
-          : (ds?.meta.bridgesOk ? `Bridges: ${ds.bridges.total}` : 'Error • Retry'),
+          : ds?.meta.bridgesOk
+            ? `Bridges: ${ds.bridges.total}`
+            : 'Error • Retry',
       icon: Cpu,
       color: 'text-purple-600',
     },
@@ -68,12 +70,14 @@ export function Dashboard({
         statsLoading || statsError
           ? String(presets.length)
           : ds?.presets.total != null
-          ? String(ds.presets.total)
-          : String(presets.length),
+            ? String(ds.presets.total)
+            : String(presets.length),
       change:
         statsLoading || statsError
           ? `${presets.filter((p) => p.usageCount && p.usageCount > 0).length} in use`
-          : (ds?.meta.presetsOk ? `${ds?.presets.inUse ?? 0} in use` : 'Error • Retry'),
+          : ds?.meta.presetsOk
+            ? `${ds?.presets.inUse ?? 0} in use`
+            : 'Error • Retry',
       icon: Layers,
       color: 'text-orange-600',
     },
@@ -114,7 +118,13 @@ export function Dashboard({
       time: 'Configured',
       agent: 'System',
     },
-  ].filter(Boolean) as Array<{ id: number; type: string; title: string; time: string; agent: string }>;
+  ].filter(Boolean) as Array<{
+    id: number;
+    type: string;
+    title: string;
+    time: string;
+    agent: string;
+  }>;
 
   // Smart quick actions based on available agents and presets
   const bestAgent = currentAgents.find((a) => a.status === 'active') || currentAgents[0];

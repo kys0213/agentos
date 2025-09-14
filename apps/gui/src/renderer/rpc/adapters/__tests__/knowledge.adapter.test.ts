@@ -33,6 +33,26 @@ class FakeKnowledgeClient {
     this.rec('addDocument', payload);
     return { docId: 'd1' };
   }
+  async removeDocument(_payload: unknown): Promise<unknown> {
+    this.rec('removeDocument', _payload);
+    return { success: true };
+  }
+  async readDocument(_payload: unknown): Promise<unknown> {
+    this.rec('readDocument', _payload);
+    return { id: 'd1', title: 'T', tags: [], content: '', updatedAt: new Date().toISOString() };
+  }
+  async indexAll(_payload: unknown): Promise<unknown> {
+    this.rec('indexAll', _payload);
+    return { success: true };
+  }
+  async getStats(_payload: unknown): Promise<unknown> {
+    this.rec('getStats', _payload);
+    return { totalDocuments: 0, totalChunks: 0, lastUpdated: null, storageSize: 0 };
+  }
+  async search(_payload: unknown): Promise<unknown> {
+    this.rec('search', _payload);
+    return { items: [] };
+  }
 }
 
 describe('KnowledgeServiceAdapter', () => {
@@ -42,7 +62,8 @@ describe('KnowledgeServiceAdapter', () => {
     const agentId = 'agent-1';
 
     const list = await ad.listDocs(agentId, { limit: 10 });
-    expect(list.items).toEqual([]);
+    const parsedList = C.methods['listDocuments'].response.parse(list);
+    expect(parsedList.items).toEqual([]);
     // getByAgent -> createForAgent -> listDocuments
     expect(client.calls.getByAgent?.length).toBe(1);
     expect(client.calls.createForAgent?.length).toBe(1);

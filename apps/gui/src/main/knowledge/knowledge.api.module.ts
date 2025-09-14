@@ -9,4 +9,3 @@ import { ElectronAppEnvironment } from '../electron/electron-app.environment';
   exports: [KnowledgeService],
 })
 export class KnowledgeApiModule {}
-

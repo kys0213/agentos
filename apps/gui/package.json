@@ -28,9 +28,9 @@
     "test:e2e:list": "playwright test --reporter=list",
     "test:e2e:json": "playwright test --reporter=json",
     "test:e2e:ci": "playwright test --reporter=line",
-    "test:renderer": "vitest run -c vitest.config.ts --project renderer",
-    "test:main": "vitest run -c vitest.config.ts --project main",
-    "test:all": "vitest run -c vitest.config.ts"
+    "test:renderer": "vitest run --project renderer",
+    "test:main": "vitest run --project main",
+    "test:all": "vitest run"
   },
   "build": {
     "appId": "com.agentos.gui",

@@ -26,32 +26,35 @@ const DocumentDetail = z.object({
   updatedAt: z.coerce.date(),
 });
 
-const Pagination = z.object({ cursor: z.string().optional(), limit: z.number().int().positive().optional() });
+const Pagination = z.object({
+  cursor: z.string().optional(),
+  limit: z.number().int().positive().optional(),
+});
 
 export const KnowledgeContract = defineContract({
   namespace: 'knowledge',
   methods: {
-    'createForAgent': {
+    createForAgent: {
       channel: 'knowledge.create-for-agent',
       payload: z.object({ agentId: AgentId }),
       response: z.object({ knowledgeId: KnowledgeId }),
     },
-    'getByAgent': {
+    getByAgent: {
       channel: 'knowledge.get-by-agent',
       payload: z.object({ agentId: AgentId }),
       response: z.object({ knowledgeId: KnowledgeId }).nullable(),
     },
-    'addDocument': {
+    addDocument: {
       channel: 'knowledge.add-document',
       payload: z.object({ knowledgeId: KnowledgeId, doc: DocumentInput }),
       response: z.object({ docId: z.string() }),
     },
-    'removeDocument': {
+    removeDocument: {
       channel: 'knowledge.remove-document',
       payload: z.object({ knowledgeId: KnowledgeId, docId: z.string() }),
       response: z.object({ success: z.literal(true) }),
     },
-    'listDocuments': {
+    listDocuments: {
       channel: 'knowledge.list-documents',
       payload: z.object({ knowledgeId: KnowledgeId, pagination: Pagination.optional() }),
       response: z.object({
@@ -60,22 +63,26 @@ export const KnowledgeContract = defineContract({
         hasMore: z.boolean().default(false),
       }),
     },
-    'readDocument': {
+    readDocument: {
       channel: 'knowledge.read-document',
       payload: z.object({ knowledgeId: KnowledgeId, docId: z.string() }),
       response: DocumentDetail,
     },
-    'indexAll': {
+    indexAll: {
       channel: 'knowledge.index-all',
       payload: z.object({ knowledgeId: KnowledgeId }),
       response: z.object({ success: z.boolean() }),
     },
-    'search': {
+    search: {
       channel: 'knowledge.search',
-      payload: z.object({ knowledgeId: KnowledgeId, query: z.string(), limit: z.number().int().positive().optional() }),
+      payload: z.object({
+        knowledgeId: KnowledgeId,
+        query: z.string(),
+        limit: z.number().int().positive().optional(),
+      }),
       response: z.object({ items: z.array(DocumentSummary) }),
     },
-    'getStats': {
+    getStats: {
       channel: 'knowledge.get-stats',
       payload: z.object({ knowledgeId: KnowledgeId }),
       response: z.object({

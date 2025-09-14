@@ -31,7 +31,7 @@ import {
   GuiAgentCategories,
   GuiCategoryKeywordsMap,
   type GuiAgentCategory,
-} from '../../shared/constants/agent-categories';
+} from '../../../shared/constants/agent-categories';
 
 export interface SubAgentManagerProps {
   agents: ReadonlyAgentMetadata[];

@@ -2,15 +2,30 @@ import { KnowledgeClient } from '../gen/knowledge.client';
 import { KnowledgeContract as C } from '../../../shared/rpc/contracts/knowledge.contract';
 
 export class KnowledgeServiceAdapter {
-  constructor(private readonly client: KnowledgeClient) {}
+  constructor(
+    private readonly client: Pick<
+      KnowledgeClient,
+      | 'getByAgent'
+      | 'createForAgent'
+      | 'listDocuments'
+      | 'addDocument'
+      | 'removeDocument'
+      | 'indexAll'
+      | 'readDocument'
+      | 'getStats'
+      | 'search'
+    >
+  ) {}
 
   async ensureKnowledgeForAgent(agentId: string): Promise<string> {
     const existing = await this.client.getByAgent({ agentId });
-    if (existing && (existing as any).knowledgeId) {
-      return (existing as any).knowledgeId as string;
+    const parsedExisting = C.methods['getByAgent'].response.parse(existing);
+    if (parsedExisting && parsedExisting.knowledgeId) {
+      return parsedExisting.knowledgeId;
     }
     const created = await this.client.createForAgent({ agentId });
-    return (created as any).knowledgeId as string;
+    const parsedCreated = C.methods['createForAgent'].response.parse(created);
+    return parsedCreated.knowledgeId;
   }
 
   async addDoc(agentId: string, doc: { title: string; content: string; tags?: string[] }) {

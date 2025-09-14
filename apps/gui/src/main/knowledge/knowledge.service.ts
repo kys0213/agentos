@@ -2,12 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ElectronAppEnvironment } from '../electron/electron-app.environment';
 import * as path from 'path';
 import * as fs from 'node:fs/promises';
-import {
-  KnowledgeRepositoryImpl,
-  Bm25SearchIndex,
-  DefaultIndexSet,
-} from '@agentos/core/knowledge';
-import type { DocumentMapper, IndexRecord } from '@agentos/core/knowledge/indexing/interfaces';
+import { KnowledgeRepositoryImpl, Bm25SearchIndex, DefaultIndexSet } from '@agentos/core';
+import type { KnowledgeIndexing } from '@agentos/core';
 import type { z } from 'zod';
 import type { KnowledgeContract } from '../../shared/rpc/contracts/knowledge.contract';
 
@@ -23,8 +19,8 @@ export class KnowledgeService {
   constructor(env: ElectronAppEnvironment) {
     this.root = path.join(env.userDataPath, 'knowledge-store');
     // Simple mapper: index title + text content (fileRef not yet supported)
-    const mapper: DocumentMapper = {
-      async *toRecords(doc): AsyncIterable<IndexRecord> {
+    const mapper: KnowledgeIndexing.DocumentMapper = {
+      async *toRecords(doc): AsyncIterable<KnowledgeIndexing.IndexRecord> {
         const text = doc.source.kind === 'text' ? doc.source.text : '';
         yield { id: doc.id, fields: { title: doc.title, text } };
       },
@@ -39,7 +35,9 @@ export class KnowledgeService {
 
   // ---------- Agent ↔ Knowledge mapping ----------
   private async loadMap(): Promise<Record<string, string>> {
-    if (this.agentMapCache) return this.agentMapCache;
+    if (this.agentMapCache) {
+      return this.agentMapCache;
+    }
     try {
       const txt = await fs.readFile(this.agentMapFile, 'utf-8');
       this.agentMapCache = JSON.parse(txt) as Record<string, string>;
@@ -63,7 +61,7 @@ export class KnowledgeService {
       return { knowledgeId: map[payload.agentId] };
     }
     const kb = await this.repo.create({ name: `Agent ${payload.agentId} Knowledge` });
-    map[payload.agentId] = kb.id as unknown as string;
+    map[payload.agentId] = kb.id;
     await this.saveMap(map);
     return { knowledgeId: map[payload.agentId] };
   }
@@ -80,13 +78,13 @@ export class KnowledgeService {
   async addDocument(
     payload: z.infer<KMethods['addDocument']['payload']>
   ): Promise<z.infer<KMethods['addDocument']['response']>> {
-    const kb = await this.repo.get(payload.knowledgeId as any);
+    const kb = await this.repo.get(payload.knowledgeId as KnowledgeIndexing.KnowledgeId);
     if (!kb) {
       throw new Error('Knowledge not found');
     }
     const doc = await kb.addDoc({
       title: payload.doc.title,
-      source: { kind: 'text', text: payload.doc.content } as any,
+      source: { kind: 'text', text: payload.doc.content },
       tags: payload.doc.tags,
     });
     return { docId: doc.id };
@@ -95,38 +93,40 @@ export class KnowledgeService {
   async removeDocument(
     payload: z.infer<KMethods['removeDocument']['payload']>
   ): Promise<z.infer<KMethods['removeDocument']['response']>> {
-    const kb = await this.repo.get(payload.knowledgeId as any);
-    if (!kb) throw new Error('Knowledge not found');
-    await kb.deleteDoc(payload.docId as any);
+    const kb = await this.repo.get(payload.knowledgeId as KnowledgeIndexing.KnowledgeId);
+    if (!kb) {
+      throw new Error('Knowledge not found');
+    }
+    await kb.deleteDoc(payload.docId);
     return { success: true } as const;
   }
 
   async listDocuments(
     payload: z.infer<KMethods['listDocuments']['payload']>
   ): Promise<z.infer<KMethods['listDocuments']['response']>> {
-    const kb = await this.repo.get(payload.knowledgeId as any);
+    const kb = await this.repo.get(payload.knowledgeId as KnowledgeIndexing.KnowledgeId);
     if (!kb) {
-      return { items: [], hasMore: false } as any;
+      return { items: [], nextCursor: undefined, hasMore: false };
     }
     const page = await kb.listDocs(payload.pagination);
     const items = page.items.map((d) => ({
       id: d.id,
       title: d.title,
       tags: d.tags ?? [],
-      updatedAt: d.updatedAt ?? d.createdAt,
+      updatedAt: new Date(d.updatedAt ?? d.createdAt),
     }));
-    return { items, nextCursor: page.nextCursor, hasMore: !!page.nextCursor } as any;
+    return { items, nextCursor: page.nextCursor, hasMore: !!page.nextCursor };
   }
 
   async readDocument(
     payload: z.infer<KMethods['readDocument']['payload']>
   ): Promise<z.infer<KMethods['readDocument']['response']>> {
-    const kb = await this.repo.get(payload.knowledgeId as any);
+    const kb = await this.repo.get(payload.knowledgeId as KnowledgeIndexing.KnowledgeId);
     if (!kb) {
       throw new Error('Knowledge not found');
     }
     const page = await kb.listDocs({});
-    const doc = page.items.find((d) => d.id === (payload.docId as any));
+    const doc = page.items.find((d) => d.id === payload.docId);
     if (!doc) {
       throw new Error('Document not found');
     }
@@ -136,15 +136,17 @@ export class KnowledgeService {
       title: doc.title,
       tags: doc.tags ?? [],
       content,
-      updatedAt: doc.updatedAt ?? doc.createdAt,
-    } as any;
+      updatedAt: new Date(doc.updatedAt ?? doc.createdAt),
+    };
   }
 
   async indexAll(
     payload: z.infer<KMethods['indexAll']['payload']>
   ): Promise<z.infer<KMethods['indexAll']['response']>> {
-    const kb = await this.repo.get(payload.knowledgeId as any);
-    if (!kb) throw new Error('Knowledge not found');
+    const kb = await this.repo.get(payload.knowledgeId as KnowledgeIndexing.KnowledgeId);
+    if (!kb) {
+      throw new Error('Knowledge not found');
+    }
     await kb.reindex();
     return { success: true };
   }
@@ -152,9 +154,11 @@ export class KnowledgeService {
   async search(
     payload: z.infer<KMethods['search']['payload']>
   ): Promise<z.infer<KMethods['search']['response']>> {
-    const kb = await this.repo.get(payload.knowledgeId as any);
-    if (!kb) return { items: [] } as any;
-    const hits = await kb.query({ text: payload.query }, { merge: 'max' });
+    const kb = await this.repo.get(payload.knowledgeId as KnowledgeIndexing.KnowledgeId);
+    if (!kb) {
+      return { items: [] };
+    }
+    const hits = await kb.query({ text: payload.query });
     const docs = await kb.listDocs({});
     const byId = new Map(docs.items.map((d) => [d.id, d]));
     const items = hits.slice(0, payload.limit ?? 10).map((h) => {
@@ -163,16 +167,16 @@ export class KnowledgeService {
         id: h.docId,
         title: d?.title ?? '(unknown)',
         tags: d?.tags ?? [],
-        updatedAt: d?.updatedAt ?? d?.createdAt ?? new Date(),
+        updatedAt: new Date(d?.updatedAt ?? d?.createdAt ?? new Date().toISOString()),
       };
     });
-    return { items } as any;
+    return { items };
   }
 
   async getStats(
     payload: z.infer<KMethods['getStats']['payload']>
   ): Promise<z.infer<KMethods['getStats']['response']>> {
-    const kb = await this.repo.get(payload.knowledgeId as any);
+    const kb = await this.repo.get(payload.knowledgeId as KnowledgeIndexing.KnowledgeId);
     if (!kb) {
       return {
         totalDocuments: 0,
@@ -187,7 +191,7 @@ export class KnowledgeService {
     return {
       totalDocuments: docs.items.length,
       totalChunks: bm25?.docCount ?? 0,
-      lastUpdated: bm25?.lastBuiltAt ?? null,
+      lastUpdated: bm25?.lastBuiltAt ? new Date(bm25.lastBuiltAt) : null,
       storageSize: 0,
     };
   }

@@ -122,7 +122,8 @@ export function KnowledgeBaseManager({
       try {
         if (knowledge) {
           const page = await knowledge.listDocs(agentId, { limit: 100 });
-          const next: KnowledgeDocument[] = page.items.map((d) => ({
+          const parsed = KC.methods['listDocuments'].response.parse(page);
+          const next: KnowledgeDocument[] = parsed.items.map((d) => ({
             id: d.id,
             title: d.title,
             content: '',
@@ -298,13 +299,14 @@ export function KnowledgeBaseManager({
     try {
       if (knowledge) {
         const s = await knowledge.getStats(agentId);
+        const stats = KC.methods['getStats'].response.parse(s);
         setKnowledgeStats({
-          totalDocuments: s.totalDocuments,
-          indexedDocuments: s.totalChunks,
+          totalDocuments: stats.totalDocuments,
+          indexedDocuments: stats.totalChunks,
           vectorizedDocuments: 0,
-          totalChunks: s.totalChunks,
-          lastUpdated: s.lastUpdated ? new Date(s.lastUpdated) : new Date(0),
-          storageSize: s.storageSize,
+          totalChunks: stats.totalChunks,
+          lastUpdated: stats.lastUpdated ? new Date(stats.lastUpdated) : new Date(0),
+          storageSize: stats.storageSize,
         });
         return;
       }
@@ -359,7 +361,8 @@ export function KnowledgeBaseManager({
         try {
           if (knowledge && agentId) {
             const page = await knowledge.listDocs(agentId, { limit: 100 });
-            const next: KnowledgeDocument[] = page.items.map((d) => ({
+            const parsed = KC.methods['listDocuments'].response.parse(page);
+            const next: KnowledgeDocument[] = parsed.items.map((d) => ({
               id: d.id,
               title: d.title,
               content: '',

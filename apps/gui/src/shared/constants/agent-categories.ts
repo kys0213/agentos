@@ -17,4 +17,3 @@ export const GuiCategoryKeywordsMap: Record<GuiAgentCategory, string[]> = {
   analytics: ['analytics', 'data', 'analysis', 'visualization', 'insights', 'reports'],
   customer_support: ['support', 'customer', 'service', 'help', 'faq', 'engagement'],
 };
-

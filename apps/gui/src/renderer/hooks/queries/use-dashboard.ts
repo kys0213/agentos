@@ -36,22 +36,26 @@ export function useDashboardStats() {
       // Run available requests in parallel; each guarded for absence/errors
       const [agentsRes, bridgesRes, chatsRes, presetsRes, mcpStats, mcpHourly] = await Promise.all([
         (async () => {
-          if (!agent) return null as const;
+          if (!agent) {
+            return null;
+          }
           try {
             return await agent.getAllAgentMetadatas();
           } catch {
-            return null as const;
+            return null;
           }
         })(),
         (async () => {
-          if (!bridge) return null as const;
+          if (!bridge) {
+            return null;
+          }
           try {
             const ids = await bridge.getBridgeIds();
             let modelCount = 0;
             for (const id of ids) {
               try {
                 const cfg = await bridge.getBridgeConfig(id as string);
-                const models = (cfg as any)?.models as unknown[] | undefined;
+                const models = (cfg as { models?: unknown[] } | undefined)?.models;
                 modelCount += Array.isArray(models) ? models.length : 0;
               } catch {
                 // ignore per-bridge errors
@@ -59,41 +63,47 @@ export function useDashboardStats() {
             }
             return { ids, modelCount };
           } catch {
-            return null as const;
+            return null;
           }
         })(),
         (async () => {
-          if (!convo) return null as const;
+          if (!convo) {
+            return null;
+          }
           try {
             const page = await convo.listSessions();
             return page?.items?.length ?? 0; // Note: not total across pages
           } catch {
-            return null as const;
+            return null;
           }
         })(),
         (async () => {
-          if (!preset) return null as const;
+          if (!preset) {
+            return null;
+          }
           try {
             // Preset adapter API follows contract; expose getAllPresets()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const p = (preset as any).getAllPresets
-              ? await (preset as any).getAllPresets()
-              : [];
+            const maybe = preset as { getAllPresets?: () => Promise<unknown[]> };
+            const p = maybe.getAllPresets ? await maybe.getAllPresets() : [];
             return Array.isArray(p) ? p : [];
           } catch {
-            return null as const;
+            return null;
           }
         })(),
         (async () => {
-          if (!mcpUsage) return null as const;
+          if (!mcpUsage) {
+            return null;
+          }
           try {
             return await mcpUsage.getUsageStats();
           } catch {
-            return null as const;
+            return null;
           }
         })(),
         (async () => {
-          if (!mcpUsage) return null as const;
+          if (!mcpUsage) {
+            return null;
+          }
           try {
             const { hourlyData } = await mcpUsage.getHourlyStats(new Date());
             const total = Array.isArray(hourlyData)
@@ -101,31 +111,32 @@ export function useDashboardStats() {
               : 0;
             return total;
           } catch {
-            return null as const;
+            return null;
           }
         })(),
       ]);
 
       const agentsTotal = agentsRes ? agentsRes.length : null;
-      const agentsActive = agentsRes
-        ? agentsRes.filter((a: any) => a.status === 'active').length
+      const agentsActive = Array.isArray(agentsRes)
+        ? agentsRes.filter((a) => (a as { status?: string }).status === 'active').length
         : null;
 
       const bridgesTotal = bridgesRes ? bridgesRes.ids.length : null;
       const modelsTotal = bridgesRes ? bridgesRes.modelCount : null;
 
       const presetsTotal = presetsRes ? presetsRes.length : null;
-      const presetsInUse = presetsRes
-        ? presetsRes.filter((p: any) => typeof p.usageCount === 'number' && p.usageCount > 0).length
+      const presetsInUse = Array.isArray(presetsRes)
+        ? presetsRes.filter((p) => {
+            const u = (p as { usageCount?: unknown }).usageCount;
+            return typeof u === 'number' && u > 0;
+          }).length
         : null;
 
       const activeChats = chatsRes ?? null;
 
       const mcpSummary = mcpStats
         ? {
-          	// Core usage service returns totalUsage etc.
-          	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-            requests: (mcpStats as any)?.totalUsage ?? null,
+            requests: (mcpStats as { totalUsage?: number } | null)?.totalUsage ?? null,
             tokens: null,
           }
         : undefined;
