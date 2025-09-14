@@ -477,30 +477,65 @@ export function KnowledgeBaseManager({
     setIndexingProgress(0);
   };
 
-  const createNewDocument = () => {
-    const newDoc: KnowledgeDocument = {
-      id: `${agentId}-doc-${Date.now()}`,
-      title: newDocumentTitle,
-      content: newDocumentContent,
-      size: newDocumentContent.length,
-      type: 'markdown',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      tags: newDocumentTags
+  const createNewDocument = async () => {
+    try {
+      const tags = newDocumentTags
         .split(',')
         .map((tag) => tag.trim())
-        .filter(Boolean),
-      indexed: false,
-      vectorized: false,
-      agentId: agentId!,
-      agentName: agentName!,
-    };
-
-    setDocuments((prev) => [...prev, newDoc]);
-    setNewDocumentDialog(false);
-    setNewDocumentTitle('');
-    setNewDocumentContent('');
-    setNewDocumentTags('');
+        .filter(Boolean);
+      if (knowledge && agentId) {
+        await knowledge.addDoc(agentId, {
+          title: newDocumentTitle,
+          content: newDocumentContent,
+          tags,
+        });
+        // Refresh from Core
+        const page = await knowledge.listDocs(agentId, { limit: 100 });
+        const parsed = KC.methods['listDocuments'].response.parse(page);
+        const next: KnowledgeDocument[] = parsed.items.map((d) => ({
+          id: d.id,
+          title: d.title,
+          content: '',
+          filename: undefined,
+          size: 0,
+          type: 'markdown',
+          createdAt: new Date(d.updatedAt),
+          updatedAt: new Date(d.updatedAt),
+          tags: d.tags ?? [],
+          chunks: [],
+          indexed: false,
+          vectorized: false,
+          agentId: agentId ?? '',
+          agentName: agentName ?? '',
+          isTemplate: false,
+        }));
+        setDocuments(next);
+        await calculateKnowledgeStats();
+      } else {
+        const newDoc: KnowledgeDocument = {
+          id: `${agentId}-doc-${Date.now()}`,
+          title: newDocumentTitle,
+          content: newDocumentContent,
+          size: newDocumentContent.length,
+          type: 'markdown',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          tags,
+          indexed: false,
+          vectorized: false,
+          agentId: agentId!,
+          agentName: agentName!,
+        };
+        setDocuments((prev) => [...prev, newDoc]);
+      }
+    } catch (e) {
+      console.error('Failed to create document', e);
+    } finally {
+      setNewDocumentDialog(false);
+      setNewDocumentTitle('');
+      setNewDocumentContent('');
+      setNewDocumentTags('');
+    }
   };
 
   const applyTemplate = () => {
@@ -1093,12 +1128,13 @@ export function KnowledgeBaseManager({
 
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Search Results</h3>
-                  {searchResults.length === 0 ? (
+                  {searchResults.length === 0 && (
                     <div className="text-center text-muted-foreground py-8">
                       <Search className="w-12 h-12 mx-auto mb-4" />
                       <p>Enter a search query above to see results</p>
                     </div>
-                  ) : (
+                  )}
+                  {searchResults.length > 0 && (
                     <div className="space-y-2">
                       {searchResults.map((r) => (
                         <div
