@@ -12,6 +12,14 @@
   - ChatService 구현 (commit `d325735`, `ef67672`)
   - useChatHistory Core API 연동 (commit `c87c0c9`)
   - AI Config 하드코딩 제거 및 동적 Bridge 설정 (commit `681fe96`)
+  
+ 2025-09-14 진행 현황 추가:
+ - GUI monorepo 그린 베이스라인 확보: typecheck/build/lint/test 모두 통과 (commit `0df4a4a`)
+ - Vitest 멀티 프로젝트 구성 검증 및 스크립트 정리(렌더러 jsdom, 메인 node)
+ - Knowledge 계약/메인 서비스/렌더러 어댑터 스켈레톤 연결 및 테스트 보강
+ - KnowledgeBaseManager 일부 RPC 연동 착수: 목록/통계는 RPC 기반으로 조회
+ - MCP Tool Manager 폴백 데이터 제거 및 빈 상태/에러 처리 UX 반영
+ - Dashboard 통계 훅(useDashboardStats) 구현 및 테스트 추가, 초기 UI 연동 완료(하드코딩 제거 진행 중)
 
 ## Requirements
 
@@ -906,8 +914,15 @@ interface BridgeManifest {
 
 - [x] Knowledge 계약/모듈/어댑터 추가: `knowledge.contract.ts` → Main API → Renderer 어댑터/훅 → GUI 마이그레이션
 - [x] `McpToolManager` 폴백 샘플 데이터 제거 및 어댑터 연동 완성
-- [ ] 대시보드 지표 실데이터화(어댑터 조합) 및 하드코딩 제거
+- [ ] 대시보드 지표 실데이터화(어댑터 조합) 및 하드코딩 제거 — 훅/테스트 완료, UI 잔여 치환 진행
 - [ ] `useAIConfigurations.ts`를 `use-bridge` 훅 기반으로 교체 또는 시그니처 수정
+
+### 품질 게이트(현재 상태)
+
+- [x] typecheck 통과 (apps/*, packages/*)
+- [x] build 통과 (GUI 포함)
+- [x] lint 오류 0 (경고는 잔존, 추후 리팩터링)
+- [x] test 통과 (renderer/main 분리 실행)
 
 ---
 
@@ -937,13 +952,13 @@ interface BridgeManifest {
 
 적용:
 
-- `apps/gui/src/renderer/components/dashboard/Dashboard.tsx`에서 상기 훅 사용으로 하드코딩 제거
+- `apps/gui/src/renderer/components/dashboard/Dashboard.tsx`에 훅 연동 시작 — 하드코딩 지표 점진 제거 중
 
 수용 기준:
 
 - 로딩/성공/에러 상태 구분 렌더링
-- 최소 4개 지표(Active Chats/Agents/Models/Presets) 실데이터 표시
-- 새 훅 유닛 테스트: 빈 상태/에러 상태 처리
+- 최소 4개 지표(Active Chats/Agents/Models/Presets) 실데이터 표시(진행 중)
+- 새 훅 유닛 테스트: 빈 상태/에러 상태 처리(완료)
 
 비고:
 
@@ -987,8 +1002,8 @@ interface BridgeManifest {
 수용 기준:
 
 - 계약 스키마(Zod) 유효성 검증
-- 기본 CRUD/인덱싱/검색/통계 happy path 동작
-- `KnowledgeBaseManager`가 훅을 통해 문서 목록/추가/삭제를 수행(병행 모드 OK)
+- 기본 CRUD/인덱싱/검색/통계 happy path 동작(메인/어댑터 기준 완료)
+- `KnowledgeBaseManager`가 훅/어댑터를 통해 문서 목록/통계를 조회(업로드/삭제/검색 단계적 전환 예정)
 
 ### C. McpToolManager 폴백 제거 (샘플 데이터 삭제)
 
@@ -1008,7 +1023,7 @@ interface BridgeManifest {
 
 수용 기준:
 
-- 폴백 데이터 제거됨
+- 폴백 데이터 제거됨(완료)
 - 에러/빈 상태 UI 정상 동작
 - 등록/연결/해제/새로고침 플로우 검증
 
@@ -1061,7 +1076,7 @@ interface BridgeManifest {
 - KnowledgeContract 정의 및 구현
 - agentId → knowledgeId 매핑 파사드
   // review: agent 별 knowledge 의 매핑은 gui 에서 할게 아니라 core 의 agent 가 지원해야 맞는거 같아.
-- localStorage 마이그레이션
+- localStorage 마이그레이션(목록/통계는 전환됨, 업로드/삭제/검색 단계 전환 필요)
 - **예상 소요 시간**: 1주
 
 #### 5. **Bridge 등록 UI** (작업 7) - 우선순위: 중간
@@ -1080,9 +1095,18 @@ interface BridgeManifest {
 
 #### 7. **Dashboard 통계** (작업 8) - 우선순위: 중간
 
-- 기존 API 조합으로 구현 가능
+- 기존 API 조합으로 구현 가능 — 훅/테스트는 완료, UI 치환/상태 처리 마무리
 - 별도 메트릭 서비스 불필요
 - **예상 소요 시간**: 2-3일
+
+---
+
+### 이번 스프린트 권장 우선순위(요약)
+
+- [ ] Dashboard UI의 하드코딩 지표 전량 치환 및 로딩/에러 상태 마감
+- [ ] KnowledgeBaseManager 업로드/삭제/검색을 RPC 경로로 전환 (단계적 플래그 → 완전 이행)
+- [ ] MCP `usage.events` 실시간 스트림 메인 구현 및 훅 구독 전환
+- [ ] Electron 의존 경계 mock 정리(main 테스트 안정화)
 
 #### 8. **Multi-Agent 협업** (작업 9) - 우선순위: 높음
 

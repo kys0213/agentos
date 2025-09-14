@@ -530,10 +530,42 @@ export function KnowledgeBaseManager({
     setSelectedTemplate('');
   };
 
-  const deleteDocument = (docId: string) => {
-    setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
-    if (selectedDocument?.id === docId) {
-      setSelectedDocument(null);
+  const deleteDocument = async (docId: string) => {
+    try {
+      if (knowledge && agentId) {
+        await knowledge.removeDoc(agentId, docId);
+        // Refresh list from Core
+        const page = await knowledge.listDocs(agentId, { limit: 100 });
+        const parsed = KC.methods['listDocuments'].response.parse(page);
+        const next: KnowledgeDocument[] = parsed.items.map((d) => ({
+          id: d.id,
+          title: d.title,
+          content: '',
+          filename: undefined,
+          size: 0,
+          type: 'markdown',
+          createdAt: new Date(d.updatedAt),
+          updatedAt: new Date(d.updatedAt),
+          tags: d.tags ?? [],
+          chunks: [],
+          indexed: false,
+          vectorized: false,
+          agentId: agentId ?? '',
+          agentName: agentName ?? '',
+          isTemplate: false,
+        }));
+        setDocuments(next);
+      } else {
+        // Fallback local behavior
+        setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
+      }
+    } catch (e) {
+      console.error('Failed to delete document', e);
+    } finally {
+      if (selectedDocument?.id === docId) {
+        setSelectedDocument(null);
+      }
+      await calculateKnowledgeStats();
     }
   };
 
