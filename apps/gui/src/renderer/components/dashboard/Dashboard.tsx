@@ -7,6 +7,7 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { useMcpUsageStream } from '../../hooks/queries/use-mcp-usage-stream';
+import { DashboardCard } from './DashboardCard';
 
 interface DashboardProps {
   presets: Preset[];
@@ -272,28 +273,21 @@ export function Dashboard({
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {cards.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={index} className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{stat.title}</p>
-                  <p className="text-2xl font-semibold">{stat.value}</p>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span>{stat.change}</span>
-                    {!statsLoading && !statsError && String(stat.change).includes('Retry') && (
-                      <Button variant="outline" size="sm" onClick={retry} className="h-7 px-2">
-                        Retry
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                <Icon className={`w-8 h-8 ${stat.color}`} />
-              </div>
-            </Card>
-          );
-        })}
+        {cards.map((stat, index) => (
+          <DashboardCard
+            key={index}
+            title={stat.title}
+            value={stat.value}
+            change={stat.change}
+            icon={stat.icon}
+            color={stat.color}
+            onRetry={
+              !statsLoading && !statsError && String(stat.change).includes('Retry')
+                ? retry
+                : undefined
+            }
+          />
+        ))}
       </div>
 
       {/* Content Grid */}
