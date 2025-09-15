@@ -32,7 +32,7 @@
 - [x] 채팅 히스토리/세션이 Core 세션/메시지 API와 정합되며, 훅/스토어가 계약 타입으로 동작한다. ✅
 - [x] GUI 전용 기능(pin/archive, 카테고리)은 GUI 레이어에서 관리되고 Core와 분리된다. ✅
 - [ ] 멀티 에이전트 협업 기능이 Core 오케스트레이션과 연동된다.
-- [ ] 시스템 통계와 메트릭이 실시간으로 수집/표시된다.
+- [ ] 시스템 통계와 메트릭이 실시간으로 수집/표시된다. (부분완료: `usage.events` 구독 → 대시보드 캐시 무효화 와이어링 완료)
 
 ## 테스트 환경 분리/전략 (보강)
 
@@ -423,7 +423,7 @@ interface BridgeManifest {
 
 **작업 내용**:
 
-- [ ] AgentCreate 5단계 마법사 UI 정합성 확인(Overview/Category/Preset/AI Config/Settings)
+- [x] AgentCreate 5단계 마법사 UI 정합성 확인(Overview/Category/Preset/AI Config/Settings)
 - [ ] Overview 탭: 기본 정보 입력 폼(검증 포함)
 - [ ] Category 탭: 카테고리 카드 선택 UI (6개 카테고리)
 - [ ] Preset 탭: 프리셋 선택/미리보기(현재 유지, 추후 제거 여부 결정)
@@ -476,8 +476,8 @@ interface BridgeManifest {
 - ✅ Core MCP Registry/Service/Repository/Usage 레이어 완비 (`packages/core/src/tool/mcp/*`)
 - ✅ Main 프로세스 API: `apps/gui/src/main/mcp/{mcp.controller.ts,mcp.api.module.ts,mcp.service.ts}`
 - ✅ Renderer 어댑터: `apps/gui/src/renderer/rpc/adapters/mcp.adapter.ts`에 목록/등록/해제/연결/호출/사용량 구현
-- 🟡 이벤트 스트림(`usage.events`)은 컨트롤러에서 미구현(TODO)
-- 🟡 GUI 매니저 컴포넌트는 `McpToolManager.tsx`(단수 명칭)로 존재하며, 실패 시 샘플 데이터 폴백 로직 유지
+- ✅ 이벤트 스트림(`usage.events`) 구현됨: 컨트롤러 EventPattern 노출 + GUI `useMcpUsageStream` 구독으로 대시보드 통계 `invalidateQueries` 연동
+- 🟡 GUI 매니저 컴포넌트는 `McpToolManager.tsx`(단수 명칭)로 존재하며, 실패 시 샘플 데이터 폴백 로직은 제거되고 Empty state로 표시됨
 
 **발견된 Core 기능**:
 
@@ -508,7 +508,7 @@ interface BridgeManifest {
 **테스트**
 
 - [x] `useMcpUsageStream` 이벤트 수신 시 lastEvent 업데이트 단위 테스트
-- [ ] MCP 매니저 UI: 빈 상태/에러/재시도 경로(후속)
+- [ ] MCP 매니저 UI: 빈 상태/에러/재시도 경로(후속) — 기본 빈/에러 메시지 및 Refresh 버튼 구현됨, 테스트/세부 폴리시 후속
 
 ### 작업 4: Knowledge Base(문서) — 로컬스토리지 → Core API 🤔 **설계 결정 필요**
 
@@ -583,7 +583,7 @@ interface BridgeManifest {
 - [x] GUI 전용 카테고리 상수 정의 (GuiAgentCategories)
 - [x] 카테고리 → keywords 매핑 테이블 구현 (GuiCategoryKeywordsMap)
 - [x] SubAgentCreate: 카테고리 선택 시 keywords 자동 설정
-- [ ] SubAgentManager: 카테고리 기반 필터링 (keywords 활용)
+- [ ] SubAgentManager: 카테고리 기반 필터링 (keywords 활용) — UI 구현됨, 단위 테스트 필요
 
 **테스트**
 
@@ -645,7 +645,7 @@ interface BridgeManifest {
 **테스트**
 
 - [x] useDashboardStats 훅: 지표 집계 및 MCP 24h 합계 단위 테스트
-- [ ] Dashboard 카드: 에러 표시/Retry 상호작용(컴포넌트 테스트)
+- [ ] Dashboard 카드: 에러 표시/Retry 상호작용(컴포넌트 테스트) — 카드 Retry 핸들러 와이어링 존재, 테스트 보강 필요
 
 ### 작업 9: Message Mentions — Multi-Agent 협업 🟡 **진행 가능** (Orchestrator 활용)
 
@@ -911,6 +911,11 @@ interface BridgeManifest {
 주의: Core MCP 레지스트리 파일명은 `mcp.registery.ts`로 표기되어 있으며 철자에 유의 필요.
 
 ## 추가 TODO 정리
+
+### 2025-09-16 진행 현황 보충
+- Playwright MCP 스모크 시나리오 추가: `apps/gui/e2e/mcp-verify.e2e.test.ts`
+  - 채팅 → 관리 모드 진입, 대시보드/프리셋/에이전트/MCP 툴 화면 기본 요소 검증
+  - SubAgentCreate의 AI Config 탭에서 MCP Tools 섹션 노출 확인
 
 - [x] Knowledge 계약/모듈/어댑터 추가: `knowledge.contract.ts` → Main API → Renderer 어댑터/훅 → GUI 마이그레이션
 - [x] `McpToolManager` 폴백 샘플 데이터 제거 및 어댑터 연동 완성

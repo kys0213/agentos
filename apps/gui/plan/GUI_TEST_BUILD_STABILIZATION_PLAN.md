@@ -93,7 +93,7 @@ E. CI & Scripts
 
 ## Execution Checklist (This branch)
 
-- [ ] A2: Split test scope & scripts; restrict new jsdom tests to unit-only pattern.
+- [x] A2: Split test scope & scripts; restrict new jsdom tests to unit-only pattern. (vitest 멀티 프로젝트 + `test:renderer`/`test:main` 스크립트 반영)
 - [ ] B1–B8: Fix typecheck errors in listed files.
 - [ ] C1–C3: Fix ESLint violations in adapters/services/utils/tests.
 - [ ] D1–D3: Make legacy suites green (map failures → fixes).
