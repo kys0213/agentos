@@ -22,6 +22,7 @@ export default defineWorkspace([
       name: 'main',
       environment: 'node',
       globals: true,
+      setupFiles: ['src/main/test/vitest.setup.ts'],
       include: ['src/main/**/__tests__/**/*.test.ts?(x)', 'src/main/**/__tests__/**/*.spec.ts?(x)'],
       css: false,
     },
