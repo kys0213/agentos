@@ -360,6 +360,20 @@ interface BridgeManifest {
 
 ## 작업 항목
 
+### 브랜치 전략
+
+- 기준 브랜치: `feature/gui-core-integration-epic`
+  - `main`에서 분기하고, 모든 후속 작업 브랜치의 PR 대상이 된다.
+- 하위 작업 브랜치(예시)
+  - `feature/gui-multi-agent-orchestration`
+  - `feature/gui-dashboard-realtime-metrics`
+  - `feature/gui-testing-infra-hardening`
+  - `feature/gui-agent-wizard-completion`
+  - `feature/gui-knowledge-migration`
+  - `feature/gui-category-bridge-alignment`
+  - `feature/gui-tooling-refactor`
+- 각 브랜치는 TODO 완료 단위로 의미 있는 커밋을 작성하고, 완료 후에는 기준 브랜치를 대상으로 PR을 연다.
+
 ### 작업 상태 범례
 
 - ✅ **완료**: 구현 완료
