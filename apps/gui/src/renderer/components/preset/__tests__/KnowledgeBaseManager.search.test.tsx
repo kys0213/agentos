@@ -23,7 +23,14 @@ describe('KnowledgeBaseManager search and preview', () => {
       lastUpdated: null,
       storageSize: 0,
     });
-    const knowledge = { listDocs, search, getStats };
+    const readDoc = async () => ({
+      id: 'd1',
+      title: 'Doc 1',
+      tags: [],
+      content: 'Doc 1 full content',
+      updatedAt: new Date(),
+    });
+    const knowledge = { listDocs, search, getStats, readDoc };
     // @ts-expect-error test double registration type-bypass
     ServiceContainer.register('knowledge', knowledge);
 /* eslint-disable @typescript-eslint/no-explicit-any, no-restricted-syntax, prettier/prettier */

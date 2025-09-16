@@ -6,35 +6,37 @@ import { z } from 'zod';
 export class BridgeClient {
   constructor(private readonly transport: RpcClient) {}
 
-  register(
-    payload: z.input<(typeof C.methods)['register']['payload']>
-  ): Promise<z.output<(typeof C.methods)['register']['response']>> {
-    return this.transport.request(C.methods['register'].channel, payload);
+  async register(payload: z.input<typeof C.methods['register']['payload']>): Promise<z.output<typeof C.methods['register']['response']>> {
+    const parsedPayload = C.methods['register'].payload.parse(payload);
+    const resp = await this.transport.request<unknown>(C.methods['register'].channel, parsedPayload);
+    return C.methods['register'].response.parse(resp);
   }
 
-  unregister(
-    payload: z.input<(typeof C.methods)['unregister']['payload']>
-  ): Promise<z.output<(typeof C.methods)['unregister']['response']>> {
-    return this.transport.request(C.methods['unregister'].channel, payload);
+  async unregister(payload: z.input<typeof C.methods['unregister']['payload']>): Promise<z.output<typeof C.methods['unregister']['response']>> {
+    const parsedPayload = C.methods['unregister'].payload.parse(payload);
+    const resp = await this.transport.request<unknown>(C.methods['unregister'].channel, parsedPayload);
+    return C.methods['unregister'].response.parse(resp);
   }
 
-  switch(
-    payload: z.input<(typeof C.methods)['switch']['payload']>
-  ): Promise<z.output<(typeof C.methods)['switch']['response']>> {
-    return this.transport.request(C.methods['switch'].channel, payload);
+  async switch(payload: z.input<typeof C.methods['switch']['payload']>): Promise<z.output<typeof C.methods['switch']['response']>> {
+    const parsedPayload = C.methods['switch'].payload.parse(payload);
+    const resp = await this.transport.request<unknown>(C.methods['switch'].channel, parsedPayload);
+    return C.methods['switch'].response.parse(resp);
   }
 
-  get_current(): Promise<z.output<(typeof C.methods)['get-current']['response']>> {
-    return this.transport.request(C.methods['get-current'].channel);
+  async get_current(): Promise<z.output<typeof C.methods['get-current']['response']>> {
+    const resp = await this.transport.request<unknown>(C.methods['get-current'].channel);
+    return C.methods['get-current'].response.parse(resp);
   }
 
-  list(): Promise<z.output<(typeof C.methods)['list']['response']>> {
-    return this.transport.request(C.methods['list'].channel);
+  async list(): Promise<z.output<typeof C.methods['list']['response']>> {
+    const resp = await this.transport.request<unknown>(C.methods['list'].channel);
+    return C.methods['list'].response.parse(resp);
   }
 
-  get_config(
-    payload: z.input<(typeof C.methods)['get-config']['payload']>
-  ): Promise<z.output<(typeof C.methods)['get-config']['response']>> {
-    return this.transport.request(C.methods['get-config'].channel, payload);
+  async get_config(payload: z.input<typeof C.methods['get-config']['payload']>): Promise<z.output<typeof C.methods['get-config']['response']>> {
+    const parsedPayload = C.methods['get-config'].payload.parse(payload);
+    const resp = await this.transport.request<unknown>(C.methods['get-config'].channel, parsedPayload);
+    return C.methods['get-config'].response.parse(resp);
   }
 }

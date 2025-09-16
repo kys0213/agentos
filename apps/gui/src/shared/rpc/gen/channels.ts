@@ -24,6 +24,17 @@ export const Channels = {
     getMessages: 'chat.get-messages',
     deleteSession: 'chat.delete-session',
   },
+  knowledge: {
+    createForAgent: 'knowledge.create-for-agent',
+    getByAgent: 'knowledge.get-by-agent',
+    addDocument: 'knowledge.add-document',
+    removeDocument: 'knowledge.remove-document',
+    listDocuments: 'knowledge.list-documents',
+    readDocument: 'knowledge.read-document',
+    indexAll: 'knowledge.index-all',
+    search: 'knowledge.search',
+    getStats: 'knowledge.get-stats',
+  },
   mcp: {
     getTool: 'mcp.getTool',
     invokeTool: 'mcp.invokeTool',
@@ -58,6 +69,15 @@ export const bridge_get_config = 'bridge.get-config' as const;
 export const chat_listSessions = 'chat.list-sessions' as const;
 export const chat_getMessages = 'chat.get-messages' as const;
 export const chat_deleteSession = 'chat.delete-session' as const;
+export const knowledge_createForAgent = 'knowledge.create-for-agent' as const;
+export const knowledge_getByAgent = 'knowledge.get-by-agent' as const;
+export const knowledge_addDocument = 'knowledge.add-document' as const;
+export const knowledge_removeDocument = 'knowledge.remove-document' as const;
+export const knowledge_listDocuments = 'knowledge.list-documents' as const;
+export const knowledge_readDocument = 'knowledge.read-document' as const;
+export const knowledge_indexAll = 'knowledge.index-all' as const;
+export const knowledge_search = 'knowledge.search' as const;
+export const knowledge_getStats = 'knowledge.get-stats' as const;
 export const mcp_getTool = 'mcp.getTool' as const;
 export const mcp_invokeTool = 'mcp.invokeTool' as const;
 export const mcp_usage_getLogs = 'mcp.usage.getLogs' as const;

@@ -27,7 +27,6 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ServiceContainer } from '../../../shared/di/service-container';
-import { KnowledgeContract as KC } from '../../../shared/rpc/contracts/knowledge.contract';
 import { Textarea } from '../ui/textarea';
 
 interface KnowledgeDocument {
@@ -124,13 +123,13 @@ export function KnowledgeBaseManager({
       }
       try {
         const detail = await knowledge.readDoc(agentId, doc.id);
-        const parsed = KC.methods['readDocument'].response.parse(detail);
+
         const enriched: KnowledgeDocument = {
           ...doc,
-          content: parsed.content,
-          updatedAt: new Date(parsed.updatedAt),
+          content: detail.content,
+          updatedAt: new Date(detail.updatedAt),
           // keep existing tags if response omitted
-          tags: Array.isArray(parsed.tags) ? parsed.tags : doc.tags,
+          tags: Array.isArray(detail.tags) ? detail.tags : doc.tags,
         };
         setSelectedDocument(enriched);
         // update list entry so subsequent selects don’t refetch
@@ -162,8 +161,8 @@ export function KnowledgeBaseManager({
       try {
         if (knowledge) {
           const page = await knowledge.listDocs(agentId, { limit: 100 });
-          const parsed = KC.methods['listDocuments'].response.parse(page);
-          const next: KnowledgeDocument[] = parsed.items.map((d) => ({
+
+          const next: KnowledgeDocument[] = page.items.map((d) => ({
             id: d.id,
             title: d.title,
             content: '',
@@ -180,6 +179,7 @@ export function KnowledgeBaseManager({
             agentName: agentName ?? '',
             isTemplate: false,
           }));
+
           setDocuments(next);
         } else {
           initializeWithStarterContent();
@@ -338,8 +338,8 @@ export function KnowledgeBaseManager({
     }
     try {
       if (knowledge) {
-        const s = await knowledge.getStats(agentId);
-        const stats = KC.methods['getStats'].response.parse(s);
+        const stats = await knowledge.getStats(agentId);
+
         setKnowledgeStats({
           totalDocuments: stats.totalDocuments,
           indexedDocuments: stats.totalChunks,
@@ -401,8 +401,7 @@ export function KnowledgeBaseManager({
         try {
           if (knowledge && agentId) {
             const page = await knowledge.listDocs(agentId, { limit: 100 });
-            const parsed = KC.methods['listDocuments'].response.parse(page);
-            const next: KnowledgeDocument[] = parsed.items.map((d) => ({
+            const next: KnowledgeDocument[] = page.items.map((d) => ({
               id: d.id,
               title: d.title,
               content: '',
@@ -531,8 +530,8 @@ export function KnowledgeBaseManager({
         });
         // Refresh from Core
         const page = await knowledge.listDocs(agentId, { limit: 100 });
-        const parsed = KC.methods['listDocuments'].response.parse(page);
-        const next: KnowledgeDocument[] = parsed.items.map((d) => ({
+
+        const next: KnowledgeDocument[] = page.items.map((d) => ({
           id: d.id,
           title: d.title,
           content: '',
@@ -611,8 +610,7 @@ export function KnowledgeBaseManager({
         await knowledge.removeDoc(agentId, docId);
         // Refresh list from Core
         const page = await knowledge.listDocs(agentId, { limit: 100 });
-        const parsed = KC.methods['listDocuments'].response.parse(page);
-        const next: KnowledgeDocument[] = parsed.items.map((d) => ({
+        const next: KnowledgeDocument[] = page.items.map((d) => ({
           id: d.id,
           title: d.title,
           content: '',
@@ -1141,8 +1139,8 @@ export function KnowledgeBaseManager({
                           }
                           try {
                             const res = await knowledge.search(agentId, searchQuery, 20);
-                            const parsed = KC.methods['search'].response.parse(res);
-                            const items = (parsed.items || []).map((d) => ({
+
+                            const items = res.items.map((d) => ({
                               id: d.id,
                               title: d.title,
                               updatedAt: new Date(d.updatedAt),

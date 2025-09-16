@@ -6,6 +6,8 @@ const knowledgeStatsSchema = z.object({
   totalSize: z.number(),
 });
 
+const enabledMcpsSchema = z.array(z.unknown()).default([]);
+
 const presetSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -15,7 +17,7 @@ const presetSchema = z.object({
   updatedAt: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
   version: z.string(),
   systemPrompt: z.string(),
-  enabledMcps: z.array(z.unknown()).default([]),
+  enabledMcps: enabledMcpsSchema,
   llmBridgeName: z.string(),
   llmBridgeConfig: z.record(z.string(), z.unknown()).default({}),
   status: z.enum(['active', 'idle', 'inactive']),

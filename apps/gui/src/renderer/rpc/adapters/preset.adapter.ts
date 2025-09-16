@@ -45,16 +45,14 @@ export class PresetServiceAdapter {
   }
 
   async getAllPresets(): Promise<Preset[]> {
-    const page = C.methods['list'].response.parse(await this.client.list());
-    const items = await Promise.all(
-      page.items.map(async (s) => C.methods['get'].response.parse(await this.client.get(s.id)))
-    );
+    const page = await this.client.list();
+    const items = await Promise.all(page.items.map(async (s) => this.client.get(s.id)));
     return items.filter((p): p is NonNullable<typeof p> => Boolean(p)).map((p) => this.toPreset(p));
   }
 
   async createPreset(preset: CreatePreset): Promise<Preset> {
     // Map core CreatePreset → contract payload
-    const payload = C.methods['create'].payload.parse({
+    const payload = {
       name: preset.name,
       description: preset.description,
       author: preset.author,
@@ -65,8 +63,8 @@ export class PresetServiceAdapter {
       llmBridgeConfig: preset.llmBridgeConfig as Record<string, unknown>,
       status: preset.status,
       category: preset.category as string[] | undefined,
-    });
-    const res = C.methods['create'].response.parse(await this.client.create(payload));
+    } as z.input<(typeof C.methods)['create']['payload']>;
+    const res = await this.client.create(payload);
     if (res.success && res.result) {
       return this.toPreset(res.result);
     }
@@ -74,7 +72,7 @@ export class PresetServiceAdapter {
   }
 
   async updatePreset(id: string, patch: Partial<Omit<Preset, 'id'>>): Promise<Preset> {
-    const current = C.methods['get'].response.parse(await this.client.get(id));
+    const current = await this.client.get(id);
     if (!current) {
       throw new Error('Preset not found');
     }
@@ -84,7 +82,7 @@ export class PresetServiceAdapter {
       ...(patch as Partial<Preset>),
       id,
     } as Preset;
-    const updatePayload = C.methods['update'].payload.parse({
+    const updatePayload: z.input<(typeof C.methods)['update']['payload']> = {
       id,
       preset: {
         id: mergedCore.id,
@@ -101,8 +99,8 @@ export class PresetServiceAdapter {
         createdAt: mergedCore.createdAt,
         updatedAt: mergedCore.updatedAt,
       },
-    });
-    const res = C.methods['update'].response.parse(await this.client.update(updatePayload));
+    };
+    const res = await this.client.update(updatePayload);
     if (res.success && res.result) {
       return this.toPreset(res.result);
     }
@@ -111,7 +109,7 @@ export class PresetServiceAdapter {
 
   async deletePreset(id: string): Promise<Preset> {
     // Best-effort: fetch then delete to satisfy return type
-    const before = C.methods['get'].response.parse(await this.client.get(id));
+    const before = await this.client.get(id);
     await this.client.delete(id);
     // If not found, throw to respect API contract
     if (!before) {
@@ -121,7 +119,7 @@ export class PresetServiceAdapter {
   }
 
   async getPreset(id: string): Promise<Preset | null> {
-    const p = C.methods['get'].response.parse(await this.client.get(id));
+    const p = await this.client.get(id);
     return p ? this.toPreset(p) : null;
   }
 }

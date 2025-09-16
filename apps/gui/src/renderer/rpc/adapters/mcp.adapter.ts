@@ -28,8 +28,7 @@ export class McpServiceAdapter {
     toolName: string,
     args: Record<string, unknown>
   ): Promise<ToolExecutionResponse> {
-    const payload = C.methods['invokeTool'].payload.parse({ name: toolName, input: args });
-    const parsed = C.methods['invokeTool'].response.parse(await this.client.invokeTool(payload));
+    const parsed = await this.client.invokeTool({ name: toolName, input: args });
     return parsed.success
       ? { success: true, result: parsed.result }
       : { success: false, error: parsed.error };
