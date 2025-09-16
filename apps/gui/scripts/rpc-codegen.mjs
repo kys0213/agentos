@@ -197,35 +197,81 @@ function writeRendererClient(spec, outDir) {
       : 'void';
     lines.push('');
     if (info.hasStreamResponse) {
+      // Streaming APIs: validate payload and parse each event
       if (info.hasPayload) {
         lines.push(
-          `  ${mname}Stream(payload: ${payloadType}): AsyncGenerator<${streamType}, void, unknown> {`
+          `  async *${mname}Stream(payload: ${payloadType}): AsyncGenerator<${streamType}, void, unknown> {`
         );
         lines.push(
-          `    return this.transport.stream ? this.transport.stream<${streamType}>(C.methods['${name}'].channel, payload) : (async function*(){})()`
+          `    const parsedPayload = C.methods['${name}'].payload.parse(payload);`
         );
+        lines.push(
+          `    if (!this.transport.stream) return;`
+        );
+        lines.push(
+          `    for await (const ev of this.transport.stream<unknown>(C.methods['${name}'].channel, parsedPayload)) {`
+        );
+        lines.push(
+          `      yield C.methods['${name}'].streamResponse.parse(ev);`
+        );
+        lines.push('    }');
         lines.push('  }');
       } else {
-        lines.push(`  ${mname}Stream(): AsyncGenerator<${streamType}, void, unknown> {`);
         lines.push(
-          `    return this.transport.stream ? this.transport.stream<${streamType}>(C.methods['${name}'].channel) : (async function*(){})()`
+          `  async *${mname}Stream(): AsyncGenerator<${streamType}, void, unknown> {`
         );
+        lines.push(
+          `    if (!this.transport.stream) return;`
+        );
+        lines.push(
+          `    for await (const ev of this.transport.stream<unknown>(C.methods['${name}'].channel)) {`
+        );
+        lines.push(
+          `      yield C.methods['${name}'].streamResponse.parse(ev);`
+        );
+        lines.push('    }');
         lines.push('  }');
       }
-      lines.push(`  ${mname}On(handler: (ev: ${streamType}) => void): CloseFn {`);
+      lines.push(`  ${mname}On(handler: (ev: ${streamType}) => void, onError?: (e: unknown) => void): CloseFn {`);
       lines.push(
-        `    return this.transport.on<${streamType}>(C.methods['${name}'].channel, handler);`
+        `    return this.transport.on<unknown>(C.methods['${name}'].channel, (payload) => handler(C.methods['${name}'].streamResponse.parse(payload)), onError);`
       );
       lines.push('  }');
       continue;
     }
+    // Non-streaming APIs: validate payload and parse response
     if (info.hasPayload) {
-      lines.push(`  ${mname}(payload: ${payloadType}): Promise<${resultType}> {`);
-      lines.push(`    return this.transport.request(C.methods['${name}'].channel, payload);`);
+      lines.push(`  async ${mname}(payload: ${payloadType}): Promise<${resultType}> {`);
+      lines.push(
+        `    const parsedPayload = C.methods['${name}'].payload.parse(payload);`
+      );
+      if (info.hasResponse) {
+        lines.push(
+          `    const resp = await this.transport.request<unknown>(C.methods['${name}'].channel, parsedPayload);`
+        );
+        lines.push(
+          `    return C.methods['${name}'].response.parse(resp);`
+        );
+      } else {
+        lines.push(
+          `    await this.transport.request<void>(C.methods['${name}'].channel, parsedPayload);`
+        );
+        lines.push(`    return undefined as unknown as ${resultType};`);
+      }
       lines.push('  }');
     } else {
-      lines.push(`  ${mname}(): Promise<${resultType}> {`);
-      lines.push(`    return this.transport.request(C.methods['${name}'].channel);`);
+      lines.push(`  async ${mname}(): Promise<${resultType}> {`);
+      if (info.hasResponse) {
+        lines.push(
+          `    const resp = await this.transport.request<unknown>(C.methods['${name}'].channel);`
+        );
+        lines.push(
+          `    return C.methods['${name}'].response.parse(resp);`
+        );
+      } else {
+        lines.push(`    await this.transport.request<void>(C.methods['${name}'].channel);`);
+        lines.push(`    return undefined as unknown as ${resultType};`);
+      }
       lines.push('  }');
     }
   }
@@ -345,13 +391,8 @@ function main() {
   );
   for (const spec of specs) {
     writeRendererClient(spec, path.resolve(appRoot, 'src/renderer/rpc/gen'));
-<<<<<<< HEAD
     // Server controllers are curated and already promoted as *.gen.new.ts
     // Skip generating controller stubs to avoid overwriting wired implementations.
-=======
-    // Server controllers are curated and already promoted as *.gen.new.ts
-    // Skip generating controller stubs to avoid overwriting wired implementations.
->>>>>>> 911fa62 (chore(gui): rerun codegen after skipping controller generation)
     writeSharedTypes(spec, path.resolve(appRoot, 'src/shared/rpc/gen'));
   }
 }
