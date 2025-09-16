@@ -8,27 +8,19 @@ export class ConversationServiceAdapter {
   listSessions(
     pagination?: z.input<(typeof C.methods)['listSessions']['payload']>
   ): Promise<z.output<(typeof C.methods)['listSessions']['response']>> {
-    const payload = pagination ? C.methods['listSessions'].payload.parse(pagination) : undefined;
-    return this.client
-      .listSessions(payload)
-      .then((res) => C.methods['listSessions'].response.parse(res));
+    return this.client.listSessions(pagination as any);
   }
 
   getMessages(
     sessionId: string,
     pagination?: z.input<(typeof C.methods)['listSessions']['payload']>
   ): Promise<z.output<(typeof C.methods)['getMessages']['response']>> {
-    const payload = C.methods['getMessages'].payload.parse({ sessionId, pagination });
-    return this.client
-      .getMessages(payload)
-      .then((res) => C.methods['getMessages'].response.parse(res));
+    return this.client.getMessages({ sessionId, pagination } as any);
   }
 
   deleteSession(
     sessionId: z.input<(typeof C.methods)['deleteSession']['payload']>
   ): Promise<z.output<(typeof C.methods)['deleteSession']['response']>> {
-    return this.client
-      .deleteSession(C.methods['deleteSession'].payload.parse(sessionId))
-      .then((res) => C.methods['deleteSession'].response.parse(res));
+    return this.client.deleteSession(sessionId);
   }
 }
