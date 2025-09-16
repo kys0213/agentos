@@ -116,8 +116,12 @@ export function KnowledgeBaseManager({
   const handleSelectDocument = useCallback(
     async (doc: KnowledgeDocument) => {
       setSelectedDocument(doc);
-      if (!agentId || !knowledge) return;
-      if (doc.content && doc.content.length > 0) return;
+      if (!agentId || !knowledge) {
+        return;
+      }
+      if (doc.content && doc.content.length > 0) {
+        return;
+      }
       try {
         const detail = await knowledge.readDoc(agentId, doc.id);
         const parsed = KC.methods['readDocument'].response.parse(detail);
@@ -131,7 +135,16 @@ export function KnowledgeBaseManager({
         setSelectedDocument(enriched);
         // update list entry so subsequent selects don’t refetch
         setDocuments((prev) =>
-          prev.map((d) => (d.id === doc.id ? { ...d, content: enriched.content, updatedAt: enriched.updatedAt, tags: enriched.tags } : d))
+          prev.map((d) =>
+            d.id === doc.id
+              ? {
+                  ...d,
+                  content: enriched.content,
+                  updatedAt: enriched.updatedAt,
+                  tags: enriched.tags,
+                }
+              : d
+          )
         );
       } catch (err) {
         console.error('Failed to read document content', err);

@@ -31,7 +31,7 @@ describe('KnowledgeBaseManager readDoc on selection', () => {
       listDocs,
       readDoc: readDocument,
       getStats,
-    } as unknown as Record<string, unknown>;
+    };
     // @ts-expect-error test double registration
     ServiceContainer.register('knowledge', knowledge);
 
@@ -45,4 +45,3 @@ describe('KnowledgeBaseManager readDoc on selection', () => {
     expect(readDocument).toHaveBeenCalledTimes(1);
   });
 });
-
