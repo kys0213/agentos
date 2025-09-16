@@ -4,6 +4,7 @@ import { BridgeServiceAdapter } from '../../renderer/rpc/adapters/bridge.adapter
 import { McpServiceAdapter } from '../../renderer/rpc/adapters/mcp.adapter';
 import { PresetServiceAdapter } from '../../renderer/rpc/adapters/preset.adapter';
 import { McpUsageRpcService } from '../../renderer/rpc/services/mcp-usage.service';
+import { KnowledgeServiceAdapter } from '../../renderer/rpc/adapters/knowledge.adapter';
 
 export interface AgentOsAPI {
   agent: AgentServiceAdapter;
@@ -13,6 +14,7 @@ export interface AgentOsAPI {
   mcp: McpServiceAdapter;
   preset: PresetServiceAdapter;
   mcpUsageLog: McpUsageRpcService;
+  knowledge: KnowledgeServiceAdapter;
 }
 
 export type AgentOsServiceName = keyof AgentOsAPI;
@@ -25,6 +27,7 @@ export const AgentOsServiceNames: AgentOsServiceName[] = [
   'mcp',
   'preset',
   'mcpUsageLog',
+  'knowledge',
 ];
 
 // Window 인터페이스 확장 (renderer에서 사용)

@@ -15,7 +15,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -27,6 +27,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Textarea } from '../ui/textarea';
 import { agentMetadataSchema } from '../../../shared/schema/agent.schemas';
 import PresetPicker from '../preset/PresetPicker';
+import {
+  GuiAgentCategories,
+  type GuiAgentCategory,
+  GuiCategoryKeywordsMap,
+} from '../../../shared/constants/agent-categories';
+import { useMcpTools } from '../../hooks/queries/use-mcp';
+import { applyAgentExport, serializeAgent, tryParseAgentExport } from '../../utils/agent-export';
 
 interface AgentCreateProps {
   onBack: () => void;
@@ -37,7 +44,7 @@ interface AgentCreateProps {
 export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) {
   const [activeTab, setActiveTab] = useState('overview');
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 5;
 
   // Form state
   const [formData, setFormData] = useState<Partial<CreateAgentMetadata>>({
@@ -49,6 +56,24 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
     keywords: [],
   });
   const [selectedPresetId, setSelectedPresetId] = useState<string | undefined>(undefined);
+  const [selectedCategory, setSelectedCategory] = useState<GuiAgentCategory | undefined>(undefined);
+  const [systemPrompt, setSystemPrompt] = useState<string>('');
+  const [selectedMcpIds, setSelectedMcpIds] = useState<Set<string>>(new Set());
+  const [exportJson, setExportJson] = useState<string>('');
+  const [importJson, setImportJson] = useState<string>('');
+  const [importError, setImportError] = useState<string>('');
+
+  const { data: mcpList, isLoading: mcpLoading } = useMcpTools();
+
+  const statusBadgeClass = (status: string) => {
+    if (status === 'connected') {
+      return 'text-green-600 border-green-600';
+    }
+    if (status === 'error') {
+      return 'text-red-600 border-red-600';
+    }
+    return 'text-muted-foreground border-muted';
+  };
 
   // Tags management
   const [newTag, setNewTag] = useState('');
@@ -77,11 +102,26 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
       return;
     }
 
+    // Apply AI Config overrides into preset if present
+    let preset = formData.preset;
+    if (preset) {
+      preset = {
+        ...preset,
+        systemPrompt: systemPrompt || preset.systemPrompt,
+        enabledMcps: Array.from(selectedMcpIds).map((id) => ({
+          name: id,
+          enabledTools: [],
+          enabledResources: [],
+          enabledPrompts: [],
+        })),
+      };
+    }
+
     const newAgent: CreateAgentMetadata = {
       name: formData.name,
       description: formData.description,
       status: formData.status,
-      preset: formData.preset,
+      preset: preset!,
       icon: formData.icon,
       keywords: formData.keywords?.length > 0 ? formData.keywords : [],
     };
@@ -97,8 +137,10 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
         return 2;
       case 'preset':
         return 3;
-      case 'settings':
+      case 'ai-config':
         return 4;
+      case 'settings':
+        return 5;
       default:
         return 1;
     }
@@ -113,6 +155,8 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
       case 3:
         return 'preset';
       case 4:
+        return 'ai-config';
+      case 5:
         return 'settings';
       default:
         return 'overview';
@@ -139,6 +183,40 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
       setActiveTab(getTabFromStep(prevStep));
     }
   };
+
+  // Initialize systemPrompt from selected preset
+  useEffect(() => {
+    if (formData.preset && typeof formData.preset.systemPrompt === 'string') {
+      setSystemPrompt(formData.preset.systemPrompt);
+    }
+  }, [formData.preset]);
+
+  const toggleMcpSelection = (id: string) => {
+    setSelectedMcpIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const categoryDisplayName = useMemo(() => {
+    if (!selectedCategory) {
+      return 'Not specified';
+    }
+    const map: Record<GuiAgentCategory, string> = {
+      general: 'General Purpose',
+      research: 'Research',
+      development: 'Development',
+      creative: 'Creative',
+      analytics: 'Analytics',
+      customer_support: 'Customer Support',
+    };
+    return map[selectedCategory];
+  }, [selectedCategory]);
 
   return (
     <div className="h-full flex flex-col">
@@ -195,7 +273,8 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
             <span className={currentStep >= 1 ? 'text-foreground font-medium' : ''}>Overview</span>
             <span className={currentStep >= 2 ? 'text-foreground font-medium' : ''}>Category</span>
             <span className={currentStep >= 3 ? 'text-foreground font-medium' : ''}>Preset</span>
-            <span className={currentStep >= 4 ? 'text-foreground font-medium' : ''}>Settings</span>
+            <span className={currentStep >= 4 ? 'text-foreground font-medium' : ''}>AI Config</span>
+            <span className={currentStep >= 5 ? 'text-foreground font-medium' : ''}>Settings</span>
           </div>
         </div>
       </div>
@@ -207,6 +286,7 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="category">Category</TabsTrigger>
             <TabsTrigger value="preset">Preset</TabsTrigger>
+            <TabsTrigger value="ai-config">AI Config</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -379,6 +459,26 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                     Select the primary category that best describes your agent's purpose and
                     capabilities.
                   </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {GuiAgentCategories.map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategory(cat);
+                          updateFormData({ keywords: GuiCategoryKeywordsMap[cat] });
+                        }}
+                        className={`text-left border rounded-lg p-4 hover:bg-accent transition ${
+                          selectedCategory === cat ? 'border-primary ring-1 ring-primary' : ''
+                        }`}
+                      >
+                        <div className="font-medium capitalize">{cat.replace('_', ' ')}</div>
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          {'# ' + GuiCategoryKeywordsMap[cat].slice(0, 4).join('  # ')}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </Card>
 
                 {/* Navigation */}
@@ -387,7 +487,7 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                     <ArrowLeft className="w-4 h-4" />
                     Previous: Overview
                   </Button>
-                  <Button onClick={handleNextStep} className="gap-2">
+                  <Button onClick={handleNextStep} className="gap-2" disabled={!selectedCategory}>
                     Next: Choose Preset
                     <ArrowLeft className="w-4 h-4 rotate-180" />
                   </Button>
@@ -424,6 +524,85 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                     Previous: Category
                   </Button>
                   <Button onClick={handleNextStep} disabled={!formData.preset} className="gap-2">
+                    Next: AI Config
+                    <ArrowLeft className="w-4 h-4 rotate-180" />
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="ai-config" className="h-full">
+              <div className="max-w-4xl mx-auto space-y-6">
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">System Prompt</h3>
+                  <p className="text-muted-foreground mb-3">
+                    Define or override the system prompt used by the selected preset.
+                  </p>
+                  <Textarea
+                    value={systemPrompt}
+                    onChange={(e) => setSystemPrompt(e.target.value)}
+                    rows={8}
+                    placeholder="Enter the system prompt that guides your agent's behavior..."
+                  />
+                </Card>
+
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">MCP Tools</h3>
+                  <p className="text-muted-foreground mb-3">
+                    Select tools to enable for this agent. You can connect/disconnect tools in the
+                    MCP manager.
+                  </p>
+                  <div className="space-y-2">
+                    {mcpLoading && (
+                      <div className="text-sm text-muted-foreground">Loading tools...</div>
+                    )}
+                    {!mcpLoading && (mcpList?.items?.length ?? 0) === 0 && (
+                      <div className="text-sm text-muted-foreground">No tools found.</div>
+                    )}
+                    {!mcpLoading && (mcpList?.items?.length ?? 0) > 0 && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {mcpList!.items.map((t) => (
+                          <label
+                            key={t.id}
+                            className={`flex items-start gap-3 border rounded-md p-3 cursor-pointer hover:bg-accent ${
+                              selectedMcpIds.has(t.id) ? 'border-primary' : ''
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedMcpIds.has(t.id)}
+                              onChange={() => toggleMcpSelection(t.id)}
+                              className="mt-1"
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{t.name}</span>
+                                <span
+                                  className={`text-xs rounded px-2 py-0.5 border ${statusBadgeClass(
+                                    t.status as string
+                                  )}`}
+                                >
+                                  {t.status}
+                                </span>
+                              </div>
+                              <div className="text-xs text-muted-foreground line-clamp-2">
+                                {t.description}
+                              </div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </Card>
+
+                {/* Navigation */}
+                <div className="flex justify-between">
+                  <Button variant="outline" onClick={handlePrevStep} className="gap-2">
+                    <ArrowLeft className="w-4 h-4" />
+                    Previous: Preset
+                  </Button>
+                  <Button onClick={handleNextStep} className="gap-2">
                     Next: Agent Settings
                     <ArrowLeft className="w-4 h-4 rotate-180" />
                   </Button>
@@ -491,6 +670,81 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                   </div>
                 </Card>
 
+                {/* Export / Import */}
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Export / Import</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Export */}
+                    <div>
+                      <Label className="text-sm">Export Agent as JSON</Label>
+                      <div className="mt-2 flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            if (!validateFormData(formData)) {
+                              return;
+                            }
+                            const json = JSON.stringify(serializeAgent(formData), null, 2);
+                            setExportJson(json);
+                          }}
+                        >
+                          Generate JSON
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(exportJson);
+                            } catch {
+                              // ignore clipboard errors
+                            }
+                          }}
+                          disabled={!exportJson}
+                        >
+                          Copy
+                        </Button>
+                      </div>
+                      <Textarea
+                        className="mt-2 h-40"
+                        value={exportJson}
+                        readOnly
+                        placeholder="Generated JSON will appear here"
+                      />
+                    </div>
+                    {/* Import */}
+                    <div>
+                      <Label className="text-sm">Import Preset JSON</Label>
+                      <Textarea
+                        className="mt-2 h-40"
+                        value={importJson}
+                        onChange={(e) => {
+                          setImportJson(e.target.value);
+                          setImportError('');
+                        }}
+                        placeholder="Paste exported agent JSON here"
+                      />
+                      {importError && <p className="text-xs text-red-600 mt-1">{importError}</p>}
+                      <div className="mt-2 flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            const parsed = tryParseAgentExport(importJson);
+                            if (!parsed) {
+                              setImportError('Invalid JSON');
+                              return;
+                            }
+                            const next = applyAgentExport(formData, parsed);
+                            setSystemPrompt(parsed.preset.systemPrompt ?? '');
+                            updateFormData(next);
+                          }}
+                        >
+                          Apply
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
                 {/* Configuration Summary */}
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">
@@ -504,9 +758,7 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                       </div>
                       <div>
                         <Label className="text-sm text-muted-foreground">Category</Label>
-                        <p className="font-medium capitalize">
-                          {formData.preset?.category || 'Not specified'}
-                        </p>
+                        <p className="font-medium">{categoryDisplayName}</p>
                       </div>
                       <div>
                         <Label className="text-sm text-muted-foreground">Base Preset</Label>

@@ -7,8 +7,11 @@ import { PresetApiModule } from './preset/preset.module';
 import { McpUsageModule } from './common/mcp/mcp-usage.module';
 import { McpRegistryModule } from './common/mcp/mcp-registry.module';
 import { McpApiModule } from './mcp/mcp.api.module';
+import { McpUsageApiModule } from './mcp/mcp-usage.api.module';
 import { BridgeApiModule } from './bridge/bridge.api.module';
 import { OutboundChannelModule } from './common/event/outbound-channel.module';
+import { ChatModule } from './chat/chat.module';
+import { KnowledgeApiModule } from './knowledge/knowledge.api.module';
 
 @Module({
   imports: [
@@ -19,7 +22,10 @@ import { OutboundChannelModule } from './common/event/outbound-channel.module';
     McpUsageModule,
     OutboundChannelModule,
     McpApiModule,
+    McpUsageApiModule,
     BridgeApiModule,
+    ChatModule,
+    KnowledgeApiModule,
   ],
   providers: [
     {

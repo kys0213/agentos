@@ -1,8 +1,13 @@
 import type { AgentMetadata, Preset } from '@agentos/core';
 import { Activity, Bot, Cpu, Layers, MessageSquare } from 'lucide-react';
+import { useEffect } from 'react';
+import { useDashboardStats } from '../../hooks/queries/use-dashboard';
+import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
+import { useMcpUsageStream } from '../../hooks/queries/use-mcp-usage-stream';
+import { DashboardCard } from './DashboardCard';
 
 interface DashboardProps {
   presets: Preset[];
@@ -19,69 +24,144 @@ export function Dashboard({
   loading,
   onCreateAgent,
 }: DashboardProps) {
-  // Real-time stats from actual data
-  const stats = [
+  const { data: ds, isLoading: statsLoading, isError: statsError } = useDashboardStats();
+  const qc = useQueryClient();
+  const retry = () => qc.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
+  const { lastEvent } = useMcpUsageStream();
+  useEffect(() => {
+    if (lastEvent) {
+      // Any usage event should refresh dashboard stats
+      qc.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
+    }
+  }, [lastEvent, qc]);
+  // Real-time stats from actual data (with graceful fallbacks)
+  const isReady = !statsLoading && !statsError;
+
+  const valueOrDash = (val?: number | null, fallback?: number): string => {
+    if (!isReady) {
+      return fallback != null ? String(fallback) : '—';
+    }
+    if (val == null) {
+      return '—';
+    }
+    return String(val);
+  };
+
+  const agentsValue = valueOrDash(ds?.agents.total ?? null, currentAgents.length);
+  const agentsChange = (() => {
+    if (!isReady) {
+      const active = currentAgents.filter((a) => a.status === 'active').length;
+      return `${active} active`;
+    }
+    if (ds?.meta.agentsOk) {
+      const active = ds?.agents.active ?? '—';
+      return `${active} active`;
+    } else {
+      return 'Error • Retry';
+    }
+  })();
+
+  const chatsValue = valueOrDash(ds?.activeChats ?? null);
+  const chatsChange = (() => {
+    if (!isReady) {
+      return '';
+    }
+    return ds?.meta.chatsOk ? '+2 from yesterday' : 'Error • Retry';
+  })();
+
+  const modelsValue = valueOrDash(ds?.bridges.models ?? null);
+  const modelsChange = (() => {
+    if (!isReady) {
+      return '';
+    }
+    if (ds?.bridges.total == null) {
+      return '';
+    }
+    return ds?.meta.bridgesOk ? `Bridges: ${ds.bridges.total}` : 'Error • Retry';
+  })();
+
+  const presetsValue = valueOrDash(ds?.presets.total ?? null, presets.length);
+  const presetsChange = (() => {
+    if (!isReady) {
+      const inUse = presets.filter((p) => p.usageCount && p.usageCount > 0).length;
+      return `${inUse} in use`;
+    }
+    return ds?.meta.presetsOk ? `${ds?.presets.inUse ?? 0} in use` : 'Error • Retry';
+  })();
+
+  const cards = [
     {
       title: 'Active Chats',
-      value: '3',
-      change: '+2 from yesterday',
+      value: chatsValue,
+      change: chatsChange,
       icon: MessageSquare,
       color: 'text-blue-600',
     },
     {
       title: 'Agents',
-      value: currentAgents.length?.toString(),
-      change: `${currentAgents.filter((a) => a.status === 'active').length} active`,
+      value: agentsValue,
+      change: agentsChange,
       icon: Bot,
       color: 'text-green-600',
     },
     {
       title: 'Models',
-      value: '5',
-      change: 'All connected',
+      value: modelsValue,
+      change: modelsChange,
       icon: Cpu,
       color: 'text-purple-600',
     },
     {
       title: 'Presets',
-      value: presets.length.toString(),
-      change: `${presets.filter((p) => p.usageCount && p.usageCount > 0).length} in use`,
+      value: presetsValue,
+      change: presetsChange,
       icon: Layers,
       color: 'text-orange-600',
     },
   ];
 
-  // Generate recent activity from actual data
+  // Add MCP 24h card when available
+  if (!statsLoading && !statsError && ds?.mcp24h?.requests != null) {
+    cards.push({
+      title: 'MCP (24h)',
+      value: String(ds.mcp24h.requests),
+      change: ds.meta.mcpOk ? '' : 'Error • Retry',
+      icon: Activity,
+      color: 'text-blue-600',
+    });
+  }
+
+  // Derive recent activity-like insights from actual data
+  const topAgent = [...currentAgents].sort((a, b) => (b.usageCount ?? 0) - (a.usageCount ?? 0))[0];
   const recentActivity = [
-    {
+    topAgent && {
       id: 1,
-      type: 'chat',
-      title: `Chat available with ${currentAgents.find((a) => a.keywords.includes('general'))?.name || 'General'}`,
-      time: 'Ready now',
-      agent: currentAgents.find((a) => a.keywords.includes('general'))?.name || 'General',
-    },
-    {
-      id: 2,
       type: 'agent',
-      title: `${currentAgents.find((a) => a.keywords.includes('general'))?.name || 'General'} agent ready`,
-      time: 'Available',
-      agent: currentAgents.find((a) => a.keywords.includes('general'))?.name || 'General',
+      title: `Top agent: ${topAgent.name}`,
+      time: `${topAgent.usageCount ?? 0} uses`,
+      agent: topAgent.name,
     },
-    {
-      id: 3,
+    presets[0] && {
+      id: 2,
       type: 'preset',
-      title: `${presets[0]?.name || 'Default'} preset ready`,
-      time: `Used ${presets[0]?.usageCount || 0} times`,
+      title: `Popular preset: ${presets[0].name}`,
+      time: `${presets[0].usageCount ?? 0} uses`,
       agent: 'System',
     },
-    {
-      id: 4,
-      type: 'model',
-      title: 'Models connected and ready',
-      time: 'All systems operational',
+    ds?.bridges.total != null && {
+      id: 3,
+      type: 'bridge',
+      title: `Installed bridges: ${ds.bridges.total}`,
+      time: 'Configured',
       agent: 'System',
     },
-  ];
+  ].filter(Boolean) as Array<{
+    id: number;
+    type: string;
+    title: string;
+    time: string;
+    agent: string;
+  }>;
 
   // Smart quick actions based on available agents and presets
   const bestAgent = currentAgents.find((a) => a.status === 'active') || currentAgents[0];
@@ -170,6 +250,17 @@ export function Dashboard({
     );
   }
 
+  // Optionally include MCP requests card if available
+  if (!statsLoading && !statsError && ds?.mcp?.requests != null) {
+    cards.push({
+      title: 'MCP Requests',
+      value: String(ds.mcp.requests),
+      change: ds.meta.mcpOk ? '' : 'Error • Retry',
+      icon: Activity,
+      color: 'text-blue-600',
+    });
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -182,21 +273,21 @@ export function Dashboard({
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={index} className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{stat.title}</p>
-                  <p className="text-2xl font-semibold">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">{stat.change}</p>
-                </div>
-                <Icon className={`w-8 h-8 ${stat.color}`} />
-              </div>
-            </Card>
-          );
-        })}
+        {cards.map((stat, index) => (
+          <DashboardCard
+            key={index}
+            title={stat.title}
+            value={stat.value}
+            change={stat.change}
+            icon={stat.icon}
+            color={stat.color}
+            onRetry={
+              !statsLoading && !statsError && String(stat.change).includes('Retry')
+                ? retry
+                : undefined
+            }
+          />
+        ))}
       </div>
 
       {/* Content Grid */}

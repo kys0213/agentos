@@ -10,8 +10,12 @@ import {
 import { McpUsagePublisher } from '../../mcp/mcp-usage.publisher';
 import { ElectronAppEnvironment } from '../../electron/electron-app.environment';
 import * as path from 'path';
+import { OutboundChannelModule } from '../event/outbound-channel.module';
+import { OutboundChannel } from '../event/outbound-channel';
+import { McpUsageEventingService } from '../../mcp/mcp-usage.eventing.service';
 
 @Module({
+  imports: [OutboundChannelModule],
   providers: [
     McpRegistry,
     {
@@ -43,8 +47,9 @@ import * as path from 'path';
     },
     {
       provide: McpUsageService,
-      inject: [FileMcpUsageRepository],
-      useFactory: (repo: FileMcpUsageRepository) => new McpUsageService(repo),
+      inject: [FileMcpUsageRepository, OutboundChannel],
+      useFactory: (repo: FileMcpUsageRepository, outbound: OutboundChannel) =>
+        new McpUsageEventingService(repo, outbound),
     },
     McpUsagePublisher,
   ],

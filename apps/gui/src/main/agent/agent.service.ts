@@ -10,12 +10,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { Message, UserMessage } from 'llm-bridge-spec';
 import { AGENT_SERVICE_TOKEN } from '../common/agent/constants';
 import { AgentEventBridge } from './events/agent-event-bridge';
+import { ChatService } from '../chat/chat.service';
 
 @Injectable()
 export class AgentSessionService {
   constructor(
     @Inject(AGENT_SERVICE_TOKEN) private readonly agentService: AgentService,
-    private readonly events: AgentEventBridge
+    private readonly events: AgentEventBridge,
+    private readonly chatService: ChatService
   ) {}
 
   async chat(
@@ -31,6 +33,27 @@ export class AgentSessionService {
     }
 
     const result = await agent.chat(messages, options);
+
+    // ChatService에 메시지 저장
+    try {
+      // 에이전트 메타데이터 조회
+      const agentMetadata = await agent.getMetadata();
+
+      // 모든 메시지를 ChatService에 저장
+      for (let i = 0; i < result.messages.length; i++) {
+        const message = result.messages[i];
+        const messageHistory = {
+          ...message,
+          messageId: `${result.sessionId}-${Date.now()}-${i}`,
+          createdAt: new Date(),
+          agentMetadata,
+        };
+        await this.chatService.appendMessageToSession(result.sessionId, agentId, messageHistory);
+      }
+    } catch (error) {
+      console.error('Failed to save messages to ChatService:', error);
+      // 메시지 저장 실패는 전체 chat 실패로 이어지지 않도록 함
+    }
 
     // 스트림 브로드캐스트: 어시스턴트 메시지 이벤트 발행
     const last: Message | undefined = result.messages[result.messages.length - 1];

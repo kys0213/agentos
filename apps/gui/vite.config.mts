@@ -57,12 +57,5 @@ export default defineConfig(({ mode }) => {
       cors: true,
       origin: 'http://localhost:5173',
     },
-
-    // 해석 설정
-    resolve: {
-      alias: {
-        '@': resolve(__dirname, 'src'),
-      },
-    },
   };
 });

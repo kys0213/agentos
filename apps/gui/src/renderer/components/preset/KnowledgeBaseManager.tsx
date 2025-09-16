@@ -26,6 +26,7 @@ import { Progress } from '../ui/progress';
 import { ScrollArea } from '../ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { ServiceContainer } from '../../../shared/di/service-container';
 import { Textarea } from '../ui/textarea';
 
 interface KnowledgeDocument {
@@ -81,42 +82,7 @@ interface KnowledgeTemplate {
   }>;
 }
 
-// Runtime type guard for stored document shape from localStorage (JSON)
-type StoredKnowledgeDocument = {
-  id: string;
-  title: string;
-  content: string;
-  filename?: string;
-  size: number;
-  type: 'markdown' | 'text';
-  createdAt?: string;
-  updatedAt?: string;
-  tags?: string[];
-  indexed?: boolean;
-  vectorized?: boolean;
-  agentId?: string;
-  agentName?: string;
-  isTemplate?: boolean;
-};
-
-function isStoredKnowledgeDocument(o: unknown): o is StoredKnowledgeDocument {
-  if (!o || typeof o !== 'object') {
-    return false;
-  }
-
-  const v = o as Record<string, unknown>;
-  const has = (k: string) => Object.prototype.hasOwnProperty.call(v, k);
-  return (
-    typeof v.id === 'string' &&
-    typeof v.title === 'string' &&
-    typeof v.content === 'string' &&
-    typeof v.size === 'number' &&
-    (v.type === 'markdown' || v.type === 'text') &&
-    (!has('createdAt') || typeof v.createdAt === 'string') &&
-    (!has('updatedAt') || typeof v.updatedAt === 'string') &&
-    (!has('tags') || Array.isArray(v.tags))
-  );
-}
+// (Note) Stored document guards removed; not used currently.
 
 export function KnowledgeBaseManager({
   agentId,
@@ -139,65 +105,95 @@ export function KnowledgeBaseManager({
   const [availableTemplates, setAvailableTemplates] = useState<KnowledgeTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [knowledgeStats, setKnowledgeStats] = useState<PresetKnowledgeStats | null>(null);
+  const [searchResults, setSearchResults] = useState<
+    Array<{ id: string; title: string; updatedAt: Date; tags: string[] }>
+  >([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const knowledge = ServiceContainer.get('knowledge');
 
-  // Storage keys for preset-specific data (completely isolated)
-  const getStorageKey = (type: 'documents' | 'index' | 'stats') =>
-    `agentos_project_${agentId}_${type}`;
+  const handleSelectDocument = useCallback(
+    async (doc: KnowledgeDocument) => {
+      setSelectedDocument(doc);
+      if (!agentId || !knowledge) {
+        return;
+      }
+      if (doc.content && doc.content.length > 0) {
+        return;
+      }
+      try {
+        const detail = await knowledge.readDoc(agentId, doc.id);
 
-  // Load preset-specific data (project isolation)
+        const enriched: KnowledgeDocument = {
+          ...doc,
+          content: detail.content,
+          updatedAt: new Date(detail.updatedAt),
+          // keep existing tags if response omitted
+          tags: Array.isArray(detail.tags) ? detail.tags : doc.tags,
+        };
+        setSelectedDocument(enriched);
+        // update list entry so subsequent selects don’t refetch
+        setDocuments((prev) =>
+          prev.map((d) =>
+            d.id === doc.id
+              ? {
+                  ...d,
+                  content: enriched.content,
+                  updatedAt: enriched.updatedAt,
+                  tags: enriched.tags,
+                }
+              : d
+          )
+        );
+      } catch (err) {
+        console.error('Failed to read document content', err);
+      }
+    },
+    [agentId, knowledge]
+  );
+
+  // Initial load from Core and templates
   useEffect(() => {
     if (!agentId) {
       return;
     }
-
-    // Load documents from localStorage (project-specific)
-    const savedDocuments = localStorage.getItem(getStorageKey('documents'));
-    if (savedDocuments) {
+    (async () => {
       try {
-        const parsed: unknown = JSON.parse(savedDocuments);
-        const arr = Array.isArray(parsed) ? parsed : [];
-        const next: KnowledgeDocument[] = (arr as unknown[])
-          .filter(isStoredKnowledgeDocument)
-          .map((doc) => ({
-            id: doc.id,
-            title: doc.title,
-            content: doc.content,
-            filename: doc.filename,
-            size: doc.size,
-            type: doc.type,
-            createdAt: new Date(doc.createdAt ?? Date.now()),
-            updatedAt: new Date(doc.updatedAt ?? Date.now()),
-            tags: Array.isArray(doc.tags) ? doc.tags : [],
+        if (knowledge) {
+          const page = await knowledge.listDocs(agentId, { limit: 100 });
+
+          const next: KnowledgeDocument[] = page.items.map((d) => ({
+            id: d.id,
+            title: d.title,
+            content: '',
+            filename: undefined,
+            size: 0,
+            type: 'markdown',
+            createdAt: new Date(d.updatedAt),
+            updatedAt: new Date(d.updatedAt),
+            tags: d.tags ?? [],
             chunks: [],
-            indexed: !!doc.indexed,
-            vectorized: !!doc.vectorized,
+            indexed: false,
+            vectorized: false,
             agentId: agentId ?? '',
             agentName: agentName ?? '',
-            isTemplate: !!doc.isTemplate,
+            isTemplate: false,
           }));
 
-        setDocuments(next);
-      } catch (error) {
-        console.error('Failed to load documents:', error);
+          setDocuments(next);
+        } else {
+          initializeWithStarterContent();
+        }
+      } finally {
+        loadAvailableTemplates();
+        calculateKnowledgeStats();
       }
-    } else {
-      // Initialize with category-specific starter content if it's a new project
-      initializeWithStarterContent();
-    }
-
-    // Load available templates
-    loadAvailableTemplates();
-
-    // Calculate knowledge stats
-    calculateKnowledgeStats();
+    })();
   }, [agentId]);
 
-  // Save documents to project-specific storage
+  // Recompute stats when documents change
   useEffect(() => {
-    if (agentId && documents.length > 0) {
-      localStorage.setItem(getStorageKey('documents'), JSON.stringify(documents));
+    if (agentId) {
       calculateKnowledgeStats();
     }
   }, [documents, agentId]);
@@ -336,22 +332,38 @@ export function KnowledgeBaseManager({
     setDocuments([welcomeDoc]);
   };
 
-  const calculateKnowledgeStats = () => {
-    if (!documents.length) {
+  const calculateKnowledgeStats = async () => {
+    if (!agentId) {
       return;
     }
+    try {
+      if (knowledge) {
+        const stats = await knowledge.getStats(agentId);
 
-    const stats: PresetKnowledgeStats = {
-      totalDocuments: documents.length,
-      indexedDocuments: documents.filter((d) => d.indexed).length,
-      vectorizedDocuments: documents.filter((d) => d.vectorized).length,
-      totalChunks: documents.reduce((sum, doc) => sum + (doc.chunks?.length || 0), 0),
-      lastUpdated: new Date(Math.max(...documents.map((d) => d.updatedAt.getTime()))),
-      storageSize: documents.reduce((sum, doc) => sum + doc.size, 0),
-    };
-
-    setKnowledgeStats(stats);
-    localStorage.setItem(getStorageKey('stats'), JSON.stringify(stats));
+        setKnowledgeStats({
+          totalDocuments: stats.totalDocuments,
+          indexedDocuments: stats.totalChunks,
+          vectorizedDocuments: 0,
+          totalChunks: stats.totalChunks,
+          lastUpdated: stats.lastUpdated ? new Date(stats.lastUpdated) : new Date(0),
+          storageSize: stats.storageSize,
+        });
+        return;
+      }
+    } catch (e) {
+      console.error('Failed to load stats', e);
+    }
+    // Fallback local calc
+    if (documents.length) {
+      setKnowledgeStats({
+        totalDocuments: documents.length,
+        indexedDocuments: documents.filter((d) => d.indexed).length,
+        vectorizedDocuments: documents.filter((d) => d.vectorized).length,
+        totalChunks: documents.reduce((sum, doc) => sum + (doc.chunks?.length || 0), 0),
+        lastUpdated: new Date(Math.max(...documents.map((d) => d.updatedAt.getTime()))),
+        storageSize: documents.reduce((sum, doc) => sum + doc.size, 0),
+      });
+    }
   };
 
   const handleFileUpload = useCallback(
@@ -359,40 +371,63 @@ export function KnowledgeBaseManager({
       setIsUploading(true);
       setUploadProgress(0);
 
-      Array.from(files).forEach(async (file, index) => {
-        if (
-          file.type === 'text/markdown' ||
-          file.name.endsWith('.md') ||
-          file.type === 'text/plain'
-        ) {
-          const content = await file.text();
-          const newDoc: KnowledgeDocument = {
-            id: `${agentId}-doc-${Date.now()}-${index}`,
-            title: file.name.replace(/\.(md|txt)$/, ''),
-            content,
-            filename: file.name,
-            size: file.size,
-            type: file.name.endsWith('.md') ? 'markdown' : 'text',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            tags: [],
-            indexed: false,
-            vectorized: false,
-            agentId: agentId!,
-            agentName: agentName!,
-          };
-
-          setDocuments((prev) => [...prev, newDoc]);
-          setUploadProgress(((index + 1) / files.length) * 100);
+      (async () => {
+        const list = Array.from(files);
+        for (let index = 0; index < list.length; index++) {
+          const file = list[index];
+          try {
+            if (
+              file.type === 'text/markdown' ||
+              file.name.endsWith('.md') ||
+              file.type === 'text/plain'
+            ) {
+              const content = await file.text();
+              if (knowledge && agentId) {
+                await knowledge.addDoc(agentId, {
+                  title: file.name.replace(/\.(md|txt)$/, ''),
+                  content,
+                  tags: [],
+                });
+              }
+            }
+          } catch (e) {
+            console.error('Upload failed for', file.name, e);
+          } finally {
+            setUploadProgress(((index + 1) / list.length) * 100);
+          }
         }
-      });
 
-      setTimeout(() => {
-        setIsUploading(false);
-        setUploadProgress(0);
-      }, 1000);
+        // Refresh list from Core after upload
+        try {
+          if (knowledge && agentId) {
+            const page = await knowledge.listDocs(agentId, { limit: 100 });
+            const next: KnowledgeDocument[] = page.items.map((d) => ({
+              id: d.id,
+              title: d.title,
+              content: '',
+              filename: undefined,
+              size: 0,
+              type: 'markdown',
+              createdAt: new Date(d.updatedAt),
+              updatedAt: new Date(d.updatedAt),
+              tags: d.tags ?? [],
+              chunks: [],
+              indexed: false,
+              vectorized: false,
+              agentId: agentId ?? '',
+              agentName: agentName ?? '',
+              isTemplate: false,
+            }));
+            setDocuments(next);
+          }
+        } finally {
+          setIsUploading(false);
+          setUploadProgress(0);
+          await calculateKnowledgeStats();
+        }
+      })();
     },
-    [agentId, agentName]
+    [agentId, agentName, knowledge, calculateKnowledgeStats]
   );
 
   const handleDrop = useCallback(
@@ -481,30 +516,65 @@ export function KnowledgeBaseManager({
     setIndexingProgress(0);
   };
 
-  const createNewDocument = () => {
-    const newDoc: KnowledgeDocument = {
-      id: `${agentId}-doc-${Date.now()}`,
-      title: newDocumentTitle,
-      content: newDocumentContent,
-      size: newDocumentContent.length,
-      type: 'markdown',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      tags: newDocumentTags
+  const createNewDocument = async () => {
+    try {
+      const tags = newDocumentTags
         .split(',')
         .map((tag) => tag.trim())
-        .filter(Boolean),
-      indexed: false,
-      vectorized: false,
-      agentId: agentId!,
-      agentName: agentName!,
-    };
+        .filter(Boolean);
+      if (knowledge && agentId) {
+        await knowledge.addDoc(agentId, {
+          title: newDocumentTitle,
+          content: newDocumentContent,
+          tags,
+        });
+        // Refresh from Core
+        const page = await knowledge.listDocs(agentId, { limit: 100 });
 
-    setDocuments((prev) => [...prev, newDoc]);
-    setNewDocumentDialog(false);
-    setNewDocumentTitle('');
-    setNewDocumentContent('');
-    setNewDocumentTags('');
+        const next: KnowledgeDocument[] = page.items.map((d) => ({
+          id: d.id,
+          title: d.title,
+          content: '',
+          filename: undefined,
+          size: 0,
+          type: 'markdown',
+          createdAt: new Date(d.updatedAt),
+          updatedAt: new Date(d.updatedAt),
+          tags: d.tags ?? [],
+          chunks: [],
+          indexed: false,
+          vectorized: false,
+          agentId: agentId ?? '',
+          agentName: agentName ?? '',
+          isTemplate: false,
+        }));
+        setDocuments(next);
+        await calculateKnowledgeStats();
+      } else {
+        const newDoc: KnowledgeDocument = {
+          id: `${agentId}-doc-${Date.now()}`,
+          title: newDocumentTitle,
+          content: newDocumentContent,
+          size: newDocumentContent.length,
+          type: 'markdown',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          tags,
+          indexed: false,
+          vectorized: false,
+          agentId: agentId!,
+          agentName: agentName!,
+        };
+        setDocuments((prev) => [...prev, newDoc]);
+      }
+    } catch (e) {
+      console.error('Failed to create document', e);
+    } finally {
+      setNewDocumentDialog(false);
+      setNewDocumentTitle('');
+      setNewDocumentContent('');
+      setNewDocumentTags('');
+    }
   };
 
   const applyTemplate = () => {
@@ -534,10 +604,41 @@ export function KnowledgeBaseManager({
     setSelectedTemplate('');
   };
 
-  const deleteDocument = (docId: string) => {
-    setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
-    if (selectedDocument?.id === docId) {
-      setSelectedDocument(null);
+  const deleteDocument = async (docId: string) => {
+    try {
+      if (knowledge && agentId) {
+        await knowledge.removeDoc(agentId, docId);
+        // Refresh list from Core
+        const page = await knowledge.listDocs(agentId, { limit: 100 });
+        const next: KnowledgeDocument[] = page.items.map((d) => ({
+          id: d.id,
+          title: d.title,
+          content: '',
+          filename: undefined,
+          size: 0,
+          type: 'markdown',
+          createdAt: new Date(d.updatedAt),
+          updatedAt: new Date(d.updatedAt),
+          tags: d.tags ?? [],
+          chunks: [],
+          indexed: false,
+          vectorized: false,
+          agentId: agentId ?? '',
+          agentName: agentName ?? '',
+          isTemplate: false,
+        }));
+        setDocuments(next);
+      } else {
+        // Fallback local behavior
+        setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
+      }
+    } catch (e) {
+      console.error('Failed to delete document', e);
+    } finally {
+      if (selectedDocument?.id === docId) {
+        setSelectedDocument(null);
+      }
+      await calculateKnowledgeStats();
     }
   };
 
@@ -861,7 +962,7 @@ export function KnowledgeBaseManager({
                           className={`p-4 cursor-pointer transition-colors ${
                             selectedDocument?.id === doc.id ? 'bg-accent' : 'hover:bg-accent/50'
                           }`}
-                          onClick={() => setSelectedDocument(doc)}
+                          onClick={() => handleSelectDocument(doc)}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
@@ -988,7 +1089,7 @@ export function KnowledgeBaseManager({
 
                       <ScrollArea className="h-[400px]">
                         <div className="whitespace-pre-wrap text-sm text-foreground">
-                          {selectedDocument.content}
+                          {selectedDocument.content || '—'}
                         </div>
                       </ScrollArea>
                     </Card>
@@ -1016,6 +1117,8 @@ export function KnowledgeBaseManager({
                       <Input
                         placeholder="Enter search query to test retrieval..."
                         className="flex-1"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                       />
                       <Select defaultValue="bm25">
                         <SelectTrigger className="w-40">
@@ -1027,7 +1130,29 @@ export function KnowledgeBaseManager({
                           <SelectItem value="hybrid">Hybrid</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button className="gap-2">
+                      <Button
+                        className="gap-2"
+                        onClick={async () => {
+                          if (!agentId || !knowledge || !searchQuery.trim()) {
+                            setSearchResults([]);
+                            return;
+                          }
+                          try {
+                            const res = await knowledge.search(agentId, searchQuery, 20);
+
+                            const items = res.items.map((d) => ({
+                              id: d.id,
+                              title: d.title,
+                              updatedAt: new Date(d.updatedAt),
+                              tags: Array.isArray(d.tags) ? d.tags : [],
+                            }));
+                            setSearchResults(items);
+                          } catch (e) {
+                            console.error('Search failed:', e);
+                            setSearchResults([]);
+                          }
+                        }}
+                      >
                         <Search className="w-4 h-4" />
                         Search
                       </Button>
@@ -1041,10 +1166,41 @@ export function KnowledgeBaseManager({
 
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Search Results</h3>
-                  <div className="text-center text-muted-foreground py-8">
-                    <Search className="w-12 h-12 mx-auto mb-4" />
-                    <p>Enter a search query above to see results</p>
-                  </div>
+                  {searchResults.length === 0 && (
+                    <div className="text-center text-muted-foreground py-8">
+                      <Search className="w-12 h-12 mx-auto mb-4" />
+                      <p>Enter a search query above to see results</p>
+                    </div>
+                  )}
+                  {searchResults.length > 0 && (
+                    <div className="space-y-2">
+                      {searchResults.map((r) => (
+                        <div
+                          key={r.id}
+                          className="flex items-center justify-between border rounded-md p-3"
+                        >
+                          <div>
+                            <div className="font-medium">{r.title}</div>
+                            <div className="text-xs text-muted-foreground">
+                              Updated {r.updatedAt.toLocaleDateString()} • {r.tags.join(', ')}
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const doc = documents.find((d) => d.id === r.id);
+                              if (doc) {
+                                void handleSelectDocument(doc);
+                              }
+                            }}
+                          >
+                            Open
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </Card>
               </div>
             </TabsContent>
@@ -1113,10 +1269,7 @@ export function KnowledgeBaseManager({
                           <span>Project ID:</span>
                           <span className="font-medium text-xs">{agentId}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Storage Key:</span>
-                          <span className="font-medium text-xs">{getStorageKey('documents')}</span>
-                        </div>
+                        {/* Storage details omitted after Core integration */}
                       </div>
                     </div>
 

@@ -19,7 +19,7 @@ import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Textarea } from '../ui/textarea';
 import PresetBasicFields from './PresetBasicFields';
-import PresetModelSettings from './PresetModelSettings';
+import BridgeModelSettings from './BridgeModelSettings';
 import { PresetStatusBadge } from './PresetStatusBadge';
 
 interface PresetDetailProps {
@@ -232,7 +232,7 @@ export function PresetDetail({ preset, onBack, onUpdate, onDelete }: PresetDetai
 
                   <Card className="p-6">
                     <h3 className="text-lg font-semibold text-foreground mb-4">Model Settings</h3>
-                    <PresetModelSettings
+                    <BridgeModelSettings
                       config={editedPreset.llmBridgeConfig}
                       onChange={updatePreset}
                     />

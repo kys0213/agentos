@@ -27,6 +27,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/
 import type { AgentStatus, ReadonlyAgentMetadata } from '@agentos/core';
 import { SubAgentBadge } from './SubAgentBadge';
 import { CategoryIcon } from '../common/CategoryIcon';
+import {
+  GuiAgentCategories,
+  GuiCategoryKeywordsMap,
+  type GuiAgentCategory,
+} from '../../../shared/constants/agent-categories';
 
 export interface SubAgentManagerProps {
   agents: ReadonlyAgentMetadata[];
@@ -42,7 +47,7 @@ export function SubAgentManager({
   onCreateAgent,
 }: SubAgentManagerProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | GuiAgentCategory>('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [activeTab, setActiveTab] = useState('agents');
   const [showStatusGuide, setShowStatusGuide] = useState(false);
@@ -62,7 +67,9 @@ export function SubAgentManager({
     const matchesSearch =
       agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       agent.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || agent.keywords.includes(selectedCategory);
+    const matchesCategory =
+      selectedCategory === 'all' ||
+      agent.keywords.some((kw) => GuiCategoryKeywordsMap[selectedCategory]?.includes(kw));
     const matchesStatus = selectedStatus === 'all' || agent.status === selectedStatus;
     return matchesSearch && matchesCategory && matchesStatus;
   });
@@ -275,14 +282,18 @@ export function SubAgentManager({
                       />
                     </div>
 
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <Select
+                      value={selectedCategory}
+                      onValueChange={(val) => setSelectedCategory(val as 'all' | GuiAgentCategory)}
+                    >
                       <SelectTrigger className="w-40">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {agents.map((agent) => (
-                          <SelectItem key={agent.id} value={agent.id}>
-                            {agent.name} ({agent.usageCount})
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {GuiAgentCategories.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat.replace('_', ' ')}
                           </SelectItem>
                         ))}
                       </SelectContent>

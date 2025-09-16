@@ -16,6 +16,9 @@ import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ModelCard } from './ModelCard';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
+import { Textarea } from '../ui/textarea';
+import type { LlmManifest } from 'llm-bridge-spec';
 // Presentational component: data/actions injected via container
 
 export interface ModelManagerItem {
@@ -31,13 +34,14 @@ export interface ModelManagerProps {
   isLoading: boolean;
   onSwitch: (bridgeId: string) => Promise<void> | void;
   onRefresh: () => void;
+  onRegister?: (manifest: LlmManifest) => Promise<void> | void;
 }
 
 export function ModelManager(props: ModelManagerProps) {
   const [activeTab, setActiveTab] = useState('instances');
   const [searchQuery, setSearchQuery] = useState('');
   const [error] = useState<string | null>(null);
-  const { items, isLoading, onRefresh, onSwitch } = props;
+  const { items, isLoading, onRefresh, onSwitch, onRegister } = props;
   const handleRefresh = () => onRefresh();
 
   // Installation flow is handled by container; local stub removed
@@ -93,6 +97,31 @@ export function ModelManager(props: ModelManagerProps) {
     );
   }
 
+  const [isRegisterOpen, setRegisterOpen] = useState(false);
+  const [manifestText, setManifestText] = useState('');
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handleOpenRegister = () => {
+    setSubmitError(null);
+    setManifestText('');
+    setRegisterOpen(true);
+  };
+
+  const handleSubmitRegister = async () => {
+    setSubmitError(null);
+    try {
+      const parsed = JSON.parse(manifestText) as LlmManifest;
+      if (!parsed || typeof parsed !== 'object' || !('name' in parsed)) {
+        throw new Error('Invalid manifest: missing required fields');
+      }
+      await onRegister?.(parsed);
+      setRegisterOpen(false);
+      handleRefresh();
+    } catch (e) {
+      setSubmitError((e as Error).message);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -106,11 +135,40 @@ export function ModelManager(props: ModelManagerProps) {
           </p>
           {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={handleOpenRegister}>
           <Plus className="w-4 h-4" />
           Add Model
         </Button>
       </div>
+
+      {/* Register Bridge Dialog */}
+      <Dialog open={isRegisterOpen} onOpenChange={setRegisterOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Register LLM Bridge</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Paste a valid LLM Bridge manifest (JSON) to register.
+            </p>
+            <Textarea
+              value={manifestText}
+              onChange={(e) => setManifestText(e.target.value)}
+              rows={10}
+              placeholder='{"name":"my-bridge","language":"node","models":["gpt-4o"], ...}'
+            />
+            {submitError && <div className="text-sm text-red-600">{submitError}</div>}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRegisterOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmitRegister} disabled={!onRegister}>
+              Register
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Search and Filters */}
       <div className="flex items-center gap-4">

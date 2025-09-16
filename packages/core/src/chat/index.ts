@@ -5,3 +5,4 @@ export * from './file/file-based-chat-session';
 export * from './file/file-based-session-storage';
 export * from './file/file-based-chat.manager';
 export * from './content';
+export * from './simple-compress-strategy';
