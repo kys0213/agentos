@@ -113,6 +113,33 @@ export function KnowledgeBaseManager({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const knowledge = ServiceContainer.get('knowledge');
 
+  const handleSelectDocument = useCallback(
+    async (doc: KnowledgeDocument) => {
+      setSelectedDocument(doc);
+      if (!agentId || !knowledge) return;
+      if (doc.content && doc.content.length > 0) return;
+      try {
+        const detail = await knowledge.readDoc(agentId, doc.id);
+        const parsed = KC.methods['readDocument'].response.parse(detail);
+        const enriched: KnowledgeDocument = {
+          ...doc,
+          content: parsed.content,
+          updatedAt: new Date(parsed.updatedAt),
+          // keep existing tags if response omitted
+          tags: Array.isArray(parsed.tags) ? parsed.tags : doc.tags,
+        };
+        setSelectedDocument(enriched);
+        // update list entry so subsequent selects don’t refetch
+        setDocuments((prev) =>
+          prev.map((d) => (d.id === doc.id ? { ...d, content: enriched.content, updatedAt: enriched.updatedAt, tags: enriched.tags } : d))
+        );
+      } catch (err) {
+        console.error('Failed to read document content', err);
+      }
+    },
+    [agentId, knowledge]
+  );
+
   // Initial load from Core and templates
   useEffect(() => {
     if (!agentId) {
@@ -924,7 +951,7 @@ export function KnowledgeBaseManager({
                           className={`p-4 cursor-pointer transition-colors ${
                             selectedDocument?.id === doc.id ? 'bg-accent' : 'hover:bg-accent/50'
                           }`}
-                          onClick={() => setSelectedDocument(doc)}
+                          onClick={() => handleSelectDocument(doc)}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
