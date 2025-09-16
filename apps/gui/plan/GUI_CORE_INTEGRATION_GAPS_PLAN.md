@@ -32,7 +32,7 @@
 - [x] 채팅 히스토리/세션이 Core 세션/메시지 API와 정합되며, 훅/스토어가 계약 타입으로 동작한다. ✅
 - [x] GUI 전용 기능(pin/archive, 카테고리)은 GUI 레이어에서 관리되고 Core와 분리된다. ✅
 - [ ] 멀티 에이전트 협업 기능이 Core 오케스트레이션과 연동된다.
-- [ ] 시스템 통계와 메트릭이 실시간으로 수집/표시된다. (부분완료: `usage.events` 구독 → 대시보드 캐시 무효화 와이어링 완료)
+- [ ] 시스템 통계와 메트릭이 실시간으로 수집/표시된다. (부분완료: `usage.events` 구독 → 대시보드 캐시 무효화 와이어링 완료; 이벤트 파싱은 클라이언트 내부 스키마 기반 처리)
 
 ## 테스트 환경 분리/전략 (보강)
 
@@ -68,6 +68,7 @@
 - [x] CI에서 `pnpm test`로 두 프로젝트 동시 실행 보장
 - [ ] main 레이어에서 Electron 의존 모듈은 필요한 곳에 한해 mock 또는 경계 어댑터로 대체
 - [ ] renderer 테스트 커버리지 기준 수립 및 주요 시나리오(프리셋 임포트, MCP 사용량 스트림, 대시보드) 보장
+  (진행: MCP usage 이벤트/대시보드 갱신, Knowledge 검색/미리보기/본문 로드 테스트 추가)
 
 ### 사용 시나리오
 
@@ -499,7 +500,7 @@ interface BridgeManifest {
 - [x] GUI: `McpToolManager` 폴백 샘플 데이터 제거(Empty state 처리). 어댑터 연동 유지
 - [x] 이벤트: `usage.events` 스트리밍(Observable/Emitter) 구현 및 렌더러 구독 훅 연결
   - 메인: OutboundChannel 기반 스트림 노출(`mcp.usage.events`) — stats.updated 이벤트 우선 구현
-  - 렌더러: `useMcpUsageStream` 훅 추가(최신 이벤트 구독)
+  - 렌더러: `useMcpUsageStream` 훅 추가(최신 이벤트 구독) + 클라이언트 레이어에서 스트림 이벤트 스키마 파싱
   - 주: 개별 log.created 페이로드는 추후 Core hook 노출 시 확장
 - [x] 사용량: `renderer/rpc/services/mcp-usage.service.ts` 제공(렌더러) — 화면 반영은 추가 필요
 
@@ -514,7 +515,7 @@ interface BridgeManifest {
 
 **현황**:
 
-- `KnowledgeBaseManager`는 localStorage 기반
+- `KnowledgeBaseManager`는 Core RPC로 목록/통계/검색 연동, 선택 시 `readDoc`으로 본문 로드 (프리뷰/Export 경로 유효)
 - Core Knowledge 인덱싱 아키텍처 구현 완료
 - agentId → knowledgeId 매핑 필요
 
@@ -551,7 +552,7 @@ interface BridgeManifest {
 **테스트**
 
 - [x] knowledge.adapter: `ensure→list/add` 콜 플로우 단위 테스트
-- [ ] KnowledgeBaseManager: 검색/미리보기 연동 UI 테스트(후속)
+- [x] KnowledgeBaseManager: 검색/미리보기 및 선택 시 본문 로드(readDoc) UI 테스트
 - [ ] 인덱싱 진행률 스트림(events) 구독 훅/표시 테스트(후속)
 
 ### 작업 5: 채팅 히스토리/세션 연동 ✅ **완료**

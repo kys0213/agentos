@@ -103,4 +103,6 @@ E. CI & Scripts
 
 - jest-dom scoping adjusted to Vitest environment.
 - Compatibility guidelines added.
-- Next actionable step: split test scope and begin typecheck remediation (B1–B8).
+- Renderer 테스트 보강: Knowledge 검색/미리보기/본문 로드, MCP usage 이벤트/대시보드 갱신, DashboardCard, MCP Manager 빈/에러 경로
+- E2E 스모크: Playwright MCP 스모크(`apps/gui/e2e/mcp-verify.e2e.test.ts`)
+- Next actionable step: begin typecheck remediation (B1–B8) & ESLint fixes (C1–C3).
