@@ -1193,7 +1193,7 @@ export function KnowledgeBaseManager({
                             onClick={() => {
                               const doc = documents.find((d) => d.id === r.id);
                               if (doc) {
-                                setSelectedDocument(doc);
+                                void handleSelectDocument(doc);
                               }
                             }}
                           >
