@@ -8,14 +8,14 @@ export class ConversationServiceAdapter {
   listSessions(
     pagination?: z.input<(typeof C.methods)['listSessions']['payload']>
   ): Promise<z.output<(typeof C.methods)['listSessions']['response']>> {
-    return this.client.listSessions(pagination as any);
+    return this.client.listSessions(pagination);
   }
 
   getMessages(
     sessionId: string,
     pagination?: z.input<(typeof C.methods)['listSessions']['payload']>
   ): Promise<z.output<(typeof C.methods)['getMessages']['response']>> {
-    return this.client.getMessages({ sessionId, pagination } as any);
+    return this.client.getMessages({ sessionId, pagination });
   }
 
   deleteSession(
