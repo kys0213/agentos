@@ -6,3 +6,4 @@ export * from './file/file-based-session-storage';
 export * from './file/file-based-chat.manager';
 export * from './content';
 export * from './simple-compress-strategy';
+export * from './message-history.schema';

@@ -4,9 +4,12 @@ import type { RoutingStrategyFn, ScoreResult } from '../types';
 export const FileTypeStrategy: RoutingStrategyFn = async ({ query, metas }) => {
   const res = new Map<string, ScoreResult>();
   const types = new Set<string>();
-  for (const c of query.content ?? []) {
-    if (c?.contentType && c.contentType !== 'text') {
-      types.add(c.contentType);
+  for (const message of query.messages ?? []) {
+    for (const content of message?.content ?? []) {
+      const contentType = (content as { contentType?: unknown })?.contentType;
+      if (typeof contentType === 'string' && contentType !== 'text') {
+        types.add(contentType);
+      }
     }
   }
 

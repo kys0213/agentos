@@ -17,13 +17,15 @@ export function getQueryText(query: RouterQuery): string {
   if (query.text && query.text.trim().length > 0) {
     return query.text;
   }
-  if (query.content && query.content.length > 0) {
+  if (query.messages && query.messages.length > 0) {
     const texts: string[] = [];
-    for (const c of query.content) {
-      if (isStringContent(c)) {
-        const v = c.value;
-        if (v.trim().length > 0) {
-          texts.push(v);
+    for (const message of query.messages) {
+      for (const c of message?.content ?? []) {
+        if (isStringContent(c)) {
+          const v = c.value;
+          if (v.trim().length > 0) {
+            texts.push(v);
+          }
         }
       }
     }
@@ -94,7 +96,7 @@ export function allowByStatus(meta: ReadonlyAgentMetadata, query: RouterQuery): 
   }
 
   if (meta.status === 'idle') {
-    const hints = (query.hints ?? []).map((h) => h.toLowerCase());
+    const hints = (query.routingHints ?? []).map((h) => h.toLowerCase());
     const names = [meta.name?.toLowerCase(), meta.id?.toLowerCase()].filter(Boolean) as string[];
     return names.some((n) => hints.includes(n));
   }

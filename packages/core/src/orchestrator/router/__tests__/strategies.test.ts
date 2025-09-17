@@ -86,7 +86,7 @@ test('mention strategy overrides bm25 when hinted', async () => {
     meta({ id: 'beta', name: 'Beta', description: 'beta specialist for sorting' })
   );
   const router = new CompositeAgentRouter([BM25TextStrategy, MentionStrategy], { tokenizer });
-  const q: RouterQuery = { text: 'sort these numbers', hints: ['beta'] };
+  const q: RouterQuery = { text: 'sort these numbers', routingHints: ['beta'] };
   const out = await router.route(q, [a1, a2], { topK: 1 });
   expect(out.agents[0].id).toBe('beta');
 });
@@ -168,8 +168,16 @@ test('keyword boost and tool/file type hints apply small boosts', async () => {
   );
   const q: RouterQuery = {
     text: 'image classification',
-    hints: ['detect-objects'],
-    content: [{ contentType: 'image', value: Buffer.from('x') }],
+    routingHints: ['detect-objects'],
+    messages: [
+      {
+        role: 'user',
+        content: [
+          { contentType: 'text', value: 'image classification' },
+          { contentType: 'image', value: Buffer.from('x') },
+        ],
+      },
+    ],
   };
   const out = await router.route(q, [a2, a1], { topK: 1 });
   expect(out.agents[0].id).toBe('v');

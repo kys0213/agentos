@@ -43,6 +43,7 @@ export const AgentContract = defineContract({
         agentId: z.string(),
         messages: z.array(UserMessageSchema),
         options: AgentExecuteOptionsSchema.optional(),
+        mentionedAgentIds: z.array(z.string()).optional(),
       }),
       response: AgentChatResultSchema,
     },
