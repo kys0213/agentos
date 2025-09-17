@@ -3,7 +3,7 @@ import type { RoutingStrategyFn, ScoreResult } from '../types';
 // ToolHintStrategy: hints matching enabled tool titles/names
 export const ToolHintStrategy: RoutingStrategyFn = async ({ query, metas }) => {
   const res = new Map<string, ScoreResult>();
-  const hints = (query.hints ?? []).map((h) => h.toLowerCase());
+  const hints = (query.routingHints ?? []).map((h) => h.toLowerCase());
 
   for (const m of metas) {
     const tools = m.preset?.enabledMcps?.flatMap((mc) => mc.enabledTools) ?? [];

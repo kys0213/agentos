@@ -62,7 +62,7 @@ export class DefaultLlmReranker implements LlmReranker {
   ): string {
     const header = SYSTEM_PROMPT;
     const locale = (query.locale ?? 'unknown').toString();
-    const hints: string[] = [...(query.tags ?? []), ...(query.hints ?? [])]
+    const hints: string[] = [...(query.tags ?? []), ...(query.routingHints ?? [])]
       .map((s) => String(s))
       .filter(Boolean);
     const hintsLine = hints.length ? `\nHINTS\n${hints.join(', ')}` : '';

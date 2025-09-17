@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MessageHistorySchema, MultiModalContentSchema } from '@agentos/core';
 
 export const CursorPaginationSchema = z.object({
   cursor: z.string().default(''),
@@ -10,24 +11,6 @@ export const ChatSessionDescriptionSchema = z.object({
   id: z.string(),
   title: z.string(),
   updatedAt: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
-});
-
-export const MessageHistorySchema = z.object({
-  messageId: z.string(),
-  createdAt: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
-  role: z.string(),
-  content: z.array(
-    z.object({
-      contentType: z.string(),
-      value: z.unknown(),
-    })
-  ),
-});
-
-// Common content/message schemas (llm-bridge-spec alignment)
-export const MultiModalContentSchema = z.object({
-  contentType: z.string(),
-  value: z.unknown(),
 });
 
 export const UserMessageSchema = z.object({
@@ -44,3 +27,5 @@ export const PageOf = <T extends z.ZodTypeAny>(item: T) =>
 
 export const ChatSessionPageSchema = PageOf(ChatSessionDescriptionSchema);
 export const MessageHistoryPageSchema = PageOf(MessageHistorySchema);
+
+export { MessageHistorySchema, MultiModalContentSchema };

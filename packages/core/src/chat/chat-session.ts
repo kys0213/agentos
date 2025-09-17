@@ -95,6 +95,7 @@ export type MessageHistory = Message & {
   createdAt: Date;
   isCompressed?: boolean;
   agentMetadata?: AgentMetadata;
+  metadata?: Record<string, unknown>;
 };
 
 /**
