@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { Send, AtSign } from 'lucide-react';
-import { AgentMetadata } from '@agentos/core';
+import type { AgentMetadata } from '@agentos/core';
 
 interface MessageInputWithMentionsProps {
   mentionableAgents: AgentMetadata[];

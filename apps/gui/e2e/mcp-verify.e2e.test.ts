@@ -1,20 +1,27 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('MCP Verify - UI smoke', () => {
-  test('dashboard, MCP tools, presets, agents render and link correctly', async ({ page }) => {
+  test('dashboard, MCP tools, agents render and link correctly', async ({ page }) => {
     await page.goto('/');
 
-    // Initial chat view present
-    await expect(page.getByPlaceholder(/Type a message/i)).toBeVisible();
-
-    // Enter Management mode via Chat sidebar "Manage" button
-    const manageBtn = page.getByRole('button', { name: /^Manage$/ });
-    if (await manageBtn.count()) {
-      await manageBtn.click();
+    // Initial chat landing should show chat controls or empty state CTA
+    const messageInput = page.getByPlaceholder(/Type a message/i);
+    if ((await messageInput.count()) > 0) {
+      await expect(messageInput.first()).toBeVisible();
     } else {
-      // Fallback: Go to Dashboard if present
-      const goBtn = page.getByRole('button', { name: /Go to Dashboard/i });
-      if (await goBtn.count()) await goBtn.click();
+      const navDashboard = page.getByTestId('nav-dashboard');
+      if (await navDashboard.count()) {
+        await expect(navDashboard.first()).toBeVisible();
+      } else {
+        await expect(page.getByRole('button', { name: /(Manage|Explore Features|Create First Agent)/i })).toBeVisible();
+      }
+    }
+
+    const manageEntry = page.getByRole('button', {
+      name: /(Manage Agents|Manage|Explore Features|Create First Agent|Go to Dashboard)/i,
+    });
+    if (await manageEntry.count()) {
+      await manageEntry.first().click();
     }
 
     // Disambiguate: prefer the main H1 inside management content
@@ -34,14 +41,6 @@ test.describe('MCP Verify - UI smoke', () => {
       await expect(page.locator('text=Total Tools').first()).toBeVisible();
     }
 
-    // Presets page
-    const navPresets = page.getByTestId('nav-presets');
-    if (await navPresets.count()) {
-      await navPresets.click();
-      await expect(page.getByRole('heading', { name: 'Agent Projects' })).toBeVisible();
-      await expect(page.getByTestId('btn-create-project')).toBeVisible();
-    }
-
     // Agents + Create flow shows AI Config with MCP Tools
     const navAgents = page.getByTestId('nav-subagents');
     if (await navAgents.count()) {
@@ -50,7 +49,11 @@ test.describe('MCP Verify - UI smoke', () => {
       await expect(page.getByTestId('btn-create-agent')).toBeVisible();
       await page.getByTestId('btn-create-agent').click();
       await expect(page.getByText('Agent Overview')).toBeVisible();
-      await page.getByRole('tab', { name: 'AI Config' }).click();
+      await page.getByRole('button', { name: 'Next: Category' }).click();
+      await page
+        .getByRole('button', { name: /Development.*software engineering/i })
+        .click();
+      await page.getByRole('button', { name: 'Next: AI Config' }).click();
       await expect(page.getByText('MCP Tools')).toBeVisible();
     }
   });

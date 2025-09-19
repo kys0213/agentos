@@ -1,5 +1,6 @@
-import { CreateAgentMetadata, ReadonlyPreset } from '@agentos/core';
+import type { CreateAgentMetadata, ReadonlyPreset } from '@agentos/core';
 import {
+  AlertCircle,
   ArrowLeft,
   Bot,
   CheckCircle,
@@ -7,12 +8,10 @@ import {
   Hash,
   Info,
   MinusCircle,
-  Plus,
   Save,
   Settings,
   Target,
   Wand2,
-  X,
   Zap,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -25,8 +24,7 @@ import { Progress } from '../ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Textarea } from '../ui/textarea';
-import { agentMetadataSchema } from '../../../shared/schema/agent.schemas';
-import PresetPicker from '../preset/PresetPicker';
+import BridgeModelSettings from '../preset/BridgeModelSettings';
 import {
   GuiAgentCategories,
   type GuiAgentCategory,
@@ -34,162 +32,200 @@ import {
 } from '../../../shared/constants/agent-categories';
 import { useMcpTools } from '../../hooks/queries/use-mcp';
 import { applyAgentExport, serializeAgent, tryParseAgentExport } from '../../utils/agent-export';
+import { Alert, AlertDescription } from '../ui/alert';
 
 interface AgentCreateProps {
   onBack: () => void;
   onCreate: (agent: CreateAgentMetadata) => void;
-  presets: ReadonlyPreset[];
+  presetTemplate: ReadonlyPreset;
 }
 
-export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 5;
+type StepKey = 'overview' | 'category' | 'ai-config' | 'settings';
+const steps: StepKey[] = ['overview', 'category', 'ai-config', 'settings'];
+const stepLabels: Record<StepKey, string> = {
+  overview: 'Overview',
+  category: 'Category',
+  'ai-config': 'AI Config',
+  settings: 'Settings',
+};
 
-  // Form state
-  const [formData, setFormData] = useState<Partial<CreateAgentMetadata>>({
+const STATUS_OPTIONS: Array<{ id: 'active' | 'idle' | 'inactive'; label: string; helper: string }> = [
+  { id: 'active', label: 'Active', helper: 'Auto-participate in conversations' },
+  { id: 'idle', label: 'Idle', helper: 'Respond only to @mentions' },
+  { id: 'inactive', label: 'Inactive', helper: 'Completely disabled' },
+];
+
+const CATEGORY_TITLES: Record<GuiAgentCategory, string> = {
+  general: 'General Purpose',
+  research: 'Research',
+  development: 'Development',
+  creative: 'Creative',
+  analytics: 'Analytics',
+  customer_support: 'Customer Support',
+};
+
+const CATEGORY_DESCRIPTIONS: Record<GuiAgentCategory, string> = {
+  general: 'Versatile assistant for various tasks',
+  research: 'Information gathering, fact-checking, and analysis',
+  development: 'Code writing, debugging, and software engineering',
+  creative: 'Content creation, writing, and creative tasks',
+  analytics: 'Data analysis, visualization, and insights',
+  customer_support: 'Customer service, support, and engagement',
+};
+
+export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreateProps) {
+  const totalSteps = steps.length;
+
+  const [activeTab, setActiveTab] = useState<StepKey>('overview');
+  const [currentStep, setCurrentStep] = useState(1);
+  const [maxUnlockedStep, setMaxUnlockedStep] = useState(1);
+
+  const [overview, setOverview] = useState({
     name: '',
     description: '',
-    status: 'active',
     icon: '',
-    preset: undefined,
-    keywords: [],
+    keywords: [] as string[],
   });
-  const [selectedPresetId, setSelectedPresetId] = useState<string | undefined>(undefined);
-  const [selectedCategory, setSelectedCategory] = useState<GuiAgentCategory | undefined>(undefined);
-  const [systemPrompt, setSystemPrompt] = useState<string>('');
-  const [selectedMcpIds, setSelectedMcpIds] = useState<Set<string>>(new Set());
-  const [exportJson, setExportJson] = useState<string>('');
-  const [importJson, setImportJson] = useState<string>('');
-  const [importError, setImportError] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<GuiAgentCategory | undefined>();
+  const [status, setStatus] = useState<'active' | 'idle' | 'inactive'>('active');
+  const [presetState, setPresetState] = useState<ReadonlyPreset>(presetTemplate);
+
+  const initialBridgeId =
+    (presetTemplate.llmBridgeConfig?.bridgeId as string | undefined) ?? presetTemplate.llmBridgeName ?? '';
+  const initialBridgeConfig = useMemo(() => {
+    const cfg = { ...(presetTemplate.llmBridgeConfig ?? {}) } as Record<string, unknown>;
+    delete cfg.bridgeId;
+    return cfg;
+  }, [presetTemplate.llmBridgeConfig]);
+
+  const [bridgeId, setBridgeId] = useState<string>(initialBridgeId);
+  const [bridgeConfig, setBridgeConfig] = useState<Record<string, unknown>>(initialBridgeConfig);
+  const [systemPrompt, setSystemPrompt] = useState<string>(presetTemplate.systemPrompt ?? '');
+  const [selectedMcpIds, setSelectedMcpIds] = useState<Set<string>>(
+    () => new Set((presetTemplate.enabledMcps ?? []).map((m) => m.name).filter(Boolean) as string[])
+  );
+
+  const [exportJson, setExportJson] = useState('');
+  const [importJson, setImportJson] = useState('');
+  const [importError, setImportError] = useState('');
+
+  const [stepErrors, setStepErrors] = useState<Partial<Record<StepKey, string | null>>>({});
 
   const { data: mcpList, isLoading: mcpLoading } = useMcpTools();
 
-  const statusBadgeClass = (status: string) => {
-    if (status === 'connected') {
-      return 'text-green-600 border-green-600';
-    }
-    if (status === 'error') {
-      return 'text-red-600 border-red-600';
-    }
-    return 'text-muted-foreground border-muted';
+  useEffect(() => {
+    setPresetState(presetTemplate);
+    setBridgeId(initialBridgeId);
+    setBridgeConfig(initialBridgeConfig);
+    setSystemPrompt(presetTemplate.systemPrompt ?? '');
+    setSelectedMcpIds(
+      new Set((presetTemplate.enabledMcps ?? []).map((m) => m.name).filter(Boolean) as string[])
+    );
+  }, [initialBridgeConfig, initialBridgeId, presetTemplate]);
+
+  const applyStepError = (key: StepKey, message: string) => {
+    setStepErrors((prev) => ({ ...prev, [key]: message }));
   };
 
-  // Tags management
-  const [newTag, setNewTag] = useState('');
-
-  const updateFormData = (updates: Partial<typeof formData>) => {
-    setFormData((prev) => ({ ...prev, ...updates }));
+  const clearStepError = (key: StepKey) => {
+    setStepErrors((prev) => ({ ...prev, [key]: null }));
   };
 
-  const addTag = () => {
-    if (newTag.trim() && !formData.keywords?.includes(newTag.trim())) {
-      updateFormData({
-        keywords: [...(formData.keywords ?? []), newTag.trim()],
-      });
-      setNewTag('');
+  const validators: Record<StepKey, () => string | null> = {
+    overview: () => {
+      if (!overview.name.trim()) {
+        return 'Agent name is required.';
+      }
+      if (!overview.description.trim()) {
+        return 'Agent description is required.';
+      }
+      return null;
+    },
+    category: () => {
+      if (!selectedCategory) {
+        return 'Please choose an agent category.';
+      }
+      return null;
+    },
+    'ai-config': () => {
+      if (!systemPrompt.trim()) {
+        return 'System prompt cannot be empty.';
+      }
+      if (!bridgeId) {
+        return 'Select an LLM bridge before continuing.';
+      }
+      return null;
+    },
+    settings: () => {
+      if (!status) {
+        return 'Initial status is required.';
+      }
+      return null;
+    },
+  };
+
+  const ensureStepValid = (key: StepKey) => {
+    const error = validators[key]();
+    if (error) {
+      applyStepError(key, error);
+      return false;
     }
+    clearStepError(key);
+    return true;
   };
 
-  const removeTag = (tagToRemove: string) => {
-    updateFormData({
-      keywords: formData.keywords?.filter((tag) => tag !== tagToRemove),
-    });
+  const renderStepError = (key: StepKey) => {
+    const error = stepErrors[key];
+    if (!error) return null;
+    return (
+      <Alert variant="destructive" className="mb-4">
+        <AlertCircle className="w-4 h-4" />
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
   };
 
-  const handleCreate = () => {
-    if (!validateFormData(formData)) {
-      return;
-    }
-
-    // Apply AI Config overrides into preset if present
-    let preset = formData.preset;
-    if (preset) {
-      preset = {
-        ...preset,
-        systemPrompt: systemPrompt || preset.systemPrompt,
-        enabledMcps: Array.from(selectedMcpIds).map((id) => ({
-          name: id,
-          enabledTools: [],
-          enabledResources: [],
-          enabledPrompts: [],
-        })),
-      };
-    }
-
-    const newAgent: CreateAgentMetadata = {
-      name: formData.name,
-      description: formData.description,
-      status: formData.status,
-      preset: preset!,
-      icon: formData.icon,
-      keywords: formData.keywords?.length > 0 ? formData.keywords : [],
-    };
-
-    onCreate(newAgent);
-  };
-
-  const getStepFromTab = (tab: string) => {
-    switch (tab) {
-      case 'overview':
-        return 1;
-      case 'category':
-        return 2;
-      case 'preset':
-        return 3;
-      case 'ai-config':
-        return 4;
-      case 'settings':
-        return 5;
-      default:
-        return 1;
-    }
-  };
-
-  const getTabFromStep = (step: number) => {
-    switch (step) {
-      case 1:
-        return 'overview';
-      case 2:
-        return 'category';
-      case 3:
-        return 'preset';
-      case 4:
-        return 'ai-config';
-      case 5:
-        return 'settings';
-      default:
-        return 'overview';
-    }
-  };
+  const getTabFromStep = (step: number): StepKey => steps[step - 1] ?? 'overview';
 
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    setCurrentStep(getStepFromTab(tab));
+    const targetIndex = steps.indexOf(tab as StepKey);
+    if (targetIndex === -1) return;
+    const targetStep = targetIndex + 1;
+
+    if (targetStep > currentStep) {
+      const currentKey = steps[currentStep - 1];
+      if (!ensureStepValid(currentKey)) {
+        return;
+      }
+      setMaxUnlockedStep((prev) => Math.max(prev, currentStep + 1));
+    }
+
+    if (targetStep <= maxUnlockedStep + 1) {
+      setCurrentStep(targetStep);
+      setActiveTab(tab as StepKey);
+    }
   };
 
   const handleNextStep = () => {
-    if (currentStep < totalSteps) {
-      const nextStep = currentStep + 1;
-      setCurrentStep(nextStep);
-      setActiveTab(getTabFromStep(nextStep));
+    if (currentStep >= totalSteps) {
+      return;
     }
+    const currentKey = steps[currentStep - 1];
+    if (!ensureStepValid(currentKey)) {
+      return;
+    }
+    const nextStep = currentStep + 1;
+    setMaxUnlockedStep((prev) => Math.max(prev, nextStep));
+    setCurrentStep(nextStep);
+    setActiveTab(getTabFromStep(nextStep));
   };
 
   const handlePrevStep = () => {
-    if (currentStep > 1) {
-      const prevStep = currentStep - 1;
-      setCurrentStep(prevStep);
-      setActiveTab(getTabFromStep(prevStep));
-    }
+    if (currentStep <= 1) return;
+    const prevStep = currentStep - 1;
+    setCurrentStep(prevStep);
+    setActiveTab(getTabFromStep(prevStep));
   };
-
-  // Initialize systemPrompt from selected preset
-  useEffect(() => {
-    if (formData.preset && typeof formData.preset.systemPrompt === 'string') {
-      setSystemPrompt(formData.preset.systemPrompt);
-    }
-  }, [formData.preset]);
 
   const toggleMcpSelection = (id: string) => {
     setSelectedMcpIds((prev) => {
@@ -201,26 +237,150 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
       }
       return next;
     });
+    clearStepError('ai-config');
   };
 
   const categoryDisplayName = useMemo(() => {
     if (!selectedCategory) {
       return 'Not specified';
     }
-    const map: Record<GuiAgentCategory, string> = {
-      general: 'General Purpose',
-      research: 'Research',
-      development: 'Development',
-      creative: 'Creative',
-      analytics: 'Analytics',
-      customer_support: 'Customer Support',
-    };
-    return map[selectedCategory];
+    return CATEGORY_TITLES[selectedCategory];
   }, [selectedCategory]);
+
+  const buildAgentPayload = (): CreateAgentMetadata | null => {
+    if (!overview.name.trim() || !overview.description.trim()) {
+      return null;
+    }
+    const mergedBridgeConfig: Record<string, unknown> = {
+      ...(presetState.llmBridgeConfig ?? {}),
+      ...bridgeConfig,
+    };
+    if (bridgeId) {
+      mergedBridgeConfig.bridgeId = bridgeId;
+    }
+
+    const mergedPreset: ReadonlyPreset = {
+      ...presetState,
+      llmBridgeName: bridgeId || presetState.llmBridgeName,
+      llmBridgeConfig: mergedBridgeConfig,
+      systemPrompt,
+      enabledMcps: Array.from(selectedMcpIds).map((name) => ({
+        name,
+        enabledTools: [],
+        enabledResources: [],
+        enabledPrompts: [],
+      })),
+    };
+
+    return {
+      name: overview.name.trim(),
+      description: overview.description.trim(),
+      status,
+      preset: mergedPreset,
+      icon: overview.icon?.trim() ?? '',
+      keywords: overview.keywords,
+    };
+  };
+
+  const previewAgent = useMemo(
+    () => buildAgentPayload(),
+    [overview, status, presetState, bridgeConfig, bridgeId, systemPrompt, selectedMcpIds]
+  );
+
+  const isSubmissionReady = steps.every((key) => validators[key]() === null);
+
+  const handleCreate = () => {
+    const payload = buildAgentPayload();
+    if (!payload) {
+      ensureStepValid(activeTab);
+      return;
+    }
+    onCreate(payload);
+  };
+
+  const addTag = () => {
+    const value = newTag.trim();
+    if (!value) return;
+    if (overview.keywords.includes(value)) return;
+    setOverview((prev) => ({ ...prev, keywords: [...prev.keywords, value] }));
+    setNewTag('');
+  };
+
+  const removeTag = (tag: string) => {
+    setOverview((prev) => ({
+      ...prev,
+      keywords: prev.keywords.filter((keyword) => keyword !== tag),
+    }));
+  };
+
+  const handleCategorySelect = (category: GuiAgentCategory) => {
+    setSelectedCategory(category);
+    clearStepError('category');
+    const autoKeywords = GuiCategoryKeywordsMap[category] ?? [];
+    setOverview((prev) => ({
+      ...prev,
+      keywords: Array.from(new Set([...prev.keywords, ...autoKeywords])),
+    }));
+  };
+
+  const [newTag, setNewTag] = useState('');
+
+  const effectiveBridgeConfig = useMemo(() => {
+    const merged = { ...(bridgeConfig ?? {}) } as Record<string, unknown>;
+    merged.bridgeId = bridgeId;
+    return merged;
+  }, [bridgeConfig, bridgeId]);
+
+  const handleExport = () => {
+    const payload = buildAgentPayload();
+    if (!payload) {
+      ensureStepValid(activeTab);
+      return;
+    }
+    const serialized = serializeAgent(payload);
+    setExportJson(JSON.stringify(serialized, null, 2));
+  };
+
+  const handleApplyImport = () => {
+    const parsed = tryParseAgentExport(importJson);
+    if (!parsed) {
+      setImportError('Invalid JSON format. Please check the contents and try again.');
+      return;
+    }
+    const updated = applyAgentExport({ preset: presetState }, parsed);
+    setOverview((prev) => ({
+      ...prev,
+      name: updated.name ?? prev.name,
+      description: updated.description ?? prev.description,
+      icon: updated.icon ?? prev.icon,
+      keywords: updated.keywords ?? prev.keywords,
+    }));
+    if (updated.status) {
+      setStatus(updated.status);
+    }
+    if (updated.preset) {
+      setPresetState(updated.preset);
+      setSystemPrompt(updated.preset.systemPrompt ?? '');
+      const importedBridgeId =
+        (updated.preset.llmBridgeConfig?.bridgeId as string | undefined) ??
+        updated.preset.llmBridgeName ??
+        '';
+      setBridgeId(importedBridgeId);
+      const cfg = { ...(updated.preset.llmBridgeConfig ?? {}) } as Record<string, unknown>;
+      delete cfg.bridgeId;
+      setBridgeConfig(cfg);
+      setSelectedMcpIds(
+        new Set((updated.preset.enabledMcps ?? []).map((m) => m.name).filter(Boolean) as string[])
+      );
+    }
+    setImportError('');
+    setMaxUnlockedStep(totalSteps);
+    setCurrentStep(totalSteps);
+    setActiveTab('settings');
+  };
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
       <div className="flex-shrink-0 p-6 border-b">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
@@ -228,80 +388,73 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
               <ArrowLeft className="w-4 h-4" />
               Back to Agents
             </Button>
-
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg flex items-center justify-center">
-                <div className="text-blue-600">
-                  <Bot className="w-6 h-6" />
-                </div>
+                <Bot className="w-6 h-6 text-blue-600" />
               </div>
               <div>
                 <h1 className="text-2xl font-semibold text-foreground">Create Agent</h1>
-                <p className="text-muted-foreground">
-                  Design a specialized AI agent for your workflows
-                </p>
+                <p className="text-muted-foreground">Design a specialized AI agent for your workflows</p>
               </div>
             </div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handleCreate}
-              disabled={!validateFormData(formData)}
-              className="gap-2"
-              data-testid="btn-final-create-agent"
-            >
-              <Save className="w-4 h-4" />
-              Create Agent
-            </Button>
-          </div>
+          <Button
+            onClick={handleCreate}
+            disabled={!isSubmissionReady}
+            className="gap-2"
+            data-testid="btn-final-create-agent"
+          >
+            <Save className="w-4 h-4" />
+            Create Agent
+          </Button>
         </div>
 
-        {/* Progress */}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">
-              Step {currentStep} of {totalSteps}
-            </span>
-            <span className="font-medium">
-              {Math.round((currentStep / totalSteps) * 100)}% Complete
-            </span>
+            <span className="text-muted-foreground">Step {currentStep} of {totalSteps}</span>
+            <span className="font-medium">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
           </div>
           <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
-
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className={currentStep >= 1 ? 'text-foreground font-medium' : ''}>Overview</span>
-            <span className={currentStep >= 2 ? 'text-foreground font-medium' : ''}>Category</span>
-            <span className={currentStep >= 3 ? 'text-foreground font-medium' : ''}>Preset</span>
-            <span className={currentStep >= 4 ? 'text-foreground font-medium' : ''}>AI Config</span>
-            <span className={currentStep >= 5 ? 'text-foreground font-medium' : ''}>Settings</span>
+            {steps.map((step, index) => (
+              <span
+                key={step}
+                className={currentStep >= index + 1 ? 'text-foreground font-medium' : ''}
+              >
+                {stepLabels[step]}
+              </span>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 min-h-0 p-6">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
           <TabsList className="mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="category">Category</TabsTrigger>
-            <TabsTrigger value="preset">Preset</TabsTrigger>
-            <TabsTrigger value="ai-config">AI Config</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="category" disabled={maxUnlockedStep < 2}>
+              Category
+            </TabsTrigger>
+            <TabsTrigger value="ai-config" disabled={maxUnlockedStep < 3}>
+              AI Config
+            </TabsTrigger>
+            <TabsTrigger value="settings" disabled={maxUnlockedStep < 4}>
+              Settings
+            </TabsTrigger>
           </TabsList>
 
           <div className="flex-1 min-h-0">
             <TabsContent value="overview" className="h-full">
               <div className="max-w-4xl mx-auto space-y-6">
+                {renderStepError('overview')}
                 <Card className="p-6">
                   <div className="flex items-center gap-2 mb-4">
                     <Info className="w-5 h-5 text-blue-500" />
                     <h3 className="text-lg font-semibold text-foreground">Agent Overview</h3>
                   </div>
                   <p className="text-muted-foreground mb-6">
-                    Agents are AI-powered assistants that can help with specific tasks and
-                    workflows. Each agent is built on a preset configuration that defines its
-                    capabilities, personality, and behavior patterns.
+                    Agents are AI-powered assistants that can help with specific tasks and workflows. Configure
+                    the basics below to define their purpose and tone.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -311,30 +464,26 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                         Specialized
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        Each agent is designed for specific tasks, making them more effective than
-                        general-purpose assistants.
+                        Each agent is optimized for a specific workflow, making it more effective than a general
+                        assistant.
                       </p>
                     </div>
-
                     <div className="space-y-3">
                       <h4 className="font-medium text-foreground flex items-center gap-2">
                         <Zap className="w-4 h-4 text-blue-500" />
                         Orchestrated
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        Agents can work together through @ mentions or automatic orchestration for
-                        complex workflows.
+                        Combine multiple agents using @mentions or orchestration rules to tackle complex tasks.
                       </p>
                     </div>
-
                     <div className="space-y-3">
                       <h4 className="font-medium text-foreground flex items-center gap-2">
                         <Settings className="w-4 h-4 text-purple-500" />
                         Configurable
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        Fine-tune behavior, status, and capabilities to match your specific workflow
-                        requirements.
+                        Fine-tune behavior, tone, and capabilities to match the needs of your team.
                       </p>
                     </div>
                   </div>
@@ -343,106 +492,93 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Basic Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="agent-name">Agent Name *</Label>
-                        <Input
-                          id="agent-name"
-                          value={formData.name}
-                          onChange={(e) =>
-                            updateFormData({
-                              name: e.target.value,
-                            })
-                          }
-                          placeholder="e.g., Research Assistant"
-                          className="mt-1"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Choose a clear, descriptive name for your agent
-                        </p>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="agent-description">Description *</Label>
-                        <Textarea
-                          id="agent-description"
-                          value={formData.description}
-                          onChange={(e) =>
-                            updateFormData({
-                              description: e.target.value,
-                            })
-                          }
-                          placeholder="Describe what this agent specializes in and how it helps users..."
-                          className="mt-1"
-                          rows={4}
-                        />
-                      </div>
+                    <div>
+                      <Label htmlFor="agent-name">Agent Name *</Label>
+                      <Input
+                        id="agent-name"
+                        value={overview.name}
+                        onChange={(e) => {
+                          setOverview((prev) => ({ ...prev, name: e.target.value }));
+                          clearStepError('overview');
+                        }}
+                        placeholder="e.g., Research Assistant"
+                        className="mt-1"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Choose a clear, descriptive name for your agent.
+                      </p>
                     </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="agent-avatar">Avatar URL (Optional)</Label>
-                        <Input
-                          id="agent-avatar"
-                          value={formData.icon}
-                          onChange={(e) =>
-                            updateFormData({
-                              icon: e.target.value,
-                            })
-                          }
-                          placeholder="https://example.com/avatar.png"
-                          className="mt-1"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Custom avatar image for your agent
-                        </p>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="agent-tags">Tags</Label>
-                        <div className="mt-1 space-y-2">
-                          <div className="flex gap-2">
-                            <Input
-                              value={newTag}
-                              onChange={(e) => setNewTag(e.target.value)}
-                              placeholder="Add a tag..."
-                              onKeyPress={(e) =>
-                                e.key === 'Enter' && (e.preventDefault(), addTag())
-                              }
-                              className="flex-1"
-                            />
-                            <Button variant="outline" size="sm" onClick={addTag} className="gap-1">
-                              <Plus className="w-3 h-3" />
-                              Add
-                            </Button>
-                          </div>
-                          {formData.keywords && formData.keywords.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                              {formData.keywords?.map((tag, index) => (
-                                <Badge key={index} variant="secondary" className="gap-1">
-                                  <Hash className="w-3 h-3" />
-                                  {tag}
-                                  <button
-                                    onClick={() => removeTag(tag)}
-                                    className="ml-1 hover:text-destructive"
-                                  >
-                                    <X className="w-3 h-3" />
-                                  </button>
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                    <div>
+                      <Label htmlFor="agent-icon">Avatar URL (optional)</Label>
+                      <Input
+                        id="agent-icon"
+                        value={overview.icon}
+                        onChange={(e) => setOverview((prev) => ({ ...prev, icon: e.target.value }))}
+                        placeholder="https://example.com/avatar.png"
+                        className="mt-1"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Provide a custom avatar image URL.
+                      </p>
                     </div>
+                  </div>
+                  <div className="mt-6">
+                    <Label htmlFor="agent-description">Description *</Label>
+                    <Textarea
+                      id="agent-description"
+                      value={overview.description}
+                      onChange={(e) => {
+                        setOverview((prev) => ({ ...prev, description: e.target.value }));
+                        clearStepError('overview');
+                      }}
+                      rows={4}
+                      placeholder="Describe what this agent specializes in and how it helps users..."
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Explain the primary responsibilities and skills of this agent.
+                    </p>
+                  </div>
+
+                  <div className="mt-6">
+                    <Label>Tags</Label>
+                    <div className="flex gap-2 mt-2">
+                      <Input
+                        value={newTag}
+                        onChange={(e) => setNewTag(e.target.value)}
+                        placeholder="Add a tag..."
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addTag();
+                          }
+                        }}
+                      />
+                      <Button variant="outline" onClick={addTag} className="gap-2">
+                        <Hash className="w-4 h-4" />
+                        Add
+                      </Button>
+                    </div>
+                    {overview.keywords.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {overview.keywords.map((tag) => (
+                          <Badge
+                            key={tag}
+                            variant="secondary"
+                            className="text-xs cursor-pointer"
+                            onClick={() => removeTag(tag)}
+                          >
+                            #{tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </Card>
 
-                {/* Navigation */}
-                <div className="flex justify-between">
-                  <div></div>
+                <div className="flex justify-end">
                   <Button onClick={handleNextStep} className="gap-2">
-                    Next: Choose Category
+                    Next: Category
                     <ArrowLeft className="w-4 h-4 rotate-180" />
                   </Button>
                 </div>
@@ -451,79 +587,54 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
 
             <TabsContent value="category" className="h-full">
               <div className="max-w-4xl mx-auto space-y-6">
+                {renderStepError('category')}
                 <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">
-                    Choose Agent Category
-                  </h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Choose Agent Category</h3>
                   <p className="text-muted-foreground mb-6">
-                    Select the primary category that best describes your agent's purpose and
-                    capabilities.
+                    Select the primary category that best describes your agent's purpose and capabilities. Tags for
+                    the selected category will be added automatically.
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {GuiAgentCategories.map((cat) => (
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {GuiAgentCategories.map((category) => (
                       <button
-                        key={cat}
+                        key={category}
                         type="button"
-                        onClick={() => {
-                          setSelectedCategory(cat);
-                          updateFormData({ keywords: GuiCategoryKeywordsMap[cat] });
-                        }}
-                        className={`text-left border rounded-lg p-4 hover:bg-accent transition ${
-                          selectedCategory === cat ? 'border-primary ring-1 ring-primary' : ''
+                        onClick={() => handleCategorySelect(category)}
+                        className={`border rounded-lg p-4 text-left transition-colors hover:border-primary ${
+                          selectedCategory === category ? 'border-primary bg-primary/5' : ''
                         }`}
                       >
-                        <div className="font-medium capitalize">{cat.replace('_', ' ')}</div>
-                        <div className="mt-2 text-xs text-muted-foreground">
-                          {'# ' + GuiCategoryKeywordsMap[cat].slice(0, 4).join('  # ')}
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-semibold text-foreground">{CATEGORY_TITLES[category]}</h4>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {CATEGORY_DESCRIPTIONS[category]}
+                            </p>
+                          </div>
+                          {selectedCategory === category && <CheckCircle className="w-5 h-5 text-primary" />}
+                        </div>
+                        <div className="mt-3">
+                          <span className="text-xs font-medium text-muted-foreground uppercase">Examples</span>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {GuiCategoryKeywordsMap[category]?.map((keyword) => (
+                              <Badge key={keyword} variant="outline" className="text-xs">
+                                {keyword}
+                              </Badge>
+                            ))}
+                          </div>
                         </div>
                       </button>
                     ))}
                   </div>
                 </Card>
 
-                {/* Navigation */}
                 <div className="flex justify-between">
                   <Button variant="outline" onClick={handlePrevStep} className="gap-2">
                     <ArrowLeft className="w-4 h-4" />
                     Previous: Overview
                   </Button>
-                  <Button onClick={handleNextStep} className="gap-2" disabled={!selectedCategory}>
-                    Next: Choose Preset
-                    <ArrowLeft className="w-4 h-4 rotate-180" />
-                  </Button>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="preset" className="h-full">
-              <div className="max-w-4xl mx-auto space-y-6">
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Select Base Preset</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Choose a preset configuration that defines your agent's AI model, capabilities,
-                    and behavior patterns.
-                  </p>
-
-                  <PresetPicker
-                    presets={presets}
-                    value={selectedPresetId}
-                    onChange={(id) => {
-                      setSelectedPresetId(id);
-                      const selected = presets.find((p) => p.id === id);
-                      if (selected) {
-                        updateFormData({ preset: selected });
-                      }
-                    }}
-                  />
-                </Card>
-
-                {/* Navigation */}
-                <div className="flex justify-between">
-                  <Button variant="outline" onClick={handlePrevStep} className="gap-2">
-                    <ArrowLeft className="w-4 h-4" />
-                    Previous: Category
-                  </Button>
-                  <Button onClick={handleNextStep} disabled={!formData.preset} className="gap-2">
+                  <Button onClick={handleNextStep} className="gap-2">
                     Next: AI Config
                     <ArrowLeft className="w-4 h-4 rotate-180" />
                   </Button>
@@ -533,60 +644,89 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
 
             <TabsContent value="ai-config" className="h-full">
               <div className="max-w-4xl mx-auto space-y-6">
+                {renderStepError('ai-config')}
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">System Prompt</h3>
                   <p className="text-muted-foreground mb-3">
-                    Define or override the system prompt used by the selected preset.
+                    Define or override the system prompt used by this agent.
                   </p>
                   <Textarea
                     value={systemPrompt}
-                    onChange={(e) => setSystemPrompt(e.target.value)}
+                    onChange={(e) => {
+                      setSystemPrompt(e.target.value);
+                      clearStepError('ai-config');
+                    }}
                     rows={8}
                     placeholder="Enter the system prompt that guides your agent's behavior..."
                   />
                 </Card>
 
                 <Card className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">LLM Bridge & Model</h3>
+                  <BridgeModelSettings
+                    config={effectiveBridgeConfig as ReadonlyPreset['llmBridgeConfig']}
+                    showModel
+                    showParameters
+                    onChange={(updates) => {
+                      if (updates.llmBridgeConfig) {
+                        const cfg = updates.llmBridgeConfig as Record<string, unknown>;
+                        const { bridgeId: nextBridgeId, ...rest } = cfg;
+                        if (typeof nextBridgeId === 'string') {
+                          setBridgeId(nextBridgeId);
+                        }
+                        setBridgeConfig((prev) => ({ ...prev, ...rest }));
+                        clearStepError('ai-config');
+                      }
+                      if (updates.llmBridgeName) {
+                        setBridgeId(updates.llmBridgeName);
+                        clearStepError('ai-config');
+                      }
+                    }}
+                  />
+                </Card>
+
+                <Card className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">MCP Tools</h3>
                   <p className="text-muted-foreground mb-3">
-                    Select tools to enable for this agent. You can connect/disconnect tools in the
-                    MCP manager.
+                    Select tools to enable for this agent. Connect or disconnect tools through the MCP manager.
                   </p>
                   <div className="space-y-2">
-                    {mcpLoading && (
-                      <div className="text-sm text-muted-foreground">Loading tools...</div>
-                    )}
+                    {mcpLoading && <div className="text-sm text-muted-foreground">Loading tools...</div>}
                     {!mcpLoading && (mcpList?.items?.length ?? 0) === 0 && (
                       <div className="text-sm text-muted-foreground">No tools found.</div>
                     )}
                     {!mcpLoading && (mcpList?.items?.length ?? 0) > 0 && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {mcpList!.items.map((t) => (
+                        {mcpList!.items.map((tool) => (
                           <label
-                            key={t.id}
+                            key={tool.id}
                             className={`flex items-start gap-3 border rounded-md p-3 cursor-pointer hover:bg-accent ${
-                              selectedMcpIds.has(t.id) ? 'border-primary' : ''
+                              selectedMcpIds.has(tool.id) ? 'border-primary' : ''
                             }`}
                           >
                             <input
                               type="checkbox"
-                              checked={selectedMcpIds.has(t.id)}
-                              onChange={() => toggleMcpSelection(t.id)}
+                              checked={selectedMcpIds.has(tool.id)}
+                              onChange={() => toggleMcpSelection(tool.id)}
                               className="mt-1"
                             />
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
-                                <span className="font-medium">{t.name}</span>
+                                <span className="font-medium">{tool.name}</span>
                                 <span
-                                  className={`text-xs rounded px-2 py-0.5 border ${statusBadgeClass(
-                                    t.status as string
-                                  )}`}
+                                  className={`text-xs rounded px-2 py-0.5 border ${
+                                    tool.status === 'connected'
+                                      ? 'text-green-600 border-green-600'
+                                      : tool.status === 'error'
+                                      ? 'text-red-600 border-red-600'
+                                      : 'text-muted-foreground border-muted'
+                                  }`}
                                 >
-                                  {t.status}
+                                  {tool.status}
                                 </span>
                               </div>
                               <div className="text-xs text-muted-foreground line-clamp-2">
-                                {t.description}
+                                {tool.description}
                               </div>
                             </div>
                           </label>
@@ -596,11 +736,10 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
                   </div>
                 </Card>
 
-                {/* Navigation */}
                 <div className="flex justify-between">
                   <Button variant="outline" onClick={handlePrevStep} className="gap-2">
                     <ArrowLeft className="w-4 h-4" />
-                    Previous: Preset
+                    Previous: Category
                   </Button>
                   <Button onClick={handleNextStep} className="gap-2">
                     Next: Agent Settings
@@ -612,208 +751,171 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
 
             <TabsContent value="settings" className="h-full">
               <div className="max-w-4xl mx-auto space-y-6">
+                {renderStepError('settings')}
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Agent Settings</h3>
                   <p className="text-muted-foreground mb-6">
                     Configure how your agent behaves and when it can be activated.
                   </p>
 
-                  <div className="space-y-6">
-                    <div>
-                      <Label htmlFor="agent-status">Initial Status</Label>
-                      <Select
-                        value={formData.status}
-                        onValueChange={(value: 'active' | 'idle' | 'inactive') =>
-                          updateFormData({ status: value })
-                        }
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {STATUS_OPTIONS.map((option) => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => {
+                          setStatus(option.id);
+                          clearStepError('settings');
+                        }}
+                        className={`border rounded-lg p-4 text-left transition-colors hover:border-primary ${
+                          status === option.id ? 'border-primary bg-primary/5' : ''
+                        }`}
                       >
-                        <SelectTrigger className="mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">
-                            <div className="flex items-center gap-2">
-                              <CheckCircle className="w-4 h-4 text-green-600" />
-                              <div>
-                                <div className="font-medium">Active</div>
-                                <div className="text-xs text-muted-foreground">
-                                  Auto-participate in conversations
-                                </div>
-                              </div>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="idle">
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4 text-orange-600" />
-                              <div>
-                                <div className="font-medium">Idle</div>
-                                <div className="text-xs text-muted-foreground">
-                                  Respond only to @mentions
-                                </div>
-                              </div>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="inactive">
-                            <div className="flex items-center gap-2">
-                              <MinusCircle className="w-4 h-4 text-gray-600" />
-                              <div>
-                                <div className="font-medium">Inactive</div>
-                                <div className="text-xs text-muted-foreground">
-                                  Completely disabled
-                                </div>
-                              </div>
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                        <div className="flex items-center gap-2">
+                          {option.id === 'active' && <CheckCircle className="w-4 h-4 text-green-600" />}
+                          {option.id === 'idle' && <Clock className="w-4 h-4 text-orange-600" />}
+                          {option.id === 'inactive' && <MinusCircle className="w-4 h-4 text-gray-600" />}
+                          <span className="font-semibold text-foreground capitalize">{option.label}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">{option.helper}</p>
+                      </button>
+                    ))}
                   </div>
                 </Card>
 
-                {/* Export / Import */}
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Export / Import</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Export */}
                     <div>
                       <Label className="text-sm">Export Agent as JSON</Label>
                       <div className="mt-2 flex gap-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            if (!validateFormData(formData)) {
-                              return;
-                            }
-                            const json = JSON.stringify(serializeAgent(formData), null, 2);
-                            setExportJson(json);
-                          }}
-                        >
+                        <Button variant="outline" onClick={handleExport} className="gap-2">
+                          <Wand2 className="w-4 h-4" />
                           Generate JSON
                         </Button>
                         <Button
                           variant="outline"
-                          onClick={async () => {
-                            try {
-                              await navigator.clipboard.writeText(exportJson);
-                            } catch {
-                              // ignore clipboard errors
-                            }
-                          }}
+                          onClick={() => navigator.clipboard.writeText(exportJson)}
                           disabled={!exportJson}
                         >
                           Copy
                         </Button>
                       </div>
                       <Textarea
-                        className="mt-2 h-40"
                         value={exportJson}
-                        readOnly
+                        onChange={(e) => setExportJson(e.target.value)}
                         placeholder="Generated JSON will appear here"
+                        className="mt-3 h-40 font-mono"
                       />
                     </div>
-                    {/* Import */}
+
                     <div>
-                      <Label className="text-sm">Import Preset JSON</Label>
+                      <Label className="text-sm">Import Agent JSON</Label>
                       <Textarea
-                        className="mt-2 h-40"
                         value={importJson}
                         onChange={(e) => {
                           setImportJson(e.target.value);
                           setImportError('');
                         }}
                         placeholder="Paste exported agent JSON here"
+                        className="mt-3 h-40 font-mono"
                       />
-                      {importError && <p className="text-xs text-red-600 mt-1">{importError}</p>}
-                      <div className="mt-2 flex gap-2">
+                      {importError && (
+                        <p className="text-xs text-red-600 mt-2">{importError}</p>
+                      )}
+                      <div className="flex gap-2 mt-3">
+                        <Button variant="outline" onClick={handleApplyImport} className="gap-2">
+                          Apply
+                        </Button>
                         <Button
                           variant="outline"
                           onClick={() => {
-                            const parsed = tryParseAgentExport(importJson);
-                            if (!parsed) {
-                              setImportError('Invalid JSON');
-                              return;
-                            }
-                            const next = applyAgentExport(formData, parsed);
-                            setSystemPrompt(parsed.preset.systemPrompt ?? '');
-                            updateFormData(next);
+                            setImportJson('');
+                            setImportError('');
                           }}
                         >
-                          Apply
+                          Clear
                         </Button>
                       </div>
                     </div>
                   </div>
                 </Card>
 
-                {/* Configuration Summary */}
                 <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">
-                    Configuration Summary
-                  </h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Configuration Summary</h3>
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label className="text-sm text-muted-foreground">Agent Name</Label>
-                        <p className="font-medium">{formData.name || 'Not specified'}</p>
+                        <p className="font-medium">{overview.name || 'Not specified'}</p>
                       </div>
                       <div>
                         <Label className="text-sm text-muted-foreground">Category</Label>
                         <p className="font-medium">{categoryDisplayName}</p>
                       </div>
                       <div>
-                        <Label className="text-sm text-muted-foreground">Base Preset</Label>
-                        <p className="font-medium">{formData.preset?.name || 'Not selected'}</p>
+                        <Label className="text-sm text-muted-foreground">LLM Bridge</Label>
+                        <p className="font-medium">
+                          {previewAgent?.preset.llmBridgeName || 'Not configured'}
+                          {previewAgent?.preset.llmBridgeConfig?.model
+                            ? ` · ${String(previewAgent.preset.llmBridgeConfig.model)}`
+                            : ''}
+                        </p>
                       </div>
                       <div>
                         <Label className="text-sm text-muted-foreground">Initial Status</Label>
                         <div className="flex items-center gap-2">
-                          {formData.status === 'active' && (
-                            <CheckCircle className="w-4 h-4 text-green-600" />
-                          )}
-                          {formData.status === 'idle' && (
-                            <Clock className="w-4 h-4 text-orange-600" />
-                          )}
-                          {formData.status === 'inactive' && (
-                            <MinusCircle className="w-4 h-4 text-gray-600" />
-                          )}
-                          <span className="font-medium capitalize">{formData.status}</span>
+                          {status === 'active' && <CheckCircle className="w-4 h-4 text-green-600" />}
+                          {status === 'idle' && <Clock className="w-4 h-4 text-orange-600" />}
+                          {status === 'inactive' && <MinusCircle className="w-4 h-4 text-gray-600" />}
+                          <span className="font-medium capitalize">{status}</span>
                         </div>
                       </div>
                     </div>
 
-                    {formData.description && (
+                    {overview.description && (
                       <div>
                         <Label className="text-sm text-muted-foreground">Description</Label>
-                        <p className="text-sm">{formData.description}</p>
+                        <p className="text-sm">{overview.description}</p>
                       </div>
                     )}
 
-                    {formData.keywords && formData.keywords.length > 0 && (
+                    {overview.keywords.length > 0 && (
                       <div>
                         <Label className="text-sm text-muted-foreground">Tags</Label>
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {formData.keywords.map((tag, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs">
+                          {overview.keywords.map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
                               #{tag}
                             </Badge>
                           ))}
                         </div>
                       </div>
                     )}
+
+                    <div>
+                      <Label className="text-sm text-muted-foreground">Enabled MCP Tools</Label>
+                      {previewAgent?.preset.enabledMcps?.length ? (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {previewAgent.preset.enabledMcps.map((tool) => (
+                            <Badge key={tool.name} variant="outline" className="text-xs">
+                              {tool.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground mt-1">None selected</p>
+                      )}
+                    </div>
                   </div>
                 </Card>
 
-                {/* Navigation */}
                 <div className="flex justify-between">
                   <Button variant="outline" onClick={handlePrevStep} className="gap-2">
                     <ArrowLeft className="w-4 h-4" />
-                    Previous: Preset
+                    Previous: AI Config
                   </Button>
-                  <Button
-                    onClick={handleCreate}
-                    disabled={!validateFormData(formData)}
-                    className="gap-2"
-                  >
+                  <Button onClick={handleCreate} disabled={!isSubmissionReady} className="gap-2">
                     <Wand2 className="w-4 h-4" />
                     Create Agent
                   </Button>
@@ -827,12 +929,4 @@ export function SubAgentCreate({ onBack, onCreate, presets }: AgentCreateProps) 
   );
 }
 
-function validateFormData(formData: Partial<CreateAgentMetadata>): formData is CreateAgentMetadata {
-  const result = agentMetadataSchema.safeParse(formData);
-
-  if (!result.success) {
-    return false;
-  }
-
-  return true;
-}
+export default SubAgentCreate;

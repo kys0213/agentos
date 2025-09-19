@@ -188,8 +188,8 @@ export const useErrorToSettingsLink = () => {
 
       if (errorContent.includes('preset') || errorContent.includes('Preset')) {
         actions.push({
-          label: 'Manage Presets',
-          action: () => goToSettings('presets'),
+          label: 'Review Agent Settings',
+          action: () => goToSettings('subagents'),
           variant: 'default',
         });
       }

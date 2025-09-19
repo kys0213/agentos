@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { withProviders } from '../../../../test/test-utils';
-import type { CreateAgentMetadata } from '@agentos/core';
+import type { CreateAgentMetadata, ReadonlyPreset } from '@agentos/core';
 import { SubAgentCreate } from '../SubAgentCreate';
 
 vi.mock('../../../hooks/queries/use-mcp', () => ({
@@ -13,12 +13,72 @@ vi.mock('../../../hooks/queries/use-mcp', () => ({
 describe('SubAgentCreate Import JSON', () => {
   const noop = () => {};
   const onCreate: (agent: CreateAgentMetadata) => void = () => {};
+  const basePreset: ReadonlyPreset = {
+    id: 'preset-1',
+    name: 'Default Assistant',
+    description: 'Standard assistant configuration',
+    author: 'System',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    version: '1.0.0',
+    systemPrompt: 'You are helpful.',
+    enabledMcps: [],
+    llmBridgeName: 'openai',
+    llmBridgeConfig: {},
+    status: 'active' as const,
+    usageCount: 0,
+    knowledgeDocuments: 0,
+    knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 },
+    category: [],
+  };
+
+  const bootstrapWizard = async () => {
+    render(
+      withProviders(
+        <SubAgentCreate onBack={noop} onCreate={onCreate} presetTemplate={basePreset} />
+      )
+    );
+
+    await userEvent.clear(await screen.findByLabelText(/Agent Name/i));
+    await userEvent.type(await screen.findByLabelText(/Agent Name/i), 'Agent X');
+    await userEvent.type(await screen.findByLabelText(/Description/i), 'Description');
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Next: Category' }));
+    await userEvent.click(
+      await screen.findByRole('button', {
+        name: /General Purpose/i,
+      })
+    );
+    await userEvent.click(await screen.findByRole('button', { name: 'Next: AI Config' }));
+  };
+
+  it('blocks advancing when required fields are missing', async () => {
+    render(
+      withProviders(
+        <SubAgentCreate onBack={noop} onCreate={onCreate} presetTemplate={basePreset} />
+      )
+    );
+
+    // Attempt to move forward without filling name/description
+    await userEvent.click(screen.getByRole('button', { name: 'Next: Category' }));
+    expect(await screen.findByText(/Agent name is required/i)).toBeInTheDocument();
+
+    await userEvent.type(await screen.findByLabelText(/Agent Name/i), 'Wizard');
+    await userEvent.type(await screen.findByLabelText(/Description/i), 'Desc');
+    await userEvent.click(screen.getByRole('button', { name: 'Next: Category' }));
+    await userEvent.click(screen.getByRole('button', { name: /General Purpose/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'Next: AI Config' }));
+
+    // Clear system prompt and try to proceed
+    const promptArea = await screen.findByPlaceholderText(/guides your agent's behavior/i);
+    await userEvent.clear(promptArea);
+    await userEvent.click(screen.getByRole('button', { name: 'Next: Agent Settings' }));
+    expect(await screen.findByText(/System prompt cannot be empty/i)).toBeInTheDocument();
+  });
 
   it('shows error for invalid JSON', async () => {
-    render(withProviders(<SubAgentCreate onBack={noop} onCreate={onCreate} presets={[]} />));
-
-    // Switch to Settings tab
-    // Go to Settings tab to access Import section
+    await bootstrapWizard();
+    await userEvent.click(await screen.findByRole('button', { name: 'Next: Agent Settings' }));
     await userEvent.click(await screen.findByRole('tab', { name: /settings/i }));
 
     const textarea = await screen.findByPlaceholderText(/Paste exported agent JSON here/i);
@@ -32,9 +92,8 @@ describe('SubAgentCreate Import JSON', () => {
   });
 
   it('applies valid JSON and updates system prompt', async () => {
-    render(withProviders(<SubAgentCreate onBack={noop} onCreate={onCreate} presets={[]} />));
-
-    // Go to Settings tab to access Import section
+    await bootstrapWizard();
+    await userEvent.click(await screen.findByRole('button', { name: 'Next: Agent Settings' }));
     await userEvent.click(await screen.findByRole('tab', { name: /settings/i }));
     const importArea = await screen.findByPlaceholderText(/Paste exported agent JSON here/i);
 

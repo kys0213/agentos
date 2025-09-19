@@ -1,6 +1,6 @@
 /*
   Lightweight Playwright verification against running GUI (http://localhost:5173)
-  - Checks key flows and UI for recent MCP/Dashboard/SubAgent/Preset logic
+  - Checks key flows and UI for recent MCP/Dashboard/SubAgent logic
   - Saves screenshots to .playwright-mcp/
 */
 
@@ -59,19 +59,7 @@ async function run() {
       results.push('WARN: nav-tools not found');
     }
 
-    // 3) Presets manager
-    const navPresets = page.getByTestId('nav-presets');
-    if (await navPresets.count()) {
-      await navPresets.click();
-      await expectVisible(page, "text=Agent Projects");
-      await expectVisible(page, "[data-testid='btn-create-project']");
-      await shot(page, 'presets');
-      results.push('OK: Presets manager visible');
-    } else {
-      results.push('WARN: nav-presets not found');
-    }
-
-    // 4) Agents manager + agent create (AI Config includes MCP Tools list)
+    // 3) Agents manager + agent create (AI Config includes MCP Tools list)
     const navSubagents = page.getByTestId('nav-subagents');
     if (await navSubagents.count()) {
       await navSubagents.click();
@@ -83,7 +71,9 @@ async function run() {
       // Open create and verify AI Config tab and MCP Tools section renders
       await page.getByTestId('btn-create-agent').click();
       await expectVisible(page, "text=Agent Overview");
-      await page.getByRole('tab', { name: 'AI Config' }).click();
+      await page.getByRole('button', { name: 'Next: Category' }).click();
+      await page.getByRole('button', { name: /Development.*software engineering/i }).click();
+      await page.getByRole('button', { name: 'Next: AI Config' }).click();
       await expectVisible(page, "text=MCP Tools");
       await shot(page, 'agent-create-ai-config');
       results.push('OK: Agent Create shows MCP Tools in AI Config');

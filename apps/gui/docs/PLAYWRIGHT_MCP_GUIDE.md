@@ -19,11 +19,7 @@ Scenario: Agent creation → enter chat → send message → receive response
 Use the following `data-testid` selectors for reliable interactions:
 
 - Sidebar navigation
-  - `nav-presets` → Presets section
   - `nav-subagents` → Sub Agents section
-- Presets
-  - `btn-create-project` → Open Create Preset wizard/page
-  - `btn-create-preset` → Finalize preset creation
 - Sub Agents
   - `btn-create-agent` → Start create agent wizard
   - `btn-final-create-agent` → Finalize agent creation
@@ -47,34 +43,30 @@ Other form elements use accessible labels (e.g., “Agent Name”, “Descriptio
        const browser = await chromium.launch();
        const page = await browser.newPage();
        await page.goto('http://localhost:5173');
-       // 1) Create preset
-       await page.getByTestId('btn-create-project').click();
-       await page.getByLabel('Preset Name').fill('Test Preset');
-       await page.getByRole('button', { name: 'Create' }).click();
-       // 2) Create agent & enter chat
        await page.getByTestId('nav-subagents').click();
        await page.getByTestId('btn-create-agent').click();
        await page.getByLabel('Agent Name').fill('Test Agent');
-       await page.getByRole('button', { name: 'Next' }).click();
+       await page.getByRole('button', { name: 'Next: Category' }).click();
+       await page.getByRole('button', { name: /Development.*software engineering/i }).click();
+       await page.getByRole('button', { name: 'Next: AI Config' }).click();
+       await page.getByRole('button', { name: 'Next: Agent Settings' }).click();
        await page.getByRole('button', { name: 'Create Agent' }).click();
-       // 3) Send a message
+       // Send a message
        await page.getByPlaceholder('Type a message').fill('Hello');
        await page.keyboard.press('Enter');
-       // 4) Expect a response bubble
+       // Expect a response bubble
        await page.getByTestId('chat-assistant-bubble').first().waitFor();
        await browser.close();
      }
      run();
      ```
 
-3. Preset → Agent creation flow:
-   - Click `nav-presets`
-   - Click `btn-create-project`
-   - Fill “Preset Name” and “Description” (placeholders as in UI)
-   - Proceed steps; click `btn-create-preset`
+3. Agent creation flow:
    - Click `nav-subagents`
    - Click `btn-create-agent`
-   - Fill “Agent Name”, “Description”, select the newly created preset, finalize via `btn-final-create-agent`
+   - Fill “Agent Name”, “Description”, then advance through Category → AI Config → Settings
+   - Ensure AI Config reveals MCP Tools
+   - Finalize via `btn-final-create-agent`
 
 4. Console error capture:
    - Collect `console.error` and React warnings; any error or uncaught exception fails the flow.
