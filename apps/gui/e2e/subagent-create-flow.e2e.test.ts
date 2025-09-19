@@ -1,16 +1,14 @@
 import { test, expect } from '@playwright/test';
+import { openManagementView } from './utils/navigation';
 
 test.describe('Agent create flow', () => {
   test('creates an agent using the simplified wizard', async ({ page }) => {
     await page.goto('/');
 
-    const manageEntry = page.getByRole('button', {
-      name: /(Manage Agents|Manage|Explore Features|Create First Agent)/i,
-    });
-    if (await manageEntry.count()) {
-      await manageEntry.first().click();
-    }
-    await page.getByTestId('nav-subagents').click();
+    await openManagementView(page);
+    const navSubagents = page.getByTestId('nav-subagents');
+    await expect(navSubagents.first()).toBeVisible();
+    await navSubagents.first().click();
 
     await page.getByTestId('btn-create-agent').click();
 
@@ -22,9 +20,7 @@ test.describe('Agent create flow', () => {
     await page.getByRole('button', { name: 'Next: Category' }).click();
 
     // Category step → select Development and continue
-    await page
-      .getByRole('button', { name: /Development.*software engineering/i })
-      .click();
+    await page.getByRole('button', { name: /Development.*software engineering/i }).click();
     await page.getByRole('button', { name: 'Next: AI Config' }).click();
 
     // AI Config

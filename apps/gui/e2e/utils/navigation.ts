@@ -7,12 +7,19 @@ import { expect, Page } from '@playwright/test';
  */
 export async function openManagementView(page: Page): Promise<void> {
   const navDashboard = page.getByTestId('nav-dashboard');
+  const dashboardHeading = page.getByRole('heading', { name: /dashboard/i });
+  const navSubagents = page.getByTestId('nav-subagents');
   if ((await navDashboard.count()) > 0) {
     await expect(navDashboard.first()).toBeVisible();
     return;
   }
+  if ((await dashboardHeading.count()) > 0) {
+    await expect(dashboardHeading.first()).toBeVisible();
+    return;
+  }
 
   const candidates = [
+    page.getByTestId('btn-open-management'),
     page.getByRole('button', { name: /^Manage$/ }),
     page.getByRole('button', { name: /Manage Agents/i }),
     page.getByRole('button', { name: /Explore Features/i }),
@@ -23,15 +30,38 @@ export async function openManagementView(page: Page): Promise<void> {
   for (const candidate of candidates) {
     if (await candidate.count()) {
       await candidate.first().click();
-      await navDashboard.first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
-      if (await navDashboard.count()) {
+      await Promise.race([
+        navDashboard.first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
+        dashboardHeading
+          .first()
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .catch(() => {}),
+        navSubagents.first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
+      ]).catch(() => {});
+      if ((await navDashboard.count()) > 0) {
+        await expect(navDashboard.first()).toBeVisible();
+        return;
+      }
+      if ((await dashboardHeading.count()) > 0) {
+        await expect(dashboardHeading.first()).toBeVisible();
+        return;
+      }
+      if ((await navSubagents.count()) > 0) {
+        await expect(navSubagents.first()).toBeVisible();
         return;
       }
     }
   }
 
-  await navDashboard.first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
-  if (await navDashboard.count()) {
+  await dashboardHeading.first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  if ((await dashboardHeading.count()) > 0) {
+    await expect(dashboardHeading.first()).toBeVisible();
+    return;
+  }
+
+  await navSubagents.first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  if ((await navSubagents.count()) > 0) {
+    await expect(navSubagents.first()).toBeVisible();
     return;
   }
 
