@@ -3,6 +3,8 @@
 Status: In Progress
 Last Updated: 2025-09-16
 
+> 후속 계획: 주요 잔여 작업은 `GUI_CORE_INTEGRATION_PHASE2_PLAN.md`에서 계속 추적합니다.
+
 본 문서는 현 GUI 기능 중 Core 스펙/계약과 불일치하거나 목/로컬 저장소로 대체된 부분을 식별하고, 통합 방향과 TODO를 정의합니다. 목적은 SSOT(계약/문서) 우선으로 빈틈을 메우고, UX 흐름이 실제 데이터와 일치하도록 하는 것입니다.
 
 **최종 업데이트**:
