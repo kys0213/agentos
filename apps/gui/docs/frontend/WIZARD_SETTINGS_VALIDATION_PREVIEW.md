@@ -1,6 +1,7 @@
 # Wizard Settings — Validation & Preview UX (Clipboard/Input-first)
 
-Status: Draft (Phase-ready)
+Status: Completed
+Last Updated: 2025-09-16
 
 ## Goals
 

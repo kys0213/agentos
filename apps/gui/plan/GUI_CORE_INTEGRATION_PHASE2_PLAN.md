@@ -1,5 +1,8 @@
 # GUI Core Integration Phase 2 Plan
 
+Status: Draft
+Last Updated: 2025-09-16
+
 ## Requirements
 
 ### 성공 조건

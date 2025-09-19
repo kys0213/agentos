@@ -1,5 +1,8 @@
 # GUI Test/Build Stabilization Plan (Strict + Compatible)
 
+Status: Draft
+Last Updated: 2025-09-16
+
 Status: Draft – Work-in-Progress on branch `feature/gui-core-rpc-integration`
 Owner: GUI team
 

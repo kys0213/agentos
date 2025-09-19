@@ -1,5 +1,8 @@
 # GUI ↔ Core Integration Gaps Plan
 
+Status: In Progress
+Last Updated: 2025-09-16
+
 본 문서는 현 GUI 기능 중 Core 스펙/계약과 불일치하거나 목/로컬 저장소로 대체된 부분을 식별하고, 통합 방향과 TODO를 정의합니다. 목적은 SSOT(계약/문서) 우선으로 빈틈을 메우고, UX 흐름이 실제 데이터와 일치하도록 하는 것입니다.
 
 **최종 업데이트**:
@@ -459,7 +462,7 @@ interface BridgeManifest {
 - [ ] Import 실패(잘못된 JSON) 에러 표시 테스트
 
 **UX/구현 방침(심플 버전 — Clipboard/입력창 기반)**
-[상세 설계 문서 참조: Wizard Settings Validation & Preview UX](./WIZARD_SETTINGS_VALIDATION_PREVIEW_DESIGN.md)
+[상세 설계 문서 참조: Wizard Settings Validation & Preview UX](../docs/frontend/WIZARD_SETTINGS_VALIDATION_PREVIEW.md)
 
 - Export: “Generate JSON” → 미리보기(TextArea) → “Copy to Clipboard”만 지원(파일 저장은 보류)
   - JSON은 pretty-print(2 spaces) + `schemaVersion: 1` 포함

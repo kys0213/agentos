@@ -1,5 +1,8 @@
 # 다크 모드 마이그레이션 계획서
 
+Status: In Progress
+Last Updated: 2025-09-16
+
 ## 📋 현황 분석
 
 ### 1. Design 디렉토리 (새로운 시스템)
