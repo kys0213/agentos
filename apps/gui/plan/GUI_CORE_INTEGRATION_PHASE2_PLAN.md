@@ -62,3 +62,8 @@ const { mutateAsync } = useRegisterBridge({
 2. **MCP 이벤트 통합**: usage.events 스트림을 GUI에 반영하고 관련 테스트 작성 (완료 조건: 실시간 갱신 확인 + 테스트 통과).
 3. **Knowledge 마이그레이션 프로토타입**: localStorage → Core 전환을 위한 헬퍼 및 전략 문서화 (완료 조건: 최소 happy path 동작 + 계획서 업데이트).
 4. **테스트 커버리지 문서화**: renderer/main 테스트 가이드 및 커버리지 기준을 docs에 추가 (완료 조건: `apps/gui/docs/frontend/testing.md` 갱신).
+
+## QA & Visual Verification
+
+- [x] Playwright MCP를 이용해 `http://localhost:5173` UI를 직접 검토하고, SubAgentManager 카테고리 필터 및 브릿지 등록 UI가 기존 Figma 디자인과 시각적으로 어긋남 없이 동작함을 확인했다. (2025-09-19)
+
