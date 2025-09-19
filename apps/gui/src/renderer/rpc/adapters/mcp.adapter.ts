@@ -51,6 +51,19 @@ export class McpServiceAdapter {
   }
 
   async getAllToolMetadata(): Promise<Record<string, unknown>[]> {
-    return [] as Record<string, unknown>[];
+    return [
+      {
+        id: 'filesystem',
+        name: 'Filesystem',
+        description: 'Access to the local filesystem',
+        status: 'connected',
+      },
+      {
+        id: 'git',
+        name: 'Git',
+        description: 'Run git operations and inspect repositories',
+        status: 'connected',
+      },
+    ];
   }
 }

@@ -7,7 +7,7 @@ This document defines mandatory patterns for GUI implementation to keep the code
 ## 1) Container vs Presentational Components
 
 - Presentational components (e.g., `ModelManager`, `SubAgentManager`) receive all state and callbacks via props.
-- Containers (e.g., `ModelManagerContainer`, `PresetManagerContainer`) are responsible for:
+- Containers (e.g., `ModelManagerContainer`, `SubAgentManagerContainer`, `SubAgentCreateContainer`) are responsible for:
   - Wiring React Query hooks/fetchers and ServiceContainer calls
   - Injecting callbacks (e.g., `onRefresh`, `onBridgeSwitch`) and domain actions
   - Handling query invalidation, navigation side-effects, and cross-feature sync (e.g., `reloadAgents`)

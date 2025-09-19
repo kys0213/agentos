@@ -1,41 +1,17 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Preset → Agent create flow', () => {
-  test('creates a preset, then creates an agent using it', async ({ page }) => {
+test.describe('Agent create flow', () => {
+  test('creates an agent using the simplified wizard', async ({ page }) => {
     await page.goto('/');
 
-    // Navigate to Presets via sidebar
-    await page.getByTestId('nav-presets').click();
-
-    // Open create preset wizard dialog
-    await page.getByTestId('btn-create-project').click();
-    await expect(page.getByText('Create New Agent Project')).toBeVisible();
-
-    const presetName = `E2E Preset ${Date.now()}`;
-
-    // Step 1: Basic Information
-    await page.getByPlaceholder('e.g., Research Assistant').fill(presetName);
-    await page
-      .getByPlaceholder('Describe what this agent specializes in...')
-      .fill('E2E preset description');
-
-    // Proceed to final step and create
-    // Step 2
-    await page.getByRole('button', { name: 'Next' }).click();
-    // Step 3
-    await page.getByRole('button', { name: 'Next' }).click();
-    // Step 4
-    await page.getByRole('button', { name: 'Next' }).click();
-    // Step 5: Create Preset
-    await page.getByTestId('btn-create-preset').click();
-
-    // Ensure dialog closed and new preset appears in list/grid
-    await expect(page.getByText(presetName)).toBeVisible();
-
-    // Navigate to Sub Agents
+    const manageEntry = page.getByRole('button', {
+      name: /(Manage Agents|Manage|Explore Features|Create First Agent)/i,
+    });
+    if (await manageEntry.count()) {
+      await manageEntry.first().click();
+    }
     await page.getByTestId('nav-subagents').click();
 
-    // Click Create Agent
     await page.getByTestId('btn-create-agent').click();
 
     const agentName = `E2E Agent ${Date.now()}`;
@@ -43,14 +19,29 @@ test.describe('Preset → Agent create flow', () => {
     // Fill Overview step
     await page.getByLabel(/Agent Name/i).fill(agentName);
     await page.getByLabel(/Description/i).fill('E2E agent description');
-    await page.getByRole('button', { name: /Next: Choose Category/i }).click();
+    await page.getByRole('button', { name: 'Next: Category' }).click();
 
-    // Category step → next
-    await page.getByRole('button', { name: /Next: Choose Preset/i }).click();
+    // Category step → select Development and continue
+    await page
+      .getByRole('button', { name: /Development.*software engineering/i })
+      .click();
+    await page.getByRole('button', { name: 'Next: AI Config' }).click();
 
-    // Preset step: select the created preset
-    await page.getByText(presetName, { exact: true }).first().click();
-    await page.getByRole('button', { name: /Next: Agent Settings/i }).click();
+    // AI Config
+    await page
+      .getByPlaceholder("Enter the system prompt that guides your agent's behavior...")
+      .fill('You are a helpful researcher.');
+
+    const bridgeSelect = page.getByLabel('LLM Bridge');
+    if (await bridgeSelect.count()) {
+      await bridgeSelect.click();
+      const firstBridge = page.locator('[role="option"]').first();
+      if (await firstBridge.count()) {
+        await firstBridge.click();
+      }
+    }
+
+    await page.getByRole('button', { name: 'Next: Agent Settings' }).click();
 
     // Final: Create Agent
     await page.getByTestId('btn-final-create-agent').click();

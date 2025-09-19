@@ -36,7 +36,7 @@ await MockIpcUtils.addBridge(channel, { name: 'mock-bridge' } as any);
 ```ts
 import { Services } from '@/renderer/bootstrap';
 
-const presets = await Services.getPreset().getAllPresets();
+const agents = await Services.getAgent().getAllAgents();
 await Services.getMcp().connectMcp({ name: 'mcp-x', type: 'streamableHttp' } as any);
 const usageLogs = await Services.getMcpUsageLog().getAllUsageLogs();
 ```

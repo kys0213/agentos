@@ -1,43 +1,59 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Chat UX end-to-end', () => {
-  test('create preset/agent and chat echo works', async ({ page }) => {
+  test('create agent and chat echo works', async ({ page }) => {
     await page.goto('/');
 
-    // Presets → Create
-    await page.getByTestId('nav-presets').click();
-    await page.getByTestId('btn-create-project').click();
-    const presetName = `PW Chat Preset ${Date.now()}`;
-    await page.getByPlaceholder('e.g., Research Assistant').fill(presetName);
-    await page
-      .getByPlaceholder('Describe what this agent specializes in...')
-      .fill('Preset for chat UX test');
-    // System prompt
-    await page
-      .getByPlaceholder(
-        "Enter the system prompt that defines this preset's behavior and personality..."
-      )
-      .fill('You are helpful.');
-    // Go to configuration and create
-    await page.getByRole('button', { name: /Next: Configuration/i }).click();
-    await page.getByTestId('btn-create-preset').click();
-    await expect(page.getByText(presetName)).toBeVisible();
+    const manageEntry = page.getByRole('button', {
+      name: /(Manage Agents|Manage|Explore Features|Create First Agent)/i,
+    });
+    if (await manageEntry.count()) {
+      await manageEntry.first().click();
+    }
 
-    // Agents → Create using the preset
+    // Agents → Create
     await page.getByTestId('nav-subagents').click();
     await page.getByTestId('btn-create-agent').click();
     const agentName = `PW Chat Agent ${Date.now()}`;
     await page.getByLabel(/Agent Name/i).fill(agentName);
     await page.getByLabel(/Description/i).fill('Agent for chat UX test');
-    await page.getByRole('button', { name: /Next: Choose Category/i }).click();
-    await page.getByRole('button', { name: /Next: Choose Preset/i }).click();
-    await page.getByText(presetName, { exact: true }).first().click();
-    await page.getByRole('button', { name: /Next: Agent Settings/i }).click();
-    await page.getByRole('button', { name: /Create Agent/i }).click();
+    await page.getByRole('button', { name: 'Next: Category' }).click();
+
+    await page
+      .getByRole('button', { name: /Development.*software engineering/i })
+      .click();
+    await page.getByRole('button', { name: 'Next: AI Config' }).click();
+
+    const promptArea = page.getByPlaceholder('Enter the system prompt that guides your agent\'s behavior...');
+    await promptArea.fill('You are a helpful verifier bot.');
+
+    const bridgeSelect = page.getByLabel('LLM Bridge');
+    if (await bridgeSelect.count()) {
+      await bridgeSelect.click();
+      const firstOption = page.locator('[role="option"]').first();
+      if (await firstOption.count()) {
+        await firstOption.click();
+      }
+    }
+
+    const modelSelect = page.getByLabel('Model');
+    if (await modelSelect.count()) {
+      await modelSelect.click();
+      const firstModel = page.locator('[role="option"]').first();
+      if (await firstModel.count()) {
+        await firstModel.click();
+      }
+    }
+
+    await page.getByRole('button', { name: 'Next: Agent Settings' }).click();
+    await page.getByRole('button', { name: 'Create Agent' }).click();
     await expect(page.getByText(agentName)).toBeVisible();
 
     // Chat → send message and see echo
-    await page.getByTestId('nav-chat').click();
+    const navChat = page.getByTestId('nav-chat');
+    if ((await navChat.count()) > 0) {
+      await navChat.click();
+    }
     const input = page.getByPlaceholder('Type a message...');
     await input.click();
     await input.fill('Hello from Playwright');

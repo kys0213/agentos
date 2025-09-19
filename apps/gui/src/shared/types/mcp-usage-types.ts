@@ -1,5 +1,5 @@
 // Core 타입들을 재사용하여 일관성 보장
-import { McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
+import type { McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
 import { z } from 'zod';
 
 /**

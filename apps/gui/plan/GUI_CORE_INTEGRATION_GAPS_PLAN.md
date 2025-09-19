@@ -75,7 +75,7 @@
 - 사용자는 4단계 마법사를 통해 에이전트를 생성한다 (Overview → Category → AI Config → Settings).
 - 사용자는 Category 단계에서 6개 카테고리 중 선택하면 자동으로 관련 키워드가 설정된다.
 - 사용자는 AI Config 단계에서 LLM 모델, 시스템 프롬프트, 파라미터, MCP 도구를 설정한다.
-- 사용자는 에이전트를 export할 때 Preset 형식으로 내보내고, import할 때 Preset을 파싱하여 에이전트를 생성한다.
+- 사용자는 에이전트를 export할 때 Preset 형식으로 내보내고, import할 때 Preset을 파싱하여 에이전트를 생성한다. (UI 용어는 Agent 기준으로 유지)
 - 사용자는 MCP 도구 목록을 확인하고(메타데이터), 연결/해제/설정을 관리한다. 사용량/이벤트 스트림이 대시보드에 반영된다.
 - 사용자는 에이전트별 지식 문서를 업로드/편집하고, 인덱싱/벡터화 진행 상황과 통계를 확인한다.
 - 사용자는 채팅 히스토리에서 Pinned/Older 섹션으로 구분된 대화 목록을 확인한다.
@@ -421,12 +421,13 @@ interface BridgeManifest {
 - [x] 메시지 영속성을 위한 AgentService 연동
 - [x] 타입 안전성 및 에러 처리 구현
 
-### 작업 2: Agent 생성 5단계 마법사
+### 작업 2: Agent 생성 4단계 마법사
 
 **현황**:
 
-- 실제 구현은 5단계: Overview → Category → Preset → AI Config → Settings (`SubAgentCreate.tsx`)
-- AI Config의 하드코딩 제거 및 동적 브릿지/모델 연동은 진행됨
+- 실제 구현은 4단계: Overview → Category → AI Config → Settings (`SubAgentCreate.tsx`)
+- 프리셋 전용 단계는 제거되었으며, 초기 템플릿은 내부 상태로만 유지한다.
+- AI Config의 하드코딩 제거 및 동적 브릿지/모델 연동은 완료됨
 - 설치된 브릿지는 `bridge.list`(ID) + `bridge.get-config` 조합으로 로드하여 모델을 표시함
 
 **디자인 분석 (Figma)**:
@@ -438,10 +439,9 @@ interface BridgeManifest {
 
 **작업 내용**:
 
-- [x] AgentCreate 5단계 마법사 UI 정합성 확인(Overview/Category/Preset/AI Config/Settings)
+- [x] AgentCreate 4단계 마법사 UI 정합성 확인(Overview/Category/AI Config/Settings)
 - [ ] Overview 탭: 기본 정보 입력 폼(검증 포함)
 - [ ] Category 탭: 카테고리 카드 선택 UI (6개 카테고리)
-- [ ] Preset 탭: 프리셋 선택/미리보기(현재 유지, 추후 제거 여부 결정)
 - [x] AI Config 탭: ✅ **부분 완료**
   - [x] 하드코딩된 모델 목록 제거 ✅
   - [x] 브릿지/모델 동적 로딩: `useInstalledBridges`(ID 목록 + 개별 config) 훅 기반 ✅
@@ -449,7 +449,7 @@ interface BridgeManifest {
   - [x] Bridge별 동적 파라미터 UI(현재 공통 파라미터) ✅
   - [x] 시스템 프롬프트 텍스트에어리어(프리셋 systemPrompt 오버라이드) ✅
   - [x] MCP 도구 선택 카드 동적 로딩(선택 결과 preset.enabledMcps 반영) ✅
-- [ ] Settings 탭: 상태 선택 드롭다운
+- [ ] Settings 탭: 상태 선택 카드/드롭다운
 - [x] Export/Import 기능(텍스트 기반) 구현
 
 **테스트**
@@ -471,6 +471,7 @@ interface BridgeManifest {
 - 스키마/검증
   - Agent: name/description/status, preset.name 필수. 선택 필드는 기본값 대입
   - Preset-only JSON도 수용(자동으로 Agent 껍데기에 감싸는 보정 로직 — 기본 name/description 적용)
+    - Export/Import UI는 “Agent” 용어만 노출하고, 프리셋 용어는 JSON 설명에만 남긴다.
 - 제한/보안
   - 입력 길이/크기 제한(예: 1–2MB), XSS 방지를 위한 안전한 렌더링
   - Clipboard 실패 시 안내(권한/브라우저 정책)
@@ -1049,9 +1050,9 @@ interface BridgeManifest {
 
 ## 주요 결정사항 (리뷰 반영)
 
-1. **Preset 메뉴 제거**
-   - Agent 생성 시 모든 설정 통합 입력
-   - Export/Import 시에만 Preset 형식 사용
+1. **Preset 메뉴 제거** (완료)
+   - Agent 생성 시 모든 설정을 마법사 4단계에서 통합 입력
+   - Export/Import 시에만 Preset 형식 사용(텍스트 JSON)
 
 2. **GUI/Core 분리 원칙**
    - Pin/Archive: GUI 전용 (localStorage)
