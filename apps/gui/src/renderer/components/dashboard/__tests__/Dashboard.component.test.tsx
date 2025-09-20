@@ -154,7 +154,14 @@ describe('Dashboard component', () => {
       isLoading: false,
       isError: false,
     } as ReturnType<typeof useDashboardStats>);
-    useMcpUsageStreamMock.mockReturnValue({ lastEvent: { type: 'stats.updated' } });
+    useMcpUsageStreamMock.mockReturnValue({
+      lastEvent: {
+        type: 'metadata-updated',
+        clientName: 'mock-client',
+        timestamp: new Date(),
+        metadata: {},
+      },
+    });
 
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const invalidateSpy = vi.spyOn(qc, 'invalidateQueries');

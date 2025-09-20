@@ -41,8 +41,31 @@ describe('ModelManager register dialog', () => {
     const manifest = {
       name: 'sample-bridge',
       language: 'node',
-      models: ['gpt-4o'],
-    } satisfies Partial<LlmManifest>;
+      description: 'Sample bridge for tests',
+      schemaVersion: '1.0.0',
+      entry: './index.js',
+      models: [
+        {
+          name: 'gpt-4o',
+          contextWindowTokens: 128_000,
+          pricing: {
+            unit: 1000,
+            currency: 'USD',
+            prompt: 0.002,
+            completion: 0.006,
+          },
+        },
+      ],
+      capabilities: {
+        modalities: ['text'],
+        supportsToolCall: false,
+        supportsFunctionCall: false,
+        supportsMultiTurn: true,
+        supportsStreaming: true,
+        supportsVision: false,
+      },
+      configSchema: {},
+    };
 
     fireEvent.change(textarea, { target: { value: JSON.stringify(manifest) } });
     await user.click(within(dialog).getByRole('button', { name: /register/i }));
