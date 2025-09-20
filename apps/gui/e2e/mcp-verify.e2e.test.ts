@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openManagementView } from './utils/navigation';
 
 test.describe('MCP Verify - UI smoke', () => {
   test('dashboard, MCP tools, agents render and link correctly', async ({ page }) => {
@@ -13,16 +14,13 @@ test.describe('MCP Verify - UI smoke', () => {
       if (await navDashboard.count()) {
         await expect(navDashboard.first()).toBeVisible();
       } else {
-        await expect(page.getByRole('button', { name: /(Manage|Explore Features|Create First Agent)/i })).toBeVisible();
+        await expect(
+          page.getByRole('button', { name: /(Manage|Explore Features|Create First Agent)/i }).first()
+        ).toBeVisible();
       }
     }
 
-    const manageEntry = page.getByRole('button', {
-      name: /(Manage Agents|Manage|Explore Features|Create First Agent|Go to Dashboard)/i,
-    });
-    if (await manageEntry.count()) {
-      await manageEntry.first().click();
-    }
+    await openManagementView(page);
 
     // Disambiguate: prefer the main H1 inside management content
     // Select the larger H1 version
@@ -50,9 +48,7 @@ test.describe('MCP Verify - UI smoke', () => {
       await page.getByTestId('btn-create-agent').click();
       await expect(page.getByText('Agent Overview')).toBeVisible();
       await page.getByRole('button', { name: 'Next: Category' }).click();
-      await page
-        .getByRole('button', { name: /Development.*software engineering/i })
-        .click();
+      await page.getByRole('button', { name: /Development.*software engineering/i }).click();
       await page.getByRole('button', { name: 'Next: AI Config' }).click();
       await expect(page.getByText('MCP Tools')).toBeVisible();
     }

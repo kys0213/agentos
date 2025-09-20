@@ -5,6 +5,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { openManagementView } from './utils/navigation';
 
 test.describe('Web GUI Basic Functionality', () => {
   test.beforeEach(async ({ page }) => {
@@ -44,18 +45,8 @@ test.describe('Web GUI Basic Functionality', () => {
   });
 
   test('Manage button navigates to Dashboard', async ({ page }) => {
-    const manageButton = page.getByRole('button', { name: /^Manage$/ });
-    if (await manageButton.count()) {
-      await manageButton.click();
-    } else {
-      const manageAgentsButton = page.getByRole('button', {
-        name: /(Manage Agents|Explore Features|Create First Agent)/i,
-      });
-      if (await manageAgentsButton.count()) {
-        await manageAgentsButton.click();
-      }
-    }
-    await expect(page.getByTestId('nav-dashboard')).toBeVisible();
+    await openManagementView(page);
+    await expect(page.getByTestId('nav-dashboard').first()).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Dashboard' }).first()).toBeVisible();
   });
 });

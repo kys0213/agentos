@@ -1,30 +1,28 @@
 import { test, expect } from '@playwright/test';
+import { openManagementView } from './utils/navigation';
 
 test.describe('Chat UX end-to-end', () => {
   test('create agent and chat echo works', async ({ page }) => {
     await page.goto('/');
 
-    const manageEntry = page.getByRole('button', {
-      name: /(Manage Agents|Manage|Explore Features|Create First Agent)/i,
-    });
-    if (await manageEntry.count()) {
-      await manageEntry.first().click();
-    }
+    await openManagementView(page);
 
     // Agents → Create
-    await page.getByTestId('nav-subagents').click();
+    const navSubagents = page.getByTestId('nav-subagents');
+    await expect(navSubagents.first()).toBeVisible();
+    await navSubagents.first().click();
     await page.getByTestId('btn-create-agent').click();
     const agentName = `PW Chat Agent ${Date.now()}`;
     await page.getByLabel(/Agent Name/i).fill(agentName);
     await page.getByLabel(/Description/i).fill('Agent for chat UX test');
     await page.getByRole('button', { name: 'Next: Category' }).click();
 
-    await page
-      .getByRole('button', { name: /Development.*software engineering/i })
-      .click();
+    await page.getByRole('button', { name: /Development.*software engineering/i }).click();
     await page.getByRole('button', { name: 'Next: AI Config' }).click();
 
-    const promptArea = page.getByPlaceholder('Enter the system prompt that guides your agent\'s behavior...');
+    const promptArea = page.getByPlaceholder(
+      "Enter the system prompt that guides your agent's behavior..."
+    );
     await promptArea.fill('You are a helpful verifier bot.');
 
     const bridgeSelect = page.getByLabel('LLM Bridge');
