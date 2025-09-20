@@ -604,11 +604,11 @@ interface BridgeManifest {
 - [x] GUI 전용 카테고리 상수 정의 (GuiAgentCategories)
 - [x] 카테고리 → keywords 매핑 테이블 구현 (GuiCategoryKeywordsMap)
 - [x] SubAgentCreate: 카테고리 선택 시 keywords 자동 설정
-- [ ] SubAgentManager: 카테고리 기반 필터링 (keywords 활용) — UI 구현됨, 단위 테스트 필요
+- [x] SubAgentManager: 카테고리 기반 필터링 (keywords 활용) — UI 구현됨, 단위 테스트 완료 (`SubAgentManager.filter.test.tsx`). 추가 시나리오와 대시보드 연동은 `GUI_CORE_INTEGRATION_PHASE2_PLAN.md`에서 이어서 관리한다.
 
 **테스트**
 
-- [ ] SubAgentManager: 카테고리 선택 시 필터링 결과가 매핑대로 적용되는지 단위 테스트
+- [x] SubAgentManager: 카테고리 선택 시 필터링 결과가 매핑대로 적용되는지 단위 테스트 (`SubAgentManager.filter.test.tsx`)
 
 ### 작업 7: Bridge 등록 UI
 
@@ -625,8 +625,8 @@ interface BridgeManifest {
 
 **테스트**
 
-- [ ] 등록 다이얼로그: 유효/무효 JSON 입력 시 동작(등록/에러 메시지) 테스트
-- [ ] 등록 성공 후 캐시 무효화 호출 여부 검증 테스트
+- [x] 등록 다이얼로그: 유효/무효 JSON 입력 시 동작(등록/에러 메시지) 테스트 (`ModelManager.register.test.tsx`). 후속 UX 개선과 통계 카드 보완은 Phase 2 계획서에서 추적한다.
+- [x] 등록 성공 후 캐시 무효화 호출 여부 검증 테스트
 
 ### 작업 8: Dashboard 통계 — 실시간 데이터 🟡 **진행 가능** (기존 API 활용)
 
