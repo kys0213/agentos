@@ -1,5 +1,11 @@
 import { RpcClient, CloseFn } from '../../shared/rpc/transport';
-import type { AgentMetadata, CreateAgentMetadata, AgentStatus, Preset, ReadonlyPreset } from '@agentos/core';
+import type {
+  AgentMetadata,
+  CreateAgentMetadata,
+  AgentStatus,
+  Preset,
+  ReadonlyPreset,
+} from '@agentos/core';
 import type { LlmManifest, UserMessage } from 'llm-bridge-spec';
 
 /**
@@ -53,7 +59,11 @@ export class MockRpcTransport implements RpcClient {
         version: '1.0.0',
         description: 'Mock Anthropic bridge for development',
         models: [
-          { name: 'claude-3-sonnet', description: 'Balanced reasoning model', capabilities: ['chat'] },
+          {
+            name: 'claude-3-sonnet',
+            description: 'Balanced reasoning model',
+            capabilities: ['chat'],
+          },
           { name: 'claude-3-haiku', description: 'Fast lightweight model', capabilities: ['chat'] },
         ],
         parameters: {
@@ -198,7 +208,8 @@ export class MockRpcTransport implements RpcClient {
             llmBridgeConfig: {
               ...(input.preset.llmBridgeConfig ?? {}),
               bridgeId:
-                (input.preset.llmBridgeConfig?.bridgeId as string | undefined) ?? input.preset.llmBridgeName,
+                (input.preset.llmBridgeConfig?.bridgeId as string | undefined) ??
+                input.preset.llmBridgeName,
             },
           } as ReadonlyPreset)
         : {
@@ -264,7 +275,9 @@ export class MockRpcTransport implements RpcClient {
       const updated: AgentMetadata = {
         ...existing,
         ...input.patch,
-        preset: input.patch.preset ? { ...existing.preset, ...input.patch.preset } : existing.preset,
+        preset: input.patch.preset
+          ? { ...existing.preset, ...input.patch.preset }
+          : existing.preset,
         updatedAt: new Date().toISOString(),
       };
       this.agents = [...this.agents.slice(0, index), updated, ...this.agents.slice(index + 1)];

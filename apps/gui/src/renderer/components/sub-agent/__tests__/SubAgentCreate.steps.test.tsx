@@ -41,9 +41,7 @@ describe('SubAgentCreate wizard flow', () => {
 
   const setup = () =>
     render(
-      withProviders(
-        <SubAgentCreate onBack={noop} onCreate={noop} presetTemplate={basePreset} />
-      )
+      withProviders(<SubAgentCreate onBack={noop} onCreate={noop} presetTemplate={basePreset} />)
     );
 
   it('locks later steps until the previous step is validated', async () => {

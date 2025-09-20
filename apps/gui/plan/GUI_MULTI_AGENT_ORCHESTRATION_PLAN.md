@@ -64,10 +64,21 @@ useSendChatMessage(agentId, {
 
 // 3) Coordinator Agent (Main 계층) — 멀티 에이전트 실행을 총괄
 class MultiAgentCoordinator {
-  constructor(private readonly agentService: AgentService, router?: AgentRouter) {
-    this.router = router ?? RouterBuilder.create()
-      .strategies([BM25TextStrategy, KeywordBoostStrategy, ToolHintStrategy, FileTypeStrategy, MentionStrategy])
-      .build();
+  constructor(
+    private readonly agentService: AgentService,
+    router?: AgentRouter
+  ) {
+    this.router =
+      router ??
+      RouterBuilder.create()
+        .strategies([
+          BM25TextStrategy,
+          KeywordBoostStrategy,
+          ToolHintStrategy,
+          FileTypeStrategy,
+          MentionStrategy,
+        ])
+        .build();
   }
 
   async execute(params: {
@@ -77,7 +88,11 @@ class MultiAgentCoordinator {
     options?: AgentExecuteOptions;
   }): Promise<{
     sessionId: string;
-    executions: Array<{ agentId: string; metadata: ReadonlyAgentMetadata; result: AgentChatResult }>;
+    executions: Array<{
+      agentId: string;
+      metadata: ReadonlyAgentMetadata;
+      result: AgentChatResult;
+    }>;
   }> {
     // 1) 명시적 멘션 → primary + 멘션 대상 고정 실행
     // 2) 멘션이 없으면 Router로 후보 선정 후 primary 포함한 집합 실행
@@ -88,7 +103,7 @@ class MultiAgentCoordinator {
 // 4) RouterQuery(Core) 확장
 export interface RouterQuery {
   text?: string;
-  messages?: Message[];              // 멀티모달/시스템 메시지 포함 원본 배열 전달
+  messages?: Message[]; // 멀티모달/시스템 메시지 포함 원본 배열 전달
   tags?: string[];
   routingHints?: string[];
   locale?: string;

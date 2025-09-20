@@ -41,5 +41,5 @@ export const getPageTitle = (
       return 'Chat';
     default:
       return '';
-}
+  }
 };

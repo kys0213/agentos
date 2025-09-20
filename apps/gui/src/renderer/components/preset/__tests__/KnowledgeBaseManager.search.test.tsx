@@ -33,7 +33,7 @@ describe('KnowledgeBaseManager search and preview', () => {
     const knowledge = { listDocs, search, getStats, readDoc };
     // @ts-expect-error test double registration type-bypass
     ServiceContainer.register('knowledge', knowledge);
-/* eslint-disable @typescript-eslint/no-explicit-any, no-restricted-syntax, prettier/prettier */
+    /* eslint-disable @typescript-eslint/no-explicit-any, no-restricted-syntax, prettier/prettier */
 
     render(<KnowledgeBaseManager agentId={agentId} agentName="Agent" agentCategory="research" />);
 

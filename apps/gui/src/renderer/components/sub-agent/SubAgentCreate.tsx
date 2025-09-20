@@ -49,11 +49,12 @@ const stepLabels: Record<StepKey, string> = {
   settings: 'Settings',
 };
 
-const STATUS_OPTIONS: Array<{ id: 'active' | 'idle' | 'inactive'; label: string; helper: string }> = [
-  { id: 'active', label: 'Active', helper: 'Auto-participate in conversations' },
-  { id: 'idle', label: 'Idle', helper: 'Respond only to @mentions' },
-  { id: 'inactive', label: 'Inactive', helper: 'Completely disabled' },
-];
+const STATUS_OPTIONS: Array<{ id: 'active' | 'idle' | 'inactive'; label: string; helper: string }> =
+  [
+    { id: 'active', label: 'Active', helper: 'Auto-participate in conversations' },
+    { id: 'idle', label: 'Idle', helper: 'Respond only to @mentions' },
+    { id: 'inactive', label: 'Inactive', helper: 'Completely disabled' },
+  ];
 
 const CATEGORY_TITLES: Record<GuiAgentCategory, string> = {
   general: 'General Purpose',
@@ -91,7 +92,9 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
   const [presetState, setPresetState] = useState<ReadonlyPreset>(presetTemplate);
 
   const initialBridgeId =
-    (presetTemplate.llmBridgeConfig?.bridgeId as string | undefined) ?? presetTemplate.llmBridgeName ?? '';
+    (presetTemplate.llmBridgeConfig?.bridgeId as string | undefined) ??
+    presetTemplate.llmBridgeName ??
+    '';
   const initialBridgeConfig = useMemo(() => {
     const cfg = { ...(presetTemplate.llmBridgeConfig ?? {}) } as Record<string, unknown>;
     delete cfg.bridgeId;
@@ -394,7 +397,9 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
               </div>
               <div>
                 <h1 className="text-2xl font-semibold text-foreground">Create Agent</h1>
-                <p className="text-muted-foreground">Design a specialized AI agent for your workflows</p>
+                <p className="text-muted-foreground">
+                  Design a specialized AI agent for your workflows
+                </p>
               </div>
             </div>
           </div>
@@ -411,8 +416,12 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
 
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Step {currentStep} of {totalSteps}</span>
-            <span className="font-medium">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
+            <span className="text-muted-foreground">
+              Step {currentStep} of {totalSteps}
+            </span>
+            <span className="font-medium">
+              {Math.round((currentStep / totalSteps) * 100)}% Complete
+            </span>
           </div>
           <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
           <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -453,8 +462,8 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
                     <h3 className="text-lg font-semibold text-foreground">Agent Overview</h3>
                   </div>
                   <p className="text-muted-foreground mb-6">
-                    Agents are AI-powered assistants that can help with specific tasks and workflows. Configure
-                    the basics below to define their purpose and tone.
+                    Agents are AI-powered assistants that can help with specific tasks and
+                    workflows. Configure the basics below to define their purpose and tone.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -464,8 +473,8 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
                         Specialized
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        Each agent is optimized for a specific workflow, making it more effective than a general
-                        assistant.
+                        Each agent is optimized for a specific workflow, making it more effective
+                        than a general assistant.
                       </p>
                     </div>
                     <div className="space-y-3">
@@ -474,7 +483,8 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
                         Orchestrated
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        Combine multiple agents using @mentions or orchestration rules to tackle complex tasks.
+                        Combine multiple agents using @mentions or orchestration rules to tackle
+                        complex tasks.
                       </p>
                     </div>
                     <div className="space-y-3">
@@ -589,10 +599,12 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
               <div className="max-w-4xl mx-auto space-y-6">
                 {renderStepError('category')}
                 <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Choose Agent Category</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-4">
+                    Choose Agent Category
+                  </h3>
                   <p className="text-muted-foreground mb-6">
-                    Select the primary category that best describes your agent's purpose and capabilities. Tags for
-                    the selected category will be added automatically.
+                    Select the primary category that best describes your agent's purpose and
+                    capabilities. Tags for the selected category will be added automatically.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -607,15 +619,21 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <h4 className="font-semibold text-foreground">{CATEGORY_TITLES[category]}</h4>
+                            <h4 className="font-semibold text-foreground">
+                              {CATEGORY_TITLES[category]}
+                            </h4>
                             <p className="text-sm text-muted-foreground mt-1">
                               {CATEGORY_DESCRIPTIONS[category]}
                             </p>
                           </div>
-                          {selectedCategory === category && <CheckCircle className="w-5 h-5 text-primary" />}
+                          {selectedCategory === category && (
+                            <CheckCircle className="w-5 h-5 text-primary" />
+                          )}
                         </div>
                         <div className="mt-3">
-                          <span className="text-xs font-medium text-muted-foreground uppercase">Examples</span>
+                          <span className="text-xs font-medium text-muted-foreground uppercase">
+                            Examples
+                          </span>
                           <div className="flex flex-wrap gap-2 mt-2">
                             {GuiCategoryKeywordsMap[category]?.map((keyword) => (
                               <Badge key={keyword} variant="outline" className="text-xs">
@@ -688,10 +706,13 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">MCP Tools</h3>
                   <p className="text-muted-foreground mb-3">
-                    Select tools to enable for this agent. Connect or disconnect tools through the MCP manager.
+                    Select tools to enable for this agent. Connect or disconnect tools through the
+                    MCP manager.
                   </p>
                   <div className="space-y-2">
-                    {mcpLoading && <div className="text-sm text-muted-foreground">Loading tools...</div>}
+                    {mcpLoading && (
+                      <div className="text-sm text-muted-foreground">Loading tools...</div>
+                    )}
                     {!mcpLoading && (mcpList?.items?.length ?? 0) === 0 && (
                       <div className="text-sm text-muted-foreground">No tools found.</div>
                     )}
@@ -718,8 +739,8 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
                                     tool.status === 'connected'
                                       ? 'text-green-600 border-green-600'
                                       : tool.status === 'error'
-                                      ? 'text-red-600 border-red-600'
-                                      : 'text-muted-foreground border-muted'
+                                        ? 'text-red-600 border-red-600'
+                                        : 'text-muted-foreground border-muted'
                                   }`}
                                 >
                                   {tool.status}
@@ -772,10 +793,16 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          {option.id === 'active' && <CheckCircle className="w-4 h-4 text-green-600" />}
+                          {option.id === 'active' && (
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                          )}
                           {option.id === 'idle' && <Clock className="w-4 h-4 text-orange-600" />}
-                          {option.id === 'inactive' && <MinusCircle className="w-4 h-4 text-gray-600" />}
-                          <span className="font-semibold text-foreground capitalize">{option.label}</span>
+                          {option.id === 'inactive' && (
+                            <MinusCircle className="w-4 h-4 text-gray-600" />
+                          )}
+                          <span className="font-semibold text-foreground capitalize">
+                            {option.label}
+                          </span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-2">{option.helper}</p>
                       </button>
@@ -820,9 +847,7 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
                         placeholder="Paste exported agent JSON here"
                         className="mt-3 h-40 font-mono"
                       />
-                      {importError && (
-                        <p className="text-xs text-red-600 mt-2">{importError}</p>
-                      )}
+                      {importError && <p className="text-xs text-red-600 mt-2">{importError}</p>}
                       <div className="flex gap-2 mt-3">
                         <Button variant="outline" onClick={handleApplyImport} className="gap-2">
                           Apply
@@ -842,7 +867,9 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
                 </Card>
 
                 <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Configuration Summary</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-4">
+                    Configuration Summary
+                  </h3>
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
@@ -865,9 +892,13 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
                       <div>
                         <Label className="text-sm text-muted-foreground">Initial Status</Label>
                         <div className="flex items-center gap-2">
-                          {status === 'active' && <CheckCircle className="w-4 h-4 text-green-600" />}
+                          {status === 'active' && (
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                          )}
                           {status === 'idle' && <Clock className="w-4 h-4 text-orange-600" />}
-                          {status === 'inactive' && <MinusCircle className="w-4 h-4 text-gray-600" />}
+                          {status === 'inactive' && (
+                            <MinusCircle className="w-4 h-4 text-gray-600" />
+                          )}
                           <span className="font-medium capitalize">{status}</span>
                         </div>
                       </div>
