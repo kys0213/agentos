@@ -91,7 +91,8 @@ export const SubAgentCreateContainer: React.FC<SubAgentCreateContainerProps> = (
         <Alert variant="destructive">
           <AlertCircle className="w-4 h-4" />
           <AlertDescription>
-            Failed to load presets{error ? `: ${(error as Error).message}` : ''}. Using a default template instead.
+            Failed to load presets{error ? `: ${(error as Error).message}` : ''}. Using a default
+            template instead.
             <Button variant="outline" size="sm" className="ml-3" onClick={() => refetch()}>
               Retry
             </Button>

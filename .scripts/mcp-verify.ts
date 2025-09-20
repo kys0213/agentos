@@ -40,9 +40,9 @@ async function run() {
       const goToDashboard = page.getByRole('button', { name: /Go to Dashboard/i });
       if (await goToDashboard.count()) await goToDashboard.click();
     }
-    await expectVisible(page, "text=Dashboard");
-    await expectVisible(page, "text=Recent Activity");
-    await expectVisible(page, "text=Quick Actions");
+    await expectVisible(page, 'text=Dashboard');
+    await expectVisible(page, 'text=Recent Activity');
+    await expectVisible(page, 'text=Quick Actions');
     await shot(page, 'dashboard');
     results.push('OK: Dashboard renders core sections');
 
@@ -50,9 +50,9 @@ async function run() {
     const navTools = page.getByTestId('nav-tools');
     if (await navTools.count()) {
       await navTools.click();
-      await expectVisible(page, "text=MCP Tools");
-      await expectVisible(page, "text=Connected");
-      await expectVisible(page, "text=Total Tools");
+      await expectVisible(page, 'text=MCP Tools');
+      await expectVisible(page, 'text=Connected');
+      await expectVisible(page, 'text=Total Tools');
       await shot(page, 'mcp-tools');
       results.push('OK: MCP Tools manager visible');
     } else {
@@ -63,18 +63,18 @@ async function run() {
     const navSubagents = page.getByTestId('nav-subagents');
     if (await navSubagents.count()) {
       await navSubagents.click();
-      await expectVisible(page, "text=Agent Manager");
+      await expectVisible(page, 'text=Agent Manager');
       await expectVisible(page, "[data-testid='btn-create-agent']");
       await shot(page, 'agents');
       results.push('OK: Agent Manager visible');
 
       // Open create and verify AI Config tab and MCP Tools section renders
       await page.getByTestId('btn-create-agent').click();
-      await expectVisible(page, "text=Agent Overview");
+      await expectVisible(page, 'text=Agent Overview');
       await page.getByRole('button', { name: 'Next: Category' }).click();
       await page.getByRole('button', { name: /Development.*software engineering/i }).click();
       await page.getByRole('button', { name: 'Next: AI Config' }).click();
-      await expectVisible(page, "text=MCP Tools");
+      await expectVisible(page, 'text=MCP Tools');
       await shot(page, 'agent-create-ai-config');
       results.push('OK: Agent Create shows MCP Tools in AI Config');
     } else {

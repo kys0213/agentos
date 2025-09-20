@@ -1,7 +1,7 @@
 # GUI ↔ Core Integration Gaps Plan
 
 Status: In Progress
-Last Updated: 2025-09-16
+Last Updated: 2025-09-19
 
 > 후속 계획: 주요 잔여 작업은 `GUI_CORE_INTEGRATION_PHASE2_PLAN.md`에서 계속 추적합니다.
 
@@ -17,14 +17,15 @@ Last Updated: 2025-09-16
   - ChatService 구현 (commit `d325735`, `ef67672`)
   - useChatHistory Core API 연동 (commit `c87c0c9`)
   - AI Config 하드코딩 제거 및 동적 Bridge 설정 (commit `681fe96`)
-  
- 2025-09-14 진행 현황 추가:
- - GUI monorepo 그린 베이스라인 확보: typecheck/build/lint/test 모두 통과 (commit `0df4a4a`)
- - Vitest 멀티 프로젝트 구성 검증 및 스크립트 정리(렌더러 jsdom, 메인 node)
- - Knowledge 계약/메인 서비스/렌더러 어댑터 스켈레톤 연결 및 테스트 보강
- - KnowledgeBaseManager 일부 RPC 연동 착수: 목록/통계는 RPC 기반으로 조회
- - MCP Tool Manager 폴백 데이터 제거 및 빈 상태/에러 처리 UX 반영
- - Dashboard 통계 훅(useDashboardStats) 구현 및 테스트 추가, 초기 UI 연동 완료(하드코딩 제거 진행 중)
+
+2025-09-14 진행 현황 추가:
+
+- GUI monorepo 그린 베이스라인 확보: typecheck/build/lint/test 모두 통과 (commit `0df4a4a`)
+- Vitest 멀티 프로젝트 구성 검증 및 스크립트 정리(렌더러 jsdom, 메인 node)
+- Knowledge 계약/메인 서비스/렌더러 어댑터 스켈레톤 연결 및 테스트 보강
+- KnowledgeBaseManager 일부 RPC 연동 착수: 목록/통계는 RPC 기반으로 조회
+- MCP Tool Manager 폴백 데이터 제거 및 빈 상태/에러 처리 UX 반영
+- Dashboard 통계 훅(useDashboardStats) 구현 및 테스트 추가, 초기 UI 연동 완료(하드코딩 제거 진행 중)
 
 ## Requirements
 
@@ -73,7 +74,7 @@ Last Updated: 2025-09-16
 - [x] CI에서 `pnpm test`로 두 프로젝트 동시 실행 보장
 - [ ] main 레이어에서 Electron 의존 모듈은 필요한 곳에 한해 mock 또는 경계 어댑터로 대체
 - [ ] renderer 테스트 커버리지 기준 수립 및 주요 시나리오(프리셋 임포트, MCP 사용량 스트림, 대시보드) 보장
-  (진행: MCP usage 이벤트/대시보드 갱신, Knowledge 검색/미리보기/본문 로드 테스트 추가)
+      (진행: MCP usage 이벤트/대시보드 갱신, Knowledge 검색/미리보기/본문 로드 테스트 추가)
 
 ### 사용 시나리오
 
@@ -625,7 +626,7 @@ interface BridgeManifest {
 
 **테스트**
 
-- [x] 등록 다이얼로그: 유효/무효 JSON 입력 시 동작(등록/에러 메시지) 테스트 (`ModelManager.register.test.tsx`). 후속 UX 개선과 통계 카드 보완은 Phase 2 계획서에서 추적한다.
+- [x] 등록 다이얼로그: 유효/무효 JSON 입력 시 동작(등록/에러 메시지) 테스트 (`ModelManager.register.test.tsx`). 후속 UX 개선과 통계 카드 보완은 `GUI_CORE_INTEGRATION_PHASE2_PLAN.md` TODO에서 이어서 추적한다.
 - [x] 등록 성공 후 캐시 무효화 호출 여부 검증 테스트
 
 ### 작업 8: Dashboard 통계 — 실시간 데이터 🟡 **진행 가능** (기존 API 활용)
@@ -934,6 +935,7 @@ interface BridgeManifest {
 ## 추가 TODO 정리
 
 ### 2025-09-16 진행 현황 보충
+
 - Playwright MCP 스모크 시나리오 추가: `apps/gui/e2e/mcp-verify.e2e.test.ts`
   - 채팅 → 관리 모드 진입, 대시보드/프리셋/에이전트/MCP 툴 화면 기본 요소 검증
   - SubAgentCreate의 AI Config 탭에서 MCP Tools 섹션 노출 확인
@@ -945,7 +947,7 @@ interface BridgeManifest {
 
 ### 품질 게이트(현재 상태)
 
-- [x] typecheck 통과 (apps/*, packages/*)
+- [x] typecheck 통과 (apps/_, packages/_)
 - [x] build 통과 (GUI 포함)
 - [x] lint 오류 0 (경고는 잔존, 추후 리팩터링)
 - [x] test 통과 (renderer/main 분리 실행)

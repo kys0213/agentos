@@ -1,4 +1,9 @@
-import type { AgentStatus, CreateAgentMetadata, McpConfig, ReadonlyAgentMetadata } from '@agentos/core';
+import type {
+  AgentStatus,
+  CreateAgentMetadata,
+  McpConfig,
+  ReadonlyAgentMetadata,
+} from '@agentos/core';
 
 /**
  * 앱 섹션 타입

@@ -15,12 +15,7 @@ describe('ModelManager register dialog', () => {
   it('shows validation error for invalid JSON manifest', async () => {
     const user = userEvent.setup();
 
-    render(
-      <ModelManager
-        {...baseProps}
-        onRegister={vi.fn()}
-      />
-    );
+    render(<ModelManager {...baseProps} onRegister={vi.fn()} />);
 
     await user.click(screen.getByRole('button', { name: /add model/i }));
     const dialog = await screen.findByRole('dialog', { name: /register llm bridge/i });
@@ -37,12 +32,7 @@ describe('ModelManager register dialog', () => {
     const user = userEvent.setup();
     const onRegister = vi.fn(async (_manifest: LlmManifest) => {});
 
-    render(
-      <ModelManager
-        {...baseProps}
-        onRegister={onRegister}
-      />
-    );
+    render(<ModelManager {...baseProps} onRegister={onRegister} />);
 
     await user.click(screen.getByRole('button', { name: /add model/i }));
     const dialog = await screen.findByRole('dialog', { name: /register llm bridge/i });
