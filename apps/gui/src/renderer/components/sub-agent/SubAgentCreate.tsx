@@ -356,9 +356,9 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
       name: updated.name ?? prev.name,
       description: updated.description ?? prev.description,
       icon: updated.icon ?? prev.icon,
-      keywords: updated.keywords ?? prev.keywords,
+      keywords: updated.keywords ? Array.from(updated.keywords) : prev.keywords,
     }));
-    if (updated.status) {
+    if (updated.status === 'active' || updated.status === 'idle' || updated.status === 'inactive') {
       setStatus(updated.status);
     }
     if (updated.preset) {
@@ -373,7 +373,9 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
       delete cfg.bridgeId;
       setBridgeConfig(cfg);
       setSelectedMcpIds(
-        new Set((updated.preset.enabledMcps ?? []).map((m) => m.name).filter(Boolean) as string[])
+        new Set(
+          Array.from(updated.preset.enabledMcps ?? []).map((m) => m.name).filter(Boolean) as string[]
+        )
       );
     }
     setImportError('');
