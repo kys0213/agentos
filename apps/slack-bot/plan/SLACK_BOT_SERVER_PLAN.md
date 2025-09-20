@@ -12,7 +12,7 @@
 - [ ] 메시지와 응답에는 파일이나 이미지 등 `CoreContent[]` 형태의 첨부가 포함될 수 있다.
 - [ ] `AgentEventBridge`를 사용하여 에이전트와 세션 이벤트를 내부 이벤트 버스로 전달하고 Slack/Discord로 라우팅한다.
 - [ ] NestJS 기반 모듈 구조로 커넥터, 에이전트 실행기, 채널 설정 관리가 분리된다.
-- [ ] Bolt `App`을 NestJS 라이프사이클에 맞춰 DiscoveryService와 HttpAdapterHost를 통해 바인딩하여 특정 HTTP 어댑터에 강결합되지 않는 초기 서버 구조를 제공한다.
+- [ ] Bolt `App`을 NestJS 라이프사이클에 맞춰 DiscoveryService와 HttpAdapterHost를 통해 바인딩하고, `httpAdapter`가 제공하는 추상 라우팅 API(`createMiddlewareFactory`, `post`, `all` 등)를 이용해 Slack 엔드포인트를 등록하여 Express 등 특정 HTTP 어댑터 구현에 직접 의존하지 않는 초기 서버 구조를 제공한다.
 - [ ] Bolt 이벤트/커맨드 핸들러는 `@nestjs/common`의 `SetMetadata`를 사용하는 TypeScript 메타데이터 데코레이터로 마킹한 NestJS 프로바이더를 DiscoveryService와 `Reflector`로 탐색하여 기존 데코레이터 메타데이터와 통합된 자동 바인딩을 제공한다.
 - [ ] Slack Bolt 미들웨어 스펙(`event`, `command`, `action`, `payload`, `ack`, `respond`, `say`, `client`, `body`, `context`)을 파라미터 데코레이터로 선언해 Nest 프로바이더 메서드 시그니처에서 타입 안전하게 주입하고 자동 바인딩 시 메서드 파라미터 순서를 메타데이터로 재구성한다.
 - [ ] 채널별 에이전트 설정을 제공하고 **활성화된 에이전트 목록**을 조회할 수 있다.
@@ -139,7 +139,7 @@ import type {
   SlackEventMiddlewareArgs,
   SlackActionMiddlewareArgs,
 } from '@slack/bolt';
-import { Injectable, OnModuleInit, Module, SetMetadata } from '@nestjs/common';
+import { Injectable, OnModuleInit, Module, SetMetadata, RequestMethod } from '@nestjs/common';
 import {
   NestFactory,
   HttpAdapterHost,
@@ -148,6 +148,7 @@ import {
   MetadataScanner,
   Reflector,
 } from '@nestjs/core';
+import type { RequestHandler } from '@nestjs/common/interfaces';
 import { AppModule } from './app.module';
 
 const SLACK_HANDLER_METADATA_KEY = 'slack:handler';
@@ -347,9 +348,24 @@ export class SlackBoltService implements OnModuleInit {
     private readonly reflector: Reflector
   ) {}
 
-  onModuleInit() {
+  async onModuleInit() {
     const httpAdapter = this.httpAdapterHost.httpAdapter;
-    httpAdapter.use('/slack/events', this.receiver.router);
+    const slackEndpoint = '/slack/events';
+    const boltListener: RequestHandler = async (req, res, next) => {
+      await this.receiver.requestHandler(req as never, res as never);
+      if (typeof next === 'function') {
+        next();
+      }
+    };
+
+    const middlewareFactory = await Promise.resolve(
+      httpAdapter.createMiddlewareFactory(RequestMethod.ALL)
+    );
+    if (middlewareFactory) {
+      middlewareFactory(slackEndpoint, boltListener);
+    } else {
+      httpAdapter.post(slackEndpoint, boltListener);
+    }
 
     const providers = this.discovery.getProviders();
     for (const wrapper of providers) {
@@ -416,7 +432,7 @@ export class SlackEventPublisher implements EventPublisher {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.get(SlackBoltService); // Bolt ExpressReceiver mount
+  app.get(SlackBoltService); // HttpAdapter 기반 Slack 엔드포인트 등록
   const agentService = app.get(AgentService);
   const publisher = new SlackEventPublisher();
   const bridge = new AgentEventBridge(agentService, publisher);
@@ -430,7 +446,7 @@ async function bootstrap() {
 ### 0단계: 프로젝트 환경 스캐폴딩 (현재 작업 범위)
 
 - [x] NestJS 애플리케이션 기본 구조(AppModule, bootstrap 함수) 생성
-- [x] SlackModule과 SlackBoltService 골격 구성 및 ExpressReceiver 라우터 연결 준비
+- [x] SlackModule과 SlackBoltService 골격 구성 및 HttpAdapter 기반 Slack 엔드포인트 등록 준비
 - [x] 빌드/테스트 스크립트, tsconfig, Vitest 설정 추가로 작업 환경 구성
 
 ### 1단계: 도메인/커넥터 기반 기본 기능 구현
@@ -456,6 +472,6 @@ async function bootstrap() {
 
 ## 작업 순서
 
-1. **1단계**: ChatEvent·OutgoingMessage·ChatConnector·AgentCache·ChannelAgentRegistry 기본 구현과 NestJS 프로젝트 스캐폴딩, Bolt `App`의 ExpressReceiver를 HttpAdapterHost에 연결하고 `SetMetadata`·Reflector·MetadataScanner 기반 데코레이터 탐색 및 SlackParam 파라미터 데코레이터 메타데이터/주입기 구현으로 DiscoveryService 자동 바인딩 구성
+1. **1단계**: ChatEvent·OutgoingMessage·ChatConnector·AgentCache·ChannelAgentRegistry 기본 구현과 NestJS 프로젝트 스캐폴딩, Bolt `App`의 ExpressReceiver를 HttpAdapterHost의 추상 라우팅 API로 등록하고 `SetMetadata`·Reflector·MetadataScanner 기반 데코레이터 탐색 및 SlackParam 파라미터 데코레이터 메타데이터/주입기 구현으로 DiscoveryService 자동 바인딩 구성
 2. **2단계**: ChannelAgentConfigService, SlackConnector(이벤트·slash command), OrchestratorAgent 구현과 core 서비스 연동, 에이전트 생성·채널 매핑 API, 활성화된 에이전트 목록·MCP·지식·메모리·프리셋 API 노출, LRU 캐시 연동, `AgentEventBridge` 통합
 3. **3단계**: 단위/통합 테스트와 문서 정리
