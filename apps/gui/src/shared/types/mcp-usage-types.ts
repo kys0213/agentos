@@ -1,6 +1,10 @@
 // Core 타입들을 재사용하여 일관성 보장
 import type { McpToolMetadata, McpUsageLog, McpUsageStats } from '@agentos/core';
 import { z } from 'zod';
+import {
+  McpUsageLogSchema as ContractUsageLogSchema,
+  McpUsageStatsSchema as ContractUsageStatsSchema,
+} from '../rpc/contracts/mcp.contract';
 
 /**
  * 사용량 로그 조회 옵션
@@ -83,6 +87,70 @@ export const McpUsageUpdateEventSchema = z.discriminatedUnion('type', [
   MetadataUpdatedEvent,
   ConnectionChangedEvent,
 ]);
+
+const LegacyUsageLogPayload = ContractUsageLogSchema.extend({
+  clientName: z.string().optional(),
+});
+
+const LegacyUsageLogEvent = z.object({
+  type: z.literal('mcp.usage.log.created'),
+  payload: LegacyUsageLogPayload,
+  ts: z.number().optional(),
+});
+
+const LegacyUsageStatsEvent = z.object({
+  type: z.literal('mcp.usage.stats.updated'),
+  payload: ContractUsageStatsSchema.extend({
+    clientName: z.string().optional(),
+  }),
+  ts: z.number().optional(),
+});
+
+export const LegacyMcpUsageEventSchema = z.union([LegacyUsageLogEvent, LegacyUsageStatsEvent]);
+export type LegacyMcpUsageEvent = z.infer<typeof LegacyMcpUsageEventSchema>;
+
+const coerceDate = (value: unknown, fallback?: Date): Date => {
+  if (value instanceof Date) {
+    return value;
+  }
+  if (typeof value === 'string' || typeof value === 'number') {
+    const date = new Date(value);
+    if (!Number.isNaN(date.getTime())) {
+      return date;
+    }
+  }
+  return fallback ?? new Date();
+};
+
+export function convertLegacyMcpUsageEvent(
+  event: LegacyMcpUsageEvent
+): McpUsageUpdateEvent | null {
+  if (event.type === 'mcp.usage.log.created') {
+    const payload = event.payload;
+    const timestamp = coerceDate(payload.timestamp, new Date(event.ts ?? Date.now()));
+    return {
+      type: 'usage-logged',
+      clientName: payload.clientName ?? payload.toolName ?? payload.toolId ?? 'unknown-tool',
+      timestamp,
+      newLog: {
+        id: payload.id,
+        toolId: payload.toolId,
+        toolName: payload.toolName,
+        timestamp,
+        operation: payload.operation,
+        status: payload.status,
+        durationMs: payload.durationMs,
+        agentId: payload.agentId,
+        sessionId: payload.sessionId,
+        errorCode: payload.errorCode,
+      },
+    } satisfies McpUsageUpdateEvent;
+  }
+
+  // Stats 이벤트는 전역 정보만 가지고 있으므로 GUI 실시간 업데이트로 변환할 데이터가 없음
+  // (대시보드 요청 시 재조회하므로 여기서는 무시)
+  return null;
+}
 
 /**
  * GUI용 확장 메타데이터

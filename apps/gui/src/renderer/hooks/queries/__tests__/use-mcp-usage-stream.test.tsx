@@ -4,6 +4,10 @@ import { create, act } from 'react-test-renderer';
 import { ServiceContainer } from '../../../../shared/di/service-container';
 import type { RpcClient } from '../../../../shared/rpc/transport';
 import type { McpUsageUpdateEvent } from '../../../../shared/types/mcp-usage-types';
+import {
+  convertLegacyMcpUsageEvent,
+  LegacyMcpUsageEvent,
+} from '../../../../shared/types/mcp-usage-types';
 import { McpUsageRpcService } from '../../../rpc/services/mcp-usage.service';
 import { useMcpUsageStream } from '../use-mcp-usage-stream';
 
@@ -34,19 +38,23 @@ describe('useMcpUsageStream', () => {
     const fakeSvc = new McpUsageRpcService(transport);
     Object.assign(fakeSvc, {
       subscribeToUsageUpdates: async (cb: (e: Ev) => void) => {
-        cb({
-          type: 'usage-logged',
-          clientName: 'stream-tool',
-          timestamp: new Date(),
-          newLog: {
-            id: 'log-1',
+        const legacyEvent: LegacyMcpUsageEvent = {
+          type: 'mcp.usage.log.created',
+          payload: {
+            id: 'log-legacy',
             toolId: 'tool-1',
-            toolName: 'Stream Tool',
+            toolName: 'Legacy Tool',
+            clientName: 'Legacy Tool',
             timestamp: new Date(),
             operation: 'tool.call',
             status: 'success',
           },
-        });
+        };
+        const converted = convertLegacyMcpUsageEvent(legacyEvent);
+        if (!converted) {
+          throw new Error('Legacy event failed to convert');
+        }
+        cb(converted as Ev);
         return () => {
           unsubCalled = true;
         };

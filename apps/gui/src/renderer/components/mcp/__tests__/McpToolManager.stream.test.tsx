@@ -4,6 +4,7 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import { ServiceContainer } from '../../../../shared/di/service-container';
 import { MCPToolsManager } from '../McpToolManager';
 import type { McpUsageUpdateEvent } from '../../../../shared/types/mcp-usage-types';
+import { convertLegacyMcpUsageEvent } from '../../../../shared/types/mcp-usage-types';
 import type { RpcClient } from '../../../../shared/rpc/transport';
 import type { McpServiceAdapter } from '../../../rpc/adapters/mcp.adapter';
 import { McpUsageRpcService } from '../../../rpc/services/mcp-usage.service';
@@ -63,21 +64,25 @@ describe('MCPToolsManager stream updates', () => {
     await waitFor(() => expect(subscribers.length).toBeGreaterThan(0));
 
     act(() => {
-      subscribers[0]({
-        type: 'usage-logged',
-        clientName: 'Stream Tool',
-        timestamp: new Date(),
-        newLog: {
+      const legacyEvent = {
+        type: 'mcp.usage.log.created',
+        payload: {
           id: 'log-1',
           toolId: 'tool-1',
           toolName: 'Stream Tool',
+          clientName: 'Stream Tool',
           timestamp: new Date(),
           operation: 'tool.call',
           status: 'success',
           durationMs: 480,
           agentId: 'agent-42',
         },
-      });
+      } as const;
+      const converted = convertLegacyMcpUsageEvent(legacyEvent);
+      if (!converted) {
+        throw new Error('Expected legacy event to convert');
+      }
+      subscribers[0](converted as McpUsageUpdateEvent);
     });
 
     await waitFor(() => expect(screen.getByText(/Used by agent-42/i)).toBeInTheDocument());
