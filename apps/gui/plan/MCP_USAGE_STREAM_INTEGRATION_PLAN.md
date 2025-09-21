@@ -4,23 +4,23 @@
 
 ### 성공 조건
 
-- [ ] MCP Tools Manager가 `useMcpUsageStream`을 통해 수신한 `usage-logged`, `metadata-updated`, `connection-changed` 이벤트를 즉시 반영한다.
-- [ ] 최근 사용 로그 패널이 새로운 이벤트 발생 시 최대 100건 범위에서 자동 갱신되고, 수동 새로고침 없이 최신 상태를 유지한다.
-- [ ] 도구 카드(상태 뱃지, 사용량, 마지막 사용 시각)가 이벤트 기반으로 업데이트되며, 기존 로딩/빈 상태 처리와 충돌하지 않는다.
-- [ ] Vitest 기반 단위테스트로 스트림 이벤트 처리 로직(로그 추가, 도구 상태 갱신)을 검증한다.
+- [x] MCP Tools Manager가 `useMcpUsageStream`을 통해 수신한 `usage-logged`, `metadata-updated`, `connection-changed` 이벤트를 즉시 반영한다.
+- [x] 최근 사용 로그 패널이 새로운 이벤트 발생 시 최대 100건 범위에서 자동 갱신되고, 수동 새로고침 없이 최신 상태를 유지한다.
+- [x] 도구 카드(상태 뱃지, 사용량, 마지막 사용 시각)가 이벤트 기반으로 업데이트되며, 기존 로딩/빈 상태 처리와 충돌하지 않는다.
+- [x] Vitest 기반 단위테스트로 스트림 이벤트 처리 로직(로그 추가, 도구 상태 갱신)을 검증한다.
 
 ### 사용 시나리오
 
-- [ ] 사용자가 MCP Tools Manager를 열어두고 있을 때 새로운 도구 호출이 발생하면 `Recent Activity` 및 `Usage Logs` 탭이 자동으로 최신 항목을 표시한다.
-- [ ] 연결 상태가 변경되거나 사용량 메타데이터가 업데이트되면 도구 상태 카드와 카운터가 즉시 변경된다.
-- [ ] MCP 서비스/스트림이 사용 불가한 환경에서도 기존 fallback 동작(경고 로그 및 빈 UI)이 유지된다.
+- [x] 사용자가 MCP Tools Manager를 열어두고 있을 때 새로운 도구 호출이 발생하면 `Recent Activity` 및 `Usage Logs` 탭이 자동으로 최신 항목을 표시한다.
+- [x] 연결 상태가 변경되거나 사용량 메타데이터가 업데이트되면 도구 상태 카드와 카운터가 즉시 변경된다.
+- [x] MCP 서비스/스트림이 사용 불가한 환경에서도 기존 fallback 동작(경고 로그 및 빈 UI)이 유지된다.
 
 ### 제약 조건
 
-- [ ] 기존 ServiceContainer 기반 의존 주입 구조를 유지하고, hook/service API 시그니처를 변경하지 않는다.
-- [ ] GUI 상태는 React state로 관리하며 Redux/Zustand 등의 전역 상태를 추가 도입하지 않는다.
-- [ ] 이벤트 핸들링은 타입 안전하게 구현하여 `McpUsageUpdateEvent` 스키마와 불일치가 없도록 한다.
-- [ ] Tests는 renderer Vitest 워크스페이스에서 실행 가능해야 한다.
+- [x] 기존 ServiceContainer 기반 의존 주입 구조를 유지하고, hook/service API 시그니처를 변경하지 않는다.
+- [x] GUI 상태는 React state로 관리하며 Redux/Zustand 등의 전역 상태를 추가 도입하지 않는다.
+- [x] 이벤트 핸들링은 타입 안전하게 구현하여 `McpUsageUpdateEvent` 스키마와 불일치가 없도록 한다.
+- [x] Tests는 renderer Vitest 워크스페이스에서 실행 가능해야 한다.
 
 ## Interface Sketch
 
@@ -59,12 +59,12 @@ it('prepends usage log when usage event arrives', async () => {
 
 ## Todo
 
-- [ ] MCP Tools Manager에 스트림 이벤트 처리 로직(useEffect, helper) 추가
-- [ ] 최근 사용 로그 및 도구 상태 갱신 helper 함수 구현 및 상태 슬라이싱 안정화
-- [ ] 새로고침 처리 시 usage 로그 재조회 및 이벤트 중복 방지 전략 수립
-- [ ] `useMcpUsageStream` 테스트를 실제 이벤트 스키마에 맞게 수정
-- [ ] MCP Tools Manager 스트림 반응 단위 테스트 추가
-- [ ] 타입체크/테스트 실행 및 계획서 업데이트
+- [x] MCP Tools Manager에 스트림 이벤트 처리 로직(useEffect, helper) 추가
+- [x] 최근 사용 로그 및 도구 상태 갱신 helper 함수 구현 및 상태 슬라이싱 안정화
+- [x] 새로고침 처리 시 usage 로그 재조회 및 이벤트 중복 방지 전략 수립
+- [x] `useMcpUsageStream` 테스트를 실제 이벤트 스키마에 맞게 수정
+- [x] MCP Tools Manager 스트림 반응 단위 테스트 추가
+- [x] 타입체크/테스트 실행 및 계획서 업데이트
 
 ## 작업 순서
 

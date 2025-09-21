@@ -11,7 +11,7 @@ Last Updated: 2025-09-19
 - [x] Bridge 등록 다이얼로그가 유효/무효 입력과 성공 후 캐시 무효화를 검증하는 테스트를 갖춘다. (`ModelManager.register.test.tsx`)
 - [x] Dashboard 카드가 실데이터 기반으로 로딩/에러/Retry UX를 제공하고 컴포넌트 테스트가 통과한다. (`Dashboard.component.test.tsx`)
 - [x] KnowledgeBaseManager의 업로드/삭제/검색이 Core RPC 경로로만 동작하도록 정리하고, 레거시 localStorage 경로를 제거했다. (더 이상 마이그레이션 필요 없음)
-- [ ] MCP 도구 관리에서 usage 이벤트 스트림을 활용한 실시간 갱신 경로와 관련 테스트를 마련한다.
+- [x] MCP 도구 관리에서 usage 이벤트 스트림을 활용한 실시간 갱신 경로와 관련 테스트를 마련한다.
 
 ### 사용 시나리오
 
@@ -19,7 +19,7 @@ Last Updated: 2025-09-19
 - [x] 사용자가 Bridge 등록 다이얼로그에 올바른 Manifest JSON을 입력하면 등록 후 목록이 갱신되고, 잘못된 입력 시 명확한 오류가 표시된다. (등록 다이얼로그 테스트)
 - [x] Dashboard가 로딩/에러/성공 상태를 구분해 보여주고, Retry 시 지표가 재요청된다. (컴포넌트 테스트로 검증)
 - [x] Knowledge 문서 추가/삭제/검색이 Core API를 통해 수행되고, 기존 localStorage 경로는 제거되어 Core 단일 경로만 유지된다.
-- [ ] MCP Tool Manager가 usage 이벤트 스트림을 반영해 사용량 패널을 실시간으로 갱신한다.
+- [x] MCP Tool Manager가 usage 이벤트 스트림을 반영해 사용량 패널을 실시간으로 갱신한다.
 
 ### 제약 조건
 
@@ -53,7 +53,7 @@ const { mutateAsync } = useRegisterBridge({
 - [x] Bridge 등록 다이얼로그 유효/무효 입력 및 캐시 무효화 테스트 추가
 - [x] Dashboard 카드 로딩/에러/Retry 컴포넌트 테스트 작성 및 지표 하드코딩 제거 마무리
 - [x] Knowledge 레거시 스토리지 제거 및 Core-only 경로 검증
-- [ ] MCP usage 이벤트 스트림 구독 훅/컴포넌트 업데이트 및 테스트 추가
+- [x] MCP usage 이벤트 스트림 구독 훅/컴포넌트 업데이트 및 테스트 추가
 - [ ] renderer 테스트 커버리지 가이드라인 문서화 (coverage 목표, 주요 시나리오 명시)
 
 ## 작업 순서
