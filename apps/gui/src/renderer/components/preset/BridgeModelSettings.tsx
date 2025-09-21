@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { Preset } from '@agentos/core';
 import type { LlmManifest } from 'llm-bridge-spec';
@@ -29,6 +29,8 @@ export const BridgeModelSettings: React.FC<BridgeModelSettingsProps> = ({
   showParameters = true,
 }) => {
   const cfg = config ?? {};
+  const bridgeId = cfg.bridgeId as string | undefined;
+  const currentModel = cfg.model as string | undefined;
 
   // 설치된 Bridge 목록 조회
   const {
@@ -55,11 +57,32 @@ export const BridgeModelSettings: React.FC<BridgeModelSettingsProps> = ({
 
   // 선택된 Bridge 정보
   const selectedBridge = useMemo(() => {
-    if (!cfg.bridgeId) {
+    if (!bridgeId) {
       return null;
     }
-    return bridges.find((b) => b.id === cfg.bridgeId);
-  }, [cfg.bridgeId, bridges]);
+    return bridges.find((b) => b.id === bridgeId);
+  }, [bridgeId, bridges]);
+
+  useEffect(() => {
+    if (bridges.length === 0) {
+      return;
+    }
+    const hasSelected = bridgeId && bridges.some((b) => b.id === bridgeId);
+    if (!hasSelected) {
+      const [firstBridge] = bridges;
+      if (!firstBridge) {
+        return;
+      }
+      const nextModel = firstBridge.manifest.models?.[0]?.name;
+      onChange({
+        llmBridgeConfig: {
+          ...cfg,
+          bridgeId: firstBridge.id,
+          model: nextModel ?? currentModel,
+        },
+      });
+    }
+  }, [bridges, bridgeId, currentModel, cfg, onChange]);
 
   // 사용 가능한 모델 목록
   const availableModels = useMemo(() => {
