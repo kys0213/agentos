@@ -8,7 +8,7 @@ import { AppModule } from './app.module';
 const logger = new Logger('SlackBotBootstrap');
 
 export async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create(AppModule, { bufferLogs: true, rawBody: true });
   app.flushLogs();
 
   const port = Number.parseInt(process.env.PORT ?? '3000', 10);

@@ -1,18 +1,12 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { HttpAdapterHost } from '@nestjs/core';
 import { App, ExpressReceiver } from '@slack/bolt';
-
-interface MiddlewareCapableAdapter {
-  use: (path: string, handler: unknown) => void;
-}
+import type { Request, Response } from 'express';
 
 @Injectable()
 export class SlackBoltService implements OnModuleInit {
   private readonly logger = new Logger(SlackBoltService.name);
   private receiver?: ExpressReceiver;
   private app?: App;
-
-  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
 
   get boltApp(): App | undefined {
     return this.app;
@@ -38,17 +32,38 @@ export class SlackBoltService implements OnModuleInit {
       token: botToken,
       receiver: this.receiver,
     });
+    this.logger.log('Slack Bolt ExpressReceiver가 초기화되었습니다.');
+  }
 
-    const httpAdapter = this.httpAdapterHost.httpAdapter as MiddlewareCapableAdapter | undefined;
+  async dispatch(req: Request, res: Response): Promise<void> {
+    const receiver = this.receiver;
 
-    if (!httpAdapter?.use) {
-      this.logger.warn(
-        '현재 HTTP 어댑터에서 Express 미들웨어 등록을 지원하지 않아 Slack 이벤트 라우터를 연결하지 못했습니다.'
-      );
+    if (!receiver) {
+      res.status(503).send('Slack Bolt 앱이 초기화되지 않았습니다.');
       return;
     }
 
-    httpAdapter.use('/slack/events', this.receiver.router);
-    this.logger.log('Slack Bolt ExpressReceiver가 /slack/events 경로에 마운트되었습니다.');
+    try {
+      await new Promise<void>((resolve, reject) => {
+        receiver.router(req, res, (error?: unknown) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve();
+        });
+      });
+
+      if (!res.headersSent) {
+        res.status(404).send();
+      }
+    } catch (error) {
+      const report = error instanceof Error ? error : new Error(String(error));
+      this.logger.error('Slack Bolt 요청 처리 중 오류가 발생했습니다.', report);
+
+      if (!res.headersSent) {
+        res.status(500).send('Slack 요청 처리에 실패했습니다.');
+      }
+    }
   }
 }
