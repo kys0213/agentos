@@ -54,7 +54,7 @@ const { mutateAsync } = useRegisterBridge({
 - [x] Dashboard 카드 로딩/에러/Retry 컴포넌트 테스트 작성 및 지표 하드코딩 제거 마무리
 - [x] Knowledge 레거시 스토리지 제거 및 Core-only 경로 검증
 - [x] MCP usage 이벤트 스트림 구독 훅/컴포넌트 업데이트 및 테스트 추가
-- [ ] renderer 테스트 커버리지 가이드라인 문서화 (coverage 목표, 주요 시나리오 명시)
+- [x] renderer 테스트 커버리지 가이드라인 문서화 (coverage 목표, 주요 시나리오 명시)
 
 ## 작업 순서
 
