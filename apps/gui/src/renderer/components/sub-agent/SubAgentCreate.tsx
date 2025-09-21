@@ -38,6 +38,8 @@ interface AgentCreateProps {
   onBack: () => void;
   onCreate: (agent: CreateAgentMetadata) => void;
   presetTemplate: ReadonlyPreset;
+  isSubmitting?: boolean;
+  submitError?: string | null;
 }
 
 type StepKey = 'overview' | 'category' | 'ai-config' | 'settings';
@@ -74,7 +76,13 @@ const CATEGORY_DESCRIPTIONS: Record<GuiAgentCategory, string> = {
   customer_support: 'Customer service, support, and engagement',
 };
 
-export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreateProps) {
+export function SubAgentCreate({
+  onBack,
+  onCreate,
+  presetTemplate,
+  isSubmitting = false,
+  submitError,
+}: AgentCreateProps) {
   const totalSteps = steps.length;
 
   const [activeTab, setActiveTab] = useState<StepKey>('overview');
@@ -950,10 +958,22 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
                     <ArrowLeft className="w-4 h-4" />
                     Previous: AI Config
                   </Button>
-                  <Button onClick={handleCreate} disabled={!isSubmissionReady} className="gap-2">
-                    <Wand2 className="w-4 h-4" />
-                    Create Agent
-                  </Button>
+                  <div className="space-y-3 w-full">
+                    {submitError && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="w-4 h-4" />
+                        <AlertDescription>{submitError}</AlertDescription>
+                      </Alert>
+                    )}
+                    <Button
+                      onClick={handleCreate}
+                      disabled={!isSubmissionReady || isSubmitting}
+                      className="gap-2"
+                    >
+                      <Wand2 className="w-4 h-4" />
+                      {isSubmitting ? 'Creating…' : 'Create Agent'}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </TabsContent>

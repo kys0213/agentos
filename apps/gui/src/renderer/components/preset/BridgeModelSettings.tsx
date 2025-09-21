@@ -65,6 +65,15 @@ export const BridgeModelSettings: React.FC<BridgeModelSettingsProps> = ({
 
   useEffect(() => {
     if (bridges.length === 0) {
+      if (bridgeId) {
+        onChange({
+          llmBridgeConfig: {
+            ...cfg,
+            bridgeId: undefined,
+            model: undefined,
+          },
+        });
+      }
       return;
     }
     const hasSelected = bridgeId && bridges.some((b) => b.id === bridgeId);

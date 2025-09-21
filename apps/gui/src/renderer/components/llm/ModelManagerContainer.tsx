@@ -25,6 +25,7 @@ export const ModelManagerContainer: React.FC<ModelManagerContainerProps> = ({ re
   const { data: current } = useCurrentBridge();
   const switchBridge = useSwitchBridge();
   const registerBridge = useRegisterBridge();
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: BRIDGE_QK.bridgeIds });
@@ -48,14 +49,26 @@ export const ModelManagerContainer: React.FC<ModelManagerContainerProps> = ({ re
   );
 
   const onSwitch = async (bridgeId: string) => {
-    await switchBridge.mutateAsync(bridgeId);
-    await handleBridgeSwitch(bridgeId);
-    handleRefresh();
+    setErrorMessage(null);
+    try {
+      await switchBridge.mutateAsync(bridgeId);
+      await handleBridgeSwitch(bridgeId);
+      handleRefresh();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to switch bridge.';
+      setErrorMessage(message);
+    }
   };
 
   const onRegister = async (manifest: import('llm-bridge-spec').LlmManifest) => {
-    await registerBridge.mutateAsync(manifest);
-    handleRefresh();
+    setErrorMessage(null);
+    try {
+      await registerBridge.mutateAsync(manifest);
+      handleRefresh();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to register bridge.';
+      setErrorMessage(message);
+    }
   };
 
   return (
@@ -65,6 +78,8 @@ export const ModelManagerContainer: React.FC<ModelManagerContainerProps> = ({ re
       onRefresh={handleRefresh}
       onSwitch={onSwitch}
       onRegister={onRegister}
+      errorMessage={errorMessage}
+      onDismissError={() => setErrorMessage(null)}
     />
   );
 };

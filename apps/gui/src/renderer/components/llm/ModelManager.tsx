@@ -35,13 +35,17 @@ export interface ModelManagerProps {
   onSwitch: (bridgeId: string) => Promise<void> | void;
   onRefresh: () => void;
   onRegister?: (manifest: LlmManifest) => Promise<void> | void;
+  errorMessage?: string | null;
+  onDismissError?: () => void;
 }
 
 export function ModelManager(props: ModelManagerProps) {
   const [activeTab, setActiveTab] = useState('instances');
   const [searchQuery, setSearchQuery] = useState('');
-  const [error] = useState<string | null>(null);
-  const { items, isLoading, onRefresh, onSwitch, onRegister } = props;
+  const { items, isLoading, onRefresh, onSwitch, onRegister, errorMessage, onDismissError } = props;
+  const [isRegisterOpen, setRegisterOpen] = useState(false);
+  const [manifestText, setManifestText] = useState('');
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const handleRefresh = () => onRefresh();
 
   // Installation flow is handled by container; local stub removed
@@ -97,10 +101,6 @@ export function ModelManager(props: ModelManagerProps) {
     );
   }
 
-  const [isRegisterOpen, setRegisterOpen] = useState(false);
-  const [manifestText, setManifestText] = useState('');
-  const [submitError, setSubmitError] = useState<string | null>(null);
-
   const handleOpenRegister = () => {
     setSubmitError(null);
     setManifestText('');
@@ -129,11 +129,31 @@ export function ModelManager(props: ModelManagerProps) {
         <div>
           <h1 className="text-2xl font-semibold">Model Manager</h1>
           <p className="text-muted-foreground">
-            {error
+            {errorMessage
               ? 'Model configuration error detected'
               : 'Manage AI model instances and configurations'}
           </p>
-          {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
+          {errorMessage && (
+            <div className="mt-3">
+              <div className="flex items-start gap-3 bg-destructive/10 border border-destructive/30 text-destructive rounded-md p-3 text-sm">
+                <AlertCircle className="w-4 h-4 mt-0.5" />
+                <div className="flex-1">
+                  <p>{errorMessage}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Check the bridge configuration or credentials, then try again.
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-destructive"
+                  onClick={onDismissError}
+                >
+                  Dismiss
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
         <Button className="gap-2" onClick={handleOpenRegister}>
           <Plus className="w-4 h-4" />

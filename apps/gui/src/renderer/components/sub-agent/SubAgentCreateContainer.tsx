@@ -30,6 +30,8 @@ export const SubAgentCreateContainer: React.FC<SubAgentCreateContainerProps> = (
     staleTime: 5 * 60 * 1000,
   });
 
+  const [createError, setCreateError] = React.useState<string | null>(null);
+
   const mutation = useMutation({
     mutationFn: async (data: CreateAgentMetadata) =>
       ServiceContainer.getOrThrow('agent').createAgent(data),
@@ -40,6 +42,11 @@ export const SubAgentCreateContainer: React.FC<SubAgentCreateContainerProps> = (
       queryClient.invalidateQueries({ queryKey: ['chat', 'activeAgents'] });
       onCreated?.(agent.id);
       onBack();
+      setCreateError(null);
+    },
+    onError: (err) => {
+      const message = err instanceof Error ? err.message : 'Failed to create agent.';
+      setCreateError(message);
     },
   });
 
@@ -74,8 +81,8 @@ export const SubAgentCreateContainer: React.FC<SubAgentCreateContainerProps> = (
         enabledPrompts: [],
       },
     ],
-    llmBridgeName: 'openai',
-    llmBridgeConfig: { bridgeId: 'openai', model: 'gpt-4', temperature: 0.7 },
+    llmBridgeName: '',
+    llmBridgeConfig: {},
     status: 'active',
     usageCount: 0,
     knowledgeDocuments: 0,
@@ -101,8 +108,13 @@ export const SubAgentCreateContainer: React.FC<SubAgentCreateContainerProps> = (
       )}
       <SubAgentCreate
         onBack={onBack}
-        onCreate={(data) => mutation.mutate(data)}
+        onCreate={(data) => {
+          setCreateError(null);
+          mutation.mutate(data);
+        }}
         presetTemplate={presetTemplate}
+        isSubmitting={mutation.isPending}
+        submitError={createError}
       />
     </div>
   );
