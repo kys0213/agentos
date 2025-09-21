@@ -374,7 +374,9 @@ export function SubAgentCreate({ onBack, onCreate, presetTemplate }: AgentCreate
       setBridgeConfig(cfg);
       setSelectedMcpIds(
         new Set(
-          Array.from(updated.preset.enabledMcps ?? []).map((m) => m.name).filter(Boolean) as string[]
+          Array.from(updated.preset.enabledMcps ?? [])
+            .map((m) => m.name)
+            .filter(Boolean) as string[]
         )
       );
     }

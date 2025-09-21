@@ -301,9 +301,7 @@ export class MockRpcTransport implements RpcClient {
       const updated: MockAgentMetadata = {
         ...existing,
         ...input.patch,
-        keywords: input.patch.keywords
-          ? Array.from(input.patch.keywords)
-          : existing.keywords,
+        keywords: input.patch.keywords ? Array.from(input.patch.keywords) : existing.keywords,
         preset: input.patch.preset
           ? { ...existing.preset, ...input.patch.preset }
           : existing.preset,

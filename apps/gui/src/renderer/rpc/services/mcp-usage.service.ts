@@ -5,6 +5,8 @@ import {
   HourlyStatsResponse,
   McpUsageUpdateEvent,
   McpUsageUpdateEventSchema,
+  LegacyMcpUsageEventSchema,
+  convertLegacyMcpUsageEvent,
   SetUsageTrackingResponse,
   UsageLogQueryOptions,
 } from '../../../shared/types/mcp-usage-types';
@@ -71,6 +73,15 @@ export class McpUsageRpcService {
       const parsed = McpUsageUpdateEventSchema.safeParse(ev);
       if (parsed.success) {
         callback(parsed.data);
+        return;
+      }
+
+      const legacy = LegacyMcpUsageEventSchema.safeParse(ev);
+      if (legacy.success) {
+        const converted = convertLegacyMcpUsageEvent(legacy.data);
+        if (converted) {
+          callback(converted);
+        }
       }
     });
     return close;
