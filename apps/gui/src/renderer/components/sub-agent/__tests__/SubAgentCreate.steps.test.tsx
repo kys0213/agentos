@@ -6,6 +6,10 @@ import type { ReadonlyPreset } from '@agentos/core';
 import { withProviders } from '../../../../test/test-utils';
 import { SubAgentCreate } from '../SubAgentCreate';
 
+vi.mock('../../preset/BridgeModelSettings', () => ({
+  default: () => <div data-testid="mock-bridge-settings" />,
+}));
+
 vi.mock('../../../hooks/queries/use-mcp', () => ({
   useMcpTools: () => ({
     data: {
