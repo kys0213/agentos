@@ -1,4 +1,4 @@
-import { Preset } from '@agentos/core';
+import type { Preset } from '@agentos/core';
 import { PresetStore } from '../stores/preset-store';
 
 const sample: Preset = {

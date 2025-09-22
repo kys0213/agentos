@@ -1,5 +1,4 @@
 import {
-  Book,
   Bot,
   Cpu,
   Hammer,
@@ -32,7 +31,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => 
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'chat', label: 'Chat', icon: MessageSquare },
     { id: 'subagents', label: 'Agents', icon: Bot },
-    { id: 'presets', label: 'Presets', icon: Book },
     { id: 'models', label: 'Models', icon: Cpu },
     { id: 'tools', label: 'Tools', icon: Wrench },
     { id: 'toolbuilder', label: 'Tool Builder', icon: Hammer },

@@ -1,96 +1,214 @@
 import { RpcClient, CloseFn } from '../../shared/rpc/transport';
-import type { AgentMetadata, CreateAgentMetadata, AgentStatus, Preset } from '@agentos/core';
-import type { UserMessage } from 'llm-bridge-spec';
+import type {
+  AgentMetadata,
+  CreateAgentMetadata,
+  AgentStatus,
+  Preset,
+  ReadonlyPreset,
+} from '@agentos/core';
+import type { LlmManifest, UserMessage } from 'llm-bridge-spec';
+import { z } from 'zod';
 
 /**
  * Mock RPC Transport for development mode
  * Simulates RPC communication without actual backend
  */
+type MockAgentMetadata = AgentMetadata & {
+  presetId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export class MockRpcTransport implements RpcClient {
   private handlers = new Map<string, (data: unknown) => Promise<unknown>>();
   private mockDelay = 100; // Simulate network delay
   private listeners = new Map<string, Set<(payload: unknown) => void>>();
+  private agents: MockAgentMetadata[] = [];
+  private bridgeManifests: Record<string, LlmManifest> = {};
 
   constructor() {
+    this.seedBridges();
+    this.seedAgents();
     this.setupMockHandlers();
+  }
+
+  private seedBridges() {
+    const emptyConfig = z.object({});
+    const baseCapabilities = {
+      modalities: ['text'] as Array<'text'>,
+      supportsToolCall: true,
+      supportsFunctionCall: true,
+      supportsMultiTurn: true,
+      supportsStreaming: true,
+      supportsVision: false,
+    };
+
+    const basePricing = {
+      unit: 1000,
+      currency: 'USD',
+      prompt: 0.002,
+      completion: 0.006,
+    };
+
+    this.bridgeManifests = {
+      openai: {
+        schemaVersion: '1.0.0',
+        name: 'OpenAI Bridge',
+        language: 'node',
+        entry: './index.js',
+        configSchema: emptyConfig,
+        capabilities: { ...baseCapabilities },
+        description: 'Mock OpenAI bridge for development',
+        models: [
+          {
+            name: 'gpt-4',
+            contextWindowTokens: 128_000,
+            pricing: { ...basePricing },
+          },
+          {
+            name: 'gpt-4o-mini',
+            contextWindowTokens: 128_000,
+            pricing: { ...basePricing },
+          },
+        ],
+      },
+      anthropic: {
+        schemaVersion: '1.0.0',
+        name: 'Anthropic Bridge',
+        language: 'node',
+        entry: './index.js',
+        configSchema: emptyConfig,
+        capabilities: { ...baseCapabilities },
+        description: 'Mock Anthropic bridge for development',
+        models: [
+          {
+            name: 'claude-3-sonnet',
+            contextWindowTokens: 200_000,
+            pricing: { ...basePricing },
+          },
+          {
+            name: 'claude-3-haiku',
+            contextWindowTokens: 200_000,
+            pricing: { ...basePricing },
+          },
+        ],
+      },
+    };
+  }
+
+  private seedAgents() {
+    const baseDate = new Date();
+    const defaultPreset: ReadonlyPreset = {
+      id: 'preset-1',
+      name: 'Default Assistant',
+      description: 'Standard assistant configuration',
+      author: 'System',
+      createdAt: baseDate,
+      updatedAt: baseDate,
+      version: '1.0.0',
+      systemPrompt: 'You are a helpful assistant.',
+      enabledMcps: [
+        {
+          name: 'filesystem',
+          enabledTools: [],
+          enabledResources: [],
+          enabledPrompts: [],
+        },
+      ],
+      llmBridgeName: 'openai',
+      llmBridgeConfig: { bridgeId: 'openai', model: 'gpt-4' },
+      status: 'active',
+      usageCount: 25,
+      knowledgeDocuments: 0,
+      knowledgeStats: {
+        indexed: 0,
+        vectorized: 0,
+        totalSize: 0,
+      },
+      category: ['general'],
+    };
+
+    const codePreset: ReadonlyPreset = {
+      id: 'preset-2',
+      name: 'Code Expert',
+      description: 'Expert in programming and development',
+      author: 'System',
+      createdAt: baseDate,
+      updatedAt: baseDate,
+      version: '1.0.0',
+      systemPrompt: 'You are an expert programmer.',
+      enabledMcps: [
+        {
+          name: 'filesystem',
+          enabledTools: [],
+          enabledResources: [],
+          enabledPrompts: [],
+        },
+        {
+          name: 'git',
+          enabledTools: [],
+          enabledResources: [],
+          enabledPrompts: [],
+        },
+      ],
+      llmBridgeName: 'openai',
+      llmBridgeConfig: { bridgeId: 'openai', model: 'gpt-4', temperature: 0.3 },
+      status: 'active',
+      usageCount: 8,
+      knowledgeDocuments: 0,
+      knowledgeStats: {
+        indexed: 0,
+        vectorized: 0,
+        totalSize: 0,
+      },
+      category: ['development'],
+    };
+
+    this.agents = [
+      {
+        id: 'agent-1',
+        name: 'Assistant',
+        description: 'General purpose assistant',
+        status: 'active',
+        icon: '🤖',
+        keywords: ['general', 'assistant', 'helpful'],
+        preset: defaultPreset,
+        presetId: defaultPreset.id,
+        sessionCount: 5,
+        usageCount: 25,
+        lastUsed: baseDate,
+        createdAt: baseDate.toISOString(),
+        updatedAt: baseDate.toISOString(),
+      },
+      {
+        id: 'agent-2',
+        name: 'Code Helper',
+        description: 'Specialized in coding tasks',
+        status: 'inactive',
+        icon: '💻',
+        keywords: ['code', 'programming', 'development'],
+        preset: codePreset,
+        presetId: codePreset.id,
+        sessionCount: 2,
+        usageCount: 8,
+        lastUsed: baseDate,
+        createdAt: baseDate.toISOString(),
+        updatedAt: baseDate.toISOString(),
+      },
+    ];
   }
 
   private setupMockHandlers() {
     // Agent service handlers
     this.handlers.set('agent.get-all-metadatas', async () => {
-      return [
-        {
-          id: 'agent-1',
-          name: 'Assistant',
-          description: 'General purpose assistant',
-          status: 'active',
-          icon: '🤖',
-          keywords: ['general', 'assistant', 'helpful'],
-          preset: {
-            id: 'preset-1',
-            name: 'Default Assistant',
-            description: 'Standard assistant configuration',
-            author: 'System',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            version: '1.0.0',
-            systemPrompt: 'You are a helpful assistant.',
-            enabledMcps: ['filesystem'],
-            llmBridgeName: 'openai',
-            llmBridgeConfig: { model: 'gpt-4' },
-            status: 'active',
-            usageCount: 25,
-            knowledgeDocuments: 0,
-            knowledgeStats: {
-              indexed: 0,
-              vectorized: 0,
-              totalSize: 0,
-            },
-            category: ['general'],
-          },
-          presetId: 'preset-1',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          sessionCount: 5,
-          usageCount: 25,
-          lastUsed: new Date().toISOString(),
+      return this.agents.map((agent) => ({
+        ...agent,
+        preset: {
+          ...agent.preset,
+          enabledMcps: (agent.preset.enabledMcps ?? []).map((m) => ({ ...m })),
+          llmBridgeConfig: { ...(agent.preset.llmBridgeConfig ?? {}) },
         },
-        {
-          id: 'agent-2',
-          name: 'Code Helper',
-          description: 'Specialized in coding tasks',
-          status: 'inactive',
-          icon: '💻',
-          keywords: ['code', 'programming', 'development'],
-          preset: {
-            id: 'preset-2',
-            name: 'Code Expert',
-            description: 'Expert in programming and development',
-            author: 'System',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            version: '1.0.0',
-            systemPrompt: 'You are an expert programmer.',
-            enabledMcps: ['filesystem', 'git'],
-            llmBridgeName: 'openai',
-            llmBridgeConfig: { model: 'gpt-4', temperature: 0.3 },
-            status: 'active',
-            usageCount: 8,
-            knowledgeDocuments: 0,
-            knowledgeStats: {
-              indexed: 0,
-              vectorized: 0,
-              totalSize: 0,
-            },
-            category: ['development'],
-          },
-          presetId: 'preset-2',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          sessionCount: 2,
-          usageCount: 8,
-        },
-      ];
+      }));
     });
 
     this.handlers.set('agent.create', async (data: unknown) => {
@@ -99,120 +217,98 @@ export class MockRpcTransport implements RpcClient {
         status?: AgentStatus;
         icon?: string;
       };
-      return {
+
+      const presetSource: Preset = input.preset
+        ? ({
+            ...input.preset,
+            enabledMcps: (input.preset.enabledMcps ?? []).map((m) => ({
+              name: m.name,
+              enabledTools: m.enabledTools ?? [],
+              enabledResources: m.enabledResources ?? [],
+              enabledPrompts: m.enabledPrompts ?? [],
+            })),
+            llmBridgeConfig: {
+              ...(input.preset.llmBridgeConfig ?? {}),
+              bridgeId:
+                (input.preset.llmBridgeConfig?.bridgeId as string | undefined) ??
+                input.preset.llmBridgeName,
+            },
+          } satisfies Preset)
+        : ({
+            id: 'preset-default',
+            name: 'Default Assistant',
+            description: 'Standard assistant configuration',
+            author: 'System',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            version: '1.0.0',
+            systemPrompt: 'You are a helpful assistant.',
+            enabledMcps: [
+              {
+                name: 'filesystem',
+                enabledTools: [],
+                enabledResources: [],
+                enabledPrompts: [],
+              },
+            ],
+            llmBridgeName: 'openai',
+            llmBridgeConfig: { bridgeId: 'openai', model: 'gpt-4' },
+            status: 'active',
+            usageCount: 0,
+            knowledgeDocuments: 0,
+            knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 },
+            category: ['general'],
+          } satisfies Preset);
+
+      const preset: ReadonlyPreset = presetSource;
+
+      const nowIso = new Date().toISOString();
+      const agent: MockAgentMetadata = {
         id: crypto.randomUUID(),
-        name: input.name || 'New Agent',
-        description: input.description || '',
-        status: input.status || 'active',
-        icon: input.icon || '🤖',
-        keywords: input.keywords || [],
-        preset: {
-          id: 'preset-1',
-          name: 'Default Assistant',
-          description: 'Standard assistant configuration',
-          author: 'System',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          version: '1.0.0',
-          systemPrompt: 'You are a helpful assistant.',
-          enabledMcps: ['filesystem'],
-          llmBridgeName: 'openai',
-          llmBridgeConfig: { model: 'gpt-4' },
-          status: 'active',
-          usageCount: 0,
-          knowledgeDocuments: 0,
-          knowledgeStats: {
-            indexed: 0,
-            vectorized: 0,
-            totalSize: 0,
-          },
-          category: ['general'],
-        },
-        presetId: input.presetId || 'preset-1',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        name: input.name ?? 'New Agent',
+        description: input.description ?? '',
+        status: input.status ?? ('active' as AgentStatus),
+        icon: input.icon ?? '🤖',
+        keywords: Array.from(input.keywords ?? []),
+        preset,
+        presetId: input.presetId ?? preset.id,
+        createdAt: nowIso,
+        updatedAt: nowIso,
         sessionCount: 0,
         usageCount: 0,
+        lastUsed: new Date(),
       };
+
+      this.agents = [...this.agents, agent];
+      return agent;
     });
 
     this.handlers.set('agent.get-metadata', async (data: unknown) => {
-      const agentId = data as string;
-      return {
-        id: agentId,
-        name: 'Assistant',
-        description: 'General purpose assistant',
-        status: 'active',
-        icon: '🤖',
-        keywords: ['general', 'assistant', 'helpful'],
-        preset: {
-          id: 'preset-1',
-          name: 'Default Assistant',
-          description: 'Standard assistant configuration',
-          author: 'System',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          version: '1.0.0',
-          systemPrompt: 'You are a helpful assistant.',
-          enabledMcps: ['filesystem'],
-          llmBridgeName: 'openai',
-          llmBridgeConfig: { model: 'gpt-4' },
-          status: 'active',
-          usageCount: 15,
-          knowledgeDocuments: 0,
-          knowledgeStats: {
-            indexed: 0,
-            vectorized: 0,
-            totalSize: 0,
-          },
-          category: ['general'],
-        },
-        presetId: 'preset-1',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        sessionCount: 3,
-        usageCount: 15,
-        lastUsed: new Date().toISOString(),
-      };
+      const agentId = typeof data === 'string' ? data : undefined;
+      if (!agentId) {
+        return null;
+      }
+      return this.agents.find((agent) => agent.id === agentId) ?? null;
     });
 
     this.handlers.set('agent.update', async (data: unknown) => {
       const input = data as { agentId: string; patch: Partial<AgentMetadata> };
-      return {
-        id: input.agentId,
-        name: input.patch.name || 'Updated Agent',
-        description: input.patch.description || 'Updated description',
-        status: (input.patch.status as AgentStatus) || 'active',
-        icon: input.patch.icon || '🤖',
-        keywords: input.patch.keywords || ['general', 'assistant'],
-        preset: {
-          id: 'preset-1',
-          name: 'Default Assistant',
-          description: 'Standard assistant configuration',
-          author: 'System',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          version: '1.0.0',
-          systemPrompt: 'You are a helpful assistant.',
-          enabledMcps: ['filesystem'],
-          llmBridgeName: 'openai',
-          llmBridgeConfig: { model: 'gpt-4' },
-          status: 'active',
-          usageCount: 25,
-          knowledgeDocuments: 0,
-          knowledgeStats: {
-            indexed: 0,
-            vectorized: 0,
-            totalSize: 0,
-          },
-          category: ['general'],
-        },
-        presetId: 'preset-1', // Note: presetId not in AgentMetadata
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
+      const index = this.agents.findIndex((agent) => agent.id === input.agentId);
+      if (index === -1) {
+        throw new Error(`Agent not found: ${input.agentId}`);
+      }
+      const existing = this.agents[index];
+      const updated: MockAgentMetadata = {
+        ...existing,
+        ...input.patch,
+        keywords: input.patch.keywords ? Array.from(input.patch.keywords) : existing.keywords,
+        preset: input.patch.preset
+          ? { ...existing.preset, ...input.patch.preset }
+          : existing.preset,
         updatedAt: new Date().toISOString(),
-        sessionCount: 5,
-        usageCount: 25,
       };
+      this.agents = [...this.agents.slice(0, index), updated, ...this.agents.slice(index + 1)];
+      return updated;
     });
 
     this.handlers.set('agent.delete', async (data: unknown) => {
@@ -221,7 +317,7 @@ export class MockRpcTransport implements RpcClient {
         id: agentId,
         name: 'Deleted Agent',
         description: 'This agent has been deleted',
-        status: 'inactive',
+        status: 'inactive' as AgentStatus,
         icon: '❌',
         keywords: ['deleted'],
         preset: {
@@ -245,13 +341,14 @@ export class MockRpcTransport implements RpcClient {
             totalSize: 0,
           },
           category: [],
-        },
+        } satisfies Preset,
         presetId: 'preset-1',
         createdAt: new Date(Date.now() - 86400000).toISOString(),
         updatedAt: new Date().toISOString(),
+        lastUsed: new Date(),
         sessionCount: 0,
         usageCount: 0,
-      };
+      } satisfies MockAgentMetadata;
     });
 
     this.handlers.set('agent.chat', async (data: unknown) => {
@@ -493,14 +590,14 @@ export class MockRpcTransport implements RpcClient {
         {
           id: 'filesystem',
           name: 'Filesystem',
-          description: 'Access to local filesystem',
-          status: 'active',
+          description: 'Access to the local filesystem',
+          status: 'connected',
         },
         {
           id: 'git',
           name: 'Git',
           description: 'Git repository operations',
-          status: 'active',
+          status: 'connected',
         },
       ];
     });

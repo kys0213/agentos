@@ -2,7 +2,6 @@ import type {
   AgentStatus,
   CreateAgentMetadata,
   McpConfig,
-  Preset,
   ReadonlyAgentMetadata,
 } from '@agentos/core';
 
@@ -14,7 +13,6 @@ export type AppSection =
   | 'dashboard'
   | 'chat'
   | 'subagents'
-  | 'presets'
   | 'models'
   | 'tools'
   | 'toolbuilder'
@@ -28,8 +26,6 @@ export type AppSection =
 export interface UseAppNavigationReturn {
   // 상태
   activeSection: AppSection;
-  selectedPreset: Preset | null;
-  creatingPreset: boolean;
   creatingMCPTool: boolean;
   creatingAgent: boolean;
   creatingCustomTool: boolean;
@@ -37,13 +33,9 @@ export interface UseAppNavigationReturn {
   // 액션들
   setActiveSection: (section: AppSection) => void;
   handleBackToChat: () => void;
-  handleSelectPreset: (preset: Preset) => void;
-  handleBackToPresets: () => void;
   handleBackToTools: () => void;
   handleBackToAgents: () => void;
   handleBackToToolBuilder: () => void;
-  handleStartCreatePreset: () => void;
-  handleStartCreateMCPTool: () => void;
   handleStartCreateAgent: () => void;
   handleStartCreateCustomTool: () => void;
 

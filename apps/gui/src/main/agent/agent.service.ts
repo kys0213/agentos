@@ -5,63 +5,84 @@ import type {
   AgentService,
   CreateAgentMetadata,
   CursorPaginationResult,
+  MessageHistory,
 } from '@agentos/core';
 import { Inject, Injectable } from '@nestjs/common';
 import type { Message, UserMessage } from 'llm-bridge-spec';
 import { AGENT_SERVICE_TOKEN } from '../common/agent/constants';
 import { AgentEventBridge } from './events/agent-event-bridge';
 import { ChatService } from '../chat/chat.service';
+import { MultiAgentCoordinator } from './multi-agent-coordinator';
 
 @Injectable()
 export class AgentSessionService {
+  private readonly coordinator: MultiAgentCoordinator;
+
   constructor(
     @Inject(AGENT_SERVICE_TOKEN) private readonly agentService: AgentService,
     private readonly events: AgentEventBridge,
     private readonly chatService: ChatService
-  ) {}
+  ) {
+    this.coordinator = new MultiAgentCoordinator(this.agentService);
+  }
 
   async chat(
     agentId: string,
     messages: UserMessage[],
-    options?: AgentExecuteOptions
+    options?: AgentExecuteOptions,
+    mentionedAgentIds?: string[]
   ): Promise<AgentChatResult> {
-    // 활성 브릿지 있으면 SimpleAgent, 없으면 폴백 에코
-    const agent = await this.agentService.getAgent(agentId);
+    const normalizedMentions = Array.from(
+      new Set(
+        (mentionedAgentIds ?? []).filter(
+          (id): id is string => typeof id === 'string' && id.length > 0
+        )
+      )
+    );
 
-    if (!agent) {
-      throw new Error(`Agent not found: ${agentId}`);
-    }
+    const coordinatorResult = await this.coordinator.execute({
+      primaryAgentId: agentId,
+      messages,
+      mentionedAgentIds: normalizedMentions,
+      options,
+    });
 
-    const result = await agent.chat(messages, options);
+    const aggregatedMessages: Message[] = [];
 
-    // ChatService에 메시지 저장
     try {
-      // 에이전트 메타데이터 조회
-      const agentMetadata = await agent.getMetadata();
+      for (const exec of coordinatorResult.executions) {
+        for (let i = 0; i < exec.result.messages.length; i++) {
+          const baseMessage = exec.result.messages[i];
+          aggregatedMessages.push(baseMessage);
 
-      // 모든 메시지를 ChatService에 저장
-      for (let i = 0; i < result.messages.length; i++) {
-        const message = result.messages[i];
-        const messageHistory = {
-          ...message,
-          messageId: `${result.sessionId}-${Date.now()}-${i}`,
-          createdAt: new Date(),
-          agentMetadata,
-        };
-        await this.chatService.appendMessageToSession(result.sessionId, agentId, messageHistory);
+          const messageHistory: MessageHistory = {
+            ...baseMessage,
+            messageId: `${exec.result.sessionId}-${exec.metadata.id}-${Date.now()}-${i}`,
+            createdAt: new Date(),
+            agentMetadata: exec.metadata,
+          };
+
+          await this.chatService.appendMessageToSession(
+            coordinatorResult.sessionId,
+            agentId,
+            messageHistory
+          );
+        }
+
+        const last: Message | undefined = exec.result.messages[exec.result.messages.length - 1];
+        if (last) {
+          this.events.publishSessionMessage(exec.result.sessionId, last);
+        }
       }
     } catch (error) {
       console.error('Failed to save messages to ChatService:', error);
       // 메시지 저장 실패는 전체 chat 실패로 이어지지 않도록 함
     }
 
-    // 스트림 브로드캐스트: 어시스턴트 메시지 이벤트 발행
-    const last: Message | undefined = result.messages[result.messages.length - 1];
-    if (last) {
-      this.events.publishSessionMessage(result.sessionId, last);
-    }
-
-    return result;
+    return {
+      sessionId: coordinatorResult.sessionId,
+      messages: aggregatedMessages,
+    };
   }
 
   async endSession(agentId: string, sessionId: string): Promise<void> {

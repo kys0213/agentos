@@ -127,6 +127,8 @@ test('idle agent requires hint mention to be included', async () => {
   expect(out1.agents.map((a) => a.id)).toEqual(['a1']);
 
   // with hint matching idle name → both included, but active can still rank higher on tie rules
-  const out2 = await router.route({ text: 'hi', hints: ['beta'] }, [active, idle], { topK: 5 });
+  const out2 = await router.route({ text: 'hi', routingHints: ['beta'] }, [active, idle], {
+    topK: 5,
+  });
   expect(out2.agents.map((a) => a.id)).toContain('a2');
 });

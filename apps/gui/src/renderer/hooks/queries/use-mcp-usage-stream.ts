@@ -7,7 +7,7 @@ export function useMcpUsageStream() {
 
   useEffect(() => {
     const svc = ServiceContainer.get('mcpUsageLog');
-    if (!svc) {
+    if (!svc || typeof svc.subscribeToUsageUpdates !== 'function') {
       return;
     }
     let close: (() => void) | undefined;

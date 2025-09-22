@@ -17,11 +17,12 @@ export class GeneratedAgentController {
     @Payload(new ZodValidationPipe(C.methods['chat']['payload']))
     payload: z.input<(typeof C.methods)['chat']['payload']>
   ): Promise<z.output<(typeof C.methods)['chat']['response']>> {
-    const { agentId, messages, options } = payload;
+    const { agentId, messages, options, mentionedAgentIds } = payload;
     return this.svc.chat(
       agentId,
       messages as unknown as UserMessage[],
-      options as unknown as AgentExecuteOptions
+      options as unknown as AgentExecuteOptions,
+      mentionedAgentIds
     );
   }
 

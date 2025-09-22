@@ -1,4 +1,3 @@
-import type { Preset } from '@agentos/core';
 import type { AppSection } from '../stores/store-types';
 
 /**
@@ -6,17 +5,11 @@ import type { AppSection } from '../stores/store-types';
  * Utility function for determining the header title in management mode
  */
 export const getPageTitle = (
-  creatingPreset: boolean,
   creatingMCPTool: boolean,
   creatingAgent: boolean,
   creatingCustomTool: boolean,
-  selectedPreset: Preset | null,
   activeSection: AppSection
 ): string => {
-  if (creatingPreset) {
-    return 'Create Preset';
-  }
-
   if (creatingMCPTool) {
     return 'Create MCP Tool';
   }
@@ -29,15 +22,9 @@ export const getPageTitle = (
     return 'Create Custom Tool';
   }
 
-  if (selectedPreset) {
-    return selectedPreset.name;
-  }
-
   switch (activeSection) {
     case 'dashboard':
       return 'Dashboard';
-    case 'presets':
-      return 'Presets';
     case 'subagents':
       return 'Agents';
     case 'models':

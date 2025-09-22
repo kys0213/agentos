@@ -48,7 +48,7 @@ The `MockRpcTransport` class (`src/renderer/rpc/mock-rpc-transport.ts`) provides
 
 #### Preset Service
 
-- `preset.list` - Returns available presets
+- `preset.list` - Returns available presets (사용자 UI에서는 노출되지 않지만 템플릿/Export 용도로 사용)
 - `preset.get` - Returns preset details
 - `preset.create` - Creates new preset
 - `preset.update` - Updates preset

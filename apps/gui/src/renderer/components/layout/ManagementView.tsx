@@ -9,15 +9,12 @@ import { Button } from '../ui/button';
 import Sidebar from './Sidebar';
 
 // Import new design hooks like design/App.tsx
-import { CreatePreset, McpConfig } from '@agentos/core';
+import type { McpConfig, Preset } from '@agentos/core';
 import { useAppData } from '../../hooks/useAppData';
 import { useChatState } from '../../hooks/useChatState';
 import { UseAppNavigationReturn } from '../../stores/store-types';
 import { getPageTitle } from '../../utils/appUtils';
 import { MCPToolCreate } from '../mcp/MCPToolCreate';
-import { PresetCreate } from '../preset/PresetCreate';
-import PresetDetailContainer from '../preset/PresetDetailContainer';
-import PresetManagerContainer from '../preset/PresetManagerContainer';
 import { RACPManager } from '../racp/RACPManager';
 import { SettingsManager } from '../settings/SettingManager';
 import SubAgentCreateContainer from '../sub-agent/SubAgentCreateContainer';
@@ -34,25 +31,18 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
   // Use hooks directly like design/App.tsx
   const chatState = useChatState();
   const appData = useAppData();
-  const { data: presets = [] } = usePresets();
-  const createPresetMutation = useCreatePreset();
+  const emptyPresets: Preset[] = [];
 
   const {
     activeSection,
-    selectedPreset,
-    creatingPreset,
     creatingMCPTool,
     creatingAgent,
     creatingCustomTool,
     setActiveSection,
     handleBackToChat,
-    handleSelectPreset,
-    handleBackToPresets,
     handleBackToTools,
     handleBackToAgents,
     handleBackToToolBuilder,
-    handleStartCreatePreset,
-    // handleStartCreateMCPTool is not used here
     handleStartCreateAgent,
     handleStartCreateCustomTool,
     isInDetailView,
@@ -71,22 +61,10 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     currentAgents,
     showEmptyState,
     setShowEmptyState,
-    // handleUpdateAgentStatus not used in this view
     handleCreateMCPTool,
-    // handleCreateAgent not used in this view
     handleCreateCustomTool,
-    // handleUpdatePreset,
-    // handleDeletePreset,
-    // mentionable/active agent helpers not used here
     reloadAgents,
   } = appData;
-
-  // Create handlers that combine navigation and data operations (like design/App.tsx)
-  const onCreatePreset = async (newPreset: CreatePreset) => {
-    const preset = await createPresetMutation.mutateAsync(newPreset);
-    handleSelectPreset(preset);
-    return preset;
-  };
 
   const onCreateMCPTool = async (mcpConfig: McpConfig) => {
     const tool = await handleCreateMCPTool(mcpConfig);
@@ -114,10 +92,6 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
 
   const renderManagementContent = () => {
     // Handle creation modes first (like design/App.tsx)
-    if (creatingPreset) {
-      return <PresetCreate onBack={handleBackToPresets} onCreate={onCreatePreset} />;
-    }
-
     if (creatingMCPTool) {
       return <MCPToolCreate onBack={handleBackToTools} onCreate={onCreateMCPTool} />;
     }
@@ -138,11 +112,6 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
       return <ToolBuilderCreate onBack={handleBackToToolBuilder} onCreate={onCreateCustomTool} />;
     }
 
-    // Handle preset detail view
-    if (selectedPreset) {
-      return <PresetDetailContainer presetId={selectedPreset.id} onBack={handleBackToPresets} />;
-    }
-
     // Handle main section routing (like design/App.tsx)
     switch (activeSection) {
       case 'chat':
@@ -153,14 +122,12 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
         return (
           <Dashboard
             onOpenChat={handleOpenChat}
-            presets={presets}
+            presets={emptyPresets}
             currentAgents={currentAgents}
             loading={false}
             onCreateAgent={handleStartCreateAgent}
           />
         );
-      case 'presets':
-        return <PresetManagerContainer onStartCreatePreset={handleStartCreatePreset} />;
       case 'subagents':
         // Always render the React Query–backed container; it handles loading/empty states
         return <SubAgentManagerContainer onCreateAgent={handleStartCreateAgent} />;
@@ -183,14 +150,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     }
   };
 
-  const pageTitle = getPageTitle(
-    creatingPreset,
-    creatingMCPTool,
-    creatingAgent,
-    creatingCustomTool,
-    selectedPreset,
-    activeSection
-  );
+  const pageTitle = getPageTitle(creatingMCPTool, creatingAgent, creatingCustomTool, activeSection);
 
   return (
     <div className="flex h-screen bg-background">
@@ -281,5 +241,4 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
   );
 };
 
-import { usePresets, useCreatePreset } from '../../hooks/queries/use-presets';
 export default ManagementView;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { UseChatStateReturn } from '../stores/store-types';
-import { ReadonlyAgentMetadata } from '@agentos/core';
+import type { ReadonlyAgentMetadata } from '@agentos/core';
 
 /**
  * Chat state management hook

@@ -5,6 +5,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { openManagementView } from './utils/navigation';
 
 test.describe('Web GUI Basic Functionality', () => {
   test.beforeEach(async ({ page }) => {
@@ -24,14 +25,28 @@ test.describe('Web GUI Basic Functionality', () => {
     expect(errors).toHaveLength(0);
   });
 
-  test('should render initial chat welcome screen', async ({ page }) => {
-    await expect(page.getByText('Welcome to AgentOS')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Create First Agent' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Explore Features' })).toBeVisible();
+  test('should render chat layout with management entry points', async ({ page }) => {
+    const navDashboard = page.getByTestId('nav-dashboard');
+    const chatInput = page.getByPlaceholder(/Type a message/i);
+    await Promise.race([
+      navDashboard.first().waitFor({ state: 'visible', timeout: 5000 }),
+      chatInput.first().waitFor({ state: 'visible', timeout: 5000 }),
+    ]).catch(() => {});
+
+    if (await navDashboard.count()) {
+      await expect(navDashboard.first()).toBeVisible();
+    } else {
+      await expect(chatInput.first()).toBeVisible();
+      const controlButton = page.getByRole('button', {
+        name: /(Manage|Manage Agents|Explore Features)/i,
+      });
+      await expect(controlButton.first()).toBeVisible();
+    }
   });
 
-  test('Explore Features navigates to Dashboard', async ({ page }) => {
-    await page.getByRole('button', { name: 'Explore Features' }).click();
-    await expect(page.getByText('Dashboard')).toBeVisible();
+  test('Manage button navigates to Dashboard', async ({ page }) => {
+    await openManagementView(page);
+    await expect(page.getByTestId('nav-dashboard').first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Dashboard' }).first()).toBeVisible();
   });
 });

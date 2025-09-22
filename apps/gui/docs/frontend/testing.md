@@ -36,7 +36,7 @@ await MockIpcUtils.addBridge(channel, { name: 'mock-bridge' } as any);
 ```ts
 import { Services } from '@/renderer/bootstrap';
 
-const presets = await Services.getPreset().getAllPresets();
+const agents = await Services.getAgent().getAllAgents();
 await Services.getMcp().connectMcp({ name: 'mcp-x', type: 'streamableHttp' } as any);
 const usageLogs = await Services.getMcpUsageLog().getAllUsageLogs();
 ```
@@ -50,6 +50,21 @@ pnpm --filter @agentos/apps-gui typecheck
 ```
 
 테스트 프레임워크(Jest/Vitest)를 사용하는 경우, 각 테스트에서 `bootstrap(new MockIpcChannel())`으로 독립 컨테이너를 구성하세요.
+
+## Renderer 커버리지 가이드라인
+
+- **커버리지 목표**
+  - Line ≥ 70%, Branch ≥ 55% (`pnpm --filter @agentos/apps-gui test -- --coverage`로 측정)
+  - 이벤트 기반 UI(스트림/소켓 등)는 Line 80% 이상을 권장
+- **필수 시나리오**
+  1. 데이터 요청 흐름: Dashboard, Agent Wizard 등 주요 패널의 로딩/성공/에러 상태
+  2. 이벤트 스트림: MCP Tools Manager `usage.events`, SubAgent 실시간 상태 반영
+  3. IPC 오류 처리: ServiceContainer 의존성이 비어 있을 때의 폴백 UI
+  4. 사용성 검증: 등록/생성 다이얼로그가 유효성 검사와 캐시 무효화를 수행하는지 확인
+- **운영 원칙**
+  - 새 UI 도입 시 위 4개 축 가운데 최소 1개 이상을 커버하는 테스트를 작성합니다.
+  - `MockRpcTransport`/`McpUsageRpcService` 등 공용 목 더블을 재사용해 결정적 시나리오를 구성합니다.
+  - 커버리지 리포트는 CI에서 참조하되, 로컬에서는 변경된 워크스페이스에 집중합니다 (`pnpm test --filter renderer -- --runInBand --coverage`).
 
 ---
 

@@ -6,60 +6,98 @@ import { z } from 'zod';
 export class McpClient {
   constructor(private readonly transport: RpcClient) {}
 
-  async getTool(payload: z.input<typeof C.methods['getTool']['payload']>): Promise<z.output<typeof C.methods['getTool']['response']>> {
+  async getTool(
+    payload: z.input<(typeof C.methods)['getTool']['payload']>
+  ): Promise<z.output<(typeof C.methods)['getTool']['response']>> {
     const parsedPayload = C.methods['getTool'].payload.parse(payload);
     const resp = await this.transport.request<unknown>(C.methods['getTool'].channel, parsedPayload);
     return C.methods['getTool'].response.parse(resp);
   }
 
-  async invokeTool(payload: z.input<typeof C.methods['invokeTool']['payload']>): Promise<z.output<typeof C.methods['invokeTool']['response']>> {
+  async invokeTool(
+    payload: z.input<(typeof C.methods)['invokeTool']['payload']>
+  ): Promise<z.output<(typeof C.methods)['invokeTool']['response']>> {
     const parsedPayload = C.methods['invokeTool'].payload.parse(payload);
-    const resp = await this.transport.request<unknown>(C.methods['invokeTool'].channel, parsedPayload);
+    const resp = await this.transport.request<unknown>(
+      C.methods['invokeTool'].channel,
+      parsedPayload
+    );
     return C.methods['invokeTool'].response.parse(resp);
   }
 
-  async usage_getLogs(payload: z.input<typeof C.methods['usage.getLogs']['payload']>): Promise<z.output<typeof C.methods['usage.getLogs']['response']>> {
+  async usage_getLogs(
+    payload: z.input<(typeof C.methods)['usage.getLogs']['payload']>
+  ): Promise<z.output<(typeof C.methods)['usage.getLogs']['response']>> {
     const parsedPayload = C.methods['usage.getLogs'].payload.parse(payload);
-    const resp = await this.transport.request<unknown>(C.methods['usage.getLogs'].channel, parsedPayload);
+    const resp = await this.transport.request<unknown>(
+      C.methods['usage.getLogs'].channel,
+      parsedPayload
+    );
     return C.methods['usage.getLogs'].response.parse(resp);
   }
 
-  async usage_getStats(payload: z.input<typeof C.methods['usage.getStats']['payload']>): Promise<z.output<typeof C.methods['usage.getStats']['response']>> {
+  async usage_getStats(
+    payload: z.input<(typeof C.methods)['usage.getStats']['payload']>
+  ): Promise<z.output<(typeof C.methods)['usage.getStats']['response']>> {
     const parsedPayload = C.methods['usage.getStats'].payload.parse(payload);
-    const resp = await this.transport.request<unknown>(C.methods['usage.getStats'].channel, parsedPayload);
+    const resp = await this.transport.request<unknown>(
+      C.methods['usage.getStats'].channel,
+      parsedPayload
+    );
     return C.methods['usage.getStats'].response.parse(resp);
   }
 
-  async usage_getHourlyStats(payload: z.input<typeof C.methods['usage.getHourlyStats']['payload']>): Promise<z.output<typeof C.methods['usage.getHourlyStats']['response']>> {
+  async usage_getHourlyStats(
+    payload: z.input<(typeof C.methods)['usage.getHourlyStats']['payload']>
+  ): Promise<z.output<(typeof C.methods)['usage.getHourlyStats']['response']>> {
     const parsedPayload = C.methods['usage.getHourlyStats'].payload.parse(payload);
-    const resp = await this.transport.request<unknown>(C.methods['usage.getHourlyStats'].channel, parsedPayload);
+    const resp = await this.transport.request<unknown>(
+      C.methods['usage.getHourlyStats'].channel,
+      parsedPayload
+    );
     return C.methods['usage.getHourlyStats'].response.parse(resp);
   }
 
-  async usage_clear(payload: z.input<typeof C.methods['usage.clear']['payload']>): Promise<z.output<typeof C.methods['usage.clear']['response']>> {
+  async usage_clear(
+    payload: z.input<(typeof C.methods)['usage.clear']['payload']>
+  ): Promise<z.output<(typeof C.methods)['usage.clear']['response']>> {
     const parsedPayload = C.methods['usage.clear'].payload.parse(payload);
-    const resp = await this.transport.request<unknown>(C.methods['usage.clear'].channel, parsedPayload);
+    const resp = await this.transport.request<unknown>(
+      C.methods['usage.clear'].channel,
+      parsedPayload
+    );
     return C.methods['usage.clear'].response.parse(resp);
   }
 
-  async *usage_eventsStream(): AsyncGenerator<z.output<typeof C.methods['usage.events']['streamResponse']>, void, unknown> {
+  async *usage_eventsStream(): AsyncGenerator<
+    z.output<(typeof C.methods)['usage.events']['streamResponse']>,
+    void,
+    unknown
+  > {
     if (!this.transport.stream) return;
     for await (const ev of this.transport.stream<unknown>(C.methods['usage.events'].channel)) {
       try {
         yield C.methods['usage.events'].streamResponse.parse(ev);
       } catch {
         // be tolerant with legacy emit shapes in tests
-        yield ev as z.output<typeof C.methods['usage.events']['streamResponse']>;
+        yield ev as z.output<(typeof C.methods)['usage.events']['streamResponse']>;
       }
     }
   }
-  usage_eventsOn(handler: (ev: z.output<typeof C.methods['usage.events']['streamResponse']>) => void, onError?: (e: unknown) => void): CloseFn {
-    return this.transport.on<unknown>(C.methods['usage.events'].channel, (payload) => {
-      try {
-        handler(C.methods['usage.events'].streamResponse.parse(payload));
-      } catch {
-        handler(payload as z.output<typeof C.methods['usage.events']['streamResponse']>);
-      }
-    }, onError);
+  usage_eventsOn(
+    handler: (ev: z.output<(typeof C.methods)['usage.events']['streamResponse']>) => void,
+    onError?: (e: unknown) => void
+  ): CloseFn {
+    return this.transport.on<unknown>(
+      C.methods['usage.events'].channel,
+      (payload) => {
+        try {
+          handler(C.methods['usage.events'].streamResponse.parse(payload));
+        } catch {
+          handler(payload as z.output<(typeof C.methods)['usage.events']['streamResponse']>);
+        }
+      },
+      onError
+    );
   }
 }

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { Send, AtSign } from 'lucide-react';
-import { AgentMetadata } from '@agentos/core';
+import type { AgentMetadata } from '@agentos/core';
 
 interface MessageInputWithMentionsProps {
   mentionableAgents: AgentMetadata[];
@@ -107,9 +107,7 @@ export function MessageInputWithMentions({
     setShowMentions(false);
 
     // Add to mentioned agents if not already included
-    if (!mentionedAgents.find((a) => a.id === agent.id)) {
-      setMentionedAgents((prev) => [...prev, agent]);
-    }
+    setMentionedAgents([agent]);
 
     // Focus back to textarea
     textareaRef.current?.focus();
@@ -135,7 +133,9 @@ export function MessageInputWithMentions({
         )
         .filter((agent) => agent !== undefined);
 
-      onSendMessage(message.trim(), currentMentions);
+      const firstMention = currentMentions[0];
+
+      onSendMessage(message.trim(), firstMention ? [firstMention] : []);
       setMessage('');
       setMentionedAgents([]);
       setShowMentions(false);
@@ -239,14 +239,12 @@ export function MessageInputWithMentions({
       {mentionedAgents.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">
           <span className="text-xs text-muted-foreground">Mentioned:</span>
-          {mentionedAgents.map((agent) => (
-            <span
-              key={agent.id}
-              className="text-xs bg-accent text-accent-foreground px-2 py-1 rounded"
-            >
-              @{agent.name}
-            </span>
-          ))}
+          <span
+            key={mentionedAgents[0].id}
+            className="text-xs bg-accent text-accent-foreground px-2 py-1 rounded"
+          >
+            @{mentionedAgents[0].name}
+          </span>
         </div>
       )}
     </div>

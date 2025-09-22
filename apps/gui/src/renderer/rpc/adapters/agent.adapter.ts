@@ -9,9 +9,15 @@ export class AgentServiceAdapter {
   async chat(
     agentId: string,
     messages: z.input<(typeof C.methods)['chat']['payload']>['messages'],
-    options?: z.input<(typeof C.methods)['chat']['payload']>['options']
+    options?: z.input<(typeof C.methods)['chat']['payload']>['options'],
+    context?: { mentionedAgentIds?: string[] }
   ): Promise<z.output<(typeof C.methods)['chat']['response']>> {
-    return this.client.chat({ agentId, messages, options });
+    return this.client.chat({
+      agentId,
+      messages,
+      options,
+      mentionedAgentIds: context?.mentionedAgentIds,
+    });
   }
 
   async endSession(agentId: string, sessionId: string): Promise<void> {

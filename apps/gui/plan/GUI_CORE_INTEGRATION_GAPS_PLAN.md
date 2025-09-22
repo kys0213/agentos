@@ -1,5 +1,10 @@
 # GUI ↔ Core Integration Gaps Plan
 
+Status: In Progress
+Last Updated: 2025-09-19
+
+> 후속 계획: 주요 잔여 작업은 `GUI_CORE_INTEGRATION_PHASE2_PLAN.md`에서 계속 추적합니다.
+
 본 문서는 현 GUI 기능 중 Core 스펙/계약과 불일치하거나 목/로컬 저장소로 대체된 부분을 식별하고, 통합 방향과 TODO를 정의합니다. 목적은 SSOT(계약/문서) 우선으로 빈틈을 메우고, UX 흐름이 실제 데이터와 일치하도록 하는 것입니다.
 
 **최종 업데이트**:
@@ -12,14 +17,15 @@
   - ChatService 구현 (commit `d325735`, `ef67672`)
   - useChatHistory Core API 연동 (commit `c87c0c9`)
   - AI Config 하드코딩 제거 및 동적 Bridge 설정 (commit `681fe96`)
-  
- 2025-09-14 진행 현황 추가:
- - GUI monorepo 그린 베이스라인 확보: typecheck/build/lint/test 모두 통과 (commit `0df4a4a`)
- - Vitest 멀티 프로젝트 구성 검증 및 스크립트 정리(렌더러 jsdom, 메인 node)
- - Knowledge 계약/메인 서비스/렌더러 어댑터 스켈레톤 연결 및 테스트 보강
- - KnowledgeBaseManager 일부 RPC 연동 착수: 목록/통계는 RPC 기반으로 조회
- - MCP Tool Manager 폴백 데이터 제거 및 빈 상태/에러 처리 UX 반영
- - Dashboard 통계 훅(useDashboardStats) 구현 및 테스트 추가, 초기 UI 연동 완료(하드코딩 제거 진행 중)
+
+2025-09-14 진행 현황 추가:
+
+- GUI monorepo 그린 베이스라인 확보: typecheck/build/lint/test 모두 통과 (commit `0df4a4a`)
+- Vitest 멀티 프로젝트 구성 검증 및 스크립트 정리(렌더러 jsdom, 메인 node)
+- Knowledge 계약/메인 서비스/렌더러 어댑터 스켈레톤 연결 및 테스트 보강
+- KnowledgeBaseManager 일부 RPC 연동 착수: 목록/통계는 RPC 기반으로 조회
+- MCP Tool Manager 폴백 데이터 제거 및 빈 상태/에러 처리 UX 반영
+- Dashboard 통계 훅(useDashboardStats) 구현 및 테스트 추가, 초기 UI 연동 완료(하드코딩 제거 진행 중)
 
 ## Requirements
 
@@ -68,14 +74,14 @@
 - [x] CI에서 `pnpm test`로 두 프로젝트 동시 실행 보장
 - [ ] main 레이어에서 Electron 의존 모듈은 필요한 곳에 한해 mock 또는 경계 어댑터로 대체
 - [ ] renderer 테스트 커버리지 기준 수립 및 주요 시나리오(프리셋 임포트, MCP 사용량 스트림, 대시보드) 보장
-  (진행: MCP usage 이벤트/대시보드 갱신, Knowledge 검색/미리보기/본문 로드 테스트 추가)
+      (진행: MCP usage 이벤트/대시보드 갱신, Knowledge 검색/미리보기/본문 로드 테스트 추가)
 
 ### 사용 시나리오
 
 - 사용자는 4단계 마법사를 통해 에이전트를 생성한다 (Overview → Category → AI Config → Settings).
 - 사용자는 Category 단계에서 6개 카테고리 중 선택하면 자동으로 관련 키워드가 설정된다.
 - 사용자는 AI Config 단계에서 LLM 모델, 시스템 프롬프트, 파라미터, MCP 도구를 설정한다.
-- 사용자는 에이전트를 export할 때 Preset 형식으로 내보내고, import할 때 Preset을 파싱하여 에이전트를 생성한다.
+- 사용자는 에이전트를 export할 때 Preset 형식으로 내보내고, import할 때 Preset을 파싱하여 에이전트를 생성한다. (UI 용어는 Agent 기준으로 유지)
 - 사용자는 MCP 도구 목록을 확인하고(메타데이터), 연결/해제/설정을 관리한다. 사용량/이벤트 스트림이 대시보드에 반영된다.
 - 사용자는 에이전트별 지식 문서를 업로드/편집하고, 인덱싱/벡터화 진행 상황과 통계를 확인한다.
 - 사용자는 채팅 히스토리에서 Pinned/Older 섹션으로 구분된 대화 목록을 확인한다.
@@ -360,6 +366,20 @@ interface BridgeManifest {
 
 ## 작업 항목
 
+### 브랜치 전략
+
+- 기준 브랜치: `feature/gui-core-integration-epic`
+  - `main`에서 분기하고, 모든 후속 작업 브랜치의 PR 대상이 된다.
+- 하위 작업 브랜치(예시)
+  - `feature/gui-multi-agent-orchestration`
+  - `feature/gui-dashboard-realtime-metrics`
+  - `feature/gui-testing-infra-hardening`
+  - `feature/gui-agent-wizard-completion`
+  - `feature/gui-knowledge-migration`
+  - `feature/gui-category-bridge-alignment`
+  - `feature/gui-tooling-refactor`
+- 각 브랜치는 TODO 완료 단위로 의미 있는 커밋을 작성하고, 완료 후에는 기준 브랜치를 대상으로 PR을 연다.
+
 ### 작업 상태 범례
 
 - ✅ **완료**: 구현 완료
@@ -407,12 +427,13 @@ interface BridgeManifest {
 - [x] 메시지 영속성을 위한 AgentService 연동
 - [x] 타입 안전성 및 에러 처리 구현
 
-### 작업 2: Agent 생성 5단계 마법사
+### 작업 2: Agent 생성 4단계 마법사
 
 **현황**:
 
-- 실제 구현은 5단계: Overview → Category → Preset → AI Config → Settings (`SubAgentCreate.tsx`)
-- AI Config의 하드코딩 제거 및 동적 브릿지/모델 연동은 진행됨
+- 실제 구현은 4단계: Overview → Category → AI Config → Settings (`SubAgentCreate.tsx`)
+- 프리셋 전용 단계는 제거되었으며, 초기 템플릿은 내부 상태로만 유지한다.
+- AI Config의 하드코딩 제거 및 동적 브릿지/모델 연동은 완료됨
 - 설치된 브릿지는 `bridge.list`(ID) + `bridge.get-config` 조합으로 로드하여 모델을 표시함
 
 **디자인 분석 (Figma)**:
@@ -424,10 +445,9 @@ interface BridgeManifest {
 
 **작업 내용**:
 
-- [x] AgentCreate 5단계 마법사 UI 정합성 확인(Overview/Category/Preset/AI Config/Settings)
+- [x] AgentCreate 4단계 마법사 UI 정합성 확인(Overview/Category/AI Config/Settings)
 - [ ] Overview 탭: 기본 정보 입력 폼(검증 포함)
 - [ ] Category 탭: 카테고리 카드 선택 UI (6개 카테고리)
-- [ ] Preset 탭: 프리셋 선택/미리보기(현재 유지, 추후 제거 여부 결정)
 - [x] AI Config 탭: ✅ **부분 완료**
   - [x] 하드코딩된 모델 목록 제거 ✅
   - [x] 브릿지/모델 동적 로딩: `useInstalledBridges`(ID 목록 + 개별 config) 훅 기반 ✅
@@ -435,7 +455,7 @@ interface BridgeManifest {
   - [x] Bridge별 동적 파라미터 UI(현재 공통 파라미터) ✅
   - [x] 시스템 프롬프트 텍스트에어리어(프리셋 systemPrompt 오버라이드) ✅
   - [x] MCP 도구 선택 카드 동적 로딩(선택 결과 preset.enabledMcps 반영) ✅
-- [ ] Settings 탭: 상태 선택 드롭다운
+- [ ] Settings 탭: 상태 선택 카드/드롭다운
 - [x] Export/Import 기능(텍스트 기반) 구현
 
 **테스트**
@@ -445,7 +465,7 @@ interface BridgeManifest {
 - [ ] Import 실패(잘못된 JSON) 에러 표시 테스트
 
 **UX/구현 방침(심플 버전 — Clipboard/입력창 기반)**
-[상세 설계 문서 참조: Wizard Settings Validation & Preview UX](./WIZARD_SETTINGS_VALIDATION_PREVIEW_DESIGN.md)
+[상세 설계 문서 참조: Wizard Settings Validation & Preview UX](../docs/frontend/WIZARD_SETTINGS_VALIDATION_PREVIEW.md)
 
 - Export: “Generate JSON” → 미리보기(TextArea) → “Copy to Clipboard”만 지원(파일 저장은 보류)
   - JSON은 pretty-print(2 spaces) + `schemaVersion: 1` 포함
@@ -457,6 +477,7 @@ interface BridgeManifest {
 - 스키마/검증
   - Agent: name/description/status, preset.name 필수. 선택 필드는 기본값 대입
   - Preset-only JSON도 수용(자동으로 Agent 껍데기에 감싸는 보정 로직 — 기본 name/description 적용)
+    - Export/Import UI는 “Agent” 용어만 노출하고, 프리셋 용어는 JSON 설명에만 남긴다.
 - 제한/보안
   - 입력 길이/크기 제한(예: 1–2MB), XSS 방지를 위한 안전한 렌더링
   - Clipboard 실패 시 안내(권한/브라우저 정책)
@@ -584,11 +605,11 @@ interface BridgeManifest {
 - [x] GUI 전용 카테고리 상수 정의 (GuiAgentCategories)
 - [x] 카테고리 → keywords 매핑 테이블 구현 (GuiCategoryKeywordsMap)
 - [x] SubAgentCreate: 카테고리 선택 시 keywords 자동 설정
-- [ ] SubAgentManager: 카테고리 기반 필터링 (keywords 활용) — UI 구현됨, 단위 테스트 필요
+- [x] SubAgentManager: 카테고리 기반 필터링 (keywords 활용) — UI 구현됨, 단위 테스트 완료 (`SubAgentManager.filter.test.tsx`). 추가 시나리오와 대시보드 연동은 `GUI_CORE_INTEGRATION_PHASE2_PLAN.md`에서 이어서 관리한다.
 
 **테스트**
 
-- [ ] SubAgentManager: 카테고리 선택 시 필터링 결과가 매핑대로 적용되는지 단위 테스트
+- [x] SubAgentManager: 카테고리 선택 시 필터링 결과가 매핑대로 적용되는지 단위 테스트 (`SubAgentManager.filter.test.tsx`)
 
 ### 작업 7: Bridge 등록 UI
 
@@ -605,8 +626,8 @@ interface BridgeManifest {
 
 **테스트**
 
-- [ ] 등록 다이얼로그: 유효/무효 JSON 입력 시 동작(등록/에러 메시지) 테스트
-- [ ] 등록 성공 후 캐시 무효화 호출 여부 검증 테스트
+- [x] 등록 다이얼로그: 유효/무효 JSON 입력 시 동작(등록/에러 메시지) 테스트 (`ModelManager.register.test.tsx`). 후속 UX 개선과 통계 카드 보완은 `GUI_CORE_INTEGRATION_PHASE2_PLAN.md` TODO에서 이어서 추적한다.
+- [x] 등록 성공 후 캐시 무효화 호출 여부 검증 테스트
 
 ### 작업 8: Dashboard 통계 — 실시간 데이터 🟡 **진행 가능** (기존 API 활용)
 
@@ -914,6 +935,7 @@ interface BridgeManifest {
 ## 추가 TODO 정리
 
 ### 2025-09-16 진행 현황 보충
+
 - Playwright MCP 스모크 시나리오 추가: `apps/gui/e2e/mcp-verify.e2e.test.ts`
   - 채팅 → 관리 모드 진입, 대시보드/프리셋/에이전트/MCP 툴 화면 기본 요소 검증
   - SubAgentCreate의 AI Config 탭에서 MCP Tools 섹션 노출 확인
@@ -925,7 +947,7 @@ interface BridgeManifest {
 
 ### 품질 게이트(현재 상태)
 
-- [x] typecheck 통과 (apps/*, packages/*)
+- [x] typecheck 통과 (apps/_, packages/_)
 - [x] build 통과 (GUI 포함)
 - [x] lint 오류 0 (경고는 잔존, 추후 리팩터링)
 - [x] test 통과 (renderer/main 분리 실행)
@@ -1035,9 +1057,9 @@ interface BridgeManifest {
 
 ## 주요 결정사항 (리뷰 반영)
 
-1. **Preset 메뉴 제거**
-   - Agent 생성 시 모든 설정 통합 입력
-   - Export/Import 시에만 Preset 형식 사용
+1. **Preset 메뉴 제거** (완료)
+   - Agent 생성 시 모든 설정을 마법사 4단계에서 통합 입력
+   - Export/Import 시에만 Preset 형식 사용(텍스트 JSON)
 
 2. **GUI/Core 분리 원칙**
    - Pin/Archive: GUI 전용 (localStorage)

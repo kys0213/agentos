@@ -33,6 +33,10 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { useMcpUsageStream } from '../../hooks/queries/use-mcp-usage-stream';
+import type { McpUsageUpdateEvent } from '../../../shared/types/mcp-usage-types';
+
+const MAX_USAGE_LOGS = 100;
 
 /**
  * GUI-specific extension of Core McpToolMetadata
@@ -58,6 +62,7 @@ export function MCPToolsManager() {
   const [tools, setTools] = useState<GuiMcpTool[]>([]);
   const [usageLogs, setUsageLogs] = useState<GuiMcpUsageLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { lastEvent } = useMcpUsageStream();
 
   // Helper function to get icon for category
   const getIconForCategory = (category: string): React.ReactNode => {
@@ -79,6 +84,116 @@ export function MCPToolsManager() {
     }
   };
 
+  const computeId = (raw: Record<string, unknown>, fallbackName: string) =>
+    typeof raw['id'] === 'string'
+      ? (raw['id'] as string)
+      : fallbackName.toLowerCase().replace(/\s+/g, '-');
+
+  const asDate = (value: unknown | undefined): Date | undefined => {
+    if (!value) {
+      return undefined;
+    }
+    if (value instanceof Date) {
+      return value;
+    }
+    if (typeof value === 'string') {
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+    }
+    return undefined;
+  };
+
+  const mapRawMetadata = (raw: Record<string, unknown>): GuiMcpTool => {
+    const name = typeof raw['name'] === 'string' ? (raw['name'] as string) : 'Unknown Tool';
+    const id = computeId(raw, name);
+    const category = typeof raw['category'] === 'string' ? (raw['category'] as string) : 'other';
+    const status =
+      typeof raw['status'] === 'string'
+        ? (raw['status'] as GuiMcpTool['status'])
+        : ('disconnected' as GuiMcpTool['status']);
+    const permissions = Array.isArray(raw['permissions']) ? (raw['permissions'] as string[]) : [];
+    const usageCount = typeof raw['usageCount'] === 'number' ? (raw['usageCount'] as number) : 0;
+
+    return {
+      id,
+      name,
+      description: typeof raw['description'] === 'string' ? (raw['description'] as string) : '',
+      category,
+      status,
+      version: typeof raw['version'] === 'string' ? (raw['version'] as string) : '1.0.0',
+      provider: typeof raw['provider'] === 'string' ? (raw['provider'] as string) : undefined,
+      usageCount,
+      endpoint: typeof raw['endpoint'] === 'string' ? (raw['endpoint'] as string) : undefined,
+      permissions,
+      icon: getIconForCategory(category),
+      lastUsedAt: asDate(raw['lastUsedAt']),
+      config: raw['config'] as McpConfig | undefined,
+    };
+  };
+
+  const normalizeUsageLogs = (logs: GuiMcpUsageLog[]): GuiMcpUsageLog[] =>
+    logs.map((log) => ({
+      ...log,
+      timestamp: log.timestamp instanceof Date ? log.timestamp : new Date(log.timestamp),
+    }));
+
+  const matchesTool = (tool: GuiMcpTool, identifiers: Array<string | undefined>): boolean => {
+    const lowered = identifiers
+      .filter((value): value is string => Boolean(value))
+      .map((value) => value.toLowerCase());
+    if (lowered.length === 0) {
+      return false;
+    }
+    const toolKeys = [tool.id, tool.name].filter(Boolean).map((value) => value.toLowerCase());
+    return lowered.some((value) => toolKeys.includes(value));
+  };
+
+  const applyUsageLoggedEvent = (
+    prevTools: GuiMcpTool[],
+    event: Extract<McpUsageUpdateEvent, { type: 'usage-logged' }>
+  ): GuiMcpTool[] =>
+    prevTools.map((tool) => {
+      if (!matchesTool(tool, [event.newLog.toolId, event.newLog.toolName, event.clientName])) {
+        return tool;
+      }
+      return {
+        ...tool,
+        usageCount: (tool.usageCount ?? 0) + 1,
+        lastUsedAt: event.newLog.timestamp,
+      };
+    });
+
+  const applyMetadataUpdatedEvent = (
+    prevTools: GuiMcpTool[],
+    event: Extract<McpUsageUpdateEvent, { type: 'metadata-updated' }>
+  ): GuiMcpTool[] => {
+    const { metadata } = event;
+    return prevTools.map((tool) => {
+      if (!matchesTool(tool, [metadata.toolId, metadata.toolName, event.clientName])) {
+        return tool;
+      }
+      return {
+        ...tool,
+        status: metadata.status ?? tool.status,
+        usageCount: typeof metadata.usageCount === 'number' ? metadata.usageCount : tool.usageCount,
+        lastUsedAt: asDate(metadata.lastUsedAt) ?? tool.lastUsedAt,
+      };
+    });
+  };
+
+  const applyConnectionChangedEvent = (
+    prevTools: GuiMcpTool[],
+    event: Extract<McpUsageUpdateEvent, { type: 'connection-changed' }>
+  ): GuiMcpTool[] =>
+    prevTools.map((tool) =>
+      matchesTool(tool, [event.clientName])
+        ? {
+            ...tool,
+            status: event.connectionStatus,
+          }
+        : tool
+    );
+
   // Load data from ServiceContainer
   useEffect(() => {
     const loadMcpData = async () => {
@@ -89,49 +204,10 @@ export function MCPToolsManager() {
           const mcpService = ServiceContainer.getOrThrow('mcp');
 
           try {
-            // Get all MCP tool metadata
             const mcpTools = await mcpService.getAllToolMetadata();
-
-            // Convert metadata (Record<string, unknown>) to GUI shape safely
-            const computeId = (raw: Record<string, unknown>, name: string) =>
-              typeof raw['id'] === 'string'
-                ? (raw['id'] as string)
-                : name.toLowerCase().replace(/\s+/g, '-');
-
-            const toGui = (raw: Record<string, unknown>): GuiMcpTool => {
-              const getString = (k: string, fallback = ''): string =>
-                typeof raw[k] === 'string' ? (raw[k] as string) : fallback;
-              const getNumber = (k: string, fallback = 0): number =>
-                typeof raw[k] === 'number' ? (raw[k] as number) : fallback;
-              const getArray = <T = unknown,>(k: string): T[] =>
-                Array.isArray(raw[k]) ? (raw[k] as T[]) : [];
-
-              const name = getString('name', 'Unknown Tool');
-              const id = computeId(raw, name);
-              const description = getString('description', '');
-              const category = getString('category', 'other');
-              const status = getString('status', 'disconnected');
-              const version = getString('version', '1.0.0');
-              const provider = getString('provider', '') || undefined;
-              const usageCount = getNumber('usageCount', 0);
-              const endpoint = getString('endpoint', '') || undefined;
-              const permissions = getArray<string>('permissions');
-              return {
-                id,
-                name,
-                description,
-                category,
-                status: status as GuiMcpTool['status'],
-                version,
-                provider,
-                usageCount,
-                endpoint,
-                permissions,
-                icon: getIconForCategory(category),
-              };
-            };
-
-            const guiTools: GuiMcpTool[] = (mcpTools as Record<string, unknown>[]).map(toGui);
+            const guiTools: GuiMcpTool[] = (mcpTools as Record<string, unknown>[]).map(
+              mapRawMetadata
+            );
 
             setTools(guiTools);
 
@@ -139,7 +215,7 @@ export function MCPToolsManager() {
             try {
               const usageService = ServiceContainer.getOrThrow('mcpUsageLog');
               const logs = await usageService.getAllUsageLogs();
-              setUsageLogs(logs);
+              setUsageLogs(normalizeUsageLogs(logs));
             } catch (logError) {
               console.warn('Usage logs not available:', logError);
               setUsageLogs([]);
@@ -166,6 +242,41 @@ export function MCPToolsManager() {
 
     loadMcpData();
   }, []);
+
+  useEffect(() => {
+    if (!lastEvent) {
+      return;
+    }
+
+    if (lastEvent.type === 'usage-logged') {
+      const eventLog = lastEvent.newLog;
+      const toolId = eventLog.toolId ?? eventLog.toolName ?? eventLog.id;
+      const logEntry: GuiMcpUsageLog = {
+        id: eventLog.id,
+        toolId,
+        toolName: eventLog.toolName ?? eventLog.toolId ?? 'Unknown Tool',
+        agentId: eventLog.agentId,
+        agentName: eventLog.agentId ?? lastEvent.clientName,
+        action: eventLog.operation,
+        timestamp: eventLog.timestamp,
+        duration: eventLog.durationMs ?? 0,
+        status: eventLog.status,
+      };
+
+      setUsageLogs((prev) => [logEntry, ...prev].slice(0, MAX_USAGE_LOGS));
+      setTools((prev) => applyUsageLoggedEvent(prev, lastEvent));
+      return;
+    }
+
+    if (lastEvent.type === 'metadata-updated') {
+      setTools((prev) => applyMetadataUpdatedEvent(prev, lastEvent));
+      return;
+    }
+
+    if (lastEvent.type === 'connection-changed') {
+      setTools((prev) => applyConnectionChangedEvent(prev, lastEvent));
+    }
+  }, [lastEvent]);
 
   const categories = [
     { id: 'all', label: 'All Tools', count: tools.length },
@@ -207,32 +318,14 @@ export function MCPToolsManager() {
       if (ServiceContainer.has('mcp')) {
         const mcpService = ServiceContainer.getOrThrow('mcp');
         const mcpTools = await mcpService.getAllToolMetadata();
-
-        const computeId = (raw: Record<string, unknown>, name: string) =>
-          typeof raw['id'] === 'string'
-            ? (raw['id'] as string)
-            : name.toLowerCase().replace(/\s+/g, '-');
-        const guiTools: GuiMcpTool[] = (mcpTools as Record<string, unknown>[]).map((raw) => {
-          const name = typeof raw['name'] === 'string' ? (raw['name'] as string) : 'Unknown Tool';
-          const id = computeId(raw, name);
-          const category =
-            typeof raw['category'] === 'string' ? (raw['category'] as string) : 'other';
-          return {
-            id,
-            name,
-            description: (raw['description'] as string) ?? '',
-            category,
-            status: ((raw['status'] as string) ?? 'disconnected') as GuiMcpTool['status'],
-            version: (raw['version'] as string) ?? '1.0.0',
-            provider: raw['provider'] as string | undefined,
-            usageCount: (raw['usageCount'] as number) ?? 0,
-            endpoint: raw['endpoint'] as string | undefined,
-            permissions: Array.isArray(raw['permissions']) ? (raw['permissions'] as string[]) : [],
-            icon: getIconForCategory(category),
-          };
-        });
+        const guiTools: GuiMcpTool[] = (mcpTools as Record<string, unknown>[]).map(mapRawMetadata);
 
         setTools(guiTools);
+      }
+      if (ServiceContainer.has('mcpUsageLog')) {
+        const usageService = ServiceContainer.getOrThrow('mcpUsageLog');
+        const logs = await usageService.getAllUsageLogs();
+        setUsageLogs(normalizeUsageLogs(logs));
       }
     } catch (error) {
       console.error('Failed to refresh tools:', error);

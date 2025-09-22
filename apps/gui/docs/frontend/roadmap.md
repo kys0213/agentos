@@ -32,8 +32,8 @@ Outcome-focused summary of the GUI consolidation (see RPC/Frontend docs for deta
 
 - Phase A — Type Safety
   - Adapters/hooks any 0, Zod parse at boundaries, ESLint as-any ban.
-- Phase B — Preset Real Data
-  - React Query single source, UI-only fields removed from adapters, standard loading/error/empty.
+- Phase B — Preset Template Data
+  - React Query single source, UI-only fields removed from adapters, standard loading/error/empty. (UI에서는 템플릿을 내부 상태로 사용)
 - Phase C — Chat Flow
   - Agent-create → chat entry restored, empty-state fixed, container pattern streamlined (ChatView props reduced; ChatHistory memoized).
 - Phase D — Controllers

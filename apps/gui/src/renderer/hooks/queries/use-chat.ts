@@ -104,6 +104,8 @@ export const useSendChatMessage = (
         }
       );
 
+      const mentionedAgentIds = _mentionedAgentIds?.length ? [_mentionedAgentIds[0]] : undefined;
+
       // AgentProtocol.chat 호출
       const result = await agentService.chat(
         agentId,
@@ -112,7 +114,8 @@ export const useSendChatMessage = (
           // 세션 ID 우선 사용, 없으면 agentId로 폴백
           sessionId: options?.sessionId ?? agentId,
           maxTurnCount: 1,
-        }
+        },
+        { mentionedAgentIds }
       );
 
       // 응답 메시지들을 MessageHistory로 매핑 (배열 콘텐츠로 정규화)
@@ -154,7 +157,15 @@ export const useSendChatMessage = (
               agentMetadata: undefined,
             } as Readonly<MessageHistory>;
           }
-          return common as Readonly<MessageHistory>;
+          const agentMetadata =
+            m['agentMetadata'] && typeof m['agentMetadata'] === 'object'
+              ? (m['agentMetadata'] as Readonly<MessageHistory>['agentMetadata'])
+              : undefined;
+
+          return {
+            ...common,
+            agentMetadata,
+          } as Readonly<MessageHistory>;
         }
       );
 
