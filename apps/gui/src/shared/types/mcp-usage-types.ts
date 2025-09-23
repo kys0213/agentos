@@ -122,7 +122,9 @@ const coerceDate = (value: unknown, fallback?: Date): Date => {
   return fallback ?? new Date();
 };
 
-export function convertLegacyMcpUsageEvent(event: LegacyMcpUsageEvent): McpUsageUpdateEvent | null {
+export function convertLegacyMcpUsageEvent(
+  event: LegacyMcpUsageEvent
+): McpUsageUpdateEvent | null {
   if (event.type === 'mcp.usage.log.created') {
     const payload = event.payload;
     const timestamp = coerceDate(payload.timestamp, new Date(event.ts ?? Date.now()));
