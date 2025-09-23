@@ -1,9 +1,11 @@
 # GUI Consolidated Plan (Single Source)
 
 Status: In Progress
-Last Updated: 2025-09-16
+Last Updated: 2025-09-21
 
 본 문서는 GUI 계획을 단일 파일로 통합한 SSOT입니다. RPC/스트리밍, 컨트롤러 승격, 어댑터/훅 타입 엄격화, 레거시 제거, 문서 표준화까지의 범위를 포괄합니다.
+
+> 2025-09-21 업데이트: Phase 2 (MCP usage 스트림, 브리지/마법사 안정화, 문서 이관)가 main에 반영되었습니다. 남은 작업은 Multi-Agent 오케스트레이션 정식화 및 대시보드 실시간 지표 UX/문서 정리입니다.
 
 ## 범위/목표
 

@@ -1,9 +1,17 @@
 # 다크 모드 마이그레이션 계획서
 
 Status: In Progress
-Last Updated: 2025-09-16
+Last Updated: 2025-09-21
 
 ## 📋 현황 분석
+
+> 2025-09-21 업데이트: Phase 1의 핵심 작업(글로벌 CSS/테마 훅/토글, 상태 저장)은 완료되었습니다. Chakra UI 기반 컴포넌트 교체와 세부 UX 정리는 아직 진행 중이며, 본 문서는 잔여 마이그레이션 항목을 추적하는 용도로 유지됩니다.
+
+**현재 잔여 핵심 과제 (요약)**
+
+- Chakra UI 컴포넌트를 shadcn/ui 또는 Tailwind 기반 구현으로 완전히 대체하기
+- Layout/Dashboard/ModelManager 등 주요 화면의 다크 모드 QA 및 색상 대비 검증
+- 다크 모드 가이드/체크리스트를 문서화하고 테스트(E2E/스토어 동기화) 보강하기
 
 ### 1. Design 디렉토리 (새로운 시스템)
 
@@ -92,31 +100,31 @@ Last Updated: 2025-09-16
 
 ### 🔴 긴급 (Phase 1 - 1주차)
 
-1. **[ ] globals.css 완전 교체**
+1. **[x] globals.css 완전 교체** _(shadcn/ui 기반 CSS 변수 적용 완료 – `src/renderer/styles/globals.css`)_
    - design/src/styles/globals.css의 전체 변수 시스템 이식
    - 기존 부분적 정의 제거 및 통합
    - 파일 경로: `src/renderer/styles/globals.css`
 
-2. **[ ] useTheme 훅 구현**
+2. **[x] useTheme 훅 구현** _(ThemeContext + `useTheme` 훅 도입, localStorage & system 감지)_
    - design/src/hooks/useTheme.ts 이식
    - Chakra UI 의존성 제거
    - 파일 경로: `src/renderer/hooks/useTheme.ts`
 
-3. **[ ] ColorModeToggle 재구현**
+3. **[x] ColorModeToggle 재구현** _(Dropdown 기반 light/dark/system 전환 구현)_
    - Chakra UI 버전을 shadcn/ui 버전으로 교체
    - DropdownMenu로 light/dark/system 선택 UI
    - 파일 경로: `src/renderer/components/common/ColorModeToggle.tsx`
 
-4. **[ ] theme.ts 제거 및 정리**
+4. **[ ] theme.ts 제거 및 정리** _(Chakra theme 파일은 테스트 호환성 때문에 남아 있음 → 추후 제거 필요)_
    - Chakra UI theme 설정 파일 제거
    - 관련 import 정리
 
-5. **[ ] IPC 통신 구현**
+5. **[ ] IPC 통신 구현** _(현행 구조에서는 renderer-localStorage 전략으로 충분하여 보류)_
    - Main 프로세스에 테마 설정 핸들러 추가
    - electron-store 통합 (영구 저장)
    - 파일 경로: `src/main/handlers/theme.handler.ts`
 
-6. **[ ] App Store 테마 상태 추가**
+6. **[x] App Store 테마 상태 추가** _(Zustand `app-store`에 theme 상태/액션 반영)_
    - UIState에 theme 필드 추가
    - setTheme 액션 구현
    - IPC 통신 연동
@@ -285,26 +293,26 @@ const setTheme = (theme) => {
 
 1. **기능적 완성도**
    - [ ] 모든 페이지에서 다크 모드 정상 작동
-   - [ ] 테마 전환 시 즉각적인 반영
-   - [ ] 시스템 테마 자동 감지 작동
-   - [ ] 앱 재시작 후에도 테마 설정 유지 (localStorage)
+   - [x] 테마 전환 시 즉각적인 반영
+   - [x] 시스템 테마 자동 감지 작동
+   - [x] 앱 재시작 후에도 테마 설정 유지 (localStorage)
 
 2. **기술적 품질**
    - [ ] Chakra UI 의존성 완전 제거
    - [ ] 모든 컴포넌트 CSS 변수 기반 스타일링
    - [ ] 테마 전환 시 깜빡임 없음
-   - [ ] 여러 탭/창 간 테마 상태 동기화
+   - [x] 여러 탭/창 간 테마 상태 동기화
 
 3. **사용자 경험**
    - [ ] WCAG AA 기준 색상 대비 충족
-   - [ ] 테마 설정 영구 저장 (localStorage)
+   - [x] 테마 설정 영구 저장 (localStorage)
    - [ ] 부드러운 테마 전환 애니메이션
-   - [ ] 모든 탭/창에서 테마 일관성 유지
+   - [x] 모든 탭/창에서 테마 일관성 유지
 
 4. **아키텍처 품질**
-   - [ ] 기존 RPC 아키텍처에 영향 없음
-   - [ ] React Query와 충돌 없는 상태 관리
-   - [ ] Zustand 스토어와 localStorage 통합
+   - [x] 기존 RPC 아키텍처에 영향 없음
+   - [x] React Query와 충돌 없는 상태 관리
+   - [x] Zustand 스토어와 localStorage 통합
    - [ ] 에러 처리 및 폴백 메커니즘 구현
 
 ## 🔗 참고 자료

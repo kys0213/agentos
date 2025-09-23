@@ -1,10 +1,12 @@
 # GUI Test/Build Stabilization Plan (Strict + Compatible)
 
 Status: Draft
-Last Updated: 2025-09-16
+Last Updated: 2025-09-21
 
 Status: Draft – Work-in-Progress on branch `feature/gui-core-rpc-integration`
 Owner: GUI team
+
+> Node 22.19.0 / pnpm 10.17.0 환경에서 `pnpm lint`, `pnpm typecheck`, `pnpm test --filter renderer -- --runInBand --project main` 전부 통과함. main 테스트 hang 문제는 MCP usage publisher `setInterval().unref()`로 해결됨. 남은 TODO는 Slack bot 패키지의 type 정리와 lint 경고 제거입니다.
 
 ## Goals
 

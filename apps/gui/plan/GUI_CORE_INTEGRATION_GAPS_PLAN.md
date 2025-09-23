@@ -1,7 +1,7 @@
 # GUI ↔ Core Integration Gaps Plan
 
 Status: In Progress
-Last Updated: 2025-09-19
+Last Updated: 2025-09-21
 
 > 후속 계획: 주요 잔여 작업은 `GUI_CORE_INTEGRATION_PHASE2_PLAN.md`에서 계속 추적합니다.
 
@@ -26,6 +26,12 @@ Last Updated: 2025-09-19
 - KnowledgeBaseManager 일부 RPC 연동 착수: 목록/통계는 RPC 기반으로 조회
 - MCP Tool Manager 폴백 데이터 제거 및 빈 상태/에러 처리 UX 반영
 - Dashboard 통계 훅(useDashboardStats) 구현 및 테스트 추가, 초기 UI 연동 완료(하드코딩 제거 진행 중)
+
+2025-09-21 진행 현황 추가:
+
+- MCP usage 스트림 계획서를 프런트엔드 문서(`docs/frontend/mcp-usage-stream.md`)로 이관하고 Phase 2 계획서를 완료 처리했다.
+- LLM Bridge 기본 선택/오류 처리를 SubAgent 마법사와 Model Manager에서 안정화했고, 관련 테스트는 서비스 의존성을 목킹하여 무한 대기 문제를 제거했다.
+- MCP usage publisher interval을 `unref()` 처리하여 main 테스트 종료 시 hang되지 않도록 개선했다.
 
 ## Requirements
 
@@ -73,7 +79,7 @@ Last Updated: 2025-09-19
 - [x] Vitest 멀티 프로젝트 구성 (renderer/main)
 - [x] CI에서 `pnpm test`로 두 프로젝트 동시 실행 보장
 - [ ] main 레이어에서 Electron 의존 모듈은 필요한 곳에 한해 mock 또는 경계 어댑터로 대체
-- [ ] renderer 테스트 커버리지 기준 수립 및 주요 시나리오(프리셋 임포트, MCP 사용량 스트림, 대시보드) 보장
+- [x] renderer 테스트 커버리지 기준 수립 및 주요 시나리오(프리셋 임포트, MCP 사용량 스트림, 대시보드) 보장
       (진행: MCP usage 이벤트/대시보드 갱신, Knowledge 검색/미리보기/본문 로드 테스트 추가)
 
 ### 사용 시나리오
