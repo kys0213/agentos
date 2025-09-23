@@ -31,12 +31,18 @@ export async function openManagementView(page: Page): Promise<void> {
     if (await candidate.count()) {
       await candidate.first().click();
       await Promise.race([
-        navDashboard.first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
+        navDashboard
+          .first()
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .catch(() => {}),
         dashboardHeading
           .first()
           .waitFor({ state: 'visible', timeout: 5000 })
           .catch(() => {}),
-        navSubagents.first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}),
+        navSubagents
+          .first()
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .catch(() => {}),
       ]).catch(() => {});
       if ((await navDashboard.count()) > 0) {
         await expect(navDashboard.first()).toBeVisible();
@@ -53,13 +59,19 @@ export async function openManagementView(page: Page): Promise<void> {
     }
   }
 
-  await dashboardHeading.first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  await dashboardHeading
+    .first()
+    .waitFor({ state: 'visible', timeout: 5000 })
+    .catch(() => {});
   if ((await dashboardHeading.count()) > 0) {
     await expect(dashboardHeading.first()).toBeVisible();
     return;
   }
 
-  await navSubagents.first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  await navSubagents
+    .first()
+    .waitFor({ state: 'visible', timeout: 5000 })
+    .catch(() => {});
   if ((await navSubagents.count()) > 0) {
     await expect(navSubagents.first()).toBeVisible();
     return;

@@ -1,7 +1,7 @@
 # GUI Core Integration Phase 2 Plan
 
-Status: Completed
-Last Updated: 2025-09-21
+Status: In Progress
+Last Updated: 2025-09-19
 
 ## Requirements
 
@@ -66,9 +66,3 @@ const { mutateAsync } = useRegisterBridge({
 ## QA & Visual Verification
 
 - [x] Playwright MCP를 이용해 `http://localhost:5173` UI를 직접 검토하고, SubAgentManager 카테고리 필터 및 브릿지 등록 UI가 기존 Figma 디자인과 시각적으로 어긋남 없이 동작함을 확인했다. (2025-09-19)
-
-## Completion Notes
-
-- MCP usage 스트림 문서와 구현 정리가 `apps/gui/docs/frontend/mcp-usage-stream.md`에 반영되었으며, 계획서(`MCP_USAGE_STREAM_INTEGRATION_PLAN.md`)는 보관 후 제거했다.
-- LLM Bridge 선택 UX와 오류 처리는 SubAgent 마법사 및 Model Manager를 통해 다듬었고, 관련 테스트는 서비스 의존성을 목킹해 안정화했다.
-- main 테스트가 종료되지 않던 `McpUsagePublisher` interval은 `unref()` 처리로 해결했으며, Node 22 / pnpm 10 환경에서 lint·typecheck·renderer/main 테스트가 통과한다.
