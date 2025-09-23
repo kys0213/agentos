@@ -76,8 +76,10 @@ const pushSlackParamMetadata = (
   metadata: SlackParamMetadataEntry
 ): void => {
   const method = getMethodReference(target, propertyKey);
-  const existing =
-    (Reflect.getMetadata(SLACK_PARAM_METADATA_KEY, method) as SlackParamMetadataEntry[] | undefined) ?? [];
+  const existingMetadata: unknown = Reflect.getMetadata(SLACK_PARAM_METADATA_KEY, method);
+  const existing = Array.isArray(existingMetadata)
+    ? (existingMetadata as SlackParamMetadataEntry[])
+    : [];
 
   Reflect.defineMetadata(SLACK_PARAM_METADATA_KEY, [...existing, metadata], method);
 };

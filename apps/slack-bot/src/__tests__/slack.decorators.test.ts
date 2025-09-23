@@ -21,30 +21,51 @@ import {
   resolveSlackParamValue,
 } from '../slack/slack.decorators';
 
+class DecoratedExample {
+  @SlackEvent('message')
+  handleEvent(): void {}
+
+  @SlackCommand('/agent')
+  handleCommand(): void {}
+
+  @SlackAction('interactive-action')
+  handleAction(): void {}
+
+  handleWithParams(
+    @SlackEventPayload('text') text: string,
+    @SlackCommandPayload('channel_id') channelId: string,
+    @SlackAck() ack: () => Promise<void>,
+    @SlackRespond() respond: (message: unknown) => Promise<void>,
+    @SlackActionPayload('payload.id') actionId: string,
+    @SlackBody('team.id') teamId: string,
+    @SlackClient('chat.postMessage') postMessage: unknown,
+    @SlackContext('userId') userId: string
+  ): void {
+    void this;
+    void text;
+    void channelId;
+    void ack;
+    void respond;
+    void actionId;
+    void teamId;
+    void postMessage;
+    void userId;
+  }
+}
+
 describe('Slack decorators', () => {
   it('메서드 데코레이터가 Slack 핸들러 메타데이터를 설정한다', () => {
-    class Example {
-      @SlackEvent('message')
-      handleEvent(): void {}
-
-      @SlackCommand('/agent')
-      handleCommand(): void {}
-
-      @SlackAction('interactive-action')
-      handleAction(): void {}
-    }
-
     const eventMetadata = Reflect.getMetadata(
       SLACK_HANDLER_METADATA_KEY,
-      Example.prototype.handleEvent
+      DecoratedExample.prototype.handleEvent
     );
     const commandMetadata = Reflect.getMetadata(
       SLACK_HANDLER_METADATA_KEY,
-      Example.prototype.handleCommand
+      DecoratedExample.prototype.handleCommand
     );
     const actionMetadata = Reflect.getMetadata(
       SLACK_HANDLER_METADATA_KEY,
-      Example.prototype.handleAction
+      DecoratedExample.prototype.handleAction
     );
 
     expect(eventMetadata).toEqual({ type: 'event', matcher: 'message' });
@@ -53,32 +74,9 @@ describe('Slack decorators', () => {
   });
 
   it('파라미터 데코레이터가 메타데이터를 누적한다', () => {
-    class Example {
-      handler(
-        @SlackEventPayload('text') text: string,
-        @SlackCommandPayload('channel_id') channelId: string,
-        @SlackAck() ack: () => Promise<void>,
-        @SlackRespond() respond: (message: unknown) => Promise<void>,
-        @SlackActionPayload('payload.id') actionId: string,
-        @SlackBody('team.id') teamId: string,
-        @SlackClient('chat.postMessage') postMessage: unknown,
-        @SlackContext('userId') userId: string
-      ): void {
-        void this;
-        void text;
-        void channelId;
-        void ack;
-        void respond;
-        void actionId;
-        void teamId;
-        void postMessage;
-        void userId;
-      }
-    }
-
     const metadata = Reflect.getMetadata(
       SLACK_PARAM_METADATA_KEY,
-      Example.prototype.handler
+      DecoratedExample.prototype.handleWithParams
     ) as SlackParamMetadataEntry[];
 
     expect(metadata).toContainEqual({ index: 0, source: 'event', path: 'text' });
@@ -174,9 +172,7 @@ describe('resolveSlackParamValue', () => {
     expect(resolveSlackParamValue('say', handlerArgs)).toBe(say);
 
     // Given
-    const invalidArgs: SlackHandlerArguments = [
-      { ack: 'not-fn', respond: null, say: undefined },
-    ];
+    const invalidArgs: SlackHandlerArguments = [{ ack: 'not-fn', respond: null, say: undefined }];
 
     // Then
     expect(resolveSlackParamValue('ack', invalidArgs)).toBeUndefined();

@@ -113,11 +113,14 @@ export class SlackBoltService implements OnModuleInit {
           return;
         }
 
-        const parameterMetadata =
-          (this.reflector.get<SlackParamMetadataEntry[] | undefined>(
+        const parameterMetadata = (
+          this.reflector.get<SlackParamMetadataEntry[] | undefined>(
             SLACK_PARAM_METADATA_KEY,
             handlerRef
-          ) ?? []).slice().sort((left, right) => left.index - right.index);
+          ) ?? []
+        )
+          .slice()
+          .sort((left, right) => left.index - right.index);
 
         const boundHandler = (...boltArgs: unknown[]) => {
           const params = buildSlackParameterArray(parameterMetadata, handlerRef.length, boltArgs);
