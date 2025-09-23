@@ -46,7 +46,7 @@ Last Updated: 2025-09-21
 
 ### 4. Manager 뷰 정렬
 - [ ] SubAgentManager/ModelManager/MCPToolsManager UI 컴포넌트가 디자인 버전과 같이 카드형 정보/상태 퍼널을 보여주도록 수정
-- [ ] 디자인의 AgentPresets/MCP Tool 생성 폼 UX를 renderer의 ServiceContainer 연동과 병합
+- [ ] 디자인의 AgentPresets/MCP Tool 생성 폼 UX를 renderer의 ServiceContainer 연동과 병합 *(agents/tools/tool builder 생성 버튼은 현재 통일된 모달/패널 UX로 동작함 — 상세 콘텐츠만 리뉴얼 필요)*
 - [ ] Settings/RACP/ToolBuilder 섹션 차이점 파악 후 적용 (design/components/* 참고)
 
 ### 5. Theme & 토큰 정리
