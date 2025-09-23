@@ -480,9 +480,9 @@ async function bootstrap() {
 - [ ] ChannelAgentConfigService 및 에이전트 생성 API 구현 (core `AgentService` 활용)
 - [ ] `AgentEventBridge` 통합 및 Slack/Discord 이벤트 퍼블리셔 구현
 - [ ] SlackConnector 구현 및 slash command 처리
-- [ ] SlackBoltService로 Bolt `App` 초기화, SlackEventsController를 통한 요청 위임, `SetMetadata`·`Reflector` 기반 메타데이터 데코레이터와 DiscoveryService 자동 바인딩
-- [ ] SlackEvent·SlackCommand·SlackAction·SlackParam 데코레이터와 MetadataScanner·Reflector 기반 메타데이터 익스플로러 유닛 테스트 작성
-- [ ] Slack 파라미터 데코레이터 메타데이터(인덱스·소스·path)와 buildSlackParameterArray/resolveSlackParamValue 헬퍼 유닛 테스트 작성
+- [x] SlackBoltService로 Bolt `App` 초기화, SlackEventsController를 통한 요청 위임, `SetMetadata`·`Reflector` 기반 메타데이터 데코레이터와 DiscoveryService 자동 바인딩
+- [x] SlackEvent·SlackCommand·SlackAction·SlackParam 데코레이터와 MetadataScanner·Reflector 기반 메타데이터 익스플로러 유닛 테스트 작성
+- [x] Slack 파라미터 데코레이터 메타데이터(인덱스·소스·path)와 buildSlackParameterArray/resolveSlackParamValue 헬퍼 유닛 테스트 작성
 - [ ] NestJS 모듈 구성 (AppModule, ConnectorModule, AgentModule, ChannelModule)
 - [ ] core `AgentService`와 각 레지스트리 연동, 채널 매핑·에이전트 관리 API 작성
 - [ ] 활성화된 에이전트 목록 조회 API (`AgentService.listAgents`) 구현
