@@ -15,7 +15,9 @@ test.describe('MCP Verify - UI smoke', () => {
         await expect(navDashboard.first()).toBeVisible();
       } else {
         await expect(
-          page.getByRole('button', { name: /(Manage|Explore Features|Create First Agent)/i }).first()
+          page
+            .getByRole('button', { name: /(Manage|Explore Features|Create First Agent)/i })
+            .first()
         ).toBeVisible();
       }
     }
