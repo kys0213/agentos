@@ -1,27 +1,44 @@
 import 'reflect-metadata';
 
 import { SetMetadata } from '@nestjs/common';
+import type { ActionConstraints, SlackAction as SlackBoltAction } from '@slack/bolt';
 
 export const SLACK_HANDLER_METADATA_KEY = 'slack:handler';
 
 export type SlackHandlerType = 'event' | 'command' | 'action';
 
-export interface SlackBindingMetadata {
-  readonly type: SlackHandlerType;
-  readonly matcher: string;
-}
+type SlackEventMatcher = string | RegExp;
+type SlackCommandMatcher = string | RegExp;
+type SlackActionMatcher = string | RegExp | ActionConstraints<SlackBoltAction>;
 
-const createSlackDecorator =
-  (type: SlackHandlerType) =>
-  (matcher: string): MethodDecorator =>
-    SetMetadata(SLACK_HANDLER_METADATA_KEY, {
-      type,
-      matcher,
-    } satisfies SlackBindingMetadata);
+type SlackBindingMetadataMap = {
+  readonly event: {
+    readonly type: 'event';
+    readonly matcher: SlackEventMatcher;
+  };
+  readonly command: {
+    readonly type: 'command';
+    readonly matcher: SlackCommandMatcher;
+  };
+  readonly action: {
+    readonly type: 'action';
+    readonly matcher: SlackActionMatcher;
+  };
+};
 
-export const SlackEvent = createSlackDecorator('event');
-export const SlackCommand = createSlackDecorator('command');
-export const SlackAction = createSlackDecorator('action');
+export type SlackBindingMetadata = SlackBindingMetadataMap[SlackHandlerType];
+
+const setSlackMetadata = (metadata: SlackBindingMetadata): MethodDecorator =>
+  SetMetadata(SLACK_HANDLER_METADATA_KEY, metadata);
+
+export const SlackEvent = (matcher: SlackEventMatcher): MethodDecorator =>
+  setSlackMetadata({ type: 'event', matcher });
+
+export const SlackCommand = (matcher: SlackCommandMatcher): MethodDecorator =>
+  setSlackMetadata({ type: 'command', matcher });
+
+export const SlackAction = (matcher: SlackActionMatcher): MethodDecorator =>
+  setSlackMetadata({ type: 'action', matcher });
 
 export const SLACK_PARAM_METADATA_KEY = 'slack:param';
 
@@ -88,6 +105,10 @@ const createSlackParamDecorator =
   (source: SlackParamSource) =>
   (path?: string): ParameterDecorator =>
   (target, propertyKey, parameterIndex) => {
+    if (propertyKey === undefined) {
+      throw new Error('Slack 파라미터 데코레이터는 메서드에만 선언할 수 있습니다.');
+    }
+
     pushSlackParamMetadata(target, propertyKey, {
       index: parameterIndex,
       source,
