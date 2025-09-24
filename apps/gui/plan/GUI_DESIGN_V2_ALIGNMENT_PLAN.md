@@ -76,6 +76,12 @@ Last Updated: 2025-09-23
 - [ ] Phase 3/4 계획서에 완료 항목 체크 및 잔여 TODO 이전
 - [ ] 린트 경고(중첩 삼항, Select 미사용 import 등)를 정리하고 컴포넌트 구조 개선 가이드 문서화 _(주요 미사용 import·제너릭 경고 제거 완료, ternary/curly 정리는 후속 작업)_
 
+### Branching Strategy
+
+- Epic 브랜치: `epic/gui-design-v2-alignment` (본 계획의 SSOT)
+- 각 대단위 Phase(레이아웃/채팅/Manager 정렬/테마·QA 등)는 별도 feature 브랜치에서 작업 후 epic으로 머지
+- 하위 작업 시에는 epic 브랜치를 주기적으로 리베이스하여 충돌을 최소화하고, 완료된 Phase마다 계획서 TODO 체크 업데이트
+
 ## Work Order (Draft)
 
 1. **분석 & 스펙 정리**: `design/` vs renderer diff 비교, Figma 캡처 스냅샷 수집 → 상세 스펙 문서화 (이 계획서를 기반으로 세부 작업 티켓 분할)
