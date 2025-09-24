@@ -44,9 +44,9 @@ Last Updated: 2025-09-23
 
 ### 3. Chat 경험 업그레이드
 
-- [ ] 디자인 `ChatInterface` UX(typing indicator, copy/good/bad feedback, minimized chats)와 renderer `ChatInterface` diff 분석 후 반영
-- [ ] Mentionable/Active agent 캐러셀 및 status 배지 표현을 최신 시안과 맞춤
-- [ ] EmptyState copy/CTA를 디자인 버전으로 업데이트하고, 첫 에이전트 생성에서 SubAgentManager로 자연스럽게 전환
+- [x] 디자인 `ChatInterface` UX(typing indicator, copy/good/bad feedback, minimized chats)와 renderer `ChatInterface` diff 분석 후 반영
+- [x] Mentionable/Active agent 캐러셀 및 status 배지 표현을 최신 시안과 맞춤
+- [x] EmptyState copy/CTA를 디자인 버전으로 업데이트하고, 첫 에이전트 생성에서 SubAgentManager로 자연스럽게 전환
 
 ### 4. Manager 뷰 정렬
 
