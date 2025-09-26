@@ -52,10 +52,17 @@ Last Updated: 2025-09-23
 
 - [ ] SubAgentManager/ModelManager/MCPToolsManager UI 컴포넌트가 디자인 버전과 같이 카드형 정보/상태 퍼널을 보여주도록 수정
 - [ ] 디자인의 AgentPresets/MCP Tool 생성 폼 UX를 renderer의 ServiceContainer 연동과 병합 _(agents/tools/tool builder 생성 버튼은 현재 통일된 모달/패널 UX로 동작함 — 상세 콘텐츠만 리뉴얼 필요)_
-- [ ] `design/components/StepperTabs.tsx`를 renderer 공용 컴포넌트로 이식하고, 생성 플로우 전용 StepperTabs API 정의
-- [ ] Agent 생성(SubAgentCreate) 컴포넌트를 StepperTabs 기반으로 리팩터링 (검증/내비게이션/CTA 통합)
-- [ ] MCP Tool 생성(MCPToolCreate) 컴포넌트를 StepperTabs 기반으로 리팩터링
-- [ ] Custom Tool 생성(ToolBuilderCreate) 컴포넌트를 StepperTabs 기반으로 리팩터링
+- [ ] `design/components/StepperTabs.tsx`를 renderer 공용 컴포넌트로 이식하고 API 문서화 (완료 시 useAppNavigation 등과 연동 테스트)
+- [ ] SubAgent 생성 플로우 StepperTabs 전환
+  - [ ] StepperTabs/StepperTabContent 도입 및 단계별 검증 hooks 정리
+  - [ ] SubAgentManager 카운터/카드 레이아웃을 디자인과 맞춤
+  - [ ] `useAppNavigation` 연동 및 생성 플로우 QA 업데이트
+- [ ] MCP Tool 생성 플로우 StepperTabs 전환
+  - [ ] MCPToolCreate 레이아웃/검증 StepperTabs화
+  - [ ] MCPToolsManager 카드/통계 레이아웃 맞춤
+- [ ] Custom Tool Builder StepperTabs 전환
+  - [ ] ToolBuilderCreate 스텝퍼 반영, 테스트 업데이트
+  - [ ] ToolBuilder 메인 EmptyState/카드 정리
 - [x] MCP Tool Manager가 Core RPC 이벤트(툴 등록/삭제/상태 변경)에 직접 반응하도록 리팩터링하고, 관련 테스트를 async stream 기반으로 갱신
 - [ ] Settings/RACP/ToolBuilder 섹션 차이점 파악 후 적용 (design/components/\* 참고)
 
