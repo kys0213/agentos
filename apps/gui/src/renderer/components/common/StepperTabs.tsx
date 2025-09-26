@@ -5,6 +5,16 @@ import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { CheckCircle, ArrowLeft } from 'lucide-react';
 
+/**
+ * Shared stepper layout used by creation flows (agents, MCP tools, custom tools).
+ *
+ * The component renders a header with optional back button, badge, and primary action,
+ * followed by a tabs-based step navigation. Consumers pass the individual step panes as
+ * children wrapped in {@link StepperTabContent}. Step enablement/state is controlled via
+ * the `currentStep`, `onStepChange`, and `isStepEnabled` props – typically sourced from
+ * navigation hooks such as `useAppNavigation`.
+ */
+
 export interface StepConfig {
   id: string;
   label: string;
@@ -133,6 +143,10 @@ export function StepperTabs({
   );
 }
 
+/**
+ * Convenience wrapper that maps a step identifier to the underlying tab content.
+ * Always wrap step panes rendered inside {@link StepperTabs} with this component.
+ */
 export function StepperTabContent({ stepId, children }: { stepId: string; children: ReactNode }) {
   return (
     <TabsContent value={stepId} className="h-full">
