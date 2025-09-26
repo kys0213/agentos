@@ -131,6 +131,7 @@ export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) =>
       onSendMessage={(text, mentionedAgents) =>
         sendMutation.mutate({ text, mentionedAgentIds: mentionedAgents.map((a) => a.id) })
       }
+      isTyping={sendMutation.isPending}
     />
   );
 };
