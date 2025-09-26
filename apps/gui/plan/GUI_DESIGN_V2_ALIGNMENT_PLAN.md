@@ -52,7 +52,7 @@ Last Updated: 2025-09-23
 
 #### 4.1 StepperTabs 기반 생성 플로우 정비
 
-- [ ] `design/components/StepperTabs.tsx`와 design/components/ChatInterface.tsx · MCPToolCreate.tsx 등 Stepper 기반 컴포넌트를 renderer로 이식하고 API 문서화 (완료 시 useAppNavigation, useChatState 등과 연동 테스트)
+- [x] `design/components/StepperTabs.tsx`와 design/components/ChatInterface.tsx · MCPToolCreate.tsx 등 Stepper 기반 컴포넌트를 renderer로 이식하고 API 문서화 (완료 시 useAppNavigation, useChatState 등과 연동 테스트)
 - [ ] SubAgentCreate StepperTabs 전환
   - [ ] StepperTabs/StepperTabContent 도입 및 단계별 검증 훅 정리
   - [ ] SubAgentManager 카운터/카드 레이아웃을 디자인과 맞춤
