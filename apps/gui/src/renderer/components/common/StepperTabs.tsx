@@ -1,5 +1,4 @@
-import type { ComponentProps } from 'react';
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
@@ -10,9 +9,9 @@ import { CheckCircle, ArrowLeft } from 'lucide-react';
  *
  * The component renders a header with optional back button, badge, and primary action,
  * followed by a tabs-based step navigation. Consumers pass the individual step panes as
- * children wrapped in {@link StepperTabContent}. Step enablement/state is controlled via
- * the `currentStep`, `onStepChange`, and `isStepEnabled` props – typically sourced from
- * navigation hooks such as `useAppNavigation`.
+ * children wrapped in {@link StepperTabContent}. Step state is controlled via the
+ * `currentStep` and `onStepChange` props – typically sourced from navigation hooks such as
+ * `useAppNavigation`.
  */
 
 export interface StepConfig {
@@ -37,7 +36,6 @@ export interface StepperTabsProps {
     label: string;
     icon?: ReactNode;
   };
-  isStepEnabled?: (stepId: string) => boolean;
   actionProps?: Omit<ComponentProps<typeof Button>, 'children' | 'onClick' | 'disabled'>;
 }
 
@@ -54,7 +52,6 @@ export function StepperTabs({
   onAction,
   actionDisabled = false,
   badge,
-  isStepEnabled,
   actionProps,
 }: StepperTabsProps) {
   const currentIndex = steps.findIndex((step) => step.id === currentStep);
@@ -65,6 +62,16 @@ export function StepperTabs({
   };
 
   const isStepActive = (stepId: string) => stepId === currentStep;
+
+  const renderIndicator = (stepId: string) => {
+    if (isStepCompleted(stepId)) {
+      return <CheckCircle className="w-4 h-4 text-status-success" />;
+    }
+    if (isStepActive(stepId)) {
+      return <div className="w-4 h-4 rounded-full bg-current" />;
+    }
+    return <div className="w-4 h-4 rounded-full border-2 border-muted-foreground" />;
+  };
 
   return (
     <div className="h-full flex flex-col">
@@ -116,20 +123,9 @@ export function StepperTabs({
         <Tabs value={currentStep} onValueChange={onStepChange} className="h-full flex flex-col">
           <TabsList className="mb-6">
             {steps.map((step) => (
-              <TabsTrigger
-                key={step.id}
-                value={step.id}
-                className="relative"
-                disabled={isStepEnabled ? !isStepEnabled(step.id) : false}
-              >
+              <TabsTrigger key={step.id} value={step.id} className="relative">
                 <div className="flex items-center gap-2">
-                  {isStepCompleted(step.id) ? (
-                    <CheckCircle className="w-4 h-4 text-status-success" />
-                  ) : isStepActive(step.id) ? (
-                    <div className="w-4 h-4 rounded-full bg-current" />
-                  ) : (
-                    <div className="w-4 h-4 rounded-full border-2 border-muted-foreground" />
-                  )}
+                  {renderIndicator(step.id)}
                   {step.label}
                 </div>
               </TabsTrigger>

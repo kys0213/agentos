@@ -48,37 +48,20 @@ describe('SubAgentCreate wizard flow', () => {
       withProviders(<SubAgentCreate onBack={noop} onCreate={noop} presetTemplate={basePreset} />)
     );
 
-  it('locks later steps until the previous step is validated', async () => {
+  it('allows tab navigation between steps', async () => {
     setup();
 
-    const aiConfigTab = screen.getByRole('tab', { name: 'AI Config' });
-    expect(aiConfigTab).toHaveAttribute('data-disabled');
-
-    await userEvent.type(screen.getByLabelText(/Agent Name/i), 'Step Tester');
-    await userEvent.type(screen.getByLabelText(/Description/i), 'Verifies wizard gating');
-
-    await userEvent.click(screen.getByRole('button', { name: 'Next: Category' }));
-    expect(screen.getByText('Step 2 of 4')).toBeInTheDocument();
-
-    await userEvent.click(
-      screen.getByRole('button', {
-        name: /Development.*software engineering/i,
-      })
-    );
-    await userEvent.click(screen.getByRole('button', { name: 'Next: AI Config' }));
-
-    const aiConfigTabEnabled = screen.getByRole('tab', { name: 'AI Config' });
-    expect(aiConfigTabEnabled).not.toHaveAttribute('data-disabled');
+    await userEvent.click(screen.getByRole('tab', { name: 'AI Config' }));
     expect(screen.getByText('Step 3 of 4')).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Next: Agent Settings' }));
-    expect(screen.getByText('Step 4 of 4')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('tab', { name: 'Overview' }));
+    expect(screen.getByText('Step 1 of 4')).toBeInTheDocument();
   });
 
   it('keeps the create action disabled until all required fields are valid', async () => {
     setup();
 
-    const [headerCreateButton] = screen.getAllByTestId('btn-final-create-agent');
+    const headerCreateButton = screen.getByRole('button', { name: 'Create Agent' });
     expect(headerCreateButton).toBeDisabled();
 
     await userEvent.type(screen.getByLabelText(/Agent Name/i), 'Ready Agent');
@@ -93,5 +76,39 @@ describe('SubAgentCreate wizard flow', () => {
 
     // After Overview + Category + preset defaults, validations are satisfied
     expect(headerCreateButton).not.toBeDisabled();
+  });
+
+  it('notifies parent when step changes in controlled mode', async () => {
+    const onStepChange = vi.fn();
+    const view = withProviders(
+      <SubAgentCreate
+        onBack={noop}
+        onCreate={noop}
+        presetTemplate={basePreset}
+        currentStepId="overview"
+        onStepChange={onStepChange}
+      />
+    );
+    const { rerender } = render(view);
+
+    await userEvent.type(screen.getByLabelText(/Agent Name/i), 'Controlled Agent');
+    await userEvent.type(screen.getByLabelText(/Description/i), 'Ensures controlled step flow');
+
+    await userEvent.click(screen.getByRole('button', { name: /Next: Category/i }));
+    expect(onStepChange).toHaveBeenCalledWith('category');
+
+    rerender(
+      withProviders(
+        <SubAgentCreate
+          onBack={noop}
+          onCreate={noop}
+          presetTemplate={basePreset}
+          currentStepId="category"
+          onStepChange={onStepChange}
+        />
+      )
+    );
+
+    expect(screen.getByText('Step 2 of 4')).toBeInTheDocument();
   });
 });

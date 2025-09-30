@@ -53,23 +53,34 @@ Last Updated: 2025-09-23
 #### 4.1 StepperTabs 기반 생성 플로우 정비
 
 - [x] `design/components/StepperTabs.tsx`와 design/components/ChatInterface.tsx · MCPToolCreate.tsx 등 Stepper 기반 컴포넌트를 renderer로 이식하고 API 문서화 (완료 시 useAppNavigation, useChatState 등과 연동 테스트)
-- [ ] SubAgentCreate StepperTabs 전환
-  - [ ] StepperTabs/StepperTabContent 도입 및 단계별 검증 훅 정리
-  - [ ] SubAgentManager 카운터/카드 레이아웃을 디자인과 맞춤
-  - [ ] `useAppNavigation` 연동 및 생성 플로우 QA 업데이트
-- [ ] MCPToolCreate StepperTabs 전환
-  - [ ] MCPToolCreate 레이아웃/검증 StepperTabs화
-  - [ ] MCPToolsManager 카드/통계 레이아웃 맞춤
-- [ ] ToolBuilderCreate StepperTabs 전환
-  - [ ] ToolBuilderCreate 스텝 전환, 테스트 업데이트
-  - [ ] ToolBuilder 메인 EmptyState/카드 레이아웃 정리
+- [x] SubAgentCreate StepperTabs 전환
+  - [x] StepperTabs/StepperTabContent 도입 및 단계별 검증 훅 정리 (renderer SubAgentCreate)
+  - [x] SubAgentManager 카운터/카드 레이아웃을 디자인과 맞춤 (Overview 헤더·상태 메트릭 카드 갱신)
+  - [x] `useAppNavigation` 연동 및 생성 플로우 QA 업데이트 (Agent/MCP/Custom Tool 생성 스텝 상태 싱크)
+- [x] MCPToolCreate StepperTabs 전환
+  - [x] MCPToolCreate 레이아웃/검증 StepperTabs화 (StepperTabs 헤더 및 스텝 가드 적용)
+  - [x] useAppNavigation 단계 상태 연동 (Tabs 기반 구현 유지)
+  - [x] MCPToolsManager 카드/통계 레이아웃 맞춤
+- [x] ToolBuilderCreate StepperTabs 전환
+  - [x] ToolBuilderCreate 스텝 전환, 테스트 업데이트 (StepperTabs 적용 및 네비게이션 연동)
+  - [x] useAppNavigation 단계 상태 연동 (AI 생성 플로우 탭 동기화)
+  - [x] ToolBuilder 메인 EmptyState/카드 레이아웃 정리
 
 #### 4.2 Manager 카드/섹션 레이아웃 일치화
 
-- [ ] SubAgentManager/ModelManager/MCPToolsManager UI 카드가 디자인 기준(통계, 상태 퍼널, CTA)과 일치하도록 수정
+- [x] SubAgentManager/ModelManager/MCPToolsManager UI 카드가 디자인 기준(통계, 상태 퍼널, CTA)과 일치하도록 수정
 - [ ] Settings/RACP/ToolBuilder 섹션 차이점 파악 후 적용 (design/components/\* 참고)
+  - [x] ToolBuilder 메인 화면을 디자인 기준(통계 카드 4종 + 카드형 리스트)으로 단순화하고 EmptyState 토글 UX 정비
+  - [ ] Settings 화면 남은 토글/배너/연동 copy 차이점 검토
+  - [ ] RACP 카드 섹션(로드맵/CTA) 시각 QA 2차 점검
 
-#### 4.3 기타 매니저 연동
+#### 4.3 CTA & Stepper UX 세부 정렬 _(신규)_
+
+- [x] `SubAgentManager` 상단 CTA 버튼을 디자인 컴포넌트(`design/components/SubAgentManager.tsx`)와 동일한 캡슐 아이콘·Sparkles·그라데이션 오버레이로 갱신하고, MCP/Tool Builder 등 생성 CTA들도 같은 스타일 가이드를 적용
+- [x] StepperTabs 단계 잠금(`maxUnlockedIndex`) 로직을 재검토해 디자인 시안과 동일한 자유 이동 UX를 지원하거나, 제한 유지 시 이유/가이드를 UI copy·tooltip으로 명확히 전달하도록 설계안 마련
+- [x] 각 Stepper 헤더 액션(`Create Agent`, `Deploy Tool` 등)에 디자인 기준의 상태 배지, 보조 설명, 버튼 인터랙션(hover/disabled/processing) 표준을 반영
+
+#### 4.4 기타 매니저 연동
 
 - [x] MCP Tool Manager가 Core RPC 이벤트(툴 등록/삭제/상태 변경)에 직접 반응하도록 리팩터링하고, 관련 테스트를 async stream 기반으로 갱신
 - [ ] Multi-manager 실시간 상태 퍼널/usage 통계가 ServiceContainer 이벤트와 연동되는지 검증

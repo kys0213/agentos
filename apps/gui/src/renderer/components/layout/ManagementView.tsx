@@ -1,4 +1,13 @@
-import { ArrowLeft, MessageSquare, Minimize2, X, Bot, CheckCircle, Clock, MinusCircle } from 'lucide-react';
+import {
+  ArrowLeft,
+  MessageSquare,
+  Minimize2,
+  X,
+  Bot,
+  CheckCircle,
+  Clock,
+  MinusCircle,
+} from 'lucide-react';
 import React from 'react';
 import { Dashboard } from '../dashboard/Dashboard';
 import ModelManagerContainer from '../llm/ModelManagerContainer';
@@ -36,13 +45,16 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
   // Use hooks directly like design/App.tsx
   const chatState = useChatState();
   const appData = useAppData();
-  const { data: presetsData = [], isLoading: presetsLoading, error: presetsError } = usePresets();
+  const { data: presetsData = [], isLoading: presetsLoading } = usePresets();
 
   const {
     activeSection,
     creatingMCPTool,
     creatingAgent,
     creatingCustomTool,
+    agentCreationStep,
+    mcpCreationStep,
+    customToolCreationStep,
     setActiveSection,
     handleBackToChat,
     handleBackToTools,
@@ -51,6 +63,9 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     handleStartCreateMCPTool,
     handleStartCreateAgent,
     handleStartCreateCustomTool,
+    setAgentCreationStep,
+    setMcpCreationStep,
+    setCustomToolCreationStep,
     isInDetailView,
   } = navigation;
 
@@ -71,13 +86,13 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     handleCreateCustomTool,
     reloadAgents,
     loading: agentsLoading,
-    error: agentsError,
   } = appData;
 
   const onCreateMCPTool = async (mcpConfig: McpConfig) => {
     const tool = await handleCreateMCPTool(mcpConfig);
     handleBackToTools();
     setActiveSection('tools');
+    setMcpCreationStep('overview');
     queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
     queryClient.invalidateQueries({ queryKey: ['dashboard', 'activity'] });
     return tool;
@@ -87,6 +102,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     const tool = handleCreateCustomTool(toolData);
     handleBackToToolBuilder();
     setActiveSection('toolbuilder');
+    setCustomToolCreationStep('describe');
     return tool;
   };
 
@@ -109,15 +125,20 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
 
   const handleRegisterTool = () => {
     setActiveSection('tools');
-    handleStartCreateMCPTool();
+    handleStartCreateMCPTool('overview');
   };
 
   const resolveCreationView = (): React.ReactNode => {
     if (creatingMCPTool) {
       return (
         <MCPToolCreate
-          onBack={handleBackToTools}
+          onBack={() => {
+            handleBackToTools();
+            setMcpCreationStep('overview');
+          }}
           onCreate={onCreateMCPTool}
+          currentStepId={mcpCreationStep}
+          onStepChange={setMcpCreationStep}
           onCreated={() => {
             queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
             queryClient.invalidateQueries({ queryKey: ['dashboard', 'activity'] });
@@ -129,16 +150,32 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     if (creatingAgent) {
       return (
         <SubAgentCreateContainer
-          onBack={handleBackToAgents}
+          onBack={() => {
+            handleBackToAgents();
+            setAgentCreationStep('overview');
+          }}
           onCreated={(id) => {
             handleOpenChat(id);
+            setAgentCreationStep('overview');
           }}
+          currentStepId={agentCreationStep}
+          onStepChange={setAgentCreationStep}
         />
       );
     }
 
     if (creatingCustomTool) {
-      return <ToolBuilderCreate onBack={handleBackToToolBuilder} onCreate={onCreateCustomTool} />;
+      return (
+        <ToolBuilderCreate
+          onBack={() => {
+            handleBackToToolBuilder();
+            setCustomToolCreationStep('describe');
+          }}
+          onCreate={onCreateCustomTool}
+          currentStepId={customToolCreationStep}
+          onStepChange={setCustomToolCreationStep}
+        />
+      );
     }
 
     return null;
@@ -162,7 +199,13 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
           />
         );
       case 'subagents':
-        return <SubAgentManagerContainer onCreateAgent={handleStartCreateAgent} />;
+        return (
+          <SubAgentManagerContainer
+            onCreateAgent={handleStartCreateAgent}
+            forceEmptyState={showEmptyState}
+            onToggleEmptyState={() => setShowEmptyState(!showEmptyState)}
+          />
+        );
       case 'models':
         return (
           <div className="space-y-6">
@@ -170,9 +213,21 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
           </div>
         );
       case 'tools':
-        return <MCPToolsManager onCreateTool={handleStartCreateMCPTool} />;
+        return (
+          <MCPToolsManager
+            onCreateTool={handleStartCreateMCPTool}
+            forceEmptyState={showEmptyState}
+            onToggleEmptyState={() => setShowEmptyState(!showEmptyState)}
+          />
+        );
       case 'toolbuilder':
-        return <ToolBuilder onCreateTool={handleStartCreateCustomTool} />;
+        return (
+          <ToolBuilder
+            onCreateTool={handleStartCreateCustomTool}
+            forceEmptyState={showEmptyState}
+            onToggleEmptyState={() => setShowEmptyState(!showEmptyState)}
+          />
+        );
       case 'racp':
         return <RACPManager />;
       case 'settings':
@@ -279,9 +334,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
                     </span>
                     {renderStatusBadge(activeChatAgent.status)}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {activeChatAgent.preset.name}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{activeChatAgent.preset.name}</p>
                 </div>
               </div>
               <div className="flex gap-1">
@@ -308,8 +361,9 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
 
             <div className="p-4 space-y-3 text-sm text-muted-foreground">
               <p>
-                Continue chatting with <span className="font-medium text-foreground">{activeChatAgent.name}</span>.
-                Open the main chat view to see conversation history and respond.
+                Continue chatting with{' '}
+                <span className="font-medium text-foreground">{activeChatAgent.name}</span>. Open
+                the main chat view to see conversation history and respond.
               </p>
               {activeChatAgent.lastUsed && (
                 <p className="text-xs">

@@ -26,7 +26,7 @@ export function DashboardCard({
           <p className="text-2xl font-semibold">{value}</p>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>{change}</span>
-            {showRetry ? (
+            {showRetry && (
               <button
                 aria-label={`retry-${title}`}
                 className="h-7 px-2 border rounded text-xs"
@@ -34,7 +34,7 @@ export function DashboardCard({
               >
                 Retry
               </button>
-            ) : null}
+            )}
           </div>
         </div>
         <Icon className={`w-8 h-8 ${color ?? ''}`} />

@@ -8,14 +8,20 @@ import { Button } from '../ui/button';
 import { Alert, AlertDescription } from '../ui/alert';
 import { AlertCircle } from 'lucide-react';
 
+import type { AgentCreationStep } from '../../stores/store-types';
+
 interface SubAgentCreateContainerProps {
   onBack: () => void;
   onCreated?: (agentId: string) => void;
+  currentStepId?: AgentCreationStep;
+  onStepChange?: (step: AgentCreationStep) => void;
 }
 
 export const SubAgentCreateContainer: React.FC<SubAgentCreateContainerProps> = ({
   onBack,
   onCreated,
+  currentStepId,
+  onStepChange,
 }) => {
   const queryClient = useQueryClient();
 
@@ -115,6 +121,8 @@ export const SubAgentCreateContainer: React.FC<SubAgentCreateContainerProps> = (
         presetTemplate={presetTemplate}
         isSubmitting={mutation.isPending}
         submitError={createError}
+        currentStepId={currentStepId}
+        onStepChange={onStepChange}
       />
     </div>
   );

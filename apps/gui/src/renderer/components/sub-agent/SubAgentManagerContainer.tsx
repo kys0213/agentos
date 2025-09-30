@@ -8,10 +8,14 @@ import type { AgentStatus } from '@agentos/core';
 
 export interface SubAgentManagerContainerProps {
   onCreateAgent?: () => void;
+  forceEmptyState?: boolean;
+  onToggleEmptyState?: () => void;
 }
 
 export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> = ({
   onCreateAgent,
+  forceEmptyState = false,
+  onToggleEmptyState,
 }) => {
   const queryClient = useQueryClient();
   const {
@@ -63,6 +67,8 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
       onOpenChat={() => {}}
       onCreateAgent={onCreateAgent}
       onUpdateAgentStatus={(id, status) => mutation.mutate({ id, status })}
+      forceEmptyState={forceEmptyState}
+      onToggleEmptyState={onToggleEmptyState}
     />
   );
 };

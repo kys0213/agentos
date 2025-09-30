@@ -5,7 +5,9 @@ vi.mock('electron', () => {
   // Minimal app mock
   const app = {
     getPath: (name: string) => {
-      if (name === 'userData') return '/tmp/agentos-test';
+      if (name === 'userData') {
+        return '/tmp/agentos-test';
+      }
       return '/tmp';
     },
     getName: () => 'AgentOS Test',

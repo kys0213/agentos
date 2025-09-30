@@ -39,7 +39,7 @@ describe('MCPToolsManager stream updates', () => {
     };
 
     const transport: RpcClient = {
-      async request<TRes = unknown, _TReq = unknown>(): Promise<TRes> {
+      async request<TRes = unknown>(): Promise<TRes> {
         return undefined as never as TRes;
       },
       on() {
@@ -87,8 +87,6 @@ describe('MCPToolsManager stream updates', () => {
 
     await waitFor(() => expect(screen.getByText(/Used by agent-42/i)).toBeInTheDocument());
 
-    const totalUsageValue = screen.getByText('Total Usage')
-      .previousElementSibling as HTMLElement | null;
-    expect(totalUsageValue?.textContent).toBe('2');
+    await waitFor(() => expect(screen.getByText('2 calls')).toBeInTheDocument());
   });
 });

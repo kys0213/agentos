@@ -1,25 +1,16 @@
-import {
-  Activity,
-  AlertCircle,
-  BarChart3,
-  DollarSign,
-  MessageSquare,
-  Package,
-  Plus,
-  RefreshCw,
-  Search,
-  Zap,
-} from 'lucide-react';
-import { useState } from 'react';
+import { AlertCircle, Cpu, Package, Plus, RefreshCw, Search, Wifi, Zap } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import type { LlmManifest } from 'llm-bridge-spec';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ModelCard } from './ModelCard';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Textarea } from '../ui/textarea';
-import type { LlmManifest } from 'llm-bridge-spec';
-// Presentational component: data/actions injected via container
+import { Badge } from '../ui/badge';
+import { Alert, AlertDescription } from '../ui/alert';
+import { EmptyState } from '../layout/EmptyState';
 
 export interface ModelManagerItem {
   id: string;
@@ -39,67 +30,28 @@ export interface ModelManagerProps {
   onDismissError?: () => void;
 }
 
-export function ModelManager(props: ModelManagerProps) {
-  const [activeTab, setActiveTab] = useState('instances');
+export function ModelManager({
+  items,
+  isLoading,
+  onRefresh,
+  onSwitch,
+  onRegister,
+  errorMessage,
+  onDismissError,
+}: ModelManagerProps) {
+  const [activeTab, setActiveTab] = useState<'instances' | 'bridges' | 'marketplace'>('instances');
   const [searchQuery, setSearchQuery] = useState('');
-  const { items, isLoading, onRefresh, onSwitch, onRegister, errorMessage, onDismissError } = props;
   const [isRegisterOpen, setRegisterOpen] = useState(false);
   const [manifestText, setManifestText] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const handleRefresh = () => onRefresh();
-
-  // Installation flow is handled by container; local stub removed
 
   const handleSwitchModel = async (bridgeId: string) => {
     try {
       await onSwitch(bridgeId);
-    } catch (err) {
-      console.error('Failed to switch model:', err);
+    } catch (error) {
+      console.error('Failed to switch model:', error);
     }
   };
-
-  // presentation helpers moved to ModelCard/modelManagerUtils
-
-  if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-semibold">Model Manager</h1>
-            <p className="text-muted-foreground">Loading AI model configurations...</p>
-          </div>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm">Loading...</span>
-          </div>
-        </div>
-
-        {/* Loading skeleton */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <Card key={index} className="p-6">
-              <div className="animate-pulse">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
-                    <div>
-                      <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-16"></div>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="h-3 bg-gray-200 rounded"></div>
-                  <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   const handleOpenRegister = () => {
     setSubmitError(null);
@@ -116,52 +68,261 @@ export function ModelManager(props: ModelManagerProps) {
       }
       await onRegister?.(parsed);
       setRegisterOpen(false);
-      handleRefresh();
-    } catch (e) {
-      setSubmitError((e as Error).message);
+      onRefresh();
+    } catch (error) {
+      setSubmitError((error as Error).message);
     }
   };
 
+  const totalBridges = items.length;
+  const activeBridge = items.find((item) => item.isActive) ?? null;
+  const activeCount = activeBridge ? 1 : 0;
+  const standbyCount = Math.max(totalBridges - activeCount, 0);
+
+  const capabilityStats = useMemo(() => {
+    const unique = new Set<string>();
+    items.forEach((item) => {
+      item.capabilities?.forEach((cap) => unique.add(cap));
+    });
+    return unique.size;
+  }, [items]);
+
+  const coveragePercent = totalBridges > 0 ? Math.round((activeCount / totalBridges) * 100) : 0;
+  const capabilityCoveragePercent =
+    totalBridges > 0 ? Math.min(Math.round((capabilityStats / totalBridges) * 100), 100) : 0;
+
+  const quickInsights = [
+    {
+      id: 'active-bridge',
+      label: 'Active Bridge',
+      value: activeBridge ? activeBridge.name : 'Not assigned',
+      helper: activeBridge ? `${coveragePercent}% of bridges` : 'Select a bridge to activate',
+      Icon: Wifi,
+    },
+    {
+      id: 'capabilities',
+      label: 'Unique Capabilities',
+      value: capabilityStats.toLocaleString(),
+      helper: 'Across installed bridges',
+      Icon: Zap,
+    },
+    {
+      id: 'standby',
+      label: 'Standby Bridges',
+      value: standbyCount.toLocaleString(),
+      helper: 'Ready to switch instantly',
+      Icon: Package,
+    },
+  ];
+
+  const statusMetrics = [
+    {
+      id: 'active',
+      label: 'Active',
+      value: activeCount,
+      percent: coveragePercent,
+      helper: 'Serving traffic',
+      Icon: Wifi,
+      barClass: 'bg-status-active',
+    },
+    {
+      id: 'standby',
+      label: 'Standby',
+      value: standbyCount,
+      percent: totalBridges > 0 ? Math.round((standbyCount / totalBridges) * 100) : 0,
+      helper: 'Configured but idle',
+      Icon: Package,
+      barClass: 'bg-status-idle',
+    },
+    {
+      id: 'coverage',
+      label: 'Capability Coverage',
+      value: capabilityStats,
+      percent: capabilityCoveragePercent,
+      helper: 'Unique modalities & features',
+      Icon: Zap,
+      barClass: 'bg-primary',
+    },
+  ];
+
+  const filteredItems = items.filter((item) => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) {
+      return true;
+    }
+    return (
+      item.name.toLowerCase().includes(query) ||
+      item.provider.toLowerCase().includes(query) ||
+      item.capabilities?.some((cap) => cap.toLowerCase().includes(query))
+    );
+  });
+
+  if (isLoading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">Model Manager</h1>
+            <p className="text-muted-foreground">Loading AI model configurations…</p>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm">Syncing</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Card key={index} className="p-6 animate-pulse space-y-4">
+              <div className="h-5 bg-muted rounded w-1/2" />
+              <div className="h-3 bg-muted rounded w-full" />
+              <div className="h-3 bg-muted rounded w-3/4" />
+              <div className="h-3 bg-muted rounded w-2/3" />
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Model Manager</h1>
-          <p className="text-muted-foreground">
-            {errorMessage
-              ? 'Model configuration error detected'
-              : 'Manage AI model instances and configurations'}
-          </p>
-          {errorMessage && (
-            <div className="mt-3">
-              <div className="flex items-start gap-3 bg-destructive/10 border border-destructive/30 text-destructive rounded-md p-3 text-sm">
-                <AlertCircle className="w-4 h-4 mt-0.5" />
-                <div className="flex-1">
-                  <p>{errorMessage}</p>
+    <div className="h-full flex flex-col">
+      <div className="flex-shrink-0 p-6 border-b bg-muted/10 space-y-6">
+        <div className="grid gap-4 lg:grid-cols-12">
+          <Card className="relative overflow-hidden p-6 lg:col-span-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
+            <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+              <div className="space-y-4">
+                <Badge variant="outline" className="w-fit">
+                  Bridge Overview
+                </Badge>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total installed bridges</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-semibold text-foreground">
+                      {totalBridges.toLocaleString()}
+                    </span>
+                    {totalBridges > 0 && (
+                      <span className="text-sm text-muted-foreground">
+                        {coveragePercent}% active
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {quickInsights.map(({ id, label, value, helper, Icon }) => (
+                    <div key={id} className="rounded-lg border bg-background/70 p-3 shadow-sm">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Icon className="w-4 h-4" />
+                        <span className="text-xs font-medium uppercase tracking-wide">{label}</span>
+                      </div>
+                      <p className="mt-2 text-lg font-semibold text-foreground">{value}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{helper}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-xl border bg-background/80 p-4 shadow-sm w-full max-w-xs space-y-4">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Cpu className="w-4 h-4" />
+                  <span className="text-sm font-medium">Active bridge context</span>
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-foreground">
+                    {activeBridge ? activeBridge.name : 'No bridge active'}
+                  </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Check the bridge configuration or credentials, then try again.
+                    {activeBridge
+                      ? activeBridge.capabilities?.join(', ') || 'Capabilities pending'
+                      : 'Select a bridge to start routing requests.'}
                   </p>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" className="flex-1 gap-2" onClick={onRefresh}>
+                    <RefreshCw className="w-4 h-4" />
+                    Refresh
+                  </Button>
+                  <Button className="gap-2" onClick={handleOpenRegister}>
+                    <Plus className="w-4 h-4" />
+                    Register
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 lg:col-span-4 bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md">
+            <div className="space-y-4">
+              <Badge variant="secondary" className="bg-white/15 text-white">
+                Quick action
+              </Badge>
+              <h2 className="text-xl font-semibold">Install a new bridge</h2>
+              <p className="text-sm text-white/80">
+                Connect third-party LLM providers or local runtimes to expand orchestration
+                coverage.
+              </p>
+              <div className="space-y-2">
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-destructive"
-                  onClick={onDismissError}
+                  className="w-full gap-2 bg-white text-blue-600 hover:bg-white/90"
+                  onClick={handleOpenRegister}
                 >
-                  Dismiss
+                  <Plus className="w-4 h-4" />
+                  Register LLM Bridge
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="w-full gap-2 bg-white/10 hover:bg-white/20 text-white"
+                  onClick={() => setActiveTab('marketplace')}
+                >
+                  Explore Marketplace
                 </Button>
               </div>
             </div>
-          )}
+          </Card>
         </div>
-        <Button className="gap-2" onClick={handleOpenRegister}>
-          <Plus className="w-4 h-4" />
-          Add Model
-        </Button>
+
+        {errorMessage && (
+          <Alert variant="destructive">
+            <AlertCircle className="w-4 h-4" />
+            <AlertDescription className="flex flex-col gap-2">
+              <span>{errorMessage}</span>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                Check bridge credentials or configuration and try again.
+                <Button variant="outline" size="sm" onClick={onDismissError}>
+                  Dismiss
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {statusMetrics.map(({ id, label, value, percent, helper, Icon, barClass }) => (
+            <Card key={id} className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Icon className="w-4 h-4" />
+                  <span className="text-sm font-medium">{label}</span>
+                </div>
+                <Badge variant="outline" className="text-xs">
+                  {percent}%
+                </Badge>
+              </div>
+              <p className="mt-3 text-2xl font-semibold text-foreground">
+                {value.toLocaleString()}
+              </p>
+              <div className="mt-3 h-2 rounded-full bg-muted">
+                <div
+                  className={`h-full rounded-full ${barClass}`}
+                  style={{ width: `${Math.min(percent, 100)}%` }}
+                />
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">{helper}</p>
+            </Card>
+          ))}
+        </div>
       </div>
 
-      {/* Register Bridge Dialog */}
       <Dialog open={isRegisterOpen} onOpenChange={setRegisterOpen}>
         <DialogContent>
           <DialogHeader>
@@ -173,11 +334,11 @@ export function ModelManager(props: ModelManagerProps) {
             </p>
             <Textarea
               value={manifestText}
-              onChange={(e) => setManifestText(e.target.value)}
+              onChange={(event) => setManifestText(event.target.value)}
               rows={10}
               placeholder='{"name":"my-bridge","language":"node","models":["gpt-4o"], ...}'
             />
-            {submitError && <div className="text-sm text-red-600">{submitError}</div>}
+            {submitError && <div className="text-sm text-destructive">{submitError}</div>}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRegisterOpen(false)}>
@@ -190,138 +351,141 @@ export function ModelManager(props: ModelManagerProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Search and Filters */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="Search models..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Button variant="outline" className="gap-2" onClick={handleRefresh}>
-          <RefreshCw className="w-4 h-4" />
-          Refresh
-        </Button>
-      </div>
-
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="instances">Model Instances</TabsTrigger>
-          <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="instances" className="space-y-6">
-          {/* Model Instances */}
-          {items.length === 0 && (
-            <Card className="p-6">
-              <div className="flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-gray-500" />
-                <div>
-                  <h3 className="font-semibold">No installed bridges</h3>
-                  <p className="text-sm text-muted-foreground">Register a bridge and refresh.</p>
-                </div>
-              </div>
-            </Card>
-          )}
-          {items.length > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {items
-                .filter((m) =>
-                  [m.id, m.name, m.provider]
-                    .join(' ')
-                    .toLowerCase()
-                    .includes(searchQuery.toLowerCase())
-                )
-                .map((model) => (
-                  <ModelCard key={model.id} model={model} onSwitch={handleSwitchModel} />
-                ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="marketplace" className="space-y-6">
-          <Card className="p-6">
-            <div className="flex items-center gap-3">
-              <Package className="w-6 h-6 text-gray-600" />
-              <div>
-                <h3 className="font-semibold">Model Marketplace</h3>
-                <p className="text-sm text-muted-foreground">
-                  Catalog integration coming soon. Installed bridges are shown in the Instances tab.
-                </p>
-              </div>
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="analytics" className="space-y-6">
-          {/* Analytics Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <MessageSquare className="w-4 h-4 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">—</p>
-                  <p className="text-xs text-muted-foreground">Total Requests</p>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">—</p>
-                  <p className="text-xs text-muted-foreground">Total Tokens</p>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-4 h-4 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">—</p>
-                  <p className="text-xs text-muted-foreground">Total Cost</p>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <Activity className="w-4 h-4 text-orange-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">—</p>
-                  <p className="text-xs text-muted-foreground">Avg Uptime</p>
-                </div>
-              </div>
-            </Card>
+      <div className="flex-1 min-h-0">
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value as typeof activeTab)}
+          className="h-full flex flex-col"
+        >
+          <div className="flex-shrink-0 px-6 pt-4">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="instances">Model Instances</TabsTrigger>
+              <TabsTrigger value="bridges">Installed Bridges</TabsTrigger>
+              <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
+            </TabsList>
           </div>
 
-          {/* Performance Chart Placeholder */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Performance Overview</h3>
-            <div className="h-64 flex items-center justify-center border-2 border-dashed border-gray-200 rounded-lg">
-              <div className="text-center">
-                <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">Performance chart coming soon</p>
+          <div className="flex-1 min-h-0 px-6 pb-6">
+            <TabsContent value="instances" className="h-full">
+              <div className="space-y-4 h-full flex flex-col">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="relative w-full sm:max-w-sm">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search bridges or capabilities..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={onRefresh} className="gap-2">
+                      <RefreshCw className="w-4 h-4" />
+                      Refresh
+                    </Button>
+                    <Button onClick={handleOpenRegister} className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      Add Model
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex-1 min-h-0">
+                  {filteredItems.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {filteredItems.map((item) => (
+                        <ModelCard key={item.id} model={item} onSwitch={handleSwitchModel} />
+                      ))}
+                    </div>
+                  )}
+
+                  {filteredItems.length === 0 && (
+                    <div className="h-full flex items-center justify-center">
+                      <EmptyState
+                        type="models"
+                        title="No matching bridges"
+                        description="Adjust your search filters or register a new bridge to expand coverage."
+                        actionLabel="Register Bridge"
+                        onAction={handleOpenRegister}
+                        secondaryAction={{
+                          label: 'Clear search',
+                          onClick: () => setSearchQuery(''),
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </TabsContent>
+
+            <TabsContent value="bridges" className="space-y-4">
+              <Card className="p-6">
+                <div className="flex flex-col gap-1 mb-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">Installed Bridges</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Current adapters available for orchestration.
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={onRefresh} className="gap-2">
+                    <RefreshCw className="w-4 h-4" />
+                    Sync
+                  </Button>
+                </div>
+                <div className="space-y-3 text-sm">
+                  {items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex flex-col gap-3 rounded-lg border bg-background/80 p-3 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div>
+                        <p className="font-medium text-foreground">{item.name}</p>
+                        <p className="text-xs text-muted-foreground">{item.provider}</p>
+                        {item.capabilities.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {item.capabilities.map((cap) => (
+                              <Badge key={cap} variant="secondary" className="text-xs">
+                                {cap}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 self-end sm:self-auto">
+                        <Badge variant={item.isActive ? 'default' : 'outline'} className="text-xs">
+                          {item.isActive ? 'Active' : 'Standby'}
+                        </Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSwitchModel(item.id)}
+                        >
+                          {item.isActive ? 'Reconnect' : 'Activate'}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="marketplace" className="space-y-4">
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold mb-2">Marketplace preview</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Browse curated bridges from OpenAI, Anthropic, Hugging Face, and community
+                  providers. Install integrations with one click once the marketplace is connected
+                  to your workspace.
+                </p>
+                <Button onClick={handleOpenRegister} className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Register from manifest
+                </Button>
+              </Card>
+            </TabsContent>
+          </div>
+        </Tabs>
+      </div>
     </div>
   );
 }
