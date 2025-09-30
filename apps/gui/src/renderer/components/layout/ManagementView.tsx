@@ -80,6 +80,8 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
 
   const {
     currentAgents,
+    mentionableAgents,
+    activeAgents,
     showEmptyState,
     setShowEmptyState,
     handleCreateMCPTool,
@@ -192,6 +194,8 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
             onOpenChat={handleOpenChat}
             presets={dashboardPresets}
             currentAgents={currentAgents}
+            mentionableAgents={mentionableAgents}
+            activeAgents={activeAgents}
             loading={dashboardLoading}
             onCreateAgent={handleStartCreateAgent}
             onManageTools={handleNavigateToTools}

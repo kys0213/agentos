@@ -63,12 +63,17 @@ const presetsFixture: Preset[] = [
   },
 ];
 
+const mentionableAgents = agentsFixture;
+const activeAgents = agentsFixture.filter((agent) => agent.status === 'active');
+
 function renderDashboard(queryClient: QueryClient) {
   return render(
     <QueryClientProvider client={queryClient}>
       <Dashboard
         presets={presetsFixture}
         currentAgents={agentsFixture}
+        mentionableAgents={mentionableAgents}
+        activeAgents={activeAgents}
         loading={false}
         onCreateAgent={() => {}}
       />
@@ -96,6 +101,8 @@ describe('Dashboard component', () => {
     expect(await screen.findByText('Agents')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
     expect(screen.getByText('1 active')).toBeInTheDocument();
+    expect(screen.getByText('Agent Activity')).toBeInTheDocument();
+    expect(screen.getByText('Available to mention')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /retry-agents/i })).toBeNull();
     qc.clear();
   });

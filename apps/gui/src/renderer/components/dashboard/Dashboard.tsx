@@ -1,4 +1,4 @@
-import type { AgentMetadata, Preset } from '@agentos/core';
+import type { AgentMetadata, Preset, ReadonlyAgentMetadata } from '@agentos/core';
 import { Activity, Bot, Cpu, Layers, MessageSquare } from 'lucide-react';
 import { useEffect } from 'react';
 import { useDashboardStats } from '../../hooks/queries/use-dashboard';
@@ -8,10 +8,13 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { useMcpUsageStream } from '../../hooks/queries/use-mcp-usage-stream';
 import { DashboardCard } from './DashboardCard';
+import AgentActivityCard from './AgentActivityCard';
 
 interface DashboardProps {
   presets: Preset[];
   currentAgents: AgentMetadata[];
+  mentionableAgents: ReadonlyAgentMetadata[];
+  activeAgents: ReadonlyAgentMetadata[];
   onOpenChat?: (agentId: string) => void;
   loading: boolean;
   onCreateAgent: () => void;
@@ -23,6 +26,8 @@ export function Dashboard({
   onOpenChat,
   presets,
   currentAgents,
+  mentionableAgents,
+  activeAgents,
   loading,
   onCreateAgent,
   onManageTools,
@@ -290,6 +295,8 @@ export function Dashboard({
           />
         ))}
       </div>
+
+      <AgentActivityCard mentionableAgents={mentionableAgents} activeAgents={activeAgents} />
 
       {/* Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

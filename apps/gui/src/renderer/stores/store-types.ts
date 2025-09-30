@@ -71,6 +71,8 @@ export interface UseChatStateReturn {
 
 export interface UseAppDataReturn {
   currentAgents: ReadonlyAgentMetadata[];
+  mentionableAgents: ReadonlyAgentMetadata[];
+  activeAgents: ReadonlyAgentMetadata[];
   showEmptyState: boolean;
   setShowEmptyState: (show: boolean) => void;
   loading: boolean; // 로딩 상태

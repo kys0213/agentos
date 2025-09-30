@@ -93,8 +93,8 @@ Last Updated: 2025-09-30
 
 ### 6. 데이터/상태 연동
 
-- [ ] 디자인 `useAppData`의 preset/agent mock 로직을 기반으로, 실제 ServiceContainer/Federated API에 맞는 어댑터 설계 (preset creation, quick analytics 등)
-- [ ] Multi-agent coordinator 결과(mentionable/active)와 대시보드/Chat summary 연결
+- [x] 디자인 `useAppData`의 preset/agent mock 로직을 기반으로, 실제 ServiceContainer/Federated API에 맞는 어댑터 설계 _(React Query 기반 `useAppData`로 에이전트 상태·mentionable/active 캐시 공유)_
+- [x] Multi-agent coordinator 결과(mentionable/active)와 대시보드/Chat summary 연결 _(Dashboard에 Agent Activity 카드 추가, ChatViewContainer와 공유 데이터 연동)_
 
 ### 7. QA & 문서화
 
