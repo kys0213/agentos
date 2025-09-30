@@ -88,8 +88,8 @@ Last Updated: 2025-09-30
 
 ### 5. Theme & 토큰 정리
 
-- [ ] 디자인 `styles/index.css`와 renderer `styles/globals.css` 비교해 빠진 토큰(status-subtle, quick action 색 등) 보완
-- [ ] Chakra UI 잔존 파일(`theme.ts`, 테스트 전용 ChakraProvider) 제거 플랜 수립 및 대체 테스트 작성
+- [x] 디자인 `styles/index.css`와 renderer `styles/globals.css` 비교해 빠진 토큰(status-subtle, quick action 색 등) 보완 _(status subtle utility 클래스/타이포그래피 토큰 반영 완료)_
+- [x] Chakra UI 잔존 파일(`theme.ts`, 테스트 전용 ChakraProvider) 제거 플랜 수립 및 대체 테스트 작성 _(Settings UI를 shadcn 구성요소로 마이그레이션하고 관련 테스트 재작성 완료)_
 
 ### 6. 데이터/상태 연동
 

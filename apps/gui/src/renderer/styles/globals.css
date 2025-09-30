@@ -25,6 +25,9 @@
   --border: rgba(0, 0, 0, 0.1);
   --input: transparent;
   --input-background: #f3f3f5;
+  --primary-light: #e6f0ff;
+  --secondary-light: #f5f5f7;
+  --accent-light: #fafafa;
   --switch-background: #cbced4;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
@@ -87,8 +90,6 @@
   --destructive-foreground: oklch(0.637 0.237 25.331);
   --border: oklch(0.269 0 0);
   --input: oklch(0.269 0 0);
-  --input-background: oklch(0.269 0 0);
-  --switch-background: oklch(0.439 0 0);
   --ring: oklch(0.439 0 0);
   --font-weight-medium: 500;
   --font-weight-normal: 400;
@@ -196,4 +197,123 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/**
+ * Base typography and accessibility tokens aligned with design system.
+ */
+@layer base {
+  h1:not([class*="text-"]) {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2:not([class*="text-"]) {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3:not([class*="text-"]) {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4:not([class*="text-"]) {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  p:not([class*="text-"]) {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+
+  label:not([class*="text-"]) {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button:not([class*="text-"]) {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input:not([class*="text-"]) {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+}
+
+@layer base {
+  .text-muted-foreground {
+    color: color-mix(in srgb, var(--muted-foreground) 85%, var(--foreground) 15%);
+  }
+
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  .status-active {
+    background-color: var(--status-active);
+    color: var(--status-active-foreground);
+  }
+
+  .status-active-subtle {
+    background-color: var(--status-active-background);
+    color: var(--status-active);
+  }
+
+  .status-idle {
+    background-color: var(--status-idle);
+    color: var(--status-idle-foreground);
+  }
+
+  .status-idle-subtle {
+    background-color: var(--status-idle-background);
+    color: var(--status-idle);
+  }
+
+  .status-inactive {
+    background-color: var(--status-inactive);
+    color: var(--status-inactive-foreground);
+  }
+
+  .status-inactive-subtle {
+    background-color: var(--status-inactive-background);
+    color: var(--status-inactive);
+  }
+
+  .status-error {
+    background-color: var(--status-error);
+    color: var(--status-error-foreground);
+  }
+
+  .status-error-subtle {
+    background-color: var(--status-error-background);
+    color: var(--status-error);
+  }
+}
+
+html {
+  font-size: var(--font-size);
 }
