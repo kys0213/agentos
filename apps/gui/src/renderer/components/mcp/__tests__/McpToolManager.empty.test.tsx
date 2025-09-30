@@ -13,7 +13,7 @@ import { McpUsageRpcService } from '../../../rpc/services/mcp-usage.service';
 
 const createUsageService = (logs: unknown[]) => {
   const transport: RpcClient = {
-    async request<TRes = unknown, _TReq = unknown>(): Promise<TRes> {
+    async request<TRes = unknown>(): Promise<TRes> {
       return undefined as never as TRes;
     },
     on() {
@@ -39,9 +39,9 @@ describe('MCPToolsManager empty/error states', () => {
     ServiceContainer.register('mcp', svc as unknown as McpServiceAdapter);
     ServiceContainer.register('mcpUsageLog', usageSvc);
     render(<MCPToolsManager />);
-    expect(await screen.findByText(/No tools found/i)).toBeInTheDocument();
-    // refresh triggers fetch again
-    const btn = screen.getAllByText('Refresh')[0];
+    expect(await screen.findByText(/No MCP tools yet/i)).toBeInTheDocument();
+    // reload triggers fetch again
+    const btn = screen.getByRole('button', { name: /Reload Tools/i });
     await userEvent.click(btn);
     await waitFor(() => expect(svc.getAllToolMetadata).toHaveBeenCalledTimes(2));
   });
@@ -49,6 +49,6 @@ describe('MCPToolsManager empty/error states', () => {
   it('handles service not available gracefully', async () => {
     // no registration → should show empty scaffolding without crash
     render(<MCPToolsManager />);
-    expect(await screen.findByText(/No registered tools/i)).toBeInTheDocument();
+    expect(await screen.findByText(/No MCP tools yet/i)).toBeInTheDocument();
   });
 });

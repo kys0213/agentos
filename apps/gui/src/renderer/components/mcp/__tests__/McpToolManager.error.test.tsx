@@ -13,7 +13,7 @@ import { McpUsageRpcService } from '../../../rpc/services/mcp-usage.service';
 
 const createUsageService = (logs: unknown[]) => {
   const transport: RpcClient = {
-    async request<TRes = unknown, _TReq = unknown>(): Promise<TRes> {
+    async request<TRes = unknown>(): Promise<TRes> {
       return undefined as never as TRes;
     },
     on() {
@@ -38,10 +38,9 @@ describe('MCPToolsManager error path', () => {
     ServiceContainer.register('mcpUsageLog', usageSvc);
     render(<MCPToolsManager />);
 
-    // Header renders even on error
-    expect(await screen.findByText(/MCP Tool Manager/i)).toBeInTheDocument();
-    const refresh = screen.getAllByText('Refresh')[0];
-    await userEvent.click(refresh);
+    expect(await screen.findByText(/No MCP tools yet/i)).toBeInTheDocument();
+    const reload = screen.getByRole('button', { name: /Reload Tools/i });
+    await userEvent.click(reload);
     await waitFor(() => expect(svc.getAllToolMetadata).toHaveBeenCalledTimes(2));
   });
 });

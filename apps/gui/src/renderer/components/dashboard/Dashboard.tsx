@@ -15,6 +15,8 @@ interface DashboardProps {
   onOpenChat?: (agentId: string) => void;
   loading: boolean;
   onCreateAgent: () => void;
+  onManageTools?: () => void;
+  onRegisterTool?: () => void;
 }
 
 export function Dashboard({
@@ -23,6 +25,8 @@ export function Dashboard({
   currentAgents,
   loading,
   onCreateAgent,
+  onManageTools,
+  onRegisterTool,
 }: DashboardProps) {
   const { data: ds, isLoading: statsLoading, isError: statsError } = useDashboardStats();
   const qc = useQueryClient();
@@ -165,7 +169,6 @@ export function Dashboard({
 
   // Smart quick actions based on available agents and presets
   const bestAgent = currentAgents.find((a) => a.status === 'active') || currentAgents[0];
-  const favoritePreset = presets.find((p) => p.usageCount && p.usageCount > 0) || presets[0];
 
   const quickActions = [
     {
@@ -192,26 +195,24 @@ export function Dashboard({
       color: 'bg-green-500',
     },
     {
-      title: 'Popular Preset',
-      description: favoritePreset
-        ? `Use ${favoritePreset.name}`
-        : 'Configure agent presets and prompts',
+      title: 'Register MCP Tool',
+      description: 'Add a new tool from your MCP integrations',
       icon: Layers,
       action: () => {
-        if (favoritePreset && bestAgent) {
-          onOpenChat?.(bestAgent.id);
-        }
+        onRegisterTool?.();
       },
       color: 'bg-purple-500',
-      disabled: !favoritePreset || !bestAgent,
+      disabled: !onRegisterTool,
     },
     {
-      title: 'System Overview',
-      description: `${currentAgents.length} agents, ${presets.length} presets ready`,
-      icon: Activity,
-      action: () =>
-        console.log('System status:', { agents: currentAgents.length, presets: presets.length }),
+      title: 'Manage Tools',
+      description: 'Review tool catalog and usage metrics',
+      icon: Cpu,
+      action: () => {
+        onManageTools?.();
+      },
       color: 'bg-orange-500',
+      disabled: !onManageTools,
     },
   ];
 

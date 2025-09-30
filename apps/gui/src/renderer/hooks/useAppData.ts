@@ -105,10 +105,8 @@ export function useAppData(): UseAppDataReturn {
     currentAgents.filter((agent) => agent.status === 'active');
 
   // 실제 에이전트가 없는 경우의 상태 관리
-  const agentsToShow = showEmptyState ? [] : currentAgents;
-
   return {
-    currentAgents: agentsToShow,
+    currentAgents,
     showEmptyState,
     setShowEmptyState,
     loading, // 로딩 상태 추가

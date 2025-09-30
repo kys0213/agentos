@@ -4,7 +4,6 @@ type ToolExecutionResponse =
 type ResourceListResponse = { resources: Array<unknown> };
 type ResourceResponse = { uri: string; content: unknown; mimeType: string };
 import { McpClient } from '../gen/mcp.client';
-import { McpContract as C } from '../../../shared/rpc/contracts/mcp.contract';
 
 export class McpServiceAdapter {
   constructor(private readonly client: McpClient) {}

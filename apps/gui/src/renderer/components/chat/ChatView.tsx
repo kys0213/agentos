@@ -252,7 +252,12 @@ export const ChatView: React.FC<ChatViewProps> = ({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => onNavigate('subagents')} className="gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onNavigate('subagents')}
+                className="gap-2"
+              >
                 <Settings className="w-4 h-4" />
                 Manage Agents
               </Button>
@@ -355,7 +360,10 @@ export const ChatView: React.FC<ChatViewProps> = ({
                   )}
 
                   <div className="mt-3 text-xs text-muted-foreground">
-                    {message.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {message.createdAt.toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
                   </div>
 
                   {renderMessageActions(!isUser)}

@@ -28,7 +28,7 @@ describe('useMcpUsageStream', () => {
     let unsubCalled = false;
     // minimal RpcClient to satisfy constructor
     const transport: RpcClient = {
-      async request<TRes = unknown, _TReq = unknown>(): Promise<TRes> {
+      async request<TRes = unknown>(): Promise<TRes> {
         return undefined as never as TRes;
       },
       on<T = unknown>(_ch: string, _h: (p: T) => void) {

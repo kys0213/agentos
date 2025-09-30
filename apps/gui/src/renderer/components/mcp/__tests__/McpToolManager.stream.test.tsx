@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor, act, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ServiceContainer } from '../../../../shared/di/service-container';
 import { MCPToolsManager } from '../McpToolManager';
 import type { McpUsageUpdateEvent } from '../../../../shared/types/mcp-usage-types';
@@ -39,7 +40,7 @@ describe('MCPToolsManager stream updates', () => {
     };
 
     const transport: RpcClient = {
-      async request<TRes = unknown, _TReq = unknown>(): Promise<TRes> {
+      async request<TRes = unknown>(): Promise<TRes> {
         return undefined as never as TRes;
       },
       on() {
@@ -85,10 +86,19 @@ describe('MCPToolsManager stream updates', () => {
       subscribers[0](converted as McpUsageUpdateEvent);
     });
 
+    await userEvent.click(screen.getByRole('tab', { name: 'Usage Logs' }));
     await waitFor(() => expect(screen.getByText(/Used by agent-42/i)).toBeInTheDocument());
 
-    const totalUsageValue = screen.getByText('Total Usage')
-      .previousElementSibling as HTMLElement | null;
-    expect(totalUsageValue?.textContent).toBe('2');
+    await userEvent.click(screen.getByRole('tab', { name: 'Tools' }));
+
+    await waitFor(() => {
+      const usageLabel = screen
+        .getAllByText((content) => content.trim().startsWith('Usage'))
+        .find((node) => node.textContent?.trim().startsWith('Usage:'));
+      expect(usageLabel).toBeDefined();
+      const usageRow = usageLabel?.parentElement;
+      expect(usageRow).not.toBeNull();
+      expect(within(usageRow as HTMLElement).getByText('2')).toBeInTheDocument();
+    });
   });
 });

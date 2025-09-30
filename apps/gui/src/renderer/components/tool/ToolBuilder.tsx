@@ -32,9 +32,35 @@ interface CustomTool {
 
 interface ToolBuilderProps {
   onCreateTool: () => void;
+  forceEmptyState?: boolean;
+  onToggleEmptyState?: () => void;
 }
 
-export function ToolBuilder({ onCreateTool }: ToolBuilderProps) {
+const formatLastUsed = (date?: Date) => {
+  if (!date) {
+    return 'Never';
+  }
+
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const minutes = Math.floor(diff / (1000 * 60));
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  if (minutes < 60) {
+    return `${minutes}m ago`;
+  }
+  if (hours < 24) {
+    return `${hours}h ago`;
+  }
+  return `${days}d ago`;
+};
+
+export function ToolBuilder({
+  onCreateTool,
+  forceEmptyState = false,
+  onToggleEmptyState,
+}: ToolBuilderProps) {
   const [customTools] = useState<CustomTool[]>([
     {
       id: 'tool-slack-001',
@@ -76,8 +102,7 @@ export function ToolBuilder({ onCreateTool }: ToolBuilderProps) {
     },
   ]);
 
-  const [showEmptyState, setShowEmptyState] = useState(false);
-  const currentTools = showEmptyState ? [] : customTools;
+  const currentTools = forceEmptyState ? [] : customTools;
 
   const getStatusIcon = (status: CustomTool['status']) => {
     switch (status) {
@@ -101,31 +126,11 @@ export function ToolBuilder({ onCreateTool }: ToolBuilderProps) {
     }
   };
 
-  const formatLastUsed = (date?: Date) => {
-    if (!date) {
-      return 'Never';
-    }
-
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const minutes = Math.floor(diff / (1000 * 60));
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-    if (minutes < 60) {
-      return `${minutes}m ago`;
-    }
-    if (hours < 24) {
-      return `${hours}h ago`;
-    }
-    return `${days}d ago`;
-  };
-
   const stats = {
     total: currentTools.length,
-    active: currentTools.filter((t) => t.status === 'active').length,
-    testing: currentTools.filter((t) => t.status === 'testing').length,
-    totalUsage: currentTools.reduce((sum, t) => sum + t.usageCount, 0),
+    active: currentTools.filter((tool) => tool.status === 'active').length,
+    testing: currentTools.filter((tool) => tool.status === 'testing').length,
+    totalUsage: currentTools.reduce((sum, tool) => sum + tool.usageCount, 0),
   };
 
   if (currentTools.length === 0) {
@@ -134,14 +139,18 @@ export function ToolBuilder({ onCreateTool }: ToolBuilderProps) {
         <div className="max-w-md">
           <EmptyState
             type="tools"
-            title="No Custom Tools Yet"
-            description="Create your first AI-powered custom tool! Simply describe what you want in natural language, and our AI assistant will generate a working tool for you."
+            title="No custom tools yet"
+            description="Create your first AI-powered custom tool. Describe the workflow and the builder will generate a ready-to-use MCP integration."
             actionLabel="Create First Tool"
             onAction={onCreateTool}
-            secondaryAction={{
-              label: 'Show Demo Tools',
-              onClick: () => setShowEmptyState(false),
-            }}
+            secondaryAction={
+              onToggleEmptyState
+                ? {
+                    label: 'Show Tools',
+                    onClick: onToggleEmptyState,
+                  }
+                : undefined
+            }
           />
         </div>
       </div>
@@ -150,16 +159,17 @@ export function ToolBuilder({ onCreateTool }: ToolBuilderProps) {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Tool Builder</h1>
           <p className="text-muted-foreground">Create and manage your custom AI tools</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => setShowEmptyState(!showEmptyState)}>
-            {showEmptyState ? 'Show Tools' : 'Demo Empty State'}
-          </Button>
+          {onToggleEmptyState && (
+            <Button variant="outline" onClick={onToggleEmptyState}>
+              {forceEmptyState ? 'Show Tools' : 'Demo Empty State'}
+            </Button>
+          )}
           <Button onClick={onCreateTool} className="gap-2">
             <Plus className="w-4 h-4" />
             Create Tool
@@ -167,7 +177,6 @@ export function ToolBuilder({ onCreateTool }: ToolBuilderProps) {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
@@ -226,7 +235,6 @@ export function ToolBuilder({ onCreateTool }: ToolBuilderProps) {
         </Card>
       </div>
 
-      {/* Tools Grid */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Your Custom Tools</h2>

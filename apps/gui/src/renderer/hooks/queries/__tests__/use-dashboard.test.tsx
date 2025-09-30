@@ -156,7 +156,7 @@ describe('useDashboardStats', () => {
       getAllPresets: async (): Promise<Preset[]> => [preset1, preset2],
     });
     const dummyTransport: RpcClient = {
-      async request<TRes = unknown, _TReq = unknown>(): Promise<TRes> {
+      async request<TRes = unknown>(): Promise<TRes> {
         return undefined as never as TRes;
       },
       on<T = unknown>(_ch: string, _h: (p: T) => void) {
@@ -190,7 +190,9 @@ describe('useDashboardStats', () => {
     await waitFor(() => !!latest);
 
     expect(latest).toBeTruthy();
-    if (!latest) throw new Error('no data');
+    if (!latest) {
+      throw new Error('no data');
+    }
     const v = latest as DS;
     expect(v.activeChats).toBe(2);
     expect(v.agents.total).toBe(2);

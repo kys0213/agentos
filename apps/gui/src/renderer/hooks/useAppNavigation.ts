@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import type { AppSection, UseAppNavigationReturn } from '../stores/store-types';
+import type {
+  AgentCreationStep,
+  AppSection,
+  CustomToolCreationStep,
+  McpCreationStep,
+  UseAppNavigationReturn,
+} from '../stores/store-types';
 
 /**
  * App navigation state management hook
@@ -11,11 +17,18 @@ export function useAppNavigation(): UseAppNavigationReturn {
   const [creatingMCPTool, setCreatingMCPTool] = useState(false);
   const [creatingAgent, setCreatingAgent] = useState(false);
   const [creatingCustomTool, setCreatingCustomTool] = useState(false);
+  const [agentCreationStep, setAgentCreationStep] = useState<AgentCreationStep>('overview');
+  const [mcpCreationStep, setMcpCreationStep] = useState<McpCreationStep>('overview');
+  const [customToolCreationStep, setCustomToolCreationStep] =
+    useState<CustomToolCreationStep>('describe');
 
   const resetCreateStates = () => {
     setCreatingMCPTool(false);
     setCreatingAgent(false);
     setCreatingCustomTool(false);
+    setAgentCreationStep('overview');
+    setMcpCreationStep('overview');
+    setCustomToolCreationStep('describe');
   };
 
   const handleBackToChat = () => {
@@ -27,30 +40,42 @@ export function useAppNavigation(): UseAppNavigationReturn {
     setCreatingMCPTool(false);
     setCreatingAgent(false);
     setCreatingCustomTool(false);
+    setMcpCreationStep('overview');
   };
 
   const handleBackToAgents = () => {
     setCreatingAgent(false);
     setCreatingMCPTool(false);
     setCreatingCustomTool(false);
+    setAgentCreationStep('overview');
   };
 
   const handleBackToToolBuilder = () => {
     setCreatingCustomTool(false);
     setCreatingMCPTool(false);
     setCreatingAgent(false);
+    setCustomToolCreationStep('describe');
   };
 
-  const handleStartCreateAgent = () => {
+  const handleStartCreateMCPTool = (step: McpCreationStep = 'overview') => {
+    setCreatingMCPTool(true);
+    setCreatingAgent(false);
+    setCreatingCustomTool(false);
+    setMcpCreationStep(step);
+  };
+
+  const handleStartCreateAgent = (step: AgentCreationStep = 'overview') => {
     setCreatingAgent(true);
     setCreatingMCPTool(false);
     setCreatingCustomTool(false);
+    setAgentCreationStep(step);
   };
 
   const handleStartCreateCustomTool = () => {
     setCreatingCustomTool(true);
     setCreatingMCPTool(false);
     setCreatingAgent(false);
+    setCustomToolCreationStep('describe');
   };
 
   const isInDetailView = () => {
@@ -63,6 +88,9 @@ export function useAppNavigation(): UseAppNavigationReturn {
     creatingMCPTool,
     creatingAgent,
     creatingCustomTool,
+    agentCreationStep,
+    mcpCreationStep,
+    customToolCreationStep,
 
     // Actions
     setActiveSection,
@@ -70,8 +98,12 @@ export function useAppNavigation(): UseAppNavigationReturn {
     handleBackToTools,
     handleBackToAgents,
     handleBackToToolBuilder,
+    handleStartCreateMCPTool,
     handleStartCreateAgent,
     handleStartCreateCustomTool,
+    setAgentCreationStep,
+    setMcpCreationStep,
+    setCustomToolCreationStep,
     isInDetailView,
   };
 }
