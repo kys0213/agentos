@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { MessageHistory, ReadonlyAgentMetadata } from '@agentos/core';
 import { ServiceContainer } from '../../../shared/di/service-container';
+import { AGENTS_QUERY_KEY, fetchAgents } from '../useAppData';
 
 export const CHAT_QUERY_KEYS = {
   mentionableAgents: ['chat', 'mentionableAgents'] as const,
@@ -8,32 +9,26 @@ export const CHAT_QUERY_KEYS = {
   history: (agentId: string) => ['chat', 'history', agentId] as const,
 } as const;
 
-export const useMentionableAgents = () => {
-  return useQuery<ReadonlyAgentMetadata[]>({
-    queryKey: CHAT_QUERY_KEYS.mentionableAgents,
-    queryFn: async () => {
-      const agentService = ServiceContainer.getOrThrow('agent');
-      const all = await agentService.getAllAgentMetadatas();
-      return all.filter((a) => a.status === 'active' || a.status === 'idle');
-    },
+export const useMentionableAgents = () =>
+  useQuery({
+    queryKey: AGENTS_QUERY_KEY,
+    queryFn: fetchAgents,
+    select: (agents: ReadonlyAgentMetadata[]) =>
+      agents.filter((agent) => agent.status === 'active' || agent.status === 'idle'),
     staleTime: 60_000,
   });
-};
 
-export const useActiveAgents = () => {
-  return useQuery<ReadonlyAgentMetadata[]>({
-    queryKey: CHAT_QUERY_KEYS.activeAgents,
-    queryFn: async () => {
-      const agentService = ServiceContainer.getOrThrow('agent');
-      const all = await agentService.getAllAgentMetadatas();
-      return all.filter((a) => a.status === 'active');
-    },
+export const useActiveAgents = () =>
+  useQuery({
+    queryKey: AGENTS_QUERY_KEY,
+    queryFn: fetchAgents,
+    select: (agents: ReadonlyAgentMetadata[]) =>
+      agents.filter((agent) => agent.status === 'active'),
     staleTime: 30_000,
   });
-};
 
-export const useChatHistory = (agentId: string | undefined, sessionId?: string) => {
-  return useQuery<Readonly<MessageHistory>[]>({
+export const useChatHistory = (agentId: string | undefined, sessionId?: string) =>
+  useQuery<Readonly<MessageHistory>[]>({
     queryKey:
       agentId && sessionId ? CHAT_QUERY_KEYS.history(agentId) : ['chat', 'history', 'disabled'],
     queryFn: async () => {
@@ -43,9 +38,8 @@ export const useChatHistory = (agentId: string | undefined, sessionId?: string) 
 
       const conversationService = ServiceContainer.getOrThrow('conversation');
 
-      // 전체 메시지 조회 (페이지네이션 처리)
       const allMessages: MessageHistory[] = [];
-      let cursor: string | undefined = undefined;
+      let cursor: string | undefined;
       let hasMore = true;
 
       while (hasMore) {
@@ -65,7 +59,6 @@ export const useChatHistory = (agentId: string | undefined, sessionId?: string) 
     enabled: !!agentId && !!sessionId,
     initialData: [],
   });
-};
 
 export const useSendChatMessage = (
   agentId: string | undefined,
@@ -87,7 +80,6 @@ export const useSendChatMessage = (
 
       const agentService = ServiceContainer.getOrThrow('agent');
 
-      // 유저 메시지
       const userMessage: Readonly<MessageHistory> = {
         messageId: `user-${Date.now()}`,
         role: 'user',
@@ -95,30 +87,23 @@ export const useSendChatMessage = (
         createdAt: new Date(),
       } as const;
 
-      // 캐시에 유저 메시지 먼저 추가 (낙관적)
       queryClient.setQueryData(
         CHAT_QUERY_KEYS.history(agentId),
-        (prev?: Readonly<MessageHistory>[]) => {
-          const history = prev ?? [];
-          return [...history, userMessage];
-        }
+        (prev?: Readonly<MessageHistory>[]) => [...(prev ?? []), userMessage]
       );
 
       const mentionedAgentIds = _mentionedAgentIds?.length ? [_mentionedAgentIds[0]] : undefined;
 
-      // AgentProtocol.chat 호출
       const result = await agentService.chat(
         agentId,
         [{ role: 'user', content: [{ contentType: 'text', value: text }] }],
         {
-          // 세션 ID 우선 사용, 없으면 agentId로 폴백
           sessionId: options?.sessionId ?? agentId,
           maxTurnCount: 1,
         },
         { mentionedAgentIds }
       );
 
-      // 응답 메시지들을 MessageHistory로 매핑 (배열 콘텐츠로 정규화)
       type BridgeMsg = {
         role: string;
         content: { contentType: string; value: unknown }[];
@@ -157,6 +142,7 @@ export const useSendChatMessage = (
               agentMetadata: undefined,
             } as Readonly<MessageHistory>;
           }
+
           const agentMetadata =
             m['agentMetadata'] && typeof m['agentMetadata'] === 'object'
               ? (m['agentMetadata'] as Readonly<MessageHistory>['agentMetadata'])
@@ -169,7 +155,6 @@ export const useSendChatMessage = (
         }
       );
 
-      // 세션 ID 갱신 콜백 (서버에서 새 세션 발급 시 반영)
       options?.onSessionId?.(result.sessionId);
 
       return { userMessage, assistantMessages } as const;
