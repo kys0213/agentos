@@ -31,9 +31,9 @@ Last Updated: 2025-09-23
 
 ### 1. 레이아웃 & 네비게이션 동기화
 
-- [ ] `apps/gui/src/renderer/App`/`ManagementView`를 `design/App.tsx` 최신 흐름과 diff → 에이전트/툴 생성 진입·복귀 핸들러 반영 _(WIP — MCP 툴 생성 플로우 반영 완료, 대시보드/세부 QA 잔여)_
+- [x] `apps/gui/src/renderer/App`/`ManagementView`를 `design/App.tsx` 최신 흐름과 diff → 에이전트/툴 생성 진입·복귀 핸들러 반영 _(헤더 톤&스크롤 영역, 데모 EmptyState 토글 UX까지 디자인과 일치화)_
 - [x] `useAppNavigation`에 `handleStartCreateMCPTool` 등 누락된 액션 추가, detail view 판별 로직 정리
-- [ ] Sidebar 메뉴/아이콘/토글 UX가 Figma & 디자인 버전과 일치하도록 QA
+- [x] Sidebar 메뉴/아이콘/토글 UX가 Figma & 디자인 버전과 일치하도록 QA _(브랜드 카피, collapse 위치/정렬, 아이콘 정렬 갱신 — Collapse 상태 라벨은 후속 개선 후보)_
 
 ### 2. Dashboard 리뉴얼
 
