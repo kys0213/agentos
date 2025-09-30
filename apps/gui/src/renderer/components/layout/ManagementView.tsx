@@ -274,6 +274,29 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     }
   };
 
+  const canToggleEmptyState =
+    activeSection === 'subagents' || activeSection === 'tools' || activeSection === 'toolbuilder';
+
+  const emptyStateButtonLabel = (() => {
+    if (!canToggleEmptyState) {
+      return showEmptyState ? 'Show Content' : 'Demo Empty State';
+    }
+
+    if (!showEmptyState) {
+      return 'Demo Empty State';
+    }
+
+    if (activeSection === 'subagents') {
+      return 'Show Agents';
+    }
+
+    if (activeSection === 'tools' || activeSection === 'toolbuilder') {
+      return 'Show Tools';
+    }
+
+    return 'Show Content';
+  })();
+
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar - only show when not in detail view */}
@@ -284,7 +307,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
       <main className="flex-1 overflow-hidden flex flex-col">
         {/* Header - only show when not in detail view */}
         {!isInDetailView() && (
-          <div className="border-b bg-background p-4">
+          <div className="border-b bg-card p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Button variant="outline" size="sm" onClick={handleBackToChat} className="gap-2">
@@ -301,21 +324,25 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
                   Open Chat
                 </Button>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowEmptyState(!showEmptyState)}
-                  className="gap-2"
-                >
-                  {showEmptyState ? 'Show Agents' : 'Demo Empty State'}
-                </Button>
+                {canToggleEmptyState && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowEmptyState((prev) => !prev)}
+                    className="gap-2"
+                  >
+                    {emptyStateButtonLabel}
+                  </Button>
+                )}
               </div>
             </div>
           </div>
         )}
 
-        {/* Management Content: make this area scrollable */}
-        <div className="flex-1 min-h-0 overflow-y-auto">{renderManagementContent()}</div>
+        {/* Management Content */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="h-full overflow-y-auto">{renderManagementContent()}</div>
+        </div>
       </main>
 
       {/* Floating Chat Interface */}
