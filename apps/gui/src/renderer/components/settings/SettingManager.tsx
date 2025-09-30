@@ -719,17 +719,21 @@ export function SettingsManager() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="gpt-4">GPT-4</SelectItem>
-                            <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
-                            <SelectItem value="claude-3">Claude 3</SelectItem>
-                            <SelectItem value="local-model">Local Model</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                <SelectItem value="gpt-4">OpenAI GPT-4 Turbo</SelectItem>
+                <SelectItem value="gpt-4-mini">OpenAI GPT-4o mini</SelectItem>
+                <SelectItem value="claude-3">Anthropic Claude 3</SelectItem>
+                <SelectItem value="mistral-large">Mistral Large</SelectItem>
+                <SelectItem value="local-model">Local Model (ggml)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              Choose which model AgentOS uses by default for new conversations.
+            </p>
+          </div>
 
-                      <div className="space-y-2">
-                        <Label>Request timeout (seconds)</Label>
-                        <div className="flex items-center gap-4">
+          <div className="space-y-2">
+            <Label>Request timeout (seconds)</Label>
+            <div className="flex items-center gap-4">
                           <Slider
                             value={[settings.models.timeout]}
                             onValueChange={([value]) => updateSetting('models', 'timeout', value)}
@@ -738,20 +742,23 @@ export function SettingsManager() {
                             step={5}
                             className="flex-1"
                           />
-                          <span className="text-sm text-muted-foreground w-12">
-                            {settings.models.timeout}s
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
+              <span className="text-sm text-muted-foreground w-12">
+                {settings.models.timeout}s
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Increase for slower endpoints or large batch operations.
+            </p>
+          </div>
+        </div>
+      </Card>
 
-                  <Card className="p-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Model Parameters</h3>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label>Temperature</Label>
-                        <div className="flex items-center gap-4">
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold text-foreground mb-4">Model Parameters</h3>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Temperature</Label>
+            <div className="flex items-center gap-4">
                           <Slider
                             value={[settings.models.temperature]}
                             onValueChange={([value]) =>
@@ -762,15 +769,18 @@ export function SettingsManager() {
                             step={0.1}
                             className="flex-1"
                           />
-                          <span className="text-sm text-muted-foreground w-12">
-                            {settings.models.temperature}
-                          </span>
-                        </div>
-                      </div>
+              <span className="text-sm text-muted-foreground w-12">
+                {settings.models.temperature}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Higher values make responses more creative but less predictable.
+            </p>
+          </div>
 
-                      <div className="space-y-2">
-                        <Label>Max tokens</Label>
-                        <div className="flex items-center gap-4">
+          <div className="space-y-2">
+            <Label>Max tokens</Label>
+            <div className="flex items-center gap-4">
                           <Slider
                             value={[settings.models.maxTokens]}
                             onValueChange={([value]) => updateSetting('models', 'maxTokens', value)}
@@ -779,15 +789,18 @@ export function SettingsManager() {
                             step={256}
                             className="flex-1"
                           />
-                          <span className="text-sm text-muted-foreground w-16">
-                            {settings.models.maxTokens}
-                          </span>
-                        </div>
-                      </div>
+              <span className="text-sm text-muted-foreground w-16">
+                {settings.models.maxTokens}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Defines the maximum response length the model can generate.
+            </p>
+          </div>
 
-                      <div className="space-y-2">
-                        <Label>Top P</Label>
-                        <div className="flex items-center gap-4">
+          <div className="space-y-2">
+            <Label>Top P</Label>
+            <div className="flex items-center gap-4">
                           <Slider
                             value={[settings.models.topP]}
                             onValueChange={([value]) => updateSetting('models', 'topP', value)}
@@ -796,13 +809,16 @@ export function SettingsManager() {
                             step={0.1}
                             className="flex-1"
                           />
-                          <span className="text-sm text-muted-foreground w-12">
-                            {settings.models.topP}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
+              <span className="text-sm text-muted-foreground w-12">
+                {settings.models.topP}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Controls nucleus sampling—lower values ensure more focused output.
+            </p>
+          </div>
+        </div>
+      </Card>
                 </TabsContent>
 
                 <TabsContent value="knowledge" className="space-y-6">
