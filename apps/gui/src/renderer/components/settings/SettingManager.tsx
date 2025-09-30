@@ -1,5 +1,5 @@
 import {
-  AlertCircle,
+  AlertTriangle,
   BookOpen,
   Bot,
   Brain,
@@ -217,9 +217,8 @@ export function SettingsManager() {
   };
 
   const handleReset = () => {
-    const nextDefaults = createDefaultSettings('light');
+    const nextDefaults = createDefaultSettings(settings.general.theme);
     setSettings(nextDefaults);
-    setTheme('light');
     setHasChanges(false);
   };
 
@@ -271,10 +270,8 @@ export function SettingsManager() {
 
         {hasChanges && (
           <div className="flex items-center gap-2 p-3 bg-status-warning-background border border-status-warning rounded-lg">
-            <AlertCircle className="w-4 h-4 text-status-warning" />
-            <span className="text-sm text-status-warning">
-              You have unsaved changes. Save to apply updates across AgentOS.
-            </span>
+            <AlertTriangle className="w-4 h-4 text-status-warning" />
+            <span className="text-sm text-status-warning">You have unsaved changes</span>
           </div>
         )}
       </div>

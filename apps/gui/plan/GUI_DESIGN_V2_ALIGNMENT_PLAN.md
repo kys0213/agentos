@@ -71,7 +71,7 @@ Last Updated: 2025-09-23
 - [x] SubAgentManager/ModelManager/MCPToolsManager UI 카드가 디자인 기준(통계, 상태 퍼널, CTA)과 일치하도록 수정
 - [ ] Settings/RACP/ToolBuilder 섹션 차이점 파악 후 적용 (design/components/\* 참고)
   - [x] ToolBuilder 메인 화면을 디자인 기준(통계 카드 4종 + 카드형 리스트)으로 단순화하고 EmptyState 토글 UX 정비
-  - [ ] Settings 화면 남은 토글/배너/연동 copy 차이점 검토
+  - [x] Settings 화면 남은 토글/배너/연동 copy 차이점 검토 _(헤더 경고 배너/Reset 동작을 디자인과 맞춤)_
   - [ ] RACP 카드 섹션(로드맵/CTA) 시각 QA 2차 점검
 
 #### 4.3 CTA & Stepper UX 세부 정렬 _(신규)_
