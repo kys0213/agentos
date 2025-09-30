@@ -16,11 +16,9 @@ import {
   Image as ImageIcon,
   Link,
   Plus,
-  RefreshCw,
   Search,
   Settings,
   Sparkles,
-  TrendingUp,
   Unlink,
   Wrench,
 } from 'lucide-react';
@@ -500,45 +498,12 @@ export function MCPToolsManager({
   const pendingTools = tools.filter((t) => t.status === 'pending').length;
   const disconnectedTools = tools.filter((t) => t.status === 'disconnected').length;
   const errorTools = tools.filter((t) => t.status === 'error').length;
-  const totalUsage = tools.reduce((sum, tool) => sum + tool.usageCount, 0);
   const totalTools = tools.length;
-  const attentionTools = errorTools + pendingTools;
   const connectivityPercent = totalTools > 0 ? Math.round((connectedTools / totalTools) * 100) : 0;
   const pendingPercent = totalTools > 0 ? Math.round((pendingTools / totalTools) * 100) : 0;
   const disconnectedPercent =
     totalTools > 0 ? Math.round((disconnectedTools / totalTools) * 100) : 0;
   const errorPercent = totalTools > 0 ? Math.round((errorTools / totalTools) * 100) : 0;
-  const averageUsage = totalTools > 0 ? Math.round(totalUsage / totalTools) : 0;
-
-  const quickInsights: Array<{
-    id: string;
-    label: string;
-    value: string;
-    helper: string;
-    Icon: LucideIcon;
-  }> = [
-    {
-      id: 'connectivity',
-      label: 'Connectivity',
-      value: totalTools > 0 ? `${connectivityPercent}%` : '—',
-      helper: 'Connected coverage',
-      Icon: Link,
-    },
-    {
-      id: 'usage',
-      label: 'Avg Usage',
-      value: totalTools > 0 ? `${averageUsage} calls` : '—',
-      helper: 'Per tool lifetime',
-      Icon: TrendingUp,
-    },
-    {
-      id: 'attention',
-      label: 'Needs Attention',
-      value: attentionTools.toLocaleString(),
-      helper: 'Pending or error tools',
-      Icon: AlertTriangle,
-    },
-  ];
 
   const statusMetrics: Array<{
     id: 'connected' | 'pending' | 'disconnected' | 'error';

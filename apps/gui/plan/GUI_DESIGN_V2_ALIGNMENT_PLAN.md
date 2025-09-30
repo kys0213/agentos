@@ -1,7 +1,7 @@
 # GUI Design V2 Alignment Plan
 
 Status: In Progress
-Last Updated: 2025-09-23
+Last Updated: 2025-09-30
 
 ## Context
 
@@ -69,10 +69,11 @@ Last Updated: 2025-09-23
 #### 4.2 Manager 카드/섹션 레이아웃 일치화
 
 - [x] SubAgentManager/ModelManager/MCPToolsManager UI 카드가 디자인 기준(통계, 상태 퍼널, CTA)과 일치하도록 수정
-- [ ] Settings/RACP/ToolBuilder 섹션 차이점 파악 후 적용 (design/components/\* 참고)
+- [x] ModelManager 인스턴스/브릿지/마켓플레이스 섹션을 design 컴포넌트 구조에 맞춰 재구성하고 `ModelManager.register` 테스트를 최신 UX에 맞게 유지
+- [x] Settings/RACP/ToolBuilder 섹션 차이점 파악 후 적용 (design/components/\* 참고)
   - [x] ToolBuilder 메인 화면을 디자인 기준(통계 카드 4종 + 카드형 리스트)으로 단순화하고 EmptyState 토글 UX 정비
-  - [ ] Settings 화면 남은 토글/배너/연동 copy 차이점 검토
-  - [ ] RACP 카드 섹션(로드맵/CTA) 시각 QA 2차 점검
+  - [x] Settings 화면 남은 토글/배너/연동 copy 차이점 검토 _(헤더 경고 배너/Reset 동작을 디자인과 맞춤)_
+  - [x] RACP 카드 섹션(로드맵/CTA) 시각 QA 2차 점검 _(design RACPManager와 레이아웃/CTA/로드맵 상태 확인 완료)_
 
 #### 4.3 CTA & Stepper UX 세부 정렬 _(신규)_
 

@@ -1,5 +1,5 @@
 import {
-  AlertCircle,
+  AlertTriangle,
   BookOpen,
   Bot,
   Brain,
@@ -217,9 +217,8 @@ export function SettingsManager() {
   };
 
   const handleReset = () => {
-    const nextDefaults = createDefaultSettings('light');
+    const nextDefaults = createDefaultSettings(settings.general.theme);
     setSettings(nextDefaults);
-    setTheme('light');
     setHasChanges(false);
   };
 
@@ -271,10 +270,8 @@ export function SettingsManager() {
 
         {hasChanges && (
           <div className="flex items-center gap-2 p-3 bg-status-warning-background border border-status-warning rounded-lg">
-            <AlertCircle className="w-4 h-4 text-status-warning" />
-            <span className="text-sm text-status-warning">
-              You have unsaved changes. Save to apply updates across AgentOS.
-            </span>
+            <AlertTriangle className="w-4 h-4 text-status-warning" />
+            <span className="text-sm text-status-warning">You have unsaved changes</span>
           </div>
         )}
       </div>
@@ -722,12 +719,16 @@ export function SettingsManager() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="gpt-4">GPT-4</SelectItem>
-                            <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
-                            <SelectItem value="claude-3">Claude 3</SelectItem>
-                            <SelectItem value="local-model">Local Model</SelectItem>
+                            <SelectItem value="gpt-4">OpenAI GPT-4 Turbo</SelectItem>
+                            <SelectItem value="gpt-4-mini">OpenAI GPT-4o mini</SelectItem>
+                            <SelectItem value="claude-3">Anthropic Claude 3</SelectItem>
+                            <SelectItem value="mistral-large">Mistral Large</SelectItem>
+                            <SelectItem value="local-model">Local Model (ggml)</SelectItem>
                           </SelectContent>
                         </Select>
+                        <p className="text-sm text-muted-foreground">
+                          Choose which model AgentOS uses by default for new conversations.
+                        </p>
                       </div>
 
                       <div className="space-y-2">
@@ -745,6 +746,9 @@ export function SettingsManager() {
                             {settings.models.timeout}s
                           </span>
                         </div>
+                        <p className="text-sm text-muted-foreground">
+                          Increase for slower endpoints or large batch operations.
+                        </p>
                       </div>
                     </div>
                   </Card>
@@ -769,6 +773,9 @@ export function SettingsManager() {
                             {settings.models.temperature}
                           </span>
                         </div>
+                        <p className="text-sm text-muted-foreground">
+                          Higher values make responses more creative but less predictable.
+                        </p>
                       </div>
 
                       <div className="space-y-2">
@@ -786,6 +793,9 @@ export function SettingsManager() {
                             {settings.models.maxTokens}
                           </span>
                         </div>
+                        <p className="text-sm text-muted-foreground">
+                          Defines the maximum response length the model can generate.
+                        </p>
                       </div>
 
                       <div className="space-y-2">
@@ -803,6 +813,9 @@ export function SettingsManager() {
                             {settings.models.topP}
                           </span>
                         </div>
+                        <p className="text-sm text-muted-foreground">
+                          Controls nucleus sampling—lower values ensure more focused output.
+                        </p>
                       </div>
                     </div>
                   </Card>
