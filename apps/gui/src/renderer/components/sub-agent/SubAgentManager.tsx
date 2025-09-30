@@ -1,6 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
 import {
-  Activity,
   CheckCircle,
   ChevronDown,
   ChevronUp,
@@ -72,16 +71,9 @@ export function SubAgentManager({
   const activeAgents = agents.filter((a) => a.status === 'active').length;
   const idleAgents = agents.filter((a) => a.status === 'idle').length;
   const inactiveAgents = agents.filter((a) => a.status === 'inactive').length;
-  const totalUsage = agents.reduce((sum, agent) => sum + agent.usageCount, 0);
-  const averageUsage = totalAgents > 0 ? Math.round(totalUsage / totalAgents) : 0;
-
   const activePercent = totalAgents > 0 ? Math.round((activeAgents / totalAgents) * 100) : 0;
   const idlePercent = totalAgents > 0 ? Math.round((idleAgents / totalAgents) * 100) : 0;
   const inactivePercent = totalAgents > 0 ? Math.round((inactiveAgents / totalAgents) * 100) : 0;
-
-  const topAgent = agents.length
-    ? [...agents].sort((a, b) => (b.usageCount ?? 0) - (a.usageCount ?? 0))[0]
-    : null;
 
   const statusMetrics: Array<{
     id: 'active' | 'idle' | 'inactive';
@@ -118,32 +110,6 @@ export function SubAgentManager({
       icon: MinusCircle,
       barClass: 'bg-status-inactive',
       helper: 'Needs re-enable',
-    },
-  ];
-
-  const quickInsights: Array<{
-    label: string;
-    value: string;
-    helper: string;
-    icon: LucideIcon;
-  }> = [
-    {
-      label: 'Average Usage',
-      value: totalAgents > 0 ? averageUsage.toLocaleString() : '—',
-      helper: totalAgents > 0 ? 'Per agent' : 'Create your first agent',
-      icon: Activity,
-    },
-    {
-      label: 'Active Ratio',
-      value: totalAgents > 0 ? `${activePercent}%` : '—',
-      helper: 'Auto participation coverage',
-      icon: CheckCircle,
-    },
-    {
-      label: 'Needs Attention',
-      value: (idleAgents + inactiveAgents).toLocaleString(),
-      helper: 'Idle or inactive agents',
-      icon: Clock,
     },
   ];
 

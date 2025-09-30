@@ -57,3 +57,6 @@ apps/gui/src/shared/rpc/gen/*.types.ts
 
 
 .playwright-mcp/
+
+design/
+apps/gui/src/renderer/components/settings/SettingManager.tsx

@@ -328,7 +328,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowEmptyState((prev) => !prev)}
+                    onClick={() => setShowEmptyState(!showEmptyState)}
                     className="gap-2"
                   >
                     {emptyStateButtonLabel}
