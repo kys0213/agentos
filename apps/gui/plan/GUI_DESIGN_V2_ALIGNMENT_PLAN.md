@@ -98,10 +98,10 @@ Last Updated: 2025-09-30
 
 ### 7. QA & 문서화
 
-- [ ] Playwright MCP 시나리오 업데이트: 디자인 Figma 플로우 기준(대시보드 → Chat → Agent 생성 → Tool 관리)
-- [ ] `docs/frontend/` 문서(패턴/테스트/roadmap)에 새 UX & Hook 사용법 반영
-- [ ] Phase 3/4 계획서에 완료 항목 체크 및 잔여 TODO 이전
-- [ ] 린트 경고(중첩 삼항, Select 미사용 import 등)를 정리하고 컴포넌트 구조 개선 가이드 문서화 _(주요 미사용 import·제너릭 경고 제거 완료, ternary/curly 정리는 후속 작업)_
+- [x] Playwright MCP 시나리오 업데이트: 디자인 Figma 플로우 기준(대시보드 → Chat → Agent 생성 → Tool 관리) _(apps/gui/mcp/scenarios/* 및 QA_PLAYWRIGHT_MCP.md 정비)_
+- [x] `docs/frontend/` 문서(패턴/테스트/roadmap)에 새 UX & Hook 사용법 반영 _(docs/frontend/README.md 추가)_
+- [x] Phase 3/4 계획서에 완료 항목 체크 및 잔여 TODO 이전 _(GUI_CONSOLIDATED_PLAN.md Phase 3/4 섹션 업데이트)_
+- [x] 린트 경고(중첩 삼항, Select 미사용 import 등)를 정리하고 컴포넌트 구조 개선 가이드 문서화 _(docs/30-developer-guides/code-style.md에 린트 해결 Playbook 추가)_
 
 ### Branching Strategy
 
