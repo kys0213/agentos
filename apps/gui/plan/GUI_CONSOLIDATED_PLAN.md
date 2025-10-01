@@ -41,7 +41,7 @@ Last Updated: 2025-09-16
   - [x] use-chat.ts
   - [x] use-conversation.ts
   - [x] useAppData.ts
-- [x] ESLint 경고 축소(파일 단위 점진 적용) _(docs/30-developer-guides/code-style.md에 린트 정리 Playbook 반영)_
+- [ ] ESLint 경고 축소(파일 단위 점진 적용)
 
 ### Phase 3 — 컨트롤러 승격
 

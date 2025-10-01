@@ -775,10 +775,8 @@ expect(mockFunction).toHaveBeenCalledWith(
 - GUI QA는 Playwright MCP를 사용해 시각적/행동 플로우를 검증합니다.
 - 로컬에서 `pnpm --filter @agentos/apps-gui dev`로 앱을 실행한 뒤, 아래 명령을 통해 정의된 시나리오를 수행합니다.
   ```bash
-  npx -y @playwright/mcp@latest \
-    apps/gui/mcp/scenarios/dashboard.mcp.ts \
-    --baseUrl http://localhost:5173 \
-    --output apps/gui/mcp/output/dashboard
+  # TODO: 디자인 팀에서 제공하는 MCP 명령 가이드를 확정하면 본 섹션을 업데이트합니다.
+  # 현재는 Playwright 테스트(`pnpm --filter @agentos/apps-gui test:e2e`)로 기본 플로우를 검증하세요.
   ```
-- 시나리오는 `apps/gui/mcp/scenarios/`에 저장되며, 실행 후 `--output`으로 지정한 디렉터리에 스크린샷과 로그가 생성됩니다.
+- Playwright MCP 세부 실행 절차는 디자인 QA 팀과 협의 중입니다. 확정되면 본 가이드를 갱신합니다.
 - 새 시나리오 추가 시 `apps/gui/mcp/scenarios/<name>.mcp.ts` 파일을 만들고 config에 등록한 뒤, CI/로컬에서 결과를 검토합니다.
