@@ -1,90 +1,81 @@
 import React from 'react';
-import { Box, Button, VStack, HStack, Text } from '@chakra-ui/react';
 import { useSettingsState, useSettingsActions, useUIActions } from '../../stores/app-store';
 import LLMSettingsContainer from '../llm/LLMSettingsContainer';
 import PresetSettings from '../preset/PresetSettings';
-// MCP config handled via Management section; no direct usage here
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
 
-/**
- * 설정 컨테이너 컴포넌트
- * - 모든 설정 관련 UI와 로직 관리
- * - LLM 브릿지, 프리셋, MCP 설정 포함
- * - ChatApp.tsx에서 설정 관련 로직 분리
- */
 const SettingsContainer: React.FC = () => {
   const settingsState = useSettingsState();
   const settingsActions = useSettingsActions();
   const uiActions = useUIActions();
 
-  // React Query 데이터: MCP queries/actions are wired via Management section; placeholders only
-
   return (
-    <Box p={4} h="100%" overflow="auto">
-      <VStack align="stretch" spacing={6}>
-        {/* 설정 헤더 */}
-        <HStack justify="space-between" align="center">
-          <Text fontSize="2xl" fontWeight="bold">
-            Settings
-          </Text>
-          <Button size="sm" onClick={() => uiActions.setActiveView('chat')}>
+    <div className="h-full overflow-auto p-6">
+      <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+        <header className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
+            <p className="text-sm text-muted-foreground">
+              Manage model bridges, presets, and upcoming MCP integrations from a single place.
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => uiActions.setActiveView('chat')}>
             Back to Chat
           </Button>
-        </HStack>
+        </header>
 
-        {/* LLM 브릿지 설정 */}
-        <Box>
-          <Text fontSize="lg" fontWeight="semibold" mb={3}>
-            LLM Bridge Configuration
-          </Text>
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-foreground">LLM Bridge Configuration</h2>
           <LLMSettingsContainer />
-        </Box>
+        </section>
 
-        {/* 프리셋 설정 */}
-        <Box>
-          <Text fontSize="lg" fontWeight="semibold" mb={3}>
-            Preset Configuration
-          </Text>
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-foreground">Preset Configuration</h2>
           <PresetSettings />
-        </Box>
+        </section>
 
-        {/* MCP 설정 */}
-        <Box>
-          <Text fontSize="lg" fontWeight="semibold" mb={3}>
-            MCP Configuration
-          </Text>
-
-          <VStack align="stretch" spacing={3}>
-            <HStack>
-              <Button
-                onClick={() => settingsActions.toggleMcpSettings()}
-                size="sm"
-                colorScheme="blue"
-              >
+        <section className="space-y-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">MCP Configuration</h2>
+              <p className="text-sm text-muted-foreground">
+                Detailed MCP setup lives in the Management &gt; Tools view. Use the quick toggles
+                below to preview forthcoming actions.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" onClick={() => settingsActions.toggleMcpSettings()}>
                 MCP Settings
               </Button>
-
-              <Button onClick={() => settingsActions.toggleMcpList()} size="sm" variant="outline">
+              <Button size="sm" variant="outline" onClick={() => settingsActions.toggleMcpList()}>
                 View MCP List
               </Button>
-            </HStack>
+            </div>
+          </div>
 
-            {/* MCP 설정 모달/패널 */}
+          <div className="space-y-3">
             {settingsState.showMcpSettings && (
-              <Box border="1px solid" borderColor="gray.200" borderRadius="md" p={4}>
-                <Text>MCP Settings coming soon - use Management section</Text>
-              </Box>
+              <Card className="border-dashed">
+                <div className="p-4 text-sm text-muted-foreground">
+                  MCP settings management will live in the redesigned Tool Manager. Use that surface
+                  for live configuration once the migration completes.
+                </div>
+              </Card>
             )}
 
-            {/* MCP 목록 */}
             {settingsState.showMcpList && (
-              <Box border="1px solid" borderColor="gray.200" borderRadius="md" p={4}>
-                <Text>MCP List coming soon - use Management section</Text>
-              </Box>
+              <Card className="border-dashed">
+                <div className="p-4 text-sm text-muted-foreground">
+                  MCP registrations, permissions, and status are available in the Tool Manager view.
+                  This panel will link there after the redesign.
+                </div>
+              </Card>
             )}
-          </VStack>
-        </Box>
-      </VStack>
-    </Box>
+          </div>
+        </section>
+      </div>
+    </div>
   );
 };
 

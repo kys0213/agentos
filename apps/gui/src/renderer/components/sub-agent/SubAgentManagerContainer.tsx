@@ -5,13 +5,19 @@ import { ServiceContainer } from '../../../shared/di/service-container';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import type { AgentStatus } from '@agentos/core';
+import { AGENTS_QUERY_KEY, fetchAgents } from '../../hooks/useAppData';
+import { CHAT_QUERY_KEYS } from '../../hooks/queries/use-chat';
 
 export interface SubAgentManagerContainerProps {
   onCreateAgent?: () => void;
+  forceEmptyState?: boolean;
+  onToggleEmptyState?: () => void;
 }
 
 export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> = ({
   onCreateAgent,
+  forceEmptyState = false,
+  onToggleEmptyState,
 }) => {
   const queryClient = useQueryClient();
   const {
@@ -20,8 +26,8 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
     error,
     refetch,
   } = useQuery({
-    queryKey: ['agents'],
-    queryFn: async () => ServiceContainer.getOrThrow('agent').getAllAgentMetadatas(),
+    queryKey: AGENTS_QUERY_KEY,
+    queryFn: fetchAgents,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -29,10 +35,9 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
     mutationFn: ({ id, status }: { id: string; status: AgentStatus }) =>
       ServiceContainer.getOrThrow('agent').updateAgent(id, { status }),
     onSuccess: () => {
-      // Refresh agent lists across management and chat views
-      queryClient.invalidateQueries({ queryKey: ['agents'] });
-      queryClient.invalidateQueries({ queryKey: ['chat', 'mentionableAgents'] });
-      queryClient.invalidateQueries({ queryKey: ['chat', 'activeAgents'] });
+      queryClient.invalidateQueries({ queryKey: AGENTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.mentionableAgents });
+      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.activeAgents });
     },
   });
 
@@ -63,6 +68,8 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
       onOpenChat={() => {}}
       onCreateAgent={onCreateAgent}
       onUpdateAgentStatus={(id, status) => mutation.mutate({ id, status })}
+      forceEmptyState={forceEmptyState}
+      onToggleEmptyState={onToggleEmptyState}
     />
   );
 };

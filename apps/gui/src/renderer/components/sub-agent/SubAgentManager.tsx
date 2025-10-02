@@ -1,5 +1,5 @@
+import type { LucideIcon } from 'lucide-react';
 import {
-  Activity,
   CheckCircle,
   ChevronDown,
   ChevronUp,
@@ -32,12 +32,15 @@ import {
   GuiCategoryKeywordsMap,
   type GuiAgentCategory,
 } from '../../../shared/constants/agent-categories';
+import { EmptyState } from '../layout/EmptyState';
 
 export interface SubAgentManagerProps {
   agents: ReadonlyAgentMetadata[];
   onUpdateAgentStatus: (agentId: string, newStatus: AgentStatus) => void;
   onOpenChat: (agentId: string) => void;
   onCreateAgent?: () => void;
+  forceEmptyState?: boolean;
+  onToggleEmptyState?: () => void;
 }
 
 export function SubAgentManager({
@@ -45,34 +48,14 @@ export function SubAgentManager({
   onUpdateAgentStatus,
   onOpenChat,
   onCreateAgent,
+  forceEmptyState = false,
+  onToggleEmptyState,
 }: SubAgentManagerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | GuiAgentCategory>('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [activeTab, setActiveTab] = useState('agents');
   const [showStatusGuide, setShowStatusGuide] = useState(false);
-
-  const statuses = [
-    { id: 'all', label: 'All Status', count: agents.length },
-    { id: 'active', label: 'Active', count: agents.filter((a) => a.status === 'active').length },
-    { id: 'idle', label: 'Idle', count: agents.filter((a) => a.status === 'idle').length },
-    {
-      id: 'inactive',
-      label: 'Inactive',
-      count: agents.filter((a) => a.status === 'inactive').length,
-    },
-  ];
-
-  const filteredAgents = agents.filter((agent) => {
-    const matchesSearch =
-      agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agent.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === 'all' ||
-      agent.keywords.some((kw) => GuiCategoryKeywordsMap[selectedCategory]?.includes(kw));
-    const matchesStatus = selectedStatus === 'all' || agent.status === selectedStatus;
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
 
   const handleStatusChange = (agentId: string, newStatus: 'active' | 'idle' | 'inactive') => {
     onUpdateAgentStatus(agentId, newStatus);
@@ -88,114 +71,169 @@ export function SubAgentManager({
   const activeAgents = agents.filter((a) => a.status === 'active').length;
   const idleAgents = agents.filter((a) => a.status === 'idle').length;
   const inactiveAgents = agents.filter((a) => a.status === 'inactive').length;
-  const totalUsage = agents.reduce((sum, agent) => sum + agent.usageCount, 0);
+  const activePercent = totalAgents > 0 ? Math.round((activeAgents / totalAgents) * 100) : 0;
+  const idlePercent = totalAgents > 0 ? Math.round((idleAgents / totalAgents) * 100) : 0;
+  const inactivePercent = totalAgents > 0 ? Math.round((inactiveAgents / totalAgents) * 100) : 0;
+
+  const statusMetrics: Array<{
+    id: 'active' | 'idle' | 'inactive';
+    label: string;
+    value: number;
+    percent: number;
+    icon: LucideIcon;
+    barClass: string;
+    helper: string;
+  }> = [
+    {
+      id: 'active',
+      label: 'Active',
+      value: activeAgents,
+      percent: activePercent,
+      icon: CheckCircle,
+      barClass: 'bg-status-active',
+      helper: 'Auto-orchestrated',
+    },
+    {
+      id: 'idle',
+      label: 'Idle',
+      value: idleAgents,
+      percent: idlePercent,
+      icon: Clock,
+      barClass: 'bg-status-idle',
+      helper: 'Respond on mention',
+    },
+    {
+      id: 'inactive',
+      label: 'Inactive',
+      value: inactiveAgents,
+      percent: inactivePercent,
+      icon: MinusCircle,
+      barClass: 'bg-status-inactive',
+      helper: 'Needs re-enable',
+    },
+  ];
+
+  const statuses = [
+    { id: 'all', label: 'All Status', count: totalAgents },
+    ...statusMetrics.map((metric) => ({
+      id: metric.id,
+      label: metric.label,
+      count: metric.value,
+    })),
+  ];
+
+  const filteredAgents = agents.filter((agent) => {
+    const matchesSearch =
+      agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      agent.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === 'all' ||
+      agent.keywords.some((kw) => GuiCategoryKeywordsMap[selectedCategory]?.includes(kw));
+    const matchesStatus = selectedStatus === 'all' || agent.status === selectedStatus;
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+
+  const showDemoEmptyState = forceEmptyState && totalAgents > 0;
+  const shouldShowEmptyState = forceEmptyState || totalAgents === 0;
+
+  if (shouldShowEmptyState) {
+    const handlePrimaryAction = () => {
+      if (onCreateAgent) {
+        onCreateAgent();
+        return;
+      }
+      onToggleEmptyState?.();
+    };
+
+    return (
+      <div className="p-6 h-full flex items-center justify-center">
+        <div className="max-w-lg w-full">
+          <EmptyState
+            type="agents"
+            title={showDemoEmptyState ? 'No agents to display' : 'No sub-agents yet'}
+            description="Create your first specialist to orchestrate tasks or assist in chat sessions."
+            actionLabel={onCreateAgent ? 'Create Agent' : 'Reload Agents'}
+            onAction={handlePrimaryAction}
+            secondaryAction={
+              showDemoEmptyState && onToggleEmptyState
+                ? {
+                    label: 'Show Agents',
+                    onClick: onToggleEmptyState,
+                  }
+                : undefined
+            }
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <TooltipProvider>
       <div className="h-full flex flex-col">
-        {/* Enhanced Header with Improved Create Agent Button */}
-        <div className="flex-shrink-0 p-6 border-b">
-          <div className="flex items-center justify-between mb-4">
+        {/* Overview & Metrics */}
+        <div className="flex-shrink-0 p-6 border-b space-y-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg flex items-center justify-center">
-                <div className="text-blue-600">
-                  <Users className="w-6 h-6" />
-                </div>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
+                <Users className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-foreground">Agent Manager</h1>
-                <p className="text-muted-foreground">
-                  Manage agent status and orchestration settings
+                <h1 className="text-2xl font-semibold text-foreground">Sub Agent Manager</h1>
+                <p className="text-sm text-muted-foreground">
+                  Monitor orchestration state and deploy new specialists
                 </p>
               </div>
             </div>
-
-            {/* Enhanced Create Agent Button */}
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <p className="text-sm font-medium text-foreground">Ready to expand?</p>
-                <p className="text-xs text-muted-foreground">Create specialized AI agents</p>
-              </div>
-              <Button
-                onClick={handleCreateAgent}
-                className="gap-2 relative overflow-hidden group bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg"
-                size="lg"
-                data-testid="btn-create-agent"
-              >
-                <div className="flex items-center gap-2 relative z-10">
-                  <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
-                    <Plus className="w-3 h-3" />
-                  </div>
-                  <span className="font-medium">Create Agent</span>
-                  <Sparkles className="w-4 h-4 opacity-75" />
+            {onCreateAgent && (
+              <div className="flex items-center gap-3">
+                <div className="hidden text-right sm:block">
+                  <p className="text-sm font-medium text-foreground">Ready to expand?</p>
+                  <p className="text-xs text-muted-foreground">Create specialized AI agents</p>
                 </div>
-                {/* Subtle gradient overlay on hover */}
-                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-              </Button>
-            </div>
+                <Button
+                  onClick={handleCreateAgent}
+                  className="gap-2 relative overflow-hidden group bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
+                  size="lg"
+                  data-testid="btn-create-agent"
+                >
+                  <div className="relative z-10 flex items-center gap-2">
+                    <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary-foreground/20">
+                      <Plus className="w-3 h-3" />
+                    </div>
+                    <span className="font-medium">Create Agent</span>
+                    <Sparkles className="w-4 h-4 opacity-80" />
+                  </div>
+                  <div className="absolute inset-0 translate-x-[-110%] bg-gradient-to-r from-primary-foreground/0 via-primary-foreground/20 to-primary-foreground/0 transition-transform duration-700 group-hover:translate-x-[110%]" />
+                </Button>
+              </div>
+            )}
           </div>
 
-          {/* Compact Stats */}
-          <div className="grid grid-cols-5 gap-3 mb-4">
-            <Card className="p-3 hover:shadow-sm transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xl font-semibold text-foreground">{totalAgents}</p>
-                  <p className="text-xs text-muted-foreground">Total Agents</p>
-                </div>
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Users className="w-4 h-4 text-blue-600" />
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-3 hover:shadow-sm transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xl font-semibold text-green-600">{activeAgents}</p>
-                  <p className="text-xs text-muted-foreground">Active</p>
-                </div>
-                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-3 hover:shadow-sm transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xl font-semibold text-orange-600">{idleAgents}</p>
-                  <p className="text-xs text-muted-foreground">Idle</p>
-                </div>
-                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <Clock className="w-4 h-4 text-orange-600" />
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-3 hover:shadow-sm transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xl font-semibold text-gray-600">{inactiveAgents}</p>
-                  <p className="text-xs text-muted-foreground">Inactive</p>
-                </div>
-                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <MinusCircle className="w-4 h-4 text-gray-600" />
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-3 hover:shadow-sm transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xl font-semibold text-purple-600">{totalUsage}</p>
-                  <p className="text-xs text-muted-foreground">Total Usage</p>
-                </div>
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Activity className="w-4 h-4 text-purple-600" />
-                </div>
-              </div>
-            </Card>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {statusMetrics.map(
+              ({ id, label, value, percent, icon: StatusIcon, helper, barClass }) => (
+                <Card key={id} className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <StatusIcon className="w-4 h-4" />
+                      <span className="text-sm font-medium">{label}</span>
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      {percent}%
+                    </Badge>
+                  </div>
+                  <p className="mt-3 text-2xl font-semibold text-foreground">{value}</p>
+                  <div className="mt-3 h-2 rounded-full bg-muted">
+                    <div
+                      className={`h-full rounded-full ${barClass}`}
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">{helper}</p>
+                </Card>
+              )
+            )}
           </div>
 
           {/* Collapsible Status Guide */}

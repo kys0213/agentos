@@ -3,11 +3,14 @@ import {
   Bot,
   CheckCircle,
   Clock,
+  Copy,
   Database,
   MessageSquare,
   MinusCircle,
   Search,
   Settings,
+  ThumbsDown,
+  ThumbsUp,
   Users,
   Zap,
 } from 'lucide-react';
@@ -19,6 +22,7 @@ import { ChatHistory } from './ChatHistory';
 import { MessageInputWithMentions } from './MessageInputWithMentions';
 import MessageRenderer from './MessageRenderer';
 import { AppSection } from '../../stores/store-types';
+import { EmptyState } from '../layout/EmptyState';
 
 interface ChatViewProps {
   onNavigate: (section: AppSection) => void;
@@ -28,6 +32,7 @@ interface ChatViewProps {
   selectedAgentId?: string;
   onSelectAgent: (agentId: string) => void;
   onSendMessage: (messageContent: string, mentionedAgents: AgentMetadata[]) => void;
+  isTyping?: boolean;
 }
 
 export const ChatView: React.FC<ChatViewProps> = ({
@@ -38,8 +43,22 @@ export const ChatView: React.FC<ChatViewProps> = ({
   selectedAgentId,
   onSelectAgent,
   onSendMessage,
+  isTyping = false,
 }) => {
   const selectedChatId = useMemo(() => selectedAgentId, [selectedAgentId]);
+
+  const selectedAgent = useMemo(() => {
+    if (!selectedAgentId) {
+      return activeAgents[0] ?? mentionableAgents[0];
+    }
+    return (
+      mentionableAgents.find((agent) => agent.id === selectedAgentId) ||
+      activeAgents.find((agent) => agent.id === selectedAgentId)
+    );
+  }, [activeAgents, mentionableAgents, selectedAgentId]);
+
+  const hasAgents = mentionableAgents.length > 0 || activeAgents.length > 0;
+  const hasMessages = messages.length > 0;
 
   // memoized derived counts to avoid recalculation per render
   const idleCount = useMemo(
@@ -51,7 +70,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
     [mentionableAgents]
   );
 
-  const getCategoryIcon = (category: string) => {
+  const getCategoryIcon = (category?: string) => {
     switch (category) {
       case 'research':
         return <Search className="w-4 h-4" />;
@@ -96,6 +115,48 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
   const handleSendMessage = (messageContent: string, mentionedAgents: AgentMetadata[]) => {
     onSendMessage(messageContent, mentionedAgents);
+  };
+
+  const renderAgentChip = (agent: ReadonlyAgentMetadata) => (
+    <div
+      key={agent.id}
+      className="flex items-center gap-2 bg-background px-3 py-2 rounded-lg border hover:bg-muted transition-colors"
+    >
+      <div className="w-6 h-6 bg-gray-100 rounded flex items-center justify-center">
+        {getCategoryIcon(agent.preset?.category?.[0])}
+      </div>
+      <div className="flex flex-col">
+        <span className="text-sm font-medium text-foreground">{agent.name}</span>
+        {agent.description && (
+          <span className="text-[11px] text-muted-foreground line-clamp-1">
+            {agent.description}
+          </span>
+        )}
+      </div>
+      {getStatusBadge(agent.status)}
+    </div>
+  );
+
+  const renderMessageActions = (isAgent: boolean) => {
+    if (!isAgent) {
+      return null;
+    }
+    return (
+      <div className="mt-3 flex gap-2">
+        <Button variant="ghost" size="sm" className="h-7 gap-1 px-2">
+          <Copy className="w-3 h-3" />
+          Copy
+        </Button>
+        <Button variant="ghost" size="sm" className="h-7 gap-1 px-2">
+          <ThumbsUp className="w-3 h-3" />
+          Good
+        </Button>
+        <Button variant="ghost" size="sm" className="h-7 gap-1 px-2">
+          <ThumbsDown className="w-3 h-3" />
+          Bad
+        </Button>
+      </div>
+    );
   };
 
   return (
@@ -153,35 +214,51 @@ export const ChatView: React.FC<ChatViewProps> = ({
       <div className="flex-1 flex flex-col">
         {/* Chat Header */}
         <div className="p-4 border-b bg-background">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <MessageSquare className="w-5 h-5 text-muted-foreground" />
-              <div>
-                <h1 className="text-lg font-semibold text-foreground">Research Data Analysis</h1>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-50 to-blue-100 flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-indigo-500" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg font-semibold text-foreground">
+                    {selectedAgent?.name ?? 'Conversation'}
+                  </h1>
+                  {selectedAgent?.preset?.name && (
+                    <Badge variant="outline" className="text-xs">
+                      {selectedAgent.preset.name}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {selectedAgent?.description || 'Collaborate with your agents in real-time chats.'}
+                </p>
                 {activeAgents.length > 0 && (
-                  <div className="mt-1 flex flex-wrap gap-2">
-                    {activeAgents.map((a) => (
-                      <span
-                        key={a.id}
-                        className="inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 bg-background shadow-sm"
-                      >
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-[10px] text-gray-600">
-                          {a.name.slice(0, 2).toUpperCase()}
-                        </span>
-                        <span className="text-xs font-medium">{a.name}</span>
-                        <Badge className="text-[10px] status-active-subtle">Active</Badge>
-                      </span>
-                    ))}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-green-500" />
+                      {activeAgents.length} active
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-amber-400" />
+                      {idleCount} idle
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-gray-400" />
+                      {inactiveCount} inactive
+                    </span>
                   </div>
-                )}
-                {activeAgents.length === 0 && (
-                  <p className="text-sm text-muted-foreground">Active: No active agents</p>
                 )}
               </div>
             </div>
-
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => onNavigate('subagents')}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onNavigate('subagents')}
+                className="gap-2"
+              >
+                <Settings className="w-4 h-4" />
                 Manage Agents
               </Button>
             </div>
@@ -199,18 +276,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {mentionableAgents.slice(0, 6).map((agent) => (
-              <div
-                key={agent.id}
-                className="flex items-center gap-2 bg-background px-3 py-2 rounded-lg border hover:bg-muted transition-colors"
-              >
-                <div className="w-6 h-6 bg-gray-100 rounded flex items-center justify-center">
-                  {getCategoryIcon(agent.preset.category[0])}
-                </div>
-                <span className="text-sm font-medium">{agent.name}</span>
-                {getStatusBadge(agent.status)}
-              </div>
-            ))}
+            {mentionableAgents.slice(0, 6).map((agent) => renderAgentChip(agent))}
             {mentionableAgents.length > 6 && (
               <div className="flex items-center px-3 py-2 text-sm text-muted-foreground">
                 +{mentionableAgents.length - 6} more agents...
@@ -221,66 +287,112 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 && (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center text-sm text-muted-foreground">
-                <p>No conversations yet.</p>
-                <p>Type a message below to start chatting.</p>
+          {!hasAgents && (
+            <div className="max-w-xl mx-auto">
+              <EmptyState
+                type="chat"
+                title="Create your first agent"
+                description="Chats become available once you have at least one active agent. Create an agent to start collaborating."
+                actionLabel="Create Agent"
+                onAction={() => onNavigate('subagents')}
+                secondaryAction={{
+                  label: 'View Agent Library',
+                  onClick: () => onNavigate('subagents'),
+                }}
+              />
+            </div>
+          )}
+
+          {hasAgents && !hasMessages && (
+            <div className="max-w-xl mx-auto">
+              <EmptyState
+                type="chat"
+                title="Start a new conversation"
+                description="Active agents respond automatically. Mention a specific agent with '@' for targeted help."
+                actionLabel="Open Agent Manager"
+                onAction={() => onNavigate('subagents')}
+              />
+            </div>
+          )}
+
+          {messages.map((message) => {
+            const isUser = message.role === 'user';
+            return (
+              <div
+                key={message.messageId}
+                className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[76%] rounded-2xl border p-4 shadow-sm ${
+                    isUser
+                      ? 'bg-primary text-primary-foreground border-transparent shadow-primary/20'
+                      : 'bg-card text-foreground border-border'
+                  }`}
+                >
+                  {!isUser && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 bg-muted rounded-full flex items-center justify-center">
+                        <Bot className="w-4 h-4" />
+                      </div>
+                      <span className="text-sm font-medium">
+                        {message.agentMetadata?.name ?? 'Assistant'}
+                      </span>
+                      <Badge variant="secondary" className="text-[11px]">
+                        Agent
+                      </Badge>
+                    </div>
+                  )}
+
+                  <MessageRenderer
+                    message={message}
+                    mode="full"
+                    showTimestamp={false}
+                    showActions={false}
+                    showAgentBadge={false}
+                    availableAgents={mentionableAgents}
+                    mainAgent={activeAgents[0]}
+                  />
+
+                  {message.agentMetadata && (
+                    <div className="mt-3 text-xs text-muted-foreground">
+                      Responding as @{message.agentMetadata.name}
+                    </div>
+                  )}
+
+                  <div className="mt-3 text-xs text-muted-foreground">
+                    {message.createdAt.toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </div>
+
+                  {renderMessageActions(!isUser)}
+                </div>
+              </div>
+            );
+          })}
+
+          {hasAgents && isTyping && (
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                <Bot className="w-4 h-4" />
+              </div>
+              <div className="flex items-center gap-2 rounded-full border px-4 py-2 text-xs">
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
+                  <span
+                    className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                    style={{ animationDelay: '0.1s' }}
+                  />
+                  <span
+                    className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                    style={{ animationDelay: '0.2s' }}
+                  />
+                </span>
+                <span>Assistant is thinking…</span>
               </div>
             </div>
           )}
-          {messages.map((message) => (
-            <div
-              key={message.messageId}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[80%] p-4 rounded-lg ${
-                  message.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-background border'
-                }`}
-              >
-                {message.role === 'assistant' && (
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-6 h-6 bg-gray-100 rounded flex items-center justify-center">
-                      <Bot className="w-4 h-4" />
-                    </div>
-                    <span className="text-sm font-medium">{message.agentMetadata?.name}</span>
-                    <Badge variant="secondary" className="text-xs">
-                      Agent
-                    </Badge>
-                  </div>
-                )}
-
-                <MessageRenderer
-                  message={message}
-                  mode="full"
-                  showTimestamp={true}
-                  showActions={true}
-                  showAgentBadge={true}
-                  availableAgents={mentionableAgents}
-                  mainAgent={activeAgents[0]}
-                />
-
-                {message.agentMetadata && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    <span className="text-xs opacity-70">Mentioned:</span>
-                    <span
-                      key={message.agentMetadata.id}
-                      className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded"
-                    >
-                      @{message.agentMetadata.name}
-                    </span>
-                  </div>
-                )}
-
-                <div className="mt-2 text-xs opacity-70">
-                  {message.createdAt.toLocaleTimeString()}
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
 
         {/* Message Input */}
@@ -289,6 +401,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
             mentionableAgents={mentionableAgents}
             onSendMessage={handleSendMessage}
             placeholder={`Type a message... (Use @ to mention specific agents, or let ${activeAgents.length} active agents respond automatically)`}
+            disabled={!hasAgents}
           />
         </div>
       </div>

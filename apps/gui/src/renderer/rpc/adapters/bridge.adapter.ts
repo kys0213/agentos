@@ -1,6 +1,5 @@
 import type { LlmManifest } from 'llm-bridge-spec';
 import { BridgeClient } from '../gen/bridge.client';
-import { BridgeContract as C } from '../../../shared/rpc/contracts/bridge.contract';
 
 export class BridgeServiceAdapter {
   constructor(private readonly client: BridgeClient) {}

@@ -19,6 +19,10 @@ export type AppSection =
   | 'racp'
   | 'settings';
 
+export type AgentCreationStep = 'overview' | 'category' | 'ai-config' | 'settings';
+export type McpCreationStep = 'overview' | 'type' | 'configuration' | 'testing' | 'deployment';
+export type CustomToolCreationStep = 'describe' | 'analyze' | 'generate' | 'test' | 'deploy';
+
 /**
  * useAppNavigation hook의 반환 타입
  */
@@ -29,6 +33,9 @@ export interface UseAppNavigationReturn {
   creatingMCPTool: boolean;
   creatingAgent: boolean;
   creatingCustomTool: boolean;
+  agentCreationStep: AgentCreationStep;
+  mcpCreationStep: McpCreationStep;
+  customToolCreationStep: CustomToolCreationStep;
 
   // 액션들
   setActiveSection: (section: AppSection) => void;
@@ -36,8 +43,12 @@ export interface UseAppNavigationReturn {
   handleBackToTools: () => void;
   handleBackToAgents: () => void;
   handleBackToToolBuilder: () => void;
-  handleStartCreateAgent: () => void;
+  handleStartCreateMCPTool: (step?: McpCreationStep) => void;
+  handleStartCreateAgent: (step?: AgentCreationStep) => void;
   handleStartCreateCustomTool: () => void;
+  setAgentCreationStep: (step: AgentCreationStep) => void;
+  setMcpCreationStep: (step: McpCreationStep) => void;
+  setCustomToolCreationStep: (step: CustomToolCreationStep) => void;
 
   // 유틸리티
   isInDetailView: () => boolean;
@@ -60,6 +71,8 @@ export interface UseChatStateReturn {
 
 export interface UseAppDataReturn {
   currentAgents: ReadonlyAgentMetadata[];
+  mentionableAgents: ReadonlyAgentMetadata[];
+  activeAgents: ReadonlyAgentMetadata[];
   showEmptyState: boolean;
   setShowEmptyState: (show: boolean) => void;
   loading: boolean; // 로딩 상태

@@ -1,4 +1,4 @@
-import type { AgentMetadata, Preset } from '@agentos/core';
+import type { AgentMetadata, Preset, ReadonlyAgentMetadata } from '@agentos/core';
 import { Activity, Bot, Cpu, Layers, MessageSquare } from 'lucide-react';
 import { useEffect } from 'react';
 import { useDashboardStats } from '../../hooks/queries/use-dashboard';
@@ -8,21 +8,30 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { useMcpUsageStream } from '../../hooks/queries/use-mcp-usage-stream';
 import { DashboardCard } from './DashboardCard';
+import AgentActivityCard from './AgentActivityCard';
 
 interface DashboardProps {
   presets: Preset[];
   currentAgents: AgentMetadata[];
+  mentionableAgents: ReadonlyAgentMetadata[];
+  activeAgents: ReadonlyAgentMetadata[];
   onOpenChat?: (agentId: string) => void;
   loading: boolean;
   onCreateAgent: () => void;
+  onManageTools?: () => void;
+  onRegisterTool?: () => void;
 }
 
 export function Dashboard({
   onOpenChat,
   presets,
   currentAgents,
+  mentionableAgents,
+  activeAgents,
   loading,
   onCreateAgent,
+  onManageTools,
+  onRegisterTool,
 }: DashboardProps) {
   const { data: ds, isLoading: statsLoading, isError: statsError } = useDashboardStats();
   const qc = useQueryClient();
@@ -165,7 +174,6 @@ export function Dashboard({
 
   // Smart quick actions based on available agents and presets
   const bestAgent = currentAgents.find((a) => a.status === 'active') || currentAgents[0];
-  const favoritePreset = presets.find((p) => p.usageCount && p.usageCount > 0) || presets[0];
 
   const quickActions = [
     {
@@ -192,26 +200,24 @@ export function Dashboard({
       color: 'bg-green-500',
     },
     {
-      title: 'Popular Preset',
-      description: favoritePreset
-        ? `Use ${favoritePreset.name}`
-        : 'Configure agent presets and prompts',
+      title: 'Register MCP Tool',
+      description: 'Add a new tool from your MCP integrations',
       icon: Layers,
       action: () => {
-        if (favoritePreset && bestAgent) {
-          onOpenChat?.(bestAgent.id);
-        }
+        onRegisterTool?.();
       },
       color: 'bg-purple-500',
-      disabled: !favoritePreset || !bestAgent,
+      disabled: !onRegisterTool,
     },
     {
-      title: 'System Overview',
-      description: `${currentAgents.length} agents, ${presets.length} presets ready`,
-      icon: Activity,
-      action: () =>
-        console.log('System status:', { agents: currentAgents.length, presets: presets.length }),
+      title: 'Manage Tools',
+      description: 'Review tool catalog and usage metrics',
+      icon: Cpu,
+      action: () => {
+        onManageTools?.();
+      },
       color: 'bg-orange-500',
+      disabled: !onManageTools,
     },
   ];
 
@@ -289,6 +295,8 @@ export function Dashboard({
           />
         ))}
       </div>
+
+      <AgentActivityCard mentionableAgents={mentionableAgents} activeAgents={activeAgents} />
 
       {/* Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

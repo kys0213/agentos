@@ -1,8 +1,8 @@
-import { Button, HStack } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { PresetManager } from '../preset/PresetManager';
 import ColorModeToggle from '../common/ColorModeToggle';
 import { MCPToolsManager } from '../mcp/McpToolManager';
+import { Button } from '../ui/button';
 
 /**
  * TODO: 상태 변경시 저장하는 기능 추가
@@ -13,17 +13,17 @@ const SettingsMenu: React.FC<SettingsMenuProps> = () => {
   const [showPresets, setShowPresets] = useState(false);
   const [showMcpTools, setShowMcpTools] = useState(false);
   return (
-    <HStack mb={2} spacing={2}>
-      <Button size="sm" onClick={() => setShowPresets((p) => !p)}>
+    <div className="mb-2 flex flex-wrap items-center gap-2">
+      <Button variant="outline" size="sm" onClick={() => setShowPresets((p) => !p)}>
         Preset Manager
       </Button>
-      <Button size="sm" onClick={() => setShowMcpTools((m) => !m)}>
+      <Button variant="outline" size="sm" onClick={() => setShowMcpTools((m) => !m)}>
         Tools
       </Button>
       <ColorModeToggle />
       {showPresets && <PresetManager />}
       {showMcpTools && <MCPToolsManager />}
-    </HStack>
+    </div>
   );
 };
 

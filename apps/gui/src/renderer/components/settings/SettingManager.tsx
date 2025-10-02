@@ -1,4 +1,5 @@
 import {
+  AlertTriangle,
   BookOpen,
   Bot,
   Brain,
@@ -98,75 +99,77 @@ interface SettingsData {
   };
 }
 
+const createDefaultSettings = (themeValue: string): SettingsData => ({
+  general: {
+    language: 'ko',
+    theme: themeValue,
+    startupScreen: 'chat',
+    notifications: true,
+    autoSave: true,
+    confirmExit: false,
+  },
+  chat: {
+    defaultMode: 'orchestration',
+    autoSelectAgent: true,
+    showReasoningSteps: true,
+    messageHistory: 30,
+    responseTimeout: 30,
+    typingIndicator: true,
+    soundEffects: false,
+  },
+  agents: {
+    defaultAgent: 'orchestrator',
+    maxActiveAgents: 5,
+    agentTimeout: 60,
+    orchestrationEnabled: true,
+    reasoningDepth: 'detailed',
+    fallbackBehavior: 'main-agent',
+  },
+  models: {
+    defaultModel: 'gpt-4',
+    temperature: 0.7,
+    maxTokens: 2048,
+    topP: 1.0,
+    frequencyPenalty: 0.0,
+    presencePenalty: 0.0,
+    timeout: 30,
+  },
+  knowledge: {
+    searchEngine: 'bm25',
+    embeddingModel: 'text-embedding-3-small',
+    vectorDbType: 'none',
+    vectorDbEndpoint: '',
+    vectorDbApiKey: '',
+    chunkSize: 1000,
+    chunkOverlap: 200,
+    maxSearchResults: 5,
+    similarityThreshold: 0.7,
+    enableAutoIndexing: true,
+    cacheEmbeddings: true,
+  },
+  security: {
+    dataRetention: 30,
+    logLevel: 'info',
+    anonymizeData: true,
+    allowExternalConnections: true,
+    encryptStorage: true,
+    requireAuth: false,
+  },
+  advanced: {
+    debugMode: false,
+    experimentalFeatures: false,
+    developerMode: false,
+    logToFile: true,
+    performanceMonitoring: true,
+    crashReporting: true,
+  },
+});
+
 export function SettingsManager() {
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState('general');
-  const [settings, setSettings] = useState<SettingsData>({
-    general: {
-      language: 'ko',
-      theme: theme,
-      startupScreen: 'chat',
-      notifications: true,
-      autoSave: true,
-      confirmExit: false,
-    },
-    chat: {
-      defaultMode: 'orchestration',
-      autoSelectAgent: true,
-      showReasoningSteps: true,
-      messageHistory: 30,
-      responseTimeout: 30,
-      typingIndicator: true,
-      soundEffects: false,
-    },
-    agents: {
-      defaultAgent: 'orchestrator',
-      maxActiveAgents: 5,
-      agentTimeout: 60,
-      orchestrationEnabled: true,
-      reasoningDepth: 'detailed',
-      fallbackBehavior: 'main-agent',
-    },
-    models: {
-      defaultModel: 'gpt-4',
-      temperature: 0.7,
-      maxTokens: 2048,
-      topP: 1.0,
-      frequencyPenalty: 0.0,
-      presencePenalty: 0.0,
-      timeout: 30,
-    },
-    knowledge: {
-      searchEngine: 'bm25',
-      embeddingModel: 'text-embedding-3-small',
-      vectorDbType: 'none',
-      vectorDbEndpoint: '',
-      vectorDbApiKey: '',
-      chunkSize: 1000,
-      chunkOverlap: 200,
-      maxSearchResults: 5,
-      similarityThreshold: 0.7,
-      enableAutoIndexing: true,
-      cacheEmbeddings: true,
-    },
-    security: {
-      dataRetention: 30,
-      logLevel: 'info',
-      anonymizeData: true,
-      allowExternalConnections: true,
-      encryptStorage: true,
-      requireAuth: false,
-    },
-    advanced: {
-      debugMode: false,
-      experimentalFeatures: false,
-      developerMode: false,
-      logToFile: true,
-      performanceMonitoring: true,
-      crashReporting: true,
-    },
-  });
-
+  const [settings, setSettings] = useState<SettingsData>(() => createDefaultSettings(theme));
+  const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Sync theme changes with settings state
@@ -178,6 +181,7 @@ export function SettingsManager() {
         theme: theme,
       },
     }));
+    // Theme toggled externally should not mark as unsaved when already matching current state
   }, [theme]);
 
   const updateSetting = <C extends keyof SettingsData, K extends keyof SettingsData[C]>(
@@ -185,6 +189,10 @@ export function SettingsManager() {
     key: K,
     value: SettingsData[C][K]
   ) => {
+    const previousValue = settings[category][key];
+    if (previousValue === value) {
+      return;
+    }
     // Special handling for theme changes
     if (category === 'general' && key === 'theme') {
       setTheme(value as 'light' | 'dark' | 'system');
@@ -197,6 +205,7 @@ export function SettingsManager() {
         [key]: value,
       },
     }));
+    setHasChanges(true);
   };
 
   const handleSave = async () => {
@@ -204,11 +213,13 @@ export function SettingsManager() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSaving(false);
+    setHasChanges(false);
   };
 
   const handleReset = () => {
-    // Reset to default values
-    // Implementation would reset settings to defaults
+    const nextDefaults = createDefaultSettings(settings.general.theme);
+    setSettings(nextDefaults);
+    setHasChanges(false);
   };
 
   const exportSettings = () => {
@@ -240,16 +251,29 @@ export function SettingsManager() {
               <Download className="w-4 h-4" />
               Export
             </Button>
-            <Button variant="outline" size="sm" onClick={handleReset} className="gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReset}
+              className="gap-2"
+              disabled={!hasChanges}
+            >
               <RotateCcw className="w-4 h-4" />
               Reset
             </Button>
-            <Button onClick={handleSave} disabled={isSaving} className="gap-2">
+            <Button onClick={handleSave} disabled={!hasChanges || isSaving} className="gap-2">
               <Save className="w-4 h-4" />
               {isSaving ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </div>
+
+        {hasChanges && (
+          <div className="flex items-center gap-2 p-3 bg-status-warning-background border border-status-warning rounded-lg">
+            <AlertTriangle className="w-4 h-4 text-status-warning" />
+            <span className="text-sm text-status-warning">You have unsaved changes</span>
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -695,12 +719,16 @@ export function SettingsManager() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="gpt-4">GPT-4</SelectItem>
-                            <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
-                            <SelectItem value="claude-3">Claude 3</SelectItem>
-                            <SelectItem value="local-model">Local Model</SelectItem>
+                            <SelectItem value="gpt-4">OpenAI GPT-4 Turbo</SelectItem>
+                            <SelectItem value="gpt-4-mini">OpenAI GPT-4o mini</SelectItem>
+                            <SelectItem value="claude-3">Anthropic Claude 3</SelectItem>
+                            <SelectItem value="mistral-large">Mistral Large</SelectItem>
+                            <SelectItem value="local-model">Local Model (ggml)</SelectItem>
                           </SelectContent>
                         </Select>
+                        <p className="text-sm text-muted-foreground">
+                          Choose which model AgentOS uses by default for new conversations.
+                        </p>
                       </div>
 
                       <div className="space-y-2">
@@ -718,6 +746,9 @@ export function SettingsManager() {
                             {settings.models.timeout}s
                           </span>
                         </div>
+                        <p className="text-sm text-muted-foreground">
+                          Increase for slower endpoints or large batch operations.
+                        </p>
                       </div>
                     </div>
                   </Card>
@@ -742,6 +773,9 @@ export function SettingsManager() {
                             {settings.models.temperature}
                           </span>
                         </div>
+                        <p className="text-sm text-muted-foreground">
+                          Higher values make responses more creative but less predictable.
+                        </p>
                       </div>
 
                       <div className="space-y-2">
@@ -759,6 +793,9 @@ export function SettingsManager() {
                             {settings.models.maxTokens}
                           </span>
                         </div>
+                        <p className="text-sm text-muted-foreground">
+                          Defines the maximum response length the model can generate.
+                        </p>
                       </div>
 
                       <div className="space-y-2">
@@ -776,6 +813,9 @@ export function SettingsManager() {
                             {settings.models.topP}
                           </span>
                         </div>
+                        <p className="text-sm text-muted-foreground">
+                          Controls nucleus sampling—lower values ensure more focused output.
+                        </p>
                       </div>
                     </div>
                   </Card>

@@ -212,14 +212,13 @@ pnpm build     # 빌드 오류 확인
 - pre-commit 훅으로 `pnpm format && pnpm lint`를 실행하여 포맷 누락을 방지합니다.(husky 등)
 - CI에서 PR에 포맷/린트 오류가 있으면 실패하도록 Guard를 추가합니다.
 
-### **GUI 테스트 정책 (Playwright MCP)**
+### **GUI 테스트 정책 (Playwright E2E)**
 
-- GUI(Electron/Web) 기능 검증은 E2E 테스트 추가 대신 dev 서버 + Playwright MCP로 디버깅합니다.
+- GUI(Electron/Web) 기능 검증은 Playwright 테스트(`pnpm --filter @agentos/apps-gui test:e2e`)로 수행합니다.
 - 실행 절차:
-  - `cd apps/gui && pnpm dev:web` 로 서버 기동
-  - Playwright MCP 스크립트로 브라우저를 구동해 시나리오 검증
-- 세부 가이드는 `apps/gui/docs/PLAYWRIGHT_MCP_GUIDE.md`를 따르세요.
-- 참고용 E2E 스펙은 문서적 레퍼런스로만 유지하며, 신규 작성 금지.
+  - `cd apps/gui && pnpm --filter @agentos/apps-gui test:e2e` 로 시나리오 검증
+  - 필요 시 `pnpm dev:web`으로 서버를 띄우고 `playwright test --ui` 등 표준 도구를 사용해 디버깅합니다.
+- 세부 시나리오는 `apps/gui/e2e/` 디렉터리를 참고해 관리합니다.
 
 # 수동 체크
 

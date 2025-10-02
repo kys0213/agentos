@@ -1,7 +1,7 @@
 # GUI Design V2 Alignment Plan
 
-Status: Proposed
-Last Updated: 2025-09-21
+Status: In Progress
+Last Updated: 2025-09-30
 
 ## Context
 
@@ -21,7 +21,7 @@ Last Updated: 2025-09-21
 ## Observations (Design vs Renderer)
 
 - **앱 전환 플로우**: 디자인 `useAppNavigation`은 MCP/Agent/Custom Tool 생성 시작/종료 핸들러를 모두 제공하지만, renderer 버전은 `handleStartCreateMCPTool`이 누락되어 있고 detail view 전환 사용성도 다소 다르다.
-- **Dashboard**: 디자인 버전은 stats + recent activity + quick actions + system state 카드를 통합하지만, renderer는 `DashboardCard` 중심의 최소 통계만 노출한다.
+- **Dashboard**: 디자인 버전은 stats + recent activity + quick actions + system state 카드를 통합하며, renderer도 동일 섹션 구조/테마 토큰을 적용했다. Quick Actions는 ServiceContainer 기반으로 동작하고 최근 활동 섹션은 에이전트/프리셋/MCP 로그를 집계하도록 개선되었다. **Core agent/preset 이벤트 스트림을 renderer에 노출하여 대시보드 통계·활동 쿼리가 실시간 무효화되도록 정비 완료.**
 - **Chat 경험**: 디자인은 `ChatInterface` 오버레이 + minimized chat 리스트 + typing indicator 등을 구현했고, renderer는 ServiceContainer 연동만 되어 있을 뿐 UI/Copy가 Figma 최신안보다 단순하다.
 - **SubAgent Empty State**: 디자인은 최초 에이전트가 없을 때 EmptyState 카드로 onboarding을 안내한다. renderer는 `showEmptyState` flag는 있으나 UX copy/CTA가 다르고 빈 상태 진입 경로도 상이하다.
 - **Theme/토큰**: 대부분 반영됐지만, 디자인 기준의 status 색/quick action 색상 등 일부 토큰이 renderer에 빠져 있다. Chakra UI 잔존 컴포넌트가 아직 있어서 완전한 토큰 통일이 필요하다.
@@ -30,37 +30,84 @@ Last Updated: 2025-09-21
 ## TODO
 
 ### 1. 레이아웃 & 네비게이션 동기화
-- [ ] `apps/gui/src/renderer/App`/`ManagementView`를 `design/App.tsx` 최신 흐름과 diff → 에이전트/툴 생성 진입·복귀 핸들러 반영
-- [ ] `useAppNavigation`에 `handleStartCreateMCPTool` 등 누락된 액션 추가, detail view 판별 로직 정리
-- [ ] Sidebar 메뉴/아이콘/토글 UX가 Figma & 디자인 버전과 일치하도록 QA
+
+- [x] `apps/gui/src/renderer/App`/`ManagementView`를 `design/App.tsx` 최신 흐름과 diff → 에이전트/툴 생성 진입·복귀 핸들러 반영 _(헤더 톤&스크롤 영역, 데모 EmptyState 토글 UX까지 디자인과 일치화)_
+- [x] `useAppNavigation`에 `handleStartCreateMCPTool` 등 누락된 액션 추가, detail view 판별 로직 정리
+- [x] Sidebar 메뉴/아이콘/토글 UX가 Figma & 디자인 버전과 일치하도록 QA _(브랜드 카피, collapse 위치/정렬, 아이콘 정렬 갱신 — Collapse 상태 라벨은 후속 개선 후보)_
 
 ### 2. Dashboard 리뉴얼
-- [ ] 디자인 `Dashboard` 구성(stats/quick actions/recent activity/system status) → renderer `Dashboard` 계층 구조로 이식
-- [ ] ServiceContainer(agents, mcp, preset) 데이터와 Quick Actions 연결 (ex. 새 채팅/Agent 생성/Tool Manager 바로가기)
-- [ ] Recent activity/metrics는 당장 mock 데이터를 사용하되, Core 이벤트 연동 위한 인터페이스 설계
+
+- [x] 디자인 `Dashboard` 구성(stats/quick actions/system status) → renderer `Dashboard` 계층 구조로 이식 _(metric/theme 토큰 반영, 카드/액션/상태 섹션 정렬)_
+- [x] ServiceContainer(agents, mcp, preset) 데이터와 Quick Actions 연결 (ex. 새 채팅/Agent 생성/Tool Manager 바로가기) _(Dashboard가 실제 preset 목록/로드 상태를 사용하도록 갱신 — 퀵 액션 CTA와 이벤트가 실데이터 기준으로 동작)_
+- [x] Recent activity/metrics는 당장 mock 데이터를 사용하되, Core 이벤트 연동 위한 인터페이스 설계 _(Agent/Preset/MCP usage 로그 기반 초깃값 집계 완료 — **Core metadata/preset 스트림으로 대시보드 쿼리 실시간 무효화 연동 완료**)_
+- [x] MCP Tool/usage 업데이트도 Core 스트림 기반으로 통합하여 `emitMcpToolsRefresh` 등 renderer 전용 이벤트를 제거하고 대시보드/툴 매니저 무효화 흐름을 일원화
 
 ### 3. Chat 경험 업그레이드
-- [ ] 디자인 `ChatInterface` UX(typing indicator, copy/good/bad feedback, minimized chats)와 renderer `ChatInterface` diff 분석 후 반영
-- [ ] Mentionable/Active agent 캐러셀 및 status 배지 표현을 최신 시안과 맞춤
-- [ ] EmptyState copy/CTA를 디자인 버전으로 업데이트하고, 첫 에이전트 생성에서 SubAgentManager로 자연스럽게 전환
+
+- [x] 디자인 `ChatInterface` UX(typing indicator, copy/good/bad feedback, minimized chats)와 renderer `ChatInterface` diff 분석 후 반영
+- [x] Mentionable/Active agent 캐러셀 및 status 배지 표현을 최신 시안과 맞춤
+- [x] EmptyState copy/CTA를 디자인 버전으로 업데이트하고, 첫 에이전트 생성에서 SubAgentManager로 자연스럽게 전환
 
 ### 4. Manager 뷰 정렬
-- [ ] SubAgentManager/ModelManager/MCPToolsManager UI 컴포넌트가 디자인 버전과 같이 카드형 정보/상태 퍼널을 보여주도록 수정
-- [ ] 디자인의 AgentPresets/MCP Tool 생성 폼 UX를 renderer의 ServiceContainer 연동과 병합 *(agents/tools/tool builder 생성 버튼은 현재 통일된 모달/패널 UX로 동작함 — 상세 콘텐츠만 리뉴얼 필요)*
-- [ ] Settings/RACP/ToolBuilder 섹션 차이점 파악 후 적용 (design/components/* 참고)
+
+#### 4.1 StepperTabs 기반 생성 플로우 정비
+
+- [x] `design/components/StepperTabs.tsx`와 design/components/ChatInterface.tsx · MCPToolCreate.tsx 등 Stepper 기반 컴포넌트를 renderer로 이식하고 API 문서화 (완료 시 useAppNavigation, useChatState 등과 연동 테스트)
+- [x] SubAgentCreate StepperTabs 전환
+  - [x] StepperTabs/StepperTabContent 도입 및 단계별 검증 훅 정리 (renderer SubAgentCreate)
+  - [x] SubAgentManager 카운터/카드 레이아웃을 디자인과 맞춤 (Overview 헤더·상태 메트릭 카드 갱신)
+  - [x] `useAppNavigation` 연동 및 생성 플로우 QA 업데이트 (Agent/MCP/Custom Tool 생성 스텝 상태 싱크)
+- [x] MCPToolCreate StepperTabs 전환
+  - [x] MCPToolCreate 레이아웃/검증 StepperTabs화 (StepperTabs 헤더 및 스텝 가드 적용)
+  - [x] useAppNavigation 단계 상태 연동 (Tabs 기반 구현 유지)
+  - [x] MCPToolsManager 카드/통계 레이아웃 맞춤
+- [x] ToolBuilderCreate StepperTabs 전환
+  - [x] ToolBuilderCreate 스텝 전환, 테스트 업데이트 (StepperTabs 적용 및 네비게이션 연동)
+  - [x] useAppNavigation 단계 상태 연동 (AI 생성 플로우 탭 동기화)
+  - [x] ToolBuilder 메인 EmptyState/카드 레이아웃 정리
+
+#### 4.2 Manager 카드/섹션 레이아웃 일치화
+
+- [x] SubAgentManager/ModelManager/MCPToolsManager UI 카드가 디자인 기준(통계, 상태 퍼널, CTA)과 일치하도록 수정
+- [x] ModelManager 인스턴스/브릿지/마켓플레이스 섹션을 design 컴포넌트 구조에 맞춰 재구성하고 `ModelManager.register` 테스트를 최신 UX에 맞게 유지
+- [x] Settings/RACP/ToolBuilder 섹션 차이점 파악 후 적용 (design/components/\* 참고)
+  - [x] ToolBuilder 메인 화면을 디자인 기준(통계 카드 4종 + 카드형 리스트)으로 단순화하고 EmptyState 토글 UX 정비
+  - [x] Settings 화면 남은 토글/배너/연동 copy 차이점 검토 _(헤더 경고 배너/Reset 동작을 디자인과 맞춤)_
+  - [x] RACP 카드 섹션(로드맵/CTA) 시각 QA 2차 점검 _(design RACPManager와 레이아웃/CTA/로드맵 상태 확인 완료)_
+
+#### 4.3 CTA & Stepper UX 세부 정렬 _(신규)_
+
+- [x] `SubAgentManager` 상단 CTA 버튼을 디자인 컴포넌트(`design/components/SubAgentManager.tsx`)와 동일한 캡슐 아이콘·Sparkles·그라데이션 오버레이로 갱신하고, MCP/Tool Builder 등 생성 CTA들도 같은 스타일 가이드를 적용
+- [x] StepperTabs 단계 잠금(`maxUnlockedIndex`) 로직을 재검토해 디자인 시안과 동일한 자유 이동 UX를 지원하거나, 제한 유지 시 이유/가이드를 UI copy·tooltip으로 명확히 전달하도록 설계안 마련
+- [x] 각 Stepper 헤더 액션(`Create Agent`, `Deploy Tool` 등)에 디자인 기준의 상태 배지, 보조 설명, 버튼 인터랙션(hover/disabled/processing) 표준을 반영
+
+#### 4.4 기타 매니저 연동
+
+- [x] MCP Tool Manager가 Core RPC 이벤트(툴 등록/삭제/상태 변경)에 직접 반응하도록 리팩터링하고, 관련 테스트를 async stream 기반으로 갱신
+- [ ] Multi-manager 실시간 상태 퍼널/usage 통계가 ServiceContainer 이벤트와 연동되는지 검증
 
 ### 5. Theme & 토큰 정리
-- [ ] 디자인 `styles/index.css`와 renderer `styles/globals.css` 비교해 빠진 토큰(status-subtle, quick action 색 등) 보완
-- [ ] Chakra UI 잔존 파일(`theme.ts`, 테스트 전용 ChakraProvider) 제거 플랜 수립 및 대체 테스트 작성
+
+- [x] 디자인 `styles/index.css`와 renderer `styles/globals.css` 비교해 빠진 토큰(status-subtle, quick action 색 등) 보완 _(status subtle utility 클래스/타이포그래피 토큰 반영 완료)_
+- [x] Chakra UI 잔존 파일(`theme.ts`, 테스트 전용 ChakraProvider) 제거 플랜 수립 및 대체 테스트 작성 _(Settings UI를 shadcn 구성요소로 마이그레이션하고 관련 테스트 재작성 완료)_
 
 ### 6. 데이터/상태 연동
-- [ ] 디자인 `useAppData`의 preset/agent mock 로직을 기반으로, 실제 ServiceContainer/Federated API에 맞는 어댑터 설계 (preset creation, quick analytics 등)
-- [ ] Multi-agent coordinator 결과(mentionable/active)와 대시보드/Chat summary 연결
+
+- [x] 디자인 `useAppData`의 preset/agent mock 로직을 기반으로, 실제 ServiceContainer/Federated API에 맞는 어댑터 설계 _(React Query 기반 `useAppData`로 에이전트 상태·mentionable/active 캐시 공유)_
+- [x] Multi-agent coordinator 결과(mentionable/active)와 대시보드/Chat summary 연결 _(Dashboard에 Agent Activity 카드 추가, ChatViewContainer와 공유 데이터 연동)_
 
 ### 7. QA & 문서화
-- [ ] Playwright MCP 시나리오 업데이트: 디자인 Figma 플로우 기준(대시보드 → Chat → Agent 생성 → Tool 관리)
+
+- [ ] Playwright E2E 시나리오 업데이트: 디자인 Figma 플로우 기준(대시보드 → Chat → Agent 생성 → Tool 관리)
 - [ ] `docs/frontend/` 문서(패턴/테스트/roadmap)에 새 UX & Hook 사용법 반영
 - [ ] Phase 3/4 계획서에 완료 항목 체크 및 잔여 TODO 이전
+- [x] 린트 경고(중첩 삼항, Select 미사용 import 등)를 정리하고 컴포넌트 구조 개선 가이드 문서화 _(docs/30-developer-guides/code-style.md에 린트 해결 Playbook 추가)_
+
+### Branching Strategy
+
+- Epic 브랜치: `epic/gui-design-v2-alignment` (본 계획의 SSOT)
+- 각 대단위 Phase(레이아웃/채팅/Manager 정렬/테마·QA 등)는 별도 feature 브랜치에서 작업 후 epic으로 머지
+- 하위 작업 시에는 epic 브랜치를 주기적으로 리베이스하여 충돌을 최소화하고, 완료된 Phase마다 계획서 TODO 체크 업데이트
 
 ## Work Order (Draft)
 
@@ -73,7 +120,7 @@ Last Updated: 2025-09-21
 ## Verification
 
 - `pnpm --filter @agentos/apps-gui dev` + `pnpm --filter @agentos/apps-gui test -- --runInBand --project {renderer|main}`
-- Playwright MCP 시나리오 확장: Dashboard quick actions, multi-agent mention, tool creation 등
+- Playwright E2E 시나리오 확장: Dashboard quick actions, multi-agent mention, tool creation 등
 - Figma 대비 시각/UX 검토(디자인 팀 리뷰) + 문서/계획서 갱신
 
 ## Notes

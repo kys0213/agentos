@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react';
 import type { McpToolMetadata, McpUsageLog } from '@agentos/core';
 import {
   AlertCircle,
@@ -15,10 +16,9 @@ import {
   Image as ImageIcon,
   Link,
   Plus,
-  RefreshCw,
   Search,
   Settings,
-  TrendingUp,
+  Sparkles,
   Unlink,
   Wrench,
 } from 'lucide-react';
@@ -35,6 +35,8 @@ import { Switch } from '../ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { useMcpUsageStream } from '../../hooks/queries/use-mcp-usage-stream';
 import type { McpUsageUpdateEvent } from '../../../shared/types/mcp-usage-types';
+import type { McpCreationStep } from '../../stores/store-types';
+import { EmptyState } from '../layout/EmptyState';
 
 const MAX_USAGE_LOGS = 100;
 
@@ -55,7 +57,17 @@ interface GuiMcpTool extends McpToolMetadata {
  */
 type GuiMcpUsageLog = McpUsageLog;
 
-export function MCPToolsManager() {
+interface MCPToolsManagerProps {
+  onCreateTool?: (step?: McpCreationStep) => void;
+  forceEmptyState?: boolean;
+  onToggleEmptyState?: () => void;
+}
+
+export function MCPToolsManager({
+  onCreateTool,
+  forceEmptyState = false,
+  onToggleEmptyState,
+}: MCPToolsManagerProps) {
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -335,33 +347,42 @@ export function MCPToolsManager() {
   };
 
   // Empty state when no tools and not loading
-  if (!isLoading && tools.length === 0) {
-    return (
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold">MCP Tool Manager</h1>
-            <p className="text-muted-foreground">
-              No registered tools. Register a tool to get started.
-            </p>
-          </div>
-          <Button variant="outline" className="gap-2" onClick={handleRefresh}>
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </Button>
-        </div>
+  const shouldShowEmptyState = forceEmptyState || (!isLoading && tools.length === 0);
 
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-gray-500" />
-            <div>
-              <h3 className="font-semibold">No tools found</h3>
-              <p className="text-sm text-muted-foreground">
-                Use the register dialog to add a tool, then connect it.
-              </p>
-            </div>
-          </div>
-        </Card>
+  if (shouldShowEmptyState) {
+    const handlePrimaryAction = () => {
+      if (onCreateTool) {
+        onCreateTool();
+        return;
+      }
+      if (onToggleEmptyState) {
+        onToggleEmptyState();
+        return;
+      }
+      void handleRefresh();
+    };
+
+    const showDemoEmptyState = forceEmptyState && tools.length > 0;
+
+    return (
+      <div className="p-6 h-full flex items-center justify-center">
+        <div className="max-w-lg w-full">
+          <EmptyState
+            type="tools"
+            title={showDemoEmptyState ? 'No tools to display' : 'No MCP tools yet'}
+            description="Register your first MCP tool to connect external capabilities."
+            actionLabel={onCreateTool ? 'Register Tool' : 'Reload Tools'}
+            onAction={handlePrimaryAction}
+            secondaryAction={
+              showDemoEmptyState && onToggleEmptyState
+                ? {
+                    label: 'Show Tools',
+                    onClick: onToggleEmptyState,
+                  }
+                : undefined
+            }
+          />
+        </div>
       </div>
     );
   }
@@ -369,28 +390,28 @@ export function MCPToolsManager() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'connected':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle className="w-4 h-4 text-status-active" />;
       case 'disconnected':
-        return <AlertCircle className="w-4 h-4 text-gray-400" />;
+        return <AlertCircle className="w-4 h-4 text-muted-foreground" />;
       case 'error':
-        return <AlertTriangle className="w-4 h-4 text-red-500" />;
+        return <AlertTriangle className="w-4 h-4 text-status-error" />;
       case 'pending':
-        return <Clock className="w-4 h-4 text-yellow-500" />;
+        return <Clock className="w-4 h-4 text-status-idle" />;
       default:
-        return <AlertCircle className="w-4 h-4 text-gray-400" />;
+        return <AlertCircle className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
-    const variants = {
-      connected: 'default',
-      disconnected: 'secondary',
-      error: 'destructive',
-      pending: 'outline',
-    } as const;
+    const classes: Record<string, string> = {
+      connected: 'status-active-subtle',
+      pending: 'status-idle-subtle',
+      disconnected: 'status-inactive-subtle',
+      error: 'status-error-subtle',
+    };
 
     return (
-      <Badge variant={variants[status as keyof typeof variants] || 'secondary'}>
+      <Badge variant="outline" className={`gap-1 ${classes[status] ?? 'status-idle-subtle'}`}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
     );
@@ -414,12 +435,12 @@ export function MCPToolsManager() {
 
   const statusDotClass = (status: 'success' | 'error' | string) => {
     if (status === 'success') {
-      return 'bg-green-500';
+      return 'bg-status-active';
     }
     if (status === 'error') {
-      return 'bg-red-500';
+      return 'bg-status-error';
     }
-    return 'bg-yellow-500';
+    return 'bg-status-idle';
   };
 
   // Tool management handlers
@@ -474,85 +495,129 @@ export function MCPToolsManager() {
   };
 
   const connectedTools = tools.filter((t) => t.status === 'connected').length;
+  const pendingTools = tools.filter((t) => t.status === 'pending').length;
+  const disconnectedTools = tools.filter((t) => t.status === 'disconnected').length;
   const errorTools = tools.filter((t) => t.status === 'error').length;
-  const totalUsage = tools.reduce((sum, tool) => sum + tool.usageCount, 0);
+  const totalTools = tools.length;
+  const connectivityPercent = totalTools > 0 ? Math.round((connectedTools / totalTools) * 100) : 0;
+  const pendingPercent = totalTools > 0 ? Math.round((pendingTools / totalTools) * 100) : 0;
+  const disconnectedPercent =
+    totalTools > 0 ? Math.round((disconnectedTools / totalTools) * 100) : 0;
+  const errorPercent = totalTools > 0 ? Math.round((errorTools / totalTools) * 100) : 0;
+
+  const statusMetrics: Array<{
+    id: 'connected' | 'pending' | 'disconnected' | 'error';
+    label: string;
+    value: number;
+    percent: number;
+    Icon: LucideIcon;
+    barClass: string;
+    helper: string;
+  }> = [
+    {
+      id: 'connected',
+      label: 'Connected',
+      value: connectedTools,
+      percent: connectivityPercent,
+      Icon: CheckCircle,
+      barClass: 'bg-status-active',
+      helper: 'Active sessions',
+    },
+    {
+      id: 'pending',
+      label: 'Pending',
+      value: pendingTools,
+      percent: pendingPercent,
+      Icon: Clock,
+      barClass: 'bg-status-idle',
+      helper: 'Awaiting verification',
+    },
+    {
+      id: 'disconnected',
+      label: 'Disconnected',
+      value: disconnectedTools,
+      percent: disconnectedPercent,
+      Icon: Unlink,
+      barClass: 'bg-status-inactive',
+      helper: 'Manual connection required',
+    },
+    {
+      id: 'error',
+      label: 'Errors',
+      value: errorTools,
+      percent: errorPercent,
+      Icon: AlertTriangle,
+      barClass: 'bg-status-error',
+      helper: 'Action needed',
+    },
+  ];
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="flex-shrink-0 p-6 border-b">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground">MCP Tools</h1>
-            <p className="text-muted-foreground">
-              Manage Model Context Protocol tools and integrations
-            </p>
+      <div className="flex-shrink-0 p-6 border-b space-y-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+              <Wrench className="w-6 h-6 text-indigo-600" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-semibold text-foreground">Tool Manager</h1>
+              <p className="text-sm text-muted-foreground">
+                Connect external capabilities through the Model Context Protocol
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" className="gap-2" onClick={handleRefresh}>
-              <RefreshCw className="w-4 h-4" />
-              Refresh
-            </Button>
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" />
-              Add Tool
-            </Button>
-          </div>
+          {onCreateTool && (
+            <div className="flex items-center gap-3">
+              <div className="hidden text-right sm:block">
+                <p className="text-sm font-medium text-foreground">Extend agent skills</p>
+                <p className="text-xs text-muted-foreground">Register new MCP tools instantly</p>
+              </div>
+              <Button
+                onClick={() => onCreateTool('overview')}
+                className="gap-2 relative overflow-hidden group bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
+                size="lg"
+              >
+                <div className="relative z-10 flex items-center gap-2">
+                  <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary-foreground/20">
+                    <Plus className="w-3 h-3" />
+                  </div>
+                  <span className="font-medium">Create MCP Tool</span>
+                  <Sparkles className="w-4 h-4 opacity-80" />
+                </div>
+                <div className="absolute inset-0 translate-x-[-110%] bg-gradient-to-r from-primary-foreground/0 via-primary-foreground/20 to-primary-foreground/0 transition-transform duration-700 group-hover:translate-x-[110%]" />
+              </Button>
+            </div>
+          )}
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-4 gap-4">
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-green-600" />
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {statusMetrics.map(({ id, label, value, percent, Icon, barClass, helper }) => (
+            <Card key={id} className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Icon className="w-4 h-4" />
+                  <span className="text-sm font-medium">{label}</span>
+                </div>
+                <Badge variant="outline" className="text-xs">
+                  {percent}%
+                </Badge>
               </div>
-              <div>
-                <p className="text-2xl font-semibold text-foreground">{connectedTools}</p>
-                <p className="text-sm text-muted-foreground">Connected</p>
+              <p className="mt-3 text-2xl font-semibold text-foreground">
+                {value.toLocaleString()}
+              </p>
+              <div className="mt-3 h-2 rounded-full bg-muted">
+                <div
+                  className={`h-full rounded-full ${barClass}`}
+                  style={{ width: `${percent}%` }}
+                />
               </div>
-            </div>
-          </Card>
-
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-semibold text-foreground">{errorTools}</p>
-                <p className="text-sm text-muted-foreground">Errors</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-semibold text-foreground">{totalUsage}</p>
-                <p className="text-sm text-muted-foreground">Total Usage</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Wrench className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-semibold text-foreground">{tools.length}</p>
-                <p className="text-sm text-muted-foreground">Total Tools</p>
-              </div>
-            </div>
-          </Card>
+              <p className="mt-2 text-xs text-muted-foreground">{helper}</p>
+            </Card>
+          ))}
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 min-h-0">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
           <div className="flex-shrink-0 px-6 pt-4">

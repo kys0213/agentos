@@ -32,7 +32,16 @@ This project uses **TypeScript** with ESLint and Prettier to keep the codebase c
       start();
     }
     ```
-- **Ternary usage**: Avoid nested ternaries; prefer multiline formatting for readability.
+- **Ternary usage**: Avoid nested ternaries altogether. When Prettier/ESLint 경고(`multiline-ternary`)가 발생하면 `if/else` 또는 `switch`로 풀어 쓰세요. 한 줄짜리 조건부는 괜찮지만, 표현식이 길거나 중첩되면 반드시 블록으로 전개합니다.
+
+### Lint 경고 정리 Playbook
+
+- **`multiline-ternary`**: 가독성이 낮은 삼항은 즉시 `if/else` 블록으로 전환합니다. 동일한 조건을 여러 곳에서 쓰면 의미 있는 헬퍼 함수로 추출하세요.
+- **`@typescript-eslint/no-unused-vars`**: 사용하지 않는 변수/임포트는 제거합니다. UI 컴포넌트의 옵션처럼 인터페이스만 유지해야 하는 경우 접두사 `_`를 붙여 ESLint에 의도를 명확히 합니다.
+- **UI Select 사용**: Chakra UI 잔재를 없애기 위해 셀렉트 컴포넌트는 반드시 `../ui/select`(Radix 기반)에서 가져옵니다. Chakra `Select` 임포트가 남아 있으면 린트 경고로 취급하고 교체하세요.
+- **테마/스타일**: 공통 토큰(`status-*`, `sidebar-*` 등)을 직접 하드코딩하지 말고 `globals.css` 셋업을 따릅니다. 새로운 상태색이 필요하면 토큰을 먼저 추가하고 컴포넌트에서 사용할 것.
+
+위 규칙을 지키면 새 린트 경고는 대부분 `pnpm lint -- --max-warnings=0` 단계에서 차단됩니다.
 
 ## Naming Conventions
 
