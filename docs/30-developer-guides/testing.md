@@ -770,13 +770,23 @@ expect(mockFunction).toHaveBeenCalledWith(
 );
 ```
 
-### 3. Playwright MCP 시나리오
+### 3. Playwright E2E 테스트
 
-- GUI QA는 Playwright MCP를 사용해 시각적/행동 플로우를 검증합니다.
-- 로컬에서 `pnpm --filter @agentos/apps-gui dev`로 앱을 실행한 뒤, 아래 명령을 통해 정의된 시나리오를 수행합니다.
+- GUI QA는 Playwright 테스트(`pnpm --filter @agentos/apps-gui test:e2e`)로 시각적/행동 플로우를 검증합니다.
+- 로컬에서 `pnpm --filter @agentos/apps-gui dev`로 앱을 실행하거나, 테스트 실행 시 Playwright가 자동으로 개발 서버를 기동하는지 확인합니다.
+- 새 시나리오를 추가하려면 `apps/gui/e2e/` 디렉터리에 테스트 파일을 생성하고 필요한 헬퍼를 `apps/gui/e2e/utils/`에서 재사용합니다.
+
+### 4. Playwright MCP 도구 (Model Context Protocol)
+
+- Playwright MCP는 Model Context Protocol 기반의 외부 도구로, 브라우저를 원격 제어하며 수동 QA를 돕습니다.
+- 기본 서버/명령:
   ```bash
-  # TODO: 디자인 팀에서 제공하는 MCP 명령 가이드를 확정하면 본 섹션을 업데이트합니다.
-  # 현재는 Playwright 테스트(`pnpm --filter @agentos/apps-gui test:e2e`)로 기본 플로우를 검증하세요.
+  npx -y @playwright/mcp@latest
   ```
-- Playwright MCP 세부 실행 절차는 디자인 QA 팀과 협의 중입니다. 확정되면 본 가이드를 갱신합니다.
-- 새 시나리오 추가 시 `apps/gui/mcp/scenarios/<name>.mcp.ts` 파일을 만들고 config에 등록한 뒤, CI/로컬에서 결과를 검토합니다.
+- 제공 도구:
+  `browser_click`, `browser_close`, `browser_console_messages`, `browser_drag`, `browser_evaluate`,
+  `browser_file_upload`, `browser_fill_form`, `browser_handle_dialog`, `browser_hover`, `browser_install`,
+  `browser_navigate`, `browser_navigate_back`, `browser_network_requests`, `browser_press_key`,
+  `browser_resize`, `browser_select_option`, `browser_snapshot`, `browser_tabs`, `browser_take_screenshot`,
+  `browser_type`, `browser_wait_for`
+- 공식 테스트 스위트는 아니며, Playwright E2E 통과 이후 추가적인 수동 검증이나 디버깅이 필요할 때 사용합니다.

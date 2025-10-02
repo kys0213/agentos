@@ -112,8 +112,8 @@ function buildCreatePayload(state: AgentWizardState): CreateAgentMetadata {
 - [x] **Settings Export/Import 정비**: Export JSON을 프리셋 스펙으로 유지하면서 UI에서는 에이전트 용어만 사용하도록 사본 텍스트/라벨을 교체하고, Import 밸리데이션 경로를 최신 state에 맞춘다.
 - [x] **데이터 동기화**: 에이전트 생성/Import 후 React Query 캐시가 즉시 업데이트되어 목록·대시보드에 반영되도록 보강한다.
 - [x] **테스트 보강**: 단계 전환/검증, 브릿지 로딩 실패/성공 케이스, MCP 직렬화, Export/Import 성공·실패, 캐시 업데이트 등을 Vitest + Testing Library로 추가한다.
-- [x] **E2E 검증**: Playwright MCP 환경을 활용해 `http://localhost:5173/` 웹 UI에서 간소화된 4단계 흐름과 Export/Import를 점검한다. (필요 시 `apps/gui/src/renderer/rpc/mock-rpc-transport.ts`에 모의 데이터를 확장)
-- [x] **문서 업데이트**: `GUI_CORE_INTEGRATION_GAPS_PLAN.md`와 관련 디자인 문서에 프리셋 UI 제거 및 Export/Import 정책 변경 내용을 반영한다.
+- [x] **E2E 검증**: Playwright 테스트(`pnpm --filter @agentos/apps-gui test:e2e`)로 `http://localhost:5173/` 웹 UI의 4단계 흐름과 Export/Import를 점검한다. (필요 시 `apps/gui/src/renderer/rpc/mock-rpc-transport.ts`에 모의 데이터를 확장)
+- [x] **문서 업데이트**: 최신 디자인 SSOT(`apps/gui/plan/GUI_DESIGN_V2_ALIGNMENT_PLAN.md`)와 관련 문서에 프리셋 UI 제거 및 Export/Import 정책 변경 내용을 반영한다.
 
 ## 작업 순서
 

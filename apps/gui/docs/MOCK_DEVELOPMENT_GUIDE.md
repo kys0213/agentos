@@ -186,4 +186,4 @@ When adding new RPC methods:
 
 - [Architecture Overview](./ARCHITECTURE.md)
 - [RPC System Design](./RPC_DESIGN.md)
-- [Dark Mode Migration Plan](../plan/DARK_MODE_MIGRATION_PLAN.md)
+- [GUI Design V2 Alignment Plan](../plan/GUI_DESIGN_V2_ALIGNMENT_PLAN.md)

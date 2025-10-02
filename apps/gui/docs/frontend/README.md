@@ -7,7 +7,7 @@ GUI 프런트엔드 문서의 단일 인덱스입니다. 각 문서는 역할 �
 - Patterns: `apps/gui/docs/frontend/patterns.md`
   - 컨테이너/프리젠테이셔널, React Query 키/무효화, 타입 안전성, Chat 컨테이너 정리 결과
 - Testing: `apps/gui/docs/frontend/testing.md`
-  - IPC 경계 테스트 전략, Mock 채널, Playwright MCP 시나리오(레퍼런스)
+  - IPC 경계 테스트 전략, Mock 채널, Playwright E2E 시나리오
 - Stepper Tabs: `apps/gui/docs/frontend/STEPPER_TABS.md`
   - 생성 플로우에서 공용 StepperTabs/StepperTabContent 컴포넌트 사용하는 방법과 통합 주의사항
 - MCP Usage Stream: `apps/gui/docs/frontend/mcp-usage-stream.md`

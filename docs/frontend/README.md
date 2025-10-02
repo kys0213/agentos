@@ -15,18 +15,16 @@
 - `AgentActivityCard`는 mentionable/active 데이터를 사용해 상태 배지, idle/inactive 카운트를 시각화합니다.
 - Quick Actions는 첫 번째 active agent를 우선으로 선택하며, 빈 상태에서는 대시보드/Agent Manager로 이동하도록 안내합니다.
 
-## QA Checklist (Playwright MCP)
+## QA Checklist (Playwright E2E)
 
-- `apps/gui/mcp/scenarios/`에서 `dashboard`, `chat`, `manager-empty` 시나리오를 제공하며, 디자인과의 UI 드리프트를 캡처합니다.
+- `apps/gui/e2e/`에 `dashboard`, `chat`, `mcp-verify`, `subagent-create-flow` 등 핵심 시나리오가 정리돼 있으며, 디자인과의 UI 드리프트를 캡처합니다.
 - 실행 예시:
   ```bash
-  npx -y @playwright/mcp@latest apps/gui/mcp/scenarios/dashboard.mcp.ts \
-    --baseUrl http://localhost:5173 \
-    --output apps/gui/mcp/output/dashboard
+  pnpm --filter @agentos/apps-gui test:e2e --reporter=list
   ```
 - 주요 비교 포인트:
   - Dashboard 메트릭 + Agent Activity 카드 구성
   - Chat 멘션 가능한 에이전트 목록 및 메시지 플로우
   - SubAgent/MCP/Tool Builder EmptyState 문구 및 스타일
 
-이 문서는 디자인/샌드박스와 실제 renderer가 일치하는지 빠르게 교차검증하기 위한 안내입니다.
+이 문서는 디자인/샌드박스와 실제 renderer가 일치하는지 빠르게 교차 검증하기 위한 안내입니다.

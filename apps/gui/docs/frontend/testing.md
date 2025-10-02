@@ -68,13 +68,26 @@ pnpm --filter @agentos/apps-gui typecheck
 
 ---
 
-## Playwright MCP Scenario (Reference)
+## Playwright E2E 시나리오
 
-- Guide: `apps/gui/docs/PLAYWRIGHT_MCP_GUIDE.md`
-- Scenario: Agent creation → enter chat → send message → receive response
-- Acceptance mapping:
-  - Agent creation leads to immediate chat availability (Phase C)
-  - Empty states rendered correctly with CTA
-  - Message send/assistant response visible; no console errors
+- 위치: `apps/gui/e2e/`
+- 대표 흐름:
+  - `mcp-verify.e2e.test.ts`: 대시보드 → Tools → Agent Create → AI Config
+  - `chat-ux.e2e.test.ts`: 채팅 인터랙션과 상태 보존
+  - `subagent-create-flow.e2e.test.ts`: SubAgent 생성 마법사 단계별 검증
+- 실행: `pnpm --filter @agentos/apps-gui test:e2e`
+- 새 시나리오는 기존 테스트 구조와 `utils/` 헬퍼를 재사용해 추가합니다.
 
-Note: We keep this scenario as documentation (no new e2e PRs). Use the guide to drive manual verification via MCP.
+## Playwright MCP 도구 (Manual QA)
+
+- Model Context Protocol 기반 도구로, 브라우저를 직접 제어하며 수동 QA/디버깅에 활용합니다.
+- 실행 예시:
+  ```bash
+  npx -y @playwright/mcp@latest
+  ```
+- 제공 기능: `browser_click`, `browser_close`, `browser_console_messages`, `browser_drag`, `browser_evaluate`,
+  `browser_file_upload`, `browser_fill_form`, `browser_handle_dialog`, `browser_hover`, `browser_install`,
+  `browser_navigate`, `browser_navigate_back`, `browser_network_requests`, `browser_press_key`,
+  `browser_resize`, `browser_select_option`, `browser_snapshot`, `browser_tabs`, `browser_take_screenshot`,
+  `browser_type`, `browser_wait_for`
+- Playwright E2E 테스트가 통과한 뒤 시각적 점검이나 상호작용 재현이 필요할 때 선택적으로 사용합니다.
