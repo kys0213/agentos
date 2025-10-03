@@ -1,0 +1,11 @@
+{
+  "name": "e2e-llm-bridge",
+  "version": "0.1.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "llm-bridge-spec": "^1.0.6",
+    "zod": "^4.1.0"
+  }
+}

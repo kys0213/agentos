@@ -138,6 +138,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.0.1",
     "@testing-library/user-event": "^14.6.1",
+    "e2e-llm-bridge": "workspace:*",
     "jsdom": "^25.0.1"
   },
   "volta": {
