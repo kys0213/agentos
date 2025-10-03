@@ -99,6 +99,7 @@ Last Updated: 2025-10-03
 ### 7. QA & 문서화
 
 - [x] Electron Playwright E2E 러너 구축 (`pnpm --filter @agentos/apps-gui test:e2e`), 디자인 V2에서 합의된 기본 플로우(대시보드 → Chat EmptyState → Agent 생성 → MCP 툴 뷰)를 `_electron` 환경으로 자동화
+- [x] 멀티 에이전트 서비스 유닛 테스트(`agent-session.service.multi.test.ts`)를 추가해 primary/mention 라우팅과 채팅 로그 저장을 검증
 - [ ] 디자인 V2 검증 플로우(Empty state, mentionable agents, Quick Actions 등)를 Playwright 스펙 단위로 매핑하는 시나리오 목록화 (Echo 응답 검증 포함)
 - [ ] `apps/gui/docs/e2e-electron-decision.md`·`docs/frontend/testing.md` 등 QA 문서에 실행기 선택 근거 및 시나리오 최신화 반영
 - [ ] `docs/frontend/` 문서(패턴/테스트/roadmap)에 새 UX & Hook 사용법 반영

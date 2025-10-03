@@ -95,6 +95,7 @@ test.describe('Electron Dashboard Smoke', () => {
 - [x] **백엔드 오케스트레이션/시드**: `scripts/seed-backend.mjs`에서 LLM 브릿지, MCP 툴, 기본 프리셋, 기본 에이전트를 파일 기반 레지스트리에 시드한다.
 - [x] **기존 시나리오 포팅**: `web-gui-basic`, `chat-ux`, `subagent-create-flow`, `mcp-verify`를 Electron 환경으로 이전하고 반복 실행 안정화를 위한 data-testid/헬퍼를 정리했다.
 - [ ] **Chat Echo 확장**: 에이전트 세션/브릿지 준비가 완료되면 `chat-ux`에 실제 Echo 응답 검증을 추가한다.
+- [x] **멀티 에이전트 서비스 검증**: `AgentSessionService` 단위 테스트(`agent-session.service.multi.test.ts`)로 primary/mention 에이전트 실행과 세션 메시지 저장을 확인한다.
 - [ ] **문서 업데이트**: `apps/gui/docs/frontend/testing.md`, 본 계획서, `FRONTEND_IMPLEMENTATION_ROADMAP` 등 문서를 Electron 러너 기준으로 마무리한다.
 - [ ] **Windows/Linux 호환성**: Playwright `_electron` 스택의 타 OS 검증 및 CI 전략을 정의한다.
 
