@@ -68,15 +68,40 @@ pnpm --filter @agentos/apps-gui typecheck
 
 ---
 
-## Playwright E2E 시나리오
+## Playwright 기반 Electron E2E
 
-- 위치: `apps/gui/e2e/`
-- 대표 흐름:
-  - `mcp-verify.e2e.test.ts`: 대시보드 → Tools → Agent Create → AI Config
-  - `chat-ux.e2e.test.ts`: 채팅 인터랙션과 상태 보존
-  - `subagent-create-flow.e2e.test.ts`: SubAgent 생성 마법사 단계별 검증
-- 실행: `pnpm --filter @agentos/apps-gui test:e2e`
-- 새 시나리오는 기존 테스트 구조와 `utils/` 헬퍼를 재사용해 추가합니다.
+- 위치: `apps/gui/electron-e2e/`
+- 런처: Playwright `_electron` API (`runner/electronHarness.ts`)
+- 역할: 시각적 회귀와 핵심 사용자 플로우(대시보드, Chat, Agent/MCP/Tool 생성)를 Electron 런타임에서 자동 검증
+- 결정 근거: `apps/gui/docs/e2e-electron-decision.md` 참고 (Playwright 인터페이스 재사용, UI 시나리오 이식 용이성)
+- 실행 명령
+  - 로컬 기본: `pnpm --filter @agentos/apps-gui test:e2e`
+    - 내부적으로 `scripts/run-electron-e2e.mjs`가 실행되어 `tsc` → `vite build` → `scripts/seed-backend.mjs` → Playwright `_electron` 테스트를 순차 수행한다.
+    - `scripts/seed-backend.mjs`는 테스트용 사용자 데이터 디렉터리에 다음 자산을 시드한다.
+      - LLM 브릿지: `e2e-llm-bridge` (manifest 등록 + 활성화)
+      - MCP 툴: `mcp_e2e_search_tool`
+      - 프리셋: `preset-e2e-default.json` (브릿지/툴 선선택, 시스템 프롬프트 기본값 포함)
+      - 에이전트 메타데이터: `agent-e2e-default.json` (Active 상태) — Chat 뷰에서 “No agents available” 시나리오 대신 기본 상담 에이전트를 제공
+    - 실행 완료 후 `ELECTRON_TEST_PROFILE` 임시 디렉터리는 기본적으로 삭제된다. 디버깅을 위해 `PRESERVE_E2E_PROFILE=true` 환경 변수를 설정하면 시드된 데이터를 유지할 수 있다.
+  - 브라우저 비교용 임시 명령: `pnpm --filter @agentos/apps-gui test:e2e:browser`
+- 테스트 구조
+  - `tests/*.e2e.spec.ts` 또는 `tests/*.e2e.test.ts`: Playwright `test(...)` 기반 시나리오 (권장 파일명 규칙: `*.e2e.spec.ts`)
+  - `support/`: `openManagementView` 등 공용 유틸과 콘솔/로그 캡처 도우미
+  - `runner/electronHarness.ts`: Electron 앱 생성, 첫 윈도우 확보, `document.body.dataset.appReady` 체크
+- 요구 환경
+  - macOS 기준으로 `pnpm --filter @agentos/apps-gui run build:dev` 단계가 `run-electron-e2e.mjs`에서 자동 호출된다. 개별 빌드를 미리 수행할 필요는 없다.
+  - 테스트 실행 시 `ELECTRON_TEST_PROFILE`이 임시 디렉터리로 설정되어 사용자 데이터가 격리된다.
+  - 백엔드 NestJS/MCP 서비스는 Electron 메인 프로세스 초기화(`bootstrapIpcMainProcess`) 과정에서 자동 기동된다. 추가 Mock 모드는 UI-only 진단용으로 유지한다.
+- 실패 아티팩트
+  - 스크린샷: `electron-e2e/artifacts/screenshots`
+  - 콘솔 로그/트레이스: `electron-e2e/artifacts/logs`
+- CI 모드(`process.env.CI === 'true'`)에서는 `*.e2e.spec.ts`/`*.e2e.test.ts` 파일이 자동 제외되며, `pnpm --filter @agentos/apps-gui test:ci` 명령으로 Vitest 스위트만 실행합니다.
+- 새 시나리오 작성 절차
+  1. `electron-e2e/tests/`에 `{feature}.e2e.spec.ts` 파일 생성
+  2. `launchElectronHarness()`로 앱 기동 → `openManagementView` 등 support 유틸 사용
+  3. 필요한 경우 `harness.window.on('console', ...)`으로 오류 수집
+  4. 테스트 종료 시 `harness.app.close()` 호출
+  5. 반복 실행 안정성(랜덤 이름 등)을 위해 헬퍼/시드 유틸을 재사용
 
 ## Playwright MCP 도구 (Manual QA)
 
@@ -90,4 +115,4 @@ pnpm --filter @agentos/apps-gui typecheck
   `browser_navigate`, `browser_navigate_back`, `browser_network_requests`, `browser_press_key`,
   `browser_resize`, `browser_select_option`, `browser_snapshot`, `browser_tabs`, `browser_take_screenshot`,
   `browser_type`, `browser_wait_for`
-- Playwright E2E 테스트가 통과한 뒤 시각적 점검이나 상호작용 재현이 필요할 때 선택적으로 사용합니다.
+- Electron Playwright E2E 테스트가 통과한 뒤 시각적 점검이나 상호작용 재현이 필요할 때 선택적으로 사용합니다.

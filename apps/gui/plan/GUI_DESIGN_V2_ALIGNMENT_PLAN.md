@@ -1,7 +1,7 @@
 # GUI Design V2 Alignment Plan
 
 Status: In Progress
-Last Updated: 2025-09-30
+Last Updated: 2025-10-03
 
 ## Context
 
@@ -98,7 +98,9 @@ Last Updated: 2025-09-30
 
 ### 7. QA & 문서화
 
-- [ ] Playwright E2E 시나리오 업데이트: 디자인 Figma 플로우 기준(대시보드 → Chat → Agent 생성 → Tool 관리)
+- [x] Electron Playwright E2E 러너 구축 (`pnpm --filter @agentos/apps-gui test:e2e`), 디자인 V2에서 합의된 기본 플로우(대시보드 → Chat EmptyState → Agent 생성 → MCP 툴 뷰)를 `_electron` 환경으로 자동화
+- [ ] 디자인 V2 검증 플로우(Empty state, mentionable agents, Quick Actions 등)를 Playwright 스펙 단위로 매핑하는 시나리오 목록화 (Echo 응답 검증 포함)
+- [ ] `apps/gui/docs/e2e-electron-decision.md`·`docs/frontend/testing.md` 등 QA 문서에 실행기 선택 근거 및 시나리오 최신화 반영
 - [ ] `docs/frontend/` 문서(패턴/테스트/roadmap)에 새 UX & Hook 사용법 반영
 - [ ] Phase 3/4 계획서에 완료 항목 체크 및 잔여 TODO 이전
 - [x] 린트 경고(중첩 삼항, Select 미사용 import 등)를 정리하고 컴포넌트 구조 개선 가이드 문서화 _(docs/30-developer-guides/code-style.md에 린트 해결 Playbook 추가)_
@@ -120,10 +122,13 @@ Last Updated: 2025-09-30
 ## Verification
 
 - `pnpm --filter @agentos/apps-gui dev` + `pnpm --filter @agentos/apps-gui test -- --runInBand --project {renderer|main}`
-- Playwright E2E 시나리오 확장: Dashboard quick actions, multi-agent mention, tool creation 등
+- Electron Playwright E2E 시나리오 확장(`apps/gui/plan/ELECTRON_E2E_AUTOMATION_PLAN.md` 연계): Dashboard quick actions, multi-agent mention, MCP/Tool 생성, chat UX 단절 복구 등 필수 플로우 자동화
+- 백엔드 서비스(NestJS/MCP) 기동을 포함한 전체 스택 테스트 흐름을 `pnpm --filter @agentos/apps-gui test:e2e`에서 보장
+- 맥 환경에서 우선 검증(`pnpm --filter @agentos/apps-gui test:e2e`) 후 차후 Windows/Linux 커버리지 확대 (필요 시 `test:e2e:playwright` 임시 명령으로 레거시 비교)
 - Figma 대비 시각/UX 검토(디자인 팀 리뷰) + 문서/계획서 갱신
 
 ## Notes
 
 - `design/` 디렉터리는 UI 레퍼런스이자 컴포넌트/훅 코드 예시로 유지한다. 실제 renderer 반영 시 ServiceContainer/React Query/Hooks와 충돌 없는지 확인 필요.
 - 브릿지/멀티 에이전트/대시보드 향상 작업과 병행되므로, 작은 기능 단위 브랜치로 쪼개어 PR 진행할 것.
+- Electron E2E 러너(`pnpm --filter @agentos/apps-gui test:e2e`)가 design V2 플로우 회귀 테스트를 담당한다. Chat 케이스는 현재 EmptyState를 검증하며, 다중 에이전트 세션 준비 이후 Echo 응답 플로우를 보강할 예정이다.
