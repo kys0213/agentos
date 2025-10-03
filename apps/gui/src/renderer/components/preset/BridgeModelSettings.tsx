@@ -160,7 +160,7 @@ export const BridgeModelSettings: React.FC<BridgeModelSettingsProps> = ({
     <div className="space-y-6">
       {/* Bridge 선택 */}
       <div className="space-y-2">
-        <Label>LLM Bridge</Label>
+        <Label htmlFor="llm-bridge-select">LLM Bridge</Label>
         <Select
           value={cfg.bridgeId as string}
           onValueChange={(value) =>
@@ -174,7 +174,11 @@ export const BridgeModelSettings: React.FC<BridgeModelSettingsProps> = ({
             })
           }
         >
-          <SelectTrigger>
+          <SelectTrigger
+            id="llm-bridge-select"
+            aria-label="LLM Bridge"
+            data-testid="select-llm-bridge"
+          >
             <SelectValue placeholder="Select an LLM bridge" />
           </SelectTrigger>
           <SelectContent>
@@ -195,13 +199,17 @@ export const BridgeModelSettings: React.FC<BridgeModelSettingsProps> = ({
       {/* Model 선택 */}
       {showModel && selectedBridge && (
         <div className="space-y-2">
-          <Label>Model</Label>
+          <Label htmlFor="llm-model-select">Model</Label>
           <Select
             value={cfg.model as string}
             onValueChange={(value) => onChange({ llmBridgeConfig: { ...cfg, model: value } })}
             disabled={availableModels.length === 0}
           >
-            <SelectTrigger>
+            <SelectTrigger
+              id="llm-model-select"
+              aria-label="LLM Model"
+              data-testid="select-llm-model"
+            >
               <SelectValue placeholder="Select a model" />
             </SelectTrigger>
             <SelectContent>

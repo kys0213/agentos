@@ -944,6 +944,7 @@ export function SubAgentCreate({
                 </Alert>
               )}
               <Button
+                data-testid="btn-submit-agent"
                 onClick={handleCreate}
                 disabled={!isSubmissionReady || isSubmitting}
                 className="gap-2"

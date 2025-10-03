@@ -13,7 +13,7 @@ import { waitForRpcReady } from './rpc/waitForReady';
 
 async function initializeApp() {
   // Skip RPC in development mode for UI testing
-  if (process.env.NODE_ENV === 'development' && !window.electronAPI) {
+  if (process.env.NODE_ENV === 'development' && !window.electronBridge) {
     console.log('🔧 Running in development mode with Mock RPC');
 
     const rpcTransport = createRpcTransport();
@@ -26,6 +26,7 @@ async function initializeApp() {
       const root = createRoot(container);
       root.render(React.createElement(QueryProvider, null, React.createElement(NewAppLayout)));
       console.log('⚛️ React app mounted successfully');
+      document.body.dataset.appReady = 'true';
     }
     return;
   }
@@ -47,6 +48,7 @@ async function initializeApp() {
     const root = createRoot(container);
     root.render(React.createElement(QueryProvider, null, React.createElement(NewAppLayout)));
     console.log('⚛️ React app mounted successfully');
+    document.body.dataset.appReady = 'true';
   } else {
     console.error('❌ Failed to find root element');
     throw new Error('Root element not found');
@@ -60,6 +62,7 @@ initializeApp()
   })
   .catch((error) => {
     console.error('💥 Failed to initialize AgentOS:', error);
+    document.body.dataset.appReady = 'error';
 
     // 에러 UI 표시
     const container = document.getElementById('root');
