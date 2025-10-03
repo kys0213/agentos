@@ -1,18 +1,25 @@
-import { describe, expect, it } from 'vitest';
-import type {
-  Agent,
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { mkdtempSync, rmSync } from 'node:fs';
+import path from 'node:path';
+import { tmpdir } from 'node:os';
+import {
   AgentChatResult,
-  AgentMetadata,
-  AgentService,
-  CreateAgentMetadata,
-  CursorPaginationResult,
-  UserMessage,
+  FileAgentMetadataRepository,
+  FileBasedChatManager,
+  FileBasedLlmBridgeRegistry,
+  FileBasedSessionStorage,
+  McpRegistry,
+  MessageHistory,
+  SimpleAgentService,
+  type CreateAgentMetadata,
+  type UserMessage,
 } from '@agentos/core';
-import type { ChatService } from '../../chat/chat.service';
-import { AgentSessionService } from '../agent.service';
+import { DependencyBridgeLoader } from 'llm-bridge-loader';
+import { NoopCompressor } from '../../NoopCompressor';
 import { AgentEventBridge } from '../events/agent-event-bridge';
 import { OutboundChannel } from '../../common/event/outbound-channel';
-import type { MessageHistory } from '@agentos/core';
+import { AgentSessionService } from '../agent.service';
+import type { ChatService } from '../../chat/chat.service';
 
 class StubChatService implements Pick<ChatService, 'appendMessageToSession'> {
   public appended: { sessionId: string; agentId: string; message: MessageHistory }[] = [];
@@ -22,174 +29,108 @@ class StubChatService implements Pick<ChatService, 'appendMessageToSession'> {
   }
 }
 
-class TestAgent implements Agent {
-  constructor(private metadata: AgentMetadata) {}
+describe('AgentSessionService multi-agent integration (SimpleAgentService)', () => {
+  let tempDir: string;
+  let sessionService: AgentSessionService;
+  let chatService: StubChatService;
 
-  get id(): string {
-    return this.metadata.id;
-  }
+  beforeEach(async () => {
+    tempDir = mkdtempSync(path.join(tmpdir(), 'agentos-multi-'));
 
-  async chat(messages: UserMessage[]): Promise<AgentChatResult> {
-    return {
-      sessionId: `${this.metadata.id}-session`,
-      messages: [
-        ...messages,
-        {
-          role: 'assistant',
-          content: [
-            {
-              contentType: 'text',
-              value: `Response from ${this.metadata.name}`,
-            },
-          ],
-        },
-      ],
-    };
-  }
+    const loader = new DependencyBridgeLoader();
+    const llmRegistry = new FileBasedLlmBridgeRegistry(tempDir, loader);
+    const loaded = await llmRegistry.loadBridge('e2e-llm-bridge');
+    await llmRegistry.register(loaded.manifest, {}, { id: loaded.manifest.name });
+    await llmRegistry.setActiveId(loaded.manifest.name);
 
-  async createSession() {
-    throw new Error('not implemented');
-  }
+    const mcpRegistry = new McpRegistry();
+    const storage = new FileBasedSessionStorage(path.join(tempDir, 'sessions'));
+    const compressor = new NoopCompressor();
+    const chatManager = new FileBasedChatManager(storage, compressor, compressor);
+    const metadataRepo = new FileAgentMetadataRepository(path.join(tempDir, 'agents'));
 
-  async getMetadata(): Promise<AgentMetadata> {
-    return this.metadata;
-  }
-
-  async update(patch: Partial<AgentMetadata>): Promise<void> {
-    this.metadata = { ...this.metadata, ...patch } as AgentMetadata;
-  }
-
-  async delete(): Promise<void> {}
-
-  async isActive(): Promise<boolean> {
-    return this.metadata.status === 'active';
-  }
-
-  async isIdle(): Promise<boolean> {
-    return this.metadata.status === 'idle';
-  }
-
-  async isInactive(): Promise<boolean> {
-    return this.metadata.status === 'inactive';
-  }
-
-  async isError(): Promise<boolean> {
-    return this.metadata.status === 'error';
-  }
-
-  async idle(): Promise<void> {}
-
-  async activate(): Promise<void> {}
-
-  async inactive(): Promise<void> {}
-
-  async endSession(): Promise<void> {}
-}
-
-class InMemoryAgentService implements AgentService {
-  private agents = new Map<string, TestAgent>();
-  private idCounter = 0;
-
-  async createAgent(payload: CreateAgentMetadata): Promise<Agent> {
-    const id = `agent-${++this.idCounter}`;
-    const metadata: AgentMetadata = {
-      id,
-      version: '1',
-      name: payload.name,
-      description: payload.description,
-      icon: payload.icon,
-      keywords: payload.keywords,
-      preset: payload.preset,
-      status: payload.status,
-      lastUsed: undefined,
-      sessionCount: 0,
-      usageCount: 0,
-    };
-    const agent = new TestAgent(metadata);
-    this.agents.set(id, agent);
-    return agent;
-  }
-
-  async getAgent(id: string): Promise<Agent | null> {
-    return this.agents.get(id) ?? null;
-  }
-
-  async listAgents(): Promise<CursorPaginationResult<Agent>> {
-    return {
-      items: Array.from(this.agents.values()),
-      nextCursor: '',
-      hasMore: false,
-    };
-  }
-
-  async searchAgents(): Promise<CursorPaginationResult<Agent>> {
-    return this.listAgents();
-  }
-
-  async createSession() {
-    throw new Error('not implemented');
-  }
-
-  async execute() {
-    throw new Error('not implemented');
-  }
-}
-
-const buildCreateAgentPayload = (name: string): CreateAgentMetadata => ({
-  name,
-  description: `${name} agent used in tests`,
-  icon: '🤖',
-  keywords: [],
-  status: 'active',
-  preset: {
-    id: `${name.toLowerCase()}-preset`,
-    name: `${name} Preset`,
-    description: 'Stub preset',
-    author: 'tests',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    version: '1.0.0',
-    systemPrompt: `You are ${name}`,
-    enabledMcps: [],
-    llmBridgeName: 'stub-bridge',
-    llmBridgeConfig: {},
-    status: 'active',
-    usageCount: 0,
-    knowledgeDocuments: 0,
-    knowledgeStats: { indexed: 0, vectorized: 0, totalSize: 0 },
-    category: ['development'],
-  },
-});
-
-describe('AgentSessionService - multi agent execution', () => {
-  it('broadcasts chat results for primary and mentioned agents', async () => {
-    const agentService = new InMemoryAgentService();
+    const simpleService = new SimpleAgentService(llmRegistry, mcpRegistry, chatManager, metadataRepo);
+    chatService = new StubChatService();
     const outbound = new OutboundChannel();
     const eventBridge = new AgentEventBridge(outbound);
-    const chatService = new StubChatService();
-    const sessionService = new AgentSessionService(agentService, eventBridge, chatService);
+    sessionService = new AgentSessionService(simpleService, eventBridge, chatService);
+  });
 
-    const primary = await sessionService.createAgent(buildCreateAgentPayload('Alpha'));
-    const secondary = await sessionService.createAgent(buildCreateAgentPayload('Beta'));
+  afterEach(() => {
+    rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  const buildCreateAgentPayload = (name: string): CreateAgentMetadata => {
+    const now = new Date();
+    return {
+      name,
+      description: `${name} agent for integration test`,
+      icon: '🤖',
+      keywords: [],
+      status: 'active',
+      preset: {
+        id: `${name.toLowerCase()}-preset`,
+        name: `${name} Preset`,
+        description: 'Preset for integration testing',
+        author: 'integration-test',
+        createdAt: now,
+        updatedAt: now,
+        version: '1.0.0',
+        systemPrompt: `You are ${name}.`,
+        enabledMcps: [],
+        llmBridgeName: 'e2e-llm-bridge',
+        llmBridgeConfig: {
+          bridgeId: 'e2e-llm-bridge',
+          model: 'e2e-mini',
+        },
+        status: 'active',
+        usageCount: 0,
+        knowledgeDocuments: 0,
+        knowledgeStats: {
+          indexed: 0,
+          vectorized: 0,
+          totalSize: 0,
+        },
+        category: ['development'],
+      },
+    };
+  };
+
+  it('routes chat across primary and mentioned agents and returns echo text', async () => {
+    const alphaMeta = await sessionService.createAgent(buildCreateAgentPayload('Alpha'));
+    const betaMeta = await sessionService.createAgent(buildCreateAgentPayload('Beta'));
 
     const message: UserMessage = {
       role: 'user',
-      content: [{ contentType: 'text', value: 'Status report' }],
+      content: [{ contentType: 'text', value: 'Summarize the status' }],
     };
 
-    const result = await sessionService.chat(primary.id, [message], { sessionId: 'multi' }, [secondary.id]);
+    const result: AgentChatResult = await sessionService.chat(
+      alphaMeta.id,
+      [message],
+      undefined,
+      [betaMeta.id]
+    );
 
     const assistantMessages = result.messages.filter((msg) => msg.role === 'assistant');
-    expect(assistantMessages).toHaveLength(2);
+    expect(assistantMessages.length).toBeGreaterThanOrEqual(2);
 
-    const assistantTexts = assistantMessages.map((msg) => {
-      const first = Array.isArray(msg.content) ? msg.content[0] : undefined;
-      return typeof first === 'object' && first !== null && 'value' in first ? (first as any).value : undefined;
+    const texts = assistantMessages.flatMap((msg) => {
+      const segments = Array.isArray(msg.content) ? msg.content : [];
+      const flattened = segments.flatMap((segment) =>
+        Array.isArray(segment) ? segment : [segment]
+      );
+      return flattened
+        .filter((chunk): chunk is { text: string } =>
+          typeof chunk === 'object' && chunk !== null && typeof chunk.text === 'string'
+        )
+        .map((chunk) => chunk.text);
     });
-    expect(assistantTexts).toContain('Response from Alpha');
-    expect(assistantTexts).toContain('Response from Beta');
+
+    expect(texts.length).toBeGreaterThanOrEqual(2);
+    expect(texts.every((text) => text.startsWith('E2E response:'))).toBe(true);
 
     const metadataIds = chatService.appended.map((entry) => entry.message.agentMetadata?.id);
-    expect(new Set(metadataIds)).toEqual(new Set([primary.id, secondary.id]));
+    expect(new Set(metadataIds)).toEqual(new Set([alphaMeta.id, betaMeta.id]));
   });
 });
