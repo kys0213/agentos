@@ -140,14 +140,23 @@ describe('useDashboardStats', () => {
     const conversation = new ConversationServiceAdapter({} as ChatClient);
     type ListOut = z.output<(typeof CC.methods)['listSessions']['response']>;
     Object.assign(conversation, {
-      listSessions: async (): Promise<ListOut> => ({
-        items: [
-          { id: 's1', title: 'S1', updatedAt: new Date() },
-          { id: 's2', title: 'S2', updatedAt: new Date() },
-        ],
-        nextCursor: '',
-        hasMore: false,
-      }),
+      listSessions: async (agentId: string): Promise<ListOut> => {
+        if (agentId === 'a1') {
+          return {
+            items: [{ id: 's1', title: 'S1', updatedAt: new Date() }],
+            nextCursor: '',
+            hasMore: false,
+          };
+        }
+        if (agentId === 'a2') {
+          return {
+            items: [{ id: 's2', title: 'S2', updatedAt: new Date() }],
+            nextCursor: '',
+            hasMore: false,
+          };
+        }
+        return { items: [], nextCursor: '', hasMore: false };
+      },
     });
     const preset = new PresetServiceAdapter({} as PresetClient);
     const preset1: Preset = { ...basePreset, id: 'p1', name: 'P1', usageCount: 3 };
