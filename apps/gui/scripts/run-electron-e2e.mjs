@@ -16,6 +16,7 @@ function run(command, commandArgs, options = {}) {
   }
 }
 
+run('pnpm', ['--filter', 'e2e-llm-bridge', 'build']);
 run('pnpm', ['run', 'compile']);
 run('pnpm', ['run', 'build:dev']);
 
