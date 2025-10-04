@@ -12,8 +12,8 @@ import {
   MessageHistory,
   SimpleAgentService,
   type CreateAgentMetadata,
-  type UserMessage,
 } from '@agentos/core';
+import type { UserMessage } from 'llm-bridge-spec';
 import { DependencyBridgeLoader } from 'llm-bridge-loader';
 import { NoopCompressor } from '../../NoopCompressor';
 import { AgentEventBridge } from '../events/agent-event-bridge';
@@ -53,7 +53,7 @@ describe('AgentSessionService multi-agent integration (SimpleAgentService)', () 
     chatService = new StubChatService();
     const outbound = new OutboundChannel();
     const eventBridge = new AgentEventBridge(outbound);
-    sessionService = new AgentSessionService(simpleService, eventBridge, chatService);
+    sessionService = new AgentSessionService(simpleService, eventBridge, chatService as unknown as ChatService);
   });
 
   afterEach(() => {

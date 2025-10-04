@@ -71,8 +71,22 @@ export function useDashboardStats() {
             return null;
           }
           try {
-            const page = await convo.listSessions();
-            return page?.items?.length ?? 0; // Note: not total across pages
+            const metas = agent ? await agent.getAllAgentMetadatas() : [];
+            if (!Array.isArray(metas) || metas.length === 0) {
+              return 0;
+            }
+
+            const counts = await Promise.all(
+              metas.map(async (meta) => {
+                try {
+                  const page = await convo.listSessions(meta.id);
+                  return page?.items?.length ?? 0;
+                } catch {
+                  return 0;
+                }
+              })
+            );
+            return counts.reduce((sum, count) => sum + count, 0);
           } catch {
             return null;
           }

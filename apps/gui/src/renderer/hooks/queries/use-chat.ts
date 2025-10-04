@@ -6,7 +6,7 @@ import { AGENTS_QUERY_KEY, fetchAgents } from '../useAppData';
 export const CHAT_QUERY_KEYS = {
   mentionableAgents: ['chat', 'mentionableAgents'] as const,
   activeAgents: ['chat', 'activeAgents'] as const,
-  history: (agentId: string) => ['chat', 'history', agentId] as const,
+  history: (agentId: string, sessionId: string) => ['chat', 'history', agentId, sessionId] as const,
 } as const;
 
 export const useMentionableAgents = () =>
@@ -30,7 +30,9 @@ export const useActiveAgents = () =>
 export const useChatHistory = (agentId: string | undefined, sessionId?: string) =>
   useQuery<Readonly<MessageHistory>[]>({
     queryKey:
-      agentId && sessionId ? CHAT_QUERY_KEYS.history(agentId) : ['chat', 'history', 'disabled'],
+      agentId && sessionId
+        ? CHAT_QUERY_KEYS.history(agentId, sessionId)
+        : ['chat', 'history', 'disabled'],
     queryFn: async () => {
       if (!agentId || !sessionId) {
         return [];
@@ -43,7 +45,7 @@ export const useChatHistory = (agentId: string | undefined, sessionId?: string) 
       let hasMore = true;
 
       while (hasMore) {
-        const result = await conversationService.getMessages(sessionId, {
+        const result = await conversationService.getMessages(agentId, sessionId, {
           cursor: cursor || '',
           limit: 100,
           direction: 'forward',
@@ -87,12 +89,18 @@ export const useSendChatMessage = (
         createdAt: new Date(),
       } as const;
 
-      queryClient.setQueryData(
-        CHAT_QUERY_KEYS.history(agentId),
-        (prev?: Readonly<MessageHistory>[]) => [...(prev ?? []), userMessage]
-      );
+      const initialSessionKey = options?.sessionId ?? agentId;
 
-      const mentionedAgentIds = _mentionedAgentIds?.length ? [_mentionedAgentIds[0]] : undefined;
+      if (initialSessionKey) {
+        queryClient.setQueryData(
+          CHAT_QUERY_KEYS.history(agentId, initialSessionKey),
+          (prev?: Readonly<MessageHistory>[]) => [...(prev ?? []), userMessage]
+        );
+      }
+
+      const mentionedAgentIds = _mentionedAgentIds?.length
+        ? _mentionedAgentIds.map((id) => id)
+        : undefined;
 
       const result = await agentService.chat(
         agentId,
@@ -157,14 +165,18 @@ export const useSendChatMessage = (
 
       options?.onSessionId?.(result.sessionId);
 
-      return { userMessage, assistantMessages } as const;
+      return { userMessage, assistantMessages, sessionId: result.sessionId } as const;
     },
-    onSuccess: ({ assistantMessages }) => {
+    onSuccess: ({ assistantMessages, sessionId }) => {
       if (!agentId) {
         return;
       }
+      const sessionKey = sessionId ?? options?.sessionId ?? agentId;
+      if (!sessionKey) {
+        return;
+      }
       queryClient.setQueryData(
-        CHAT_QUERY_KEYS.history(agentId),
+        CHAT_QUERY_KEYS.history(agentId, sessionKey),
         (prev?: Readonly<MessageHistory>[]) => [...(prev ?? []), ...assistantMessages]
       );
     },

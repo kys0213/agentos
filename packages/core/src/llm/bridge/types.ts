@@ -17,6 +17,8 @@ export interface InstalledBridgeRecord {
   manifest: LlmManifest;
   /** When this bridge was registered */
   installedAt: Date;
+  /** Serialized config that was applied when the bridge was registered */
+  config?: unknown;
 }
 
 /**
@@ -49,6 +51,15 @@ export const isInstalledBridgeRecord = (v: unknown): v is InstalledBridgeRecord 
   const installedAt = o.installedAt;
   const installedAtOk =
     typeof installedAt === 'string' || installedAt instanceof Date || installedAt === undefined;
+  const config = o.config;
+  const configOk =
+    config === undefined ||
+    config === null ||
+    typeof config === 'boolean' ||
+    typeof config === 'number' ||
+    typeof config === 'string' ||
+    Array.isArray(config) ||
+    isObject(config);
 
   const manifest = o.manifest;
   if (!isObject(manifest)) {
@@ -61,7 +72,7 @@ export const isInstalledBridgeRecord = (v: unknown): v is InstalledBridgeRecord 
     typeof m.language === 'string' &&
     typeof m.entry === 'string' &&
     typeof m.description === 'string';
-  return idOk && installedAtOk && manifestOk;
+  return idOk && installedAtOk && manifestOk && configOk;
 };
 
 export const isActiveBridgeState = (v: unknown): v is ActiveBridgeState => {

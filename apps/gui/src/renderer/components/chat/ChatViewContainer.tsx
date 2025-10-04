@@ -1,13 +1,16 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   useActiveAgents,
   useChatHistory,
   useMentionableAgents,
   useSendChatMessage,
+  CHAT_QUERY_KEYS,
 } from '../../hooks/queries/use-chat';
 import { ChatView } from './ChatView';
 import { Button } from '../ui/button';
 import type { AppSection } from '../../stores/store-types';
+import type { MessageHistory } from '@agentos/core';
 
 export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) => void }> = ({
   onNavigate,
@@ -21,6 +24,7 @@ export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) =>
 
   const initialAgentId = activeAgents[0]?.id ?? mentionableAgents[0]?.id;
   const [selectedAgentId, setSelectedAgentId] = useState<string | undefined>(initialAgentId);
+  const queryClient = useQueryClient();
 
   // Ensure selectedAgentId is set once agents load (prefer active)
   useEffect(() => {
@@ -46,9 +50,9 @@ export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) =>
   }, [selectedAgentId, activeAgents, mentionableAgents]);
 
   // Maintain sessionId per agent for consecutive turns
-  const sessionIdMapRef = useRef<Map<string, string>>(new Map());
+  const [sessionIds, setSessionIds] = useState<Record<string, string>>({});
   const currentSessionId = selectedAgentId
-    ? sessionIdMapRef.current.get(selectedAgentId)
+    ? sessionIds[selectedAgentId] ?? selectedAgentId
     : undefined;
 
   const { data: messages = [] } = useChatHistory(selectedAgentId, currentSessionId);
@@ -56,11 +60,43 @@ export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) =>
   const sendMutation = useSendChatMessage(selectedAgentId, {
     sessionId: currentSessionId,
     onSessionId: (sid) => {
-      if (selectedAgentId) {
-        sessionIdMapRef.current.set(selectedAgentId, sid);
+      if (!selectedAgentId) {
+        return;
       }
+      setSessionIds((prev) => {
+        const previousSessionId = prev[selectedAgentId] ?? selectedAgentId;
+        if (previousSessionId !== sid) {
+          const previousKey = CHAT_QUERY_KEYS.history(selectedAgentId, previousSessionId);
+          const nextKey = CHAT_QUERY_KEYS.history(selectedAgentId, sid);
+          const cachedMessages = queryClient.getQueryData<Readonly<MessageHistory>[] | undefined>(
+            previousKey
+          );
+          if (cachedMessages && cachedMessages.length > 0) {
+            queryClient.setQueryData(nextKey, cachedMessages);
+            queryClient.removeQueries({ queryKey: previousKey });
+          }
+        }
+
+        if (previousSessionId === sid) {
+          return prev;
+        }
+        return { ...prev, [selectedAgentId]: sid };
+      });
     },
   });
+
+  useEffect(() => {
+    if (!selectedAgentId) {
+      return;
+    }
+    setSessionIds((prev) => {
+      if (prev[selectedAgentId]) {
+        return prev;
+      }
+      return { ...prev, [selectedAgentId]: selectedAgentId };
+    });
+  }, [selectedAgentId]);
+
 
   const loading = useMemo(
     () => isMentionablePending || isActivePending,

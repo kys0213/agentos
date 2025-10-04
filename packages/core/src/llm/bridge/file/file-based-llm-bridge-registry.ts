@@ -54,13 +54,7 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
       return null;
     }
 
-    const bridge = this.createdBridges.get(summary.id);
-
-    if (!bridge) {
-      return null;
-    }
-
-    return bridge;
+    return await this.ensureBridgeInstance(summary.id);
   }
 
   async loadBridge(name: string): Promise<BridgeLoadResult<LlmManifest>> {
@@ -105,13 +99,7 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
   }
 
   async getBridge(id: BridgeId): Promise<LlmBridge | null> {
-    const rec = await this.readRecord(id);
-
-    if (!rec) {
-      return null;
-    }
-
-    return this.createdBridges.get(id) ?? null;
+    return await this.ensureBridgeInstance(id);
   }
 
   async register(
@@ -121,14 +109,16 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
   ): Promise<BridgeId> {
     const id = opts?.id ?? manifest.name;
 
-    const loadedResult = this.loadedBridges.get(manifest.name);
+    let loadedResult = this.loadedBridges.get(manifest.name);
 
     if (!loadedResult) {
-      throw Errors.notFound('llm_bridge', `Bridge ${manifest.name} not found`);
+      loadedResult = await this.llmBridgeLoader.load(manifest.name);
+      this.loadedBridges.set(loadedResult.manifest.name, loadedResult);
     }
 
     const { ctor, manifest: loadedManifest } = loadedResult;
-    const bridge = new ctor(loadedManifest.configSchema.parse(config));
+    const parsedConfig = loadedManifest.configSchema.parse(config ?? {});
+    const bridge = new ctor(parsedConfig);
 
     this.createdBridges.set(id, bridge);
 
@@ -136,6 +126,7 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
       id,
       manifest,
       installedAt: new Date(),
+      config: this.toSerializableConfig(parsedConfig),
     };
 
     await this.writeRecord(record);
@@ -212,6 +203,45 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
     const res = await handler.write(record, { prettyPrint: true, indent: 2, ensureDir: true });
     if (!res.success) {
       throw new Error(`Failed to save bridge record: ${String(res.reason)}`);
+    }
+  }
+
+  private toSerializableConfig<T>(config: T): T {
+    try {
+      return JSON.parse(JSON.stringify(config)) as T;
+    } catch {
+      return config;
+    }
+  }
+
+  private async ensureBridgeInstance(
+    id: BridgeId,
+    record?: InstalledBridgeRecord
+  ): Promise<LlmBridge | null> {
+    const existing = this.createdBridges.get(id);
+    if (existing) {
+      return existing;
+    }
+
+    const rec = record ?? (await this.readRecord(id));
+    if (!rec) {
+      return null;
+    }
+
+    try {
+      const loaded = await this.llmBridgeLoader.load(rec.manifest.name);
+      this.loadedBridges.set(loaded.manifest.name, loaded);
+
+      const parsedConfig = loaded.manifest.configSchema.parse(rec.config ?? {});
+      const bridge = new loaded.ctor(parsedConfig);
+      this.createdBridges.set(id, bridge);
+      return bridge;
+    } catch (error) {
+      console.warn(
+        `[llm-bridge-registry] Failed to hydrate bridge ${id} (${rec.manifest.name}):`,
+        error
+      );
+      return null;
     }
   }
 }

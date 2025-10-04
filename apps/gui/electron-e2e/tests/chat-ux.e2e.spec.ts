@@ -62,43 +62,9 @@ test('Agent 생성 후 채팅 echo 응답을 확인한다', async () => {
     await submitButton.click();
     await expect(harness.window.getByText(agentName)).toBeVisible();
 
-    const backToAgents = harness.window.getByRole('button', { name: /Back to Agents/i });
-    if ((await backToAgents.count()) > 0) {
-      await backToAgents.first().click();
-      await harness.window.waitForTimeout(300);
-    }
-
-    await openManagementView(harness.window);
-
-    const backToChat = harness.window.getByRole('button', { name: /Back to Chat/i });
-    if ((await backToChat.count()) > 0) {
-      await backToChat.first().click();
-    } else {
-      const openChat = harness.window.getByRole('button', { name: /Open Chat/i });
-      if ((await openChat.count()) > 0) {
-        await openChat.first().click();
-      } else {
-        const navChat = harness.window.getByTestId('nav-chat');
-        if ((await navChat.count()) > 0) {
-          await navChat.first().click();
-        }
-      }
-    }
-
-    if (process.env.PW_ELECTRON_DEBUG_BODY === 'true') {
-      const placeholders = await harness.window.evaluate(() =>
-        Array.from(document.querySelectorAll('textarea, input')).map((el) => ({
-          tag: el.tagName,
-          placeholder: el.placeholder,
-        }))
-      );
-      console.log('[e2e-debug] placeholders:', placeholders);
-    }
-
     const emptyState = harness.window.getByText(/No agents available/i);
     if (await emptyState.count()) {
-      await expect(emptyState.first()).toBeVisible();
-      return;
+      await expect(emptyState).toBeHidden({ timeout: 15_000 });
     }
 
     const input = harness.window.getByPlaceholder(/Type a message/i).first();
@@ -107,7 +73,7 @@ test('Agent 생성 후 채팅 echo 응답을 확인한다', async () => {
     await input.fill('Hello from Playwright');
     await input.press('Enter');
     await expect(
-      harness.window.getByText('Echo: Hello from Playwright')
+      harness.window.getByText('E2E response: Hello from Playwright')
     ).toBeVisible({ timeout: 5000 });
   } finally {
     await closeElectronHarness(harness);
