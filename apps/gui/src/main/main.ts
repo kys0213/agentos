@@ -1,6 +1,21 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
+import * as fs from 'node:fs';
 import * as path from 'path';
 import { bootstrapIpcMainProcess } from './bootstrapIpcMainProcess';
+
+function configureUserDataPath() {
+  const profile = process.env.ELECTRON_TEST_PROFILE;
+  if (profile) {
+    try {
+      fs.mkdirSync(profile, { recursive: true });
+      app.setPath('userData', profile);
+      const resolved = app.getPath('userData');
+      console.log('[main] userData path configured for E2E:', resolved);
+    } catch (error) {
+      console.error('Failed to set userData path for test profile', error);
+    }
+  }
+}
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -22,7 +37,9 @@ function createWindow() {
     process.env.NODE_ENV !== 'production' ||
     !app.isPackaged;
 
-  if (isDevelopment) {
+  const isTestProfile = Boolean(process.env.ELECTRON_TEST_PROFILE);
+
+  if (isDevelopment && !isTestProfile) {
     mainWindow.webContents.openDevTools();
   }
 
@@ -30,6 +47,7 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  configureUserDataPath();
   try {
     const mainApp = await bootstrapIpcMainProcess(ipcMain);
 

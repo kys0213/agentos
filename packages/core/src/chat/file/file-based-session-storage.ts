@@ -100,22 +100,57 @@ export class FileBasedSessionStorage {
 
     const meta = await metadata.read();
 
+    const createdAt = meta.createdAt ? new Date(meta.createdAt) : new Date();
+    const updatedAt = meta.updatedAt ? new Date(meta.updatedAt) : createdAt;
+
+    const latestSummary = meta.latestSummary
+      ? {
+          ...meta.latestSummary,
+          createdAt: new Date(meta.latestSummary.createdAt),
+        }
+      : undefined;
+
+    const recentMessages = isNonEmptyArray(meta.recentMessages)
+      ? meta.recentMessages.map((message) => ({
+          ...message,
+          createdAt: new Date(message.createdAt),
+        }))
+      : [];
+
+    const latestCheckpoint = meta.latestCheckpoint
+      ? {
+          ...meta.latestCheckpoint,
+          createdAt: new Date(meta.latestCheckpoint.createdAt),
+          coveringUpTo: new Date(meta.latestCheckpoint.coveringUpTo),
+          message: {
+            ...meta.latestCheckpoint.message,
+            createdAt: new Date(meta.latestCheckpoint.message.createdAt),
+          },
+        }
+      : undefined;
+
+    const totalUsage = meta.totalUsage ?? {
+      totalTokens: 0,
+      promptTokens: 0,
+      completionTokens: 0,
+    };
+
     return {
-      ...meta,
-      latestSummary: meta.latestSummary
-        ? {
-            ...meta.latestSummary,
-            createdAt: new Date(meta.latestSummary.createdAt),
-          }
-        : undefined,
-      recentMessages: isNonEmptyArray(meta.recentMessages)
-        ? meta.recentMessages.map((message) => ({
-            ...message,
-            createdAt: new Date(message.createdAt),
-          }))
-        : [],
-      updatedAt: new Date(meta.updatedAt),
-      createdAt: new Date(meta.createdAt),
+      sessionId:
+        typeof meta.sessionId === 'string' && meta.sessionId.length > 0
+          ? meta.sessionId
+          : sessionId,
+      agentId: typeof meta.agentId === 'string' && meta.agentId.length > 0 ? meta.agentId : agentId,
+      title: meta.title,
+      createdAt,
+      updatedAt,
+      totalMessages: typeof meta.totalMessages === 'number' ? meta.totalMessages : 0,
+      totalUsage,
+      latestSummary,
+      recentMessages,
+      latestCheckpoint,
+      joinedAgents: Array.isArray(meta.joinedAgents) ? meta.joinedAgents : [],
+      latestMessageId: typeof meta.latestMessageId === 'number' ? meta.latestMessageId : 0,
     };
   }
 

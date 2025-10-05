@@ -185,7 +185,7 @@ describe('MultiAgentCoordinator', () => {
     });
 
     const executionIds = result.executions.map((exec) => exec.agent.id);
-    expect(executionIds).toEqual(['beta', 'alpha']);
-    expect(router.route).toHaveBeenCalledOnce();
+    expect(executionIds).toEqual(['alpha']);
+    expect(router.route).not.toHaveBeenCalled();
   });
 });

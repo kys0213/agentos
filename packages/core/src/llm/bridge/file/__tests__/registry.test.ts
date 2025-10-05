@@ -3,6 +3,7 @@ import z from 'zod';
 import { FileBasedLlmBridgeRegistry } from '../file-based-llm-bridge-registry';
 import path from 'node:path';
 import { LlmBridgeLoader } from './__mocks__/llm-bridge-loader';
+import { DummyBridge } from './__mocks__/dummy-bridge';
 
 // In-memory file store to mock @agentos/lang/fs layer deterministically
 const store = new Map<string, string>();
@@ -140,5 +141,19 @@ describe('FileBasedLlmBridgeRegistry (mocked FS)', () => {
     await reg.unregister('test-bridge');
     expect(await reg.listIds()).toEqual([]);
     expect(await reg.getActiveId()).toBeNull();
+  });
+
+  it('hydrates existing bridge instances from disk on demand', async () => {
+    const baseDir = '/tmp/agentos-core-hydrate';
+    const initial = new FileBasedLlmBridgeRegistry(baseDir, new LlmBridgeLoader());
+    await initial.loadBridge('persisted-bridge');
+    await initial.register(makeManifest('persisted-bridge'), {});
+
+    const reloaded = new FileBasedLlmBridgeRegistry(baseDir, new LlmBridgeLoader());
+    const bridgeByName = await reloaded.getBridgeByName('persisted-bridge');
+    expect(bridgeByName).toBeInstanceOf(DummyBridge);
+
+    const bridgeById = await reloaded.getBridge('persisted-bridge');
+    expect(bridgeById).toBeInstanceOf(DummyBridge);
   });
 });

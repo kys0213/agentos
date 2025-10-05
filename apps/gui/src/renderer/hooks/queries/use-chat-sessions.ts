@@ -12,16 +12,19 @@ export interface ChatSessionItem {
   updatedAt: Date;
 }
 
-export const useChatSessions = (pagination?: {
-  cursor?: string;
-  limit?: number;
-  direction?: 'forward' | 'backward';
-}) => {
+export const useChatSessions = (
+  agentId: string,
+  pagination?: {
+    cursor?: string;
+    limit?: number;
+    direction?: 'forward' | 'backward';
+  }
+) => {
   return useQuery({
-    queryKey: [...CHAT_SESSION_QUERY_KEYS.list, pagination],
+    queryKey: [...CHAT_SESSION_QUERY_KEYS.list, agentId, pagination],
     queryFn: async () => {
       const conversationService = ServiceContainer.getOrThrow('conversation');
-      const result = await conversationService.listSessions(pagination);
+      const result = await conversationService.listSessions(agentId, pagination);
 
       return {
         items: result.items.map((item) => ({
@@ -36,19 +39,19 @@ export const useChatSessions = (pagination?: {
   });
 };
 
-export const useDeleteChatSession = () => {
+export const useDeleteChatSession = (agentId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (sessionId: string) => {
       const conversationService = ServiceContainer.getOrThrow('conversation');
-      return conversationService.deleteSession(sessionId);
+      return conversationService.deleteSession(agentId, sessionId);
     },
     onSuccess: (data, sessionId) => {
       if (data.success) {
         // Invalidate chat sessions list
         queryClient.invalidateQueries({
-          queryKey: CHAT_SESSION_QUERY_KEYS.list,
+          queryKey: [...CHAT_SESSION_QUERY_KEYS.list, agentId],
         });
 
         // Remove session from cache

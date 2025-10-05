@@ -16,7 +16,6 @@ import { app } from 'electron';
 export class ChatService {
   private readonly logger = new Logger(ChatService.name);
   private readonly chatManager: FileBasedChatManager;
-  private readonly currentAgentId = 'default-agent'; // TODO: 실제 agent ID 연동 필요
 
   constructor() {
     // 사용자 데이터 디렉토리에 chat 저장
@@ -53,9 +52,11 @@ export class ChatService {
   }
 
   async listSessions(
-    pagination?: z.input<(typeof C.methods)['listSessions']['payload']>
+    payload: z.input<(typeof C.methods)['listSessions']['payload']>
   ): Promise<z.output<(typeof C.methods)['listSessions']['response']>> {
     try {
+      const { agentId, pagination } = payload;
+
       const options: CursorPagination | undefined = pagination
         ? {
             cursor: pagination.cursor || '',
@@ -68,7 +69,7 @@ export class ChatService {
       // TODO: Core의 ChatListOption 타입이 sessionId를 필수로 요구하지만 실제로는 사용하지 않음
       const result = await this.chatManager.list({
         sessionId: '', // list에서는 사용되지 않음
-        agentId: this.currentAgentId,
+        agentId,
         pagination: options,
       });
 
@@ -91,12 +92,12 @@ export class ChatService {
     params: z.input<(typeof C.methods)['getMessages']['payload']>
   ): Promise<z.output<(typeof C.methods)['getMessages']['response']>> {
     try {
-      const { sessionId, pagination } = params;
+      const { agentId, sessionId, pagination } = params;
 
       // 세션 로드 또는 생성
       const session = await this.chatManager.getSession({
         sessionId,
-        agentId: this.currentAgentId,
+        agentId,
       });
 
       const options: CursorPagination | undefined = pagination
@@ -126,12 +127,13 @@ export class ChatService {
   }
 
   async deleteSession(
-    sessionId: z.input<(typeof C.methods)['deleteSession']['payload']>
+    payload: z.input<(typeof C.methods)['deleteSession']['payload']>
   ): Promise<z.output<(typeof C.methods)['deleteSession']['response']>> {
+    const { agentId, sessionId } = payload;
     try {
       await this.chatManager.removeSession({
         sessionId,
-        agentId: this.currentAgentId,
+        agentId,
       });
 
       return {

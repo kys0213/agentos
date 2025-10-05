@@ -1,0 +1,26 @@
+{
+  "name": "e2e-llm-bridge",
+  "version": "0.1.0",
+  "description": "Type-safe LLM bridge used for Electron E2E scenarios",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test:vitest": "echo 'No tests for e2e-llm-bridge'"
+  },
+  "dependencies": {
+    "llm-bridge-spec": "^1.0.6",
+    "zod": "^4.1.0"
+  }
+}

@@ -302,6 +302,9 @@ importers:
       esbuild:
         specifier: ^0.25.8
         version: 0.25.9
+      e2e-llm-bridge:
+        specifier: workspace:*
+        version: link:../../packages/e2e-llm-bridge
       jsdom:
         specifier: ^25.0.1
         version: 25.0.1
@@ -379,6 +382,15 @@ importers:
       typescript:
         specifier: ^5.3.3
         version: 5.9.2
+
+  packages/e2e-llm-bridge:
+    dependencies:
+      llm-bridge-spec:
+        specifier: ^1.0.6
+        version: 1.0.6(zod@4.1.0)
+      zod:
+        specifier: ^4.1.0
+        version: 4.1.0
 
   packages/lang:
     dependencies:
