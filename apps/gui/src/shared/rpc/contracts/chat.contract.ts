@@ -1,10 +1,6 @@
 import { z } from 'zod';
 import { defineContract } from './defineContract';
-import {
-  CursorPaginationSchema,
-  ChatSessionPageSchema,
-  MessageHistoryPageSchema,
-} from './schemas';
+import { CursorPaginationSchema, ChatSessionPageSchema, MessageHistoryPageSchema } from './schemas';
 
 export const ChatContract = defineContract({
   namespace: 'chat',

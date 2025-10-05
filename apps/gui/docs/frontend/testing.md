@@ -76,8 +76,8 @@ pnpm --filter @agentos/apps-gui typecheck
 - 결정 근거: `apps/gui/docs/e2e-electron-decision.md` 참고 (Playwright 인터페이스 재사용, UI 시나리오 이식 용이성)
 - 실행 명령
   - 로컬 기본: `pnpm --filter @agentos/apps-gui test:e2e`
-    - 내부적으로 `scripts/run-electron-e2e.mjs`가 실행되어 `tsc` → `vite build` → `scripts/seed-backend.mjs` → Playwright `_electron` 테스트를 순차 수행한다.
-    - `scripts/seed-backend.mjs`는 테스트용 사용자 데이터 디렉터리에 다음 자산을 시드한다.
+    - 내부적으로 `scripts/run-electron-e2e.mjs`가 실행되어 `tsc` → `vite build` → `dist/main/__tests__/seed-backend.cli.js`(TS 원본: `src/main/__tests__/seed-backend.cli.ts`) → Playwright `_electron` 테스트를 순차 수행한다.
+    - `src/main/__tests__/seed-backend.ts`는 시드 로직을 제공하며, CLI 래퍼(`seed-backend.cli.ts`)가 테스트용 사용자 데이터 디렉터리에 다음 자산을 시드한다.
       - LLM 브릿지: `e2e-llm-bridge` (manifest 등록 + 활성화)
       - MCP 툴: `mcp_e2e_search_tool`
       - 프리셋: `preset-e2e-default.json` (브릿지/툴 선선택, 시스템 프롬프트 기본값 포함)

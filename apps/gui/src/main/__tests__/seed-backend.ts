@@ -1,27 +1,86 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import { createRequire } from 'node:module';
+import process from 'node:process';
+import { FileBasedLlmBridgeRegistry } from '@agentos/core/llm';
+import { DependencyBridgeLoader } from 'llm-bridge-loader';
 
-const require = createRequire(import.meta.url);
+type SeedMode = 'full' | 'mock';
 
-const argv = process.argv.slice(2);
-let profileDir = null;
-let mode = 'full';
-for (let i = 0; i < argv.length; i++) {
-  const arg = argv[i];
-  if (arg === '--profile' && argv[i + 1]) {
-    profileDir = argv[++i];
-  } else if (arg === '--mode' && argv[i + 1]) {
-    mode = argv[++i];
-  }
+export interface SeedOptions {
+  profileDir: string;
+  mode: SeedMode;
 }
 
-if (!profileDir) {
-  console.error('[seed-backend] --profile <path> is required');
-  process.exit(1);
+const nodeProcess = process as NodeJS.Process;
+
+export interface McpTool {
+  id: string;
+  name: string;
+  description: string;
+  version: string;
+  category: string;
+  provider: string;
+  endpoint: string;
+  permissions: string[];
+  status: 'connected' | 'disconnected';
+  usageCount: number;
+  config: {
+    type: 'sse' | string;
+    name: string;
+    version: string;
+  };
 }
 
-(async () => {
+export interface Preset {
+  id: string;
+  name: string;
+  description: string;
+  author: string;
+  createdAt: string;
+  updatedAt: string;
+  version: string;
+  systemPrompt: string;
+  enabledMcps: Array<{
+    name: string;
+    enabledTools: string[];
+    enabledResources: string[];
+    enabledPrompts: string[];
+  }>;
+  llmBridgeName: string;
+  llmBridgeConfig: {
+    bridgeId: string;
+    model: string;
+    temperature?: number;
+    maxTokens?: number;
+    topP?: number;
+  };
+  status: 'active' | 'inactive';
+  usageCount: number;
+  knowledgeDocuments: number;
+  knowledgeStats: {
+    indexed: number;
+    vectorized: number;
+    totalSize: number;
+  };
+  category: string[];
+}
+
+export interface AgentSeedPayload {
+  id: string;
+  version: string;
+  name: string;
+  description: string;
+  icon: string;
+  keywords: string[];
+  preset: Preset;
+  status: 'active' | 'inactive';
+  sessionCount: number;
+  usageCount: number;
+}
+
+export async function seedBackend(options: SeedOptions): Promise<void> {
+  const { profileDir, mode } = options;
+
   if (mode === 'mock') {
     console.log('[seed-backend] mock mode requested; skipping backend seed');
     return;
@@ -32,15 +91,12 @@ if (!profileDir) {
   const preset = await seedPresetDir(profileDir);
   await seedDefaultAgent(profileDir, preset);
   console.log('[seed-backend] seeding completed');
-})();
+}
 
-async function seedLlmBridge(profileDir) {
-  const { FileBasedLlmBridgeRegistry } = require('@agentos/core/llm');
-  const { DependencyBridgeLoader } = require('llm-bridge-loader');
-
+async function seedLlmBridge(profileDir: string): Promise<void> {
   const registry = new FileBasedLlmBridgeRegistry(profileDir, new DependencyBridgeLoader());
 
-  let loaded;
+  let loaded: Awaited<ReturnType<typeof registry.loadBridge>> | undefined;
   try {
     loaded = await registry.loadBridge('e2e-llm-bridge');
   } catch (error) {
@@ -69,9 +125,9 @@ async function seedLlmBridge(profileDir) {
   }
 }
 
-async function seedMcpTools(profileDir) {
+async function seedMcpTools(profileDir: string): Promise<void> {
   const toolsPath = path.join(profileDir, 'mcp-tools.json');
-  const defaultTools = [
+  const defaultTools: McpTool[] = [
     {
       id: 'mcp_e2e_search_tool',
       name: 'E2E Search Tool',
@@ -90,22 +146,23 @@ async function seedMcpTools(profileDir) {
       },
     },
   ];
+
   await fs.writeFile(toolsPath, JSON.stringify(defaultTools, null, 2), 'utf-8');
   const usagePath = path.join(profileDir, 'mcp-usage.json');
   await fs.writeFile(usagePath, JSON.stringify([], null, 2), 'utf-8');
 }
 
-async function seedPresetDir(profileDir) {
+async function seedPresetDir(profileDir: string): Promise<Preset> {
   const presetsDir = path.join(profileDir, 'presets');
   await fs.mkdir(presetsDir, { recursive: true });
 
   const presetPath = path.join(presetsDir, 'preset-e2e-default.json');
   try {
     const existing = await fs.readFile(presetPath, 'utf-8');
-    return JSON.parse(existing);
+    return JSON.parse(existing) as Preset;
   } catch {
     const now = new Date().toISOString();
-    const preset = {
+    const preset: Preset = {
       id: 'preset-e2e-default',
       name: 'E2E Default Agent',
       description: 'Preset seeded for Electron E2E scenarios.',
@@ -114,14 +171,7 @@ async function seedPresetDir(profileDir) {
       updatedAt: now,
       version: '1.0.0',
       systemPrompt: 'You are a helpful researcher for automated QA.',
-      enabledMcps: [
-        {
-          name: 'mcp_e2e_search_tool',
-          enabledTools: [],
-          enabledResources: [],
-          enabledPrompts: [],
-        },
-      ],
+      enabledMcps: [],
       llmBridgeName: 'e2e-llm-bridge',
       llmBridgeConfig: {
         bridgeId: 'e2e-llm-bridge',
@@ -146,7 +196,7 @@ async function seedPresetDir(profileDir) {
   }
 }
 
-async function seedDefaultAgent(profileDir, preset) {
+async function seedDefaultAgent(profileDir: string, preset: Preset): Promise<void> {
   const agentsDir = path.join(profileDir, 'agents');
   await fs.mkdir(agentsDir, { recursive: true });
 
@@ -156,20 +206,23 @@ async function seedDefaultAgent(profileDir, preset) {
   }
 
   const now = new Date().toISOString();
-  const presetForAgent = {
+  const presetForAgent: Preset = {
     ...preset,
     createdAt: preset?.createdAt ?? now,
     updatedAt: preset?.updatedAt ?? now,
   };
 
-  const agent = {
+  const agent: AgentSeedPayload = {
     id: 'agent-e2e-default',
     version: '1',
     name: 'E2E Default Agent',
     description: 'Default agent seeded for Electron E2E chat scenarios.',
     icon: '🤖',
     keywords: ['e2e', 'default', 'qa'],
-    preset: presetForAgent,
+    preset: {
+      ...presetForAgent,
+      enabledMcps: [],
+    },
     status: 'active',
     sessionCount: 0,
     usageCount: 0,
@@ -177,4 +230,30 @@ async function seedDefaultAgent(profileDir, preset) {
 
   const agentPath = path.join(agentsDir, `${agent.id}.json`);
   await fs.writeFile(agentPath, JSON.stringify(agent, null, 2), 'utf-8');
+}
+
+export function parseArguments(argv: string[]): SeedOptions {
+  let profileDir: string | null = null;
+  let mode: SeedMode = 'full';
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--profile' && argv[i + 1]) {
+      profileDir = argv[++i];
+    } else if (arg === '--mode' && argv[i + 1]) {
+      const nextMode = argv[++i] as SeedMode;
+      mode = nextMode;
+    }
+  }
+
+  if (!profileDir) {
+    throw new Error('[seed-backend] --profile <path> is required');
+  }
+
+  return { profileDir, mode };
+}
+
+export async function runSeedCli(argv: string[] = nodeProcess.argv.slice(2)): Promise<void> {
+  const options = parseArguments(argv);
+  await seedBackend(options);
 }

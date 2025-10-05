@@ -112,6 +112,11 @@ export class MultiAgentCoordinator {
       return Array.from(resultMap.values());
     }
 
+    const primary = await this.fetchAgent(input.primaryAgentId);
+    if (primary) {
+      return [primary];
+    }
+
     const allAgents = await this.loadAllAgents();
     if (allAgents.length === 0) {
       return [];
@@ -128,11 +133,6 @@ export class MultiAgentCoordinator {
 
     for (const agent of route.agents) {
       resultMap.set(agent.id, agent);
-    }
-
-    const primary = await this.fetchAgent(input.primaryAgentId);
-    if (primary) {
-      resultMap.set(primary.id, primary);
     }
 
     if (resultMap.size === 0) {

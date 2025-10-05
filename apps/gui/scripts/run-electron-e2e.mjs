@@ -27,7 +27,7 @@ if (preserveProfile) {
 }
 
 const mode = process.env.E2E_MOCK === 'true' ? 'mock' : 'full';
-run('node', ['scripts/seed-backend.mjs', '--profile', profileDir, '--mode', mode]);
+run('node', ['dist/main/__tests__/seed-backend.cli.js', '--profile', profileDir, '--mode', mode]);
 
 try {
   const env = {

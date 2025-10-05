@@ -13,6 +13,9 @@ import { AGENT_SERVICE_TOKEN } from '../common/agent/constants';
 import { AgentEventBridge } from './events/agent-event-bridge';
 import { ChatService } from '../chat/chat.service';
 import { MultiAgentCoordinator } from './multi-agent-coordinator';
+import { appendFileSync } from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
 
 @Injectable()
 export class AgentSessionService {
@@ -21,7 +24,7 @@ export class AgentSessionService {
   constructor(
     @Inject(AGENT_SERVICE_TOKEN) private readonly agentService: AgentService,
     private readonly events: AgentEventBridge,
-    private readonly chatService: ChatService
+    @Inject(ChatService) private readonly chatService: Pick<ChatService, 'appendMessageToSession'>
   ) {
     this.coordinator = new MultiAgentCoordinator(this.agentService);
   }
@@ -32,57 +35,75 @@ export class AgentSessionService {
     options?: AgentExecuteOptions,
     mentionedAgentIds?: string[]
   ): Promise<AgentChatResult> {
-    const normalizedMentions = Array.from(
-      new Set(
-        (mentionedAgentIds ?? []).filter(
-          (id): id is string => typeof id === 'string' && id.length > 0
-        )
-      )
-    );
-
-    const coordinatorResult = await this.coordinator.execute({
-      primaryAgentId: agentId,
-      messages,
-      mentionedAgentIds: normalizedMentions,
-      options,
-    });
-
-    const aggregatedMessages: Message[] = [];
-
     try {
-      for (const exec of coordinatorResult.executions) {
-        for (let i = 0; i < exec.result.messages.length; i++) {
-          const baseMessage = exec.result.messages[i];
-          aggregatedMessages.push(baseMessage);
+      const normalizedMentions = Array.from(
+        new Set(
+          (mentionedAgentIds ?? []).filter(
+            (id): id is string => typeof id === 'string' && id.length > 0
+          )
+        )
+      );
 
-          const messageHistory: MessageHistory = {
-            ...baseMessage,
-            messageId: `${exec.result.sessionId}-${exec.metadata.id}-${Date.now()}-${i}`,
-            createdAt: new Date(),
-            agentMetadata: exec.metadata,
-          };
+      const coordinatorResult = await this.coordinator.execute({
+        primaryAgentId: agentId,
+        messages,
+        mentionedAgentIds: normalizedMentions,
+        options,
+      });
 
-          await this.chatService.appendMessageToSession(
-            coordinatorResult.sessionId,
-            agentId,
-            messageHistory
+      const aggregatedMessages: Message[] = [];
+
+      try {
+        for (const exec of coordinatorResult.executions) {
+          for (let i = 0; i < exec.result.messages.length; i++) {
+            const baseMessage = exec.result.messages[i];
+            aggregatedMessages.push(baseMessage);
+
+            const messageHistory: MessageHistory = {
+              ...baseMessage,
+              messageId: `${exec.result.sessionId}-${exec.metadata.id}-${Date.now()}-${i}`,
+              createdAt: new Date(),
+              agentMetadata: exec.metadata,
+            };
+
+            await this.chatService.appendMessageToSession(
+              coordinatorResult.sessionId,
+              agentId,
+              messageHistory
+            );
+          }
+
+          const last: Message | undefined = exec.result.messages[exec.result.messages.length - 1];
+          if (last) {
+            this.events.publishSessionMessage(exec.result.sessionId, last);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to save messages to ChatService:', error);
+        // 메시지 저장 실패는 전체 chat 실패로 이어지지 않도록 함
+      }
+
+      return {
+        sessionId: coordinatorResult.sessionId,
+        messages: aggregatedMessages,
+      };
+    } catch (error) {
+      console.error('[AgentSessionService.chat] failed', error);
+      try {
+        const profileDir = process.env.ELECTRON_TEST_PROFILE;
+        if (profileDir) {
+          const serializedError =
+            error instanceof Error ? (error.stack ?? error.message) : String(error);
+          appendFileSync(
+            path.join(profileDir, 'agent-session-error.log'),
+            `${new Date().toISOString()} ${serializedError}\n`
           );
         }
-
-        const last: Message | undefined = exec.result.messages[exec.result.messages.length - 1];
-        if (last) {
-          this.events.publishSessionMessage(exec.result.sessionId, last);
-        }
+      } catch (logError) {
+        console.error('Failed to write agent session error log', logError);
       }
-    } catch (error) {
-      console.error('Failed to save messages to ChatService:', error);
-      // 메시지 저장 실패는 전체 chat 실패로 이어지지 않도록 함
+      throw error;
     }
-
-    return {
-      sessionId: coordinatorResult.sessionId,
-      messages: aggregatedMessages,
-    };
   }
 
   async endSession(agentId: string, sessionId: string): Promise<void> {

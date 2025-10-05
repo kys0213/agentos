@@ -15,10 +15,10 @@ export interface ChatSessionItem {
 export const useChatSessions = (
   agentId: string,
   pagination?: {
-  cursor?: string;
-  limit?: number;
-  direction?: 'forward' | 'backward';
-}
+    cursor?: string;
+    limit?: number;
+    direction?: 'forward' | 'backward';
+  }
 ) => {
   return useQuery({
     queryKey: [...CHAT_SESSION_QUERY_KEYS.list, agentId, pagination],

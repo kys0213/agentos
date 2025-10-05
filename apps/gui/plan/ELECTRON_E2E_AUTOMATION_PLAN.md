@@ -91,8 +91,8 @@ test.describe('Electron Dashboard Smoke', () => {
 
 - [x] **실행기 선택 및 기록**: Electron 공식 가이드에 소개된 WebDriver, Playwright, 커스텀 드라이버 옵션을 비교 표로 정리하고 `apps/gui/docs/e2e-electron-decision.md`에 결정 및 리스크를 기록.
 - [x] **Playwright Electron 환경 구성**: `_electron` 런처 유틸, `playwright.config.ts`, `electronHarness`, `openManagementView` 등 공용 유틸을 정비하고 샘플 테스트를 통과시켰다.
-- [x] **번들 준비/프로필 관리 스크립트**: `scripts/run-electron-e2e.mjs`로 `tsc` → `vite build` → `scripts/seed-backend.mjs` → Playwright 실행 순서를 자동화하고 `ELECTRON_TEST_PROFILE` temp 디렉터리를 종료 시 정리한다 (`PRESERVE_E2E_PROFILE=true` 시 보존).
-- [x] **백엔드 오케스트레이션/시드**: `scripts/seed-backend.mjs`에서 LLM 브릿지, MCP 툴, 기본 프리셋, 기본 에이전트를 파일 기반 레지스트리에 시드한다.
+- [x] **번들 준비/프로필 관리 스크립트**: `scripts/run-electron-e2e.mjs`로 `tsc` → `vite build` → `dist/main/__tests__/seed-backend.cli.js`(TS 원본: `src/main/__tests__/seed-backend.cli.ts`) → Playwright 실행 순서를 자동화하고 `ELECTRON_TEST_PROFILE` temp 디렉터리를 종료 시 정리한다 (`PRESERVE_E2E_PROFILE=true` 시 보존).
+- [x] **백엔드 오케스트레이션/시드**: `src/main/__tests__/seed-backend.ts`에서 시드 로직을 제공하고, CLI 래퍼(`seed-backend.cli.ts`)가 명시적으로 호출해 LLM 브릿지·MCP 툴·프리셋·기본 에이전트를 파일 기반 레지스트리에 시드한다.
 - [x] **기존 시나리오 포팅**: `web-gui-basic`, `chat-ux`, `subagent-create-flow`, `mcp-verify`를 Electron 환경으로 이전하고 반복 실행 안정화를 위한 data-testid/헬퍼를 정리했다.
 - [ ] **Chat Echo 확장**: 에이전트 세션/브릿지 준비가 완료되면 `chat-ux`에 실제 Echo 응답 검증을 추가한다.
 - [x] **멀티 에이전트 서비스 검증**: `AgentSessionService` 단위 테스트(`agent-session.service.multi.test.ts`)로 primary/mention 에이전트 실행과 세션 메시지 저장을 확인한다.

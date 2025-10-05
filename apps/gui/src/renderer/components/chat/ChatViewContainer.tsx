@@ -52,7 +52,7 @@ export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) =>
   // Maintain sessionId per agent for consecutive turns
   const [sessionIds, setSessionIds] = useState<Record<string, string>>({});
   const currentSessionId = selectedAgentId
-    ? sessionIds[selectedAgentId] ?? selectedAgentId
+    ? (sessionIds[selectedAgentId] ?? selectedAgentId)
     : undefined;
 
   const { data: messages = [] } = useChatHistory(selectedAgentId, currentSessionId);
@@ -96,7 +96,6 @@ export const ChatViewContainer: React.FC<{ onNavigate?: (section: AppSection) =>
       return { ...prev, [selectedAgentId]: selectedAgentId };
     });
   }, [selectedAgentId]);
-
 
   const loading = useMemo(
     () => isMentionablePending || isActivePending,

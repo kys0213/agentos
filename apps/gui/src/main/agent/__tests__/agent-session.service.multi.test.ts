@@ -24,7 +24,11 @@ import type { ChatService } from '../../chat/chat.service';
 class StubChatService implements Pick<ChatService, 'appendMessageToSession'> {
   public appended: { sessionId: string; agentId: string; message: MessageHistory }[] = [];
 
-  async appendMessageToSession(sessionId: string, agentId: string, message: MessageHistory): Promise<void> {
+  async appendMessageToSession(
+    sessionId: string,
+    agentId: string,
+    message: MessageHistory
+  ): Promise<void> {
     this.appended.push({ sessionId, agentId, message });
   }
 }
@@ -49,11 +53,16 @@ describe('AgentSessionService multi-agent integration (SimpleAgentService)', () 
     const chatManager = new FileBasedChatManager(storage, compressor, compressor);
     const metadataRepo = new FileAgentMetadataRepository(path.join(tempDir, 'agents'));
 
-    const simpleService = new SimpleAgentService(llmRegistry, mcpRegistry, chatManager, metadataRepo);
+    const simpleService = new SimpleAgentService(
+      llmRegistry,
+      mcpRegistry,
+      chatManager,
+      metadataRepo
+    );
     chatService = new StubChatService();
     const outbound = new OutboundChannel();
     const eventBridge = new AgentEventBridge(outbound);
-    sessionService = new AgentSessionService(simpleService, eventBridge, chatService as unknown as ChatService);
+    sessionService = new AgentSessionService(simpleService, eventBridge, chatService);
   });
 
   afterEach(() => {
@@ -105,12 +114,9 @@ describe('AgentSessionService multi-agent integration (SimpleAgentService)', () 
       content: [{ contentType: 'text', value: 'Summarize the status' }],
     };
 
-    const result: AgentChatResult = await sessionService.chat(
-      alphaMeta.id,
-      [message],
-      undefined,
-      [betaMeta.id]
-    );
+    const result: AgentChatResult = await sessionService.chat(alphaMeta.id, [message], undefined, [
+      betaMeta.id,
+    ]);
 
     const assistantMessages = result.messages.filter((msg) => msg.role === 'assistant');
     expect(assistantMessages.length).toBeGreaterThanOrEqual(2);
@@ -121,8 +127,9 @@ describe('AgentSessionService multi-agent integration (SimpleAgentService)', () 
         Array.isArray(segment) ? segment : [segment]
       );
       return flattened
-        .filter((chunk): chunk is { text: string } =>
-          typeof chunk === 'object' && chunk !== null && typeof chunk.text === 'string'
+        .filter(
+          (chunk): chunk is { text: string } =>
+            typeof chunk === 'object' && chunk !== null && typeof chunk.text === 'string'
         )
         .map((chunk) => chunk.text);
     });
