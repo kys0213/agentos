@@ -13,6 +13,8 @@ interface BaseNode {
   type: NodeType;
   text?: string;
   canonicalKey?: string;        // normalized+hash key for exact-dup merge
+  summary?: string;             // optional sleep-cycle summary text
+  sourceNodeIds?: string[];     // provenance for merged nodes
   embedding?: number[] | Map<number, number>;
   createdAt: number;
   lastAccess: number;
@@ -46,6 +48,50 @@ interface EmbeddingProvider {
   exportState?(): any;
   importState?(s: any): void;
 }
+
+type SleepCycleTrigger = 'session-finalize' | 'eviction' | 'interval';
+
+interface SleepCycleBaseOptions {
+  maxClusters: number;
+  maxInspect: number;
+  minClusterSize: number;
+  similarityThreshold: number;
+  minRank: number;
+  summaryMaxLength: number;
+  cooldownMs: number;
+}
+
+interface SleepCycleConfig {
+  summarizer: SleepCycleSummarizer;
+  defaults?: Partial<SleepCycleBaseOptions>;
+  emit?: (report: SleepCycleReport) => void;
+}
+
+interface SleepCycleRunOptions extends Partial<SleepCycleBaseOptions> {
+  trigger?: SleepCycleTrigger;
+  force?: boolean;
+}
+
+interface SleepCycleSummarizer {
+  summarize(texts: string[], opts: { maxLength: number }): string;
+}
+
+interface SleepCycleClusterReport {
+  anchorId: string;
+  mergedNodeIds: string[];
+  summary: string;
+  beforeRank: number;
+  afterRank: number;
+  freedNodes: number;
+}
+
+interface SleepCycleReport {
+  trigger: SleepCycleTrigger;
+  clusters: SleepCycleClusterReport[];
+  freedCapacity: number;
+  inspected: number;
+  timestamp: number;
+}
 ```
 
 ## GraphStore
@@ -59,6 +105,9 @@ class GraphStore {
   adjustWeights(nodeId: string, deltas: { feedbackDelta?: number; repeatDelta?: number }): void;
   searchSimilarQueries(text: string, k?: number): Array<{ id: string; score: number; sim: number; text?: string; canonicalKey?: string }>;
 
+  configureSleepCycle(cfg: SleepCycleConfig): void;
+  runSleepCycle(options?: SleepCycleRunOptions): SleepCycleReport | null;
+
   link(from: string, to: string, type: EdgeType, weight: number): void;
 
   toSnapshot(): any;            // { graph:{nodes,edges}, embedder, canonicalMeta }
@@ -69,6 +118,14 @@ class GraphStore {
   stats(): { nodes: number; edges: number };
 }
 ```
+
+Sleep-cycle consolidation:
+
+- `configureSleepCycle` wires an on-device summarizer and optional defaults for consolidation batches.
+- `runSleepCycle` (invoked manually or by internal triggers) clusters low-rank similar queries, merges them into an anchor node,
+  stores the summarizer output in `summary`, and tracks provenance via `sourceNodeIds`.
+- The returned `SleepCycleReport` provides metrics (`freedCapacity`, inspected nodes, cluster details) for logging dashboards or
+  telemetry hooks.
 
 Notes:
 
@@ -86,6 +143,13 @@ interface OrchestratorCfg {
   promotion: { minRank: number; maxPromotions: number; minDegree?: number; carryWeights?: boolean };
   checkpoint: { outDir: string; topK: number; pretty?: boolean };
   searchBiasSessionFirst?: number;
+  sleepCycle?: {
+    summarizer: SleepCycleSummarizer;
+    defaults?: Partial<SleepCycleBaseOptions>;
+    runOnFinalize?: boolean;
+    runOptions?: SleepCycleRunOptions;
+    emit?: (scope: Scope, report: SleepCycleReport) => void;
+  };
 }
 
 class MemoryOrchestrator {
@@ -104,6 +168,13 @@ class MemoryOrchestrator {
   getActiveSessions(): string[];
 }
 ```
+
+Sleep-cycle orchestration:
+
+- Provide `sleepCycle` in the config to register the same summarizer against both the agent and session stores.
+- When `runOnFinalize` is not disabled, `finalizeSession` forces a sleep-cycle pass before promotions/checkpoints so that
+  consolidated summaries propagate to long-term memory snapshots.
+- `emit` hooks receive `(scope, report)` pairs, enabling dashboards to distinguish session-vs-agent cleanups.
 
 ## Embedding & canonicalKey
 

@@ -6,6 +6,8 @@ export interface BaseNode {
   type: NodeType;
   text?: string;
   canonicalKey?: string;
+  summary?: string;
+  sourceNodeIds?: string[];
   embedding?: number[] | Map<number, number>;
   createdAt: number;
   lastAccess: number;

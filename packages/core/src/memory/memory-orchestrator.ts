@@ -1,6 +1,12 @@
 import path from 'path';
 import fs from 'fs/promises';
-import { GraphStore } from './graph-store';
+import {
+  GraphStore,
+  SleepCycleBaseOptions,
+  SleepCycleReport,
+  SleepCycleRunOptions,
+  SleepCycleSummarizer,
+} from './graph-store';
 import { GraphConfig, BaseNode, Edge } from './types';
 import { SimpleEmbedding } from './embedding/simple-embedding';
 
@@ -12,6 +18,13 @@ export interface OrchestratorCfg {
   promotion: { minRank: number; maxPromotions: number; minDegree?: number; carryWeights?: boolean };
   checkpoint: { outDir: string; topK: number; pretty?: boolean };
   searchBiasSessionFirst?: number;
+  sleepCycle?: {
+    summarizer: SleepCycleSummarizer;
+    defaults?: Partial<SleepCycleBaseOptions>;
+    runOnFinalize?: boolean;
+    runOptions?: SleepCycleRunOptions;
+    emit?: (scope: Scope, report: SleepCycleReport) => void;
+  };
 }
 
 export class MemoryOrchestrator {
@@ -24,11 +37,14 @@ export class MemoryOrchestrator {
     private cfg: OrchestratorCfg
   ) {
     this.agentStore = new GraphStore({ ...cfg.agentGraph }, this.embedder);
+    this.configureSleepCycle(this.agentStore, 'agent');
   }
 
   getSessionStore(sessionId: string) {
     if (!this.sessions.has(sessionId)) {
-      this.sessions.set(sessionId, new GraphStore({ ...this.cfg.sessionGraph }, this.embedder));
+      const store = new GraphStore({ ...this.cfg.sessionGraph }, this.embedder);
+      this.configureSleepCycle(store, 'session');
+      this.sessions.set(sessionId, store);
     }
     return this.sessions.get(sessionId)!;
   }
@@ -82,6 +98,19 @@ export class MemoryOrchestrator {
     return [...map.values()].sort((a, b) => b.score - a.score).slice(0, k);
   }
 
+  private configureSleepCycle(store: GraphStore, scope: Scope) {
+    if (!this.cfg.sleepCycle) {
+      return;
+    }
+    store.configureSleepCycle({
+      summarizer: this.cfg.sleepCycle.summarizer,
+      defaults: this.cfg.sleepCycle.defaults,
+      emit: this.cfg.sleepCycle.emit
+        ? (report) => this.cfg.sleepCycle?.emit?.(scope, report)
+        : undefined,
+    });
+  }
+
   private rank(n: Pick<BaseNode, 'lastAccess' | 'weights'>, halfLifeMin: number) {
     const now = Date.now();
     const ageMin = (now - n.lastAccess) / (1000 * 60);
@@ -118,6 +147,15 @@ export class MemoryOrchestrator {
     const s = this.sessions.get(sessionId);
     if (!s) {
       return;
+    }
+
+    if (this.cfg.sleepCycle && this.cfg.sleepCycle.runOnFinalize !== false) {
+      const overrides: SleepCycleRunOptions = {
+        ...(this.cfg.sleepCycle.runOptions ?? {}),
+        trigger: 'session-finalize',
+        force: true,
+      };
+      s.runSleepCycle(overrides);
     }
 
     if (promote) {

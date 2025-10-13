@@ -64,4 +64,37 @@ describe('MemoryOrchestrator', () => {
     const after = o.getAgentStore().stats().nodes;
     expect(after).toBeGreaterThanOrEqual(before);
   });
+
+  test('sleep cycle runs during session finalization when configured', async () => {
+    const emit = vi.fn();
+    const o = new MemoryOrchestrator('agent-3', {
+      ...baseCfg,
+      sleepCycle: {
+        summarizer: {
+          summarize(texts, _opts) {
+            return texts.join(' ');
+          },
+        },
+        defaults: {
+          minRank: 1,
+          similarityThreshold: 0.7,
+          minClusterSize: 2,
+          maxClusters: 5,
+          cooldownMs: 0,
+        },
+        emit,
+      },
+    });
+    const sid = 'sleep-1';
+    o.upsertQuery(sid, '수면 주기 정리 루틴 설계');
+    o.upsertQuery(sid, '수면주기 정리 루틴 설계 구체화');
+
+    await o.finalizeSession(sid, { promote: false, checkpoint: false });
+
+    expect(emit).toHaveBeenCalled();
+    const sessionReport = emit.mock.calls.find(
+      ([scope, report]) => scope === 'session' && report.trigger === 'session-finalize'
+    );
+    expect(sessionReport).toBeTruthy();
+  });
 });

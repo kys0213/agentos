@@ -5,12 +5,76 @@ import { cosineSparse } from './utils/cosine-sparse';
 import { canonicalKey, defaultCanonicalMeta } from './utils/canonical-key';
 import { serializeSparse, deserializeSparse } from './utils/serialize-sparse';
 
+export type SleepCycleTrigger = 'session-finalize' | 'eviction' | 'interval';
+
+export interface SleepCycleBaseOptions {
+  maxClusters: number;
+  maxInspect: number;
+  minClusterSize: number;
+  similarityThreshold: number;
+  minRank: number;
+  summaryMaxLength: number;
+  cooldownMs: number;
+}
+
+export interface SleepCycleOptions extends SleepCycleBaseOptions {
+  trigger: SleepCycleTrigger;
+}
+
+export interface SleepCycleRunOptions extends Partial<SleepCycleBaseOptions> {
+  trigger?: SleepCycleTrigger;
+  force?: boolean;
+}
+
+export interface SleepCycleClusterReport {
+  anchorId: string;
+  mergedNodeIds: string[];
+  summary: string;
+  beforeRank: number;
+  afterRank: number;
+  freedNodes: number;
+}
+
+export interface SleepCycleReport {
+  trigger: SleepCycleTrigger;
+  clusters: SleepCycleClusterReport[];
+  freedCapacity: number;
+  inspected: number;
+  timestamp: number;
+}
+
+export interface SleepCycleSummarizer {
+  summarize(texts: string[], opts: { maxLength: number }): string;
+}
+
+export interface SleepCycleConfig {
+  summarizer: SleepCycleSummarizer;
+  defaults?: Partial<SleepCycleBaseOptions>;
+  emit?: (report: SleepCycleReport) => void;
+}
+
+const DEFAULT_SLEEP_OPTIONS: SleepCycleBaseOptions = {
+  maxClusters: 3,
+  maxInspect: 200,
+  minClusterSize: 2,
+  similarityThreshold: 0.82,
+  minRank: 0.35,
+  summaryMaxLength: 180,
+  cooldownMs: 30_000,
+};
+
 export class GraphStore {
   private nodes = new Map<string, BaseNode>();
   private edges = new Map<string, Edge>();
   private byCanonical = new Map<string, string>();
   private inverted?: Map<string, Set<string>>;
   private dirty = false;
+  private sleepCycle?: {
+    summarizer: SleepCycleSummarizer;
+    defaults: SleepCycleBaseOptions;
+    emit?: (report: SleepCycleReport) => void;
+    lastRun: Record<SleepCycleTrigger, number>;
+  };
 
   constructor(
     private cfg: GraphConfig,
@@ -39,6 +103,80 @@ export class GraphStore {
     }
   }
 
+  private unindexNode(id: string, text?: string, canonical?: string) {
+    if (canonical && this.byCanonical.get(canonical) === id) {
+      this.byCanonical.delete(canonical);
+    }
+    if (!this.inverted || !text) {
+      return;
+    }
+    const grams = normalize(text).split(' ');
+    for (const g of grams) {
+      if (!g) {
+        continue;
+      }
+      const set = this.inverted.get(g);
+      if (!set) {
+        continue;
+      }
+      set.delete(id);
+      if (set.size === 0) {
+        this.inverted.delete(g);
+      }
+    }
+  }
+
+  configureSleepCycle(cfg: SleepCycleConfig) {
+    this.sleepCycle = {
+      summarizer: cfg.summarizer,
+      defaults: { ...DEFAULT_SLEEP_OPTIONS, ...(cfg.defaults ?? {}) },
+      emit: cfg.emit,
+      lastRun: {
+        interval: 0,
+        eviction: 0,
+        'session-finalize': 0,
+      },
+    };
+  }
+
+  runSleepCycle(options?: SleepCycleRunOptions): SleepCycleReport | null {
+    if (!this.sleepCycle) {
+      return null;
+    }
+    const { force, trigger: maybeTrigger, ...rest } = options ?? {};
+    const trigger = maybeTrigger ?? 'interval';
+    const cooldown = (rest.cooldownMs as number | undefined) ?? this.sleepCycle.defaults.cooldownMs;
+    if (!force && !this.shouldTriggerSleepCycle(trigger, cooldown)) {
+      return null;
+    }
+    const merged: SleepCycleOptions = {
+      ...this.sleepCycle.defaults,
+      ...rest,
+      cooldownMs: cooldown,
+      trigger,
+    } as SleepCycleOptions;
+    const report = this.executeSleepCycle(merged);
+    this.sleepCycle.emit?.(report);
+    return report;
+  }
+
+  private shouldTriggerSleepCycle(trigger: SleepCycleTrigger, cooldownOverride?: number) {
+    if (!this.sleepCycle) {
+      return false;
+    }
+    const now = Date.now();
+    const last = this.sleepCycle.lastRun[trigger] ?? 0;
+    const limit = cooldownOverride ?? this.sleepCycle.defaults.cooldownMs;
+    return now - last >= limit;
+  }
+
+  private maybeRunSleepCycle(trigger: SleepCycleTrigger) {
+    if (!this.sleepCycle) {
+      return;
+    }
+    this.runSleepCycle({ trigger });
+  }
+
   upsertQuery(text: string) {
     const now = Date.now();
     const emb = this.embedder.embed(text) as SparseVec;
@@ -49,6 +187,7 @@ export class GraphStore {
       q.weights.repeat += 1;
       q.lastAccess = now;
       this.touchNeighbors(existing, now);
+      this.maybeRunSleepCycle('interval');
       this.evictIfNeeded();
       return q.id;
     }
@@ -67,6 +206,7 @@ export class GraphStore {
       q.weights.repeat += 1;
       q.lastAccess = now;
       this.touchNeighbors(q.id, now);
+      this.maybeRunSleepCycle('interval');
       this.evictIfNeeded();
       return q.id;
     }
@@ -92,6 +232,7 @@ export class GraphStore {
       }
     }
     this.dirty = true;
+    this.maybeRunSleepCycle('interval');
     this.evictIfNeeded();
     return id;
   }
@@ -220,7 +361,10 @@ export class GraphStore {
   }
   private evictIfNeeded() {
     const { maxNodes, maxEdges, protectMinDegree } = this.cfg;
-    const overN = this.nodes.size - maxNodes;
+    if (this.nodes.size > maxNodes) {
+      this.maybeRunSleepCycle('eviction');
+    }
+    let overN = this.nodes.size - maxNodes;
     if (overN > 0) {
       const cand: BaseNode[] = [];
       for (const n of this.nodes.values()) {
@@ -258,9 +402,7 @@ export class GraphStore {
       }
     }
     this.nodes.delete(id);
-    if (n.canonicalKey) {
-      this.byCanonical.delete(n.canonicalKey);
-    }
+    this.unindexNode(id, n.text, n.canonicalKey);
   }
   private removeEdge(id: string) {
     const e = this.edges.get(id);
@@ -276,6 +418,158 @@ export class GraphStore {
       b.degree = Math.max(0, b.degree - 1);
     }
     this.edges.delete(id);
+  }
+
+  private executeSleepCycle(options: SleepCycleOptions): SleepCycleReport {
+    const state = this.sleepCycle!;
+    const now = Date.now();
+    const queryNodes = [...this.nodes.values()].filter((n) => n.type === 'query');
+    const scored = queryNodes
+      .map((n) => ({ n, rank: this.rank(n) }))
+      .sort((a, b) => a.rank - b.rank);
+    const visited = new Set<string>();
+    const clusters: SleepCycleClusterReport[] = [];
+    let freedCapacity = 0;
+    let inspected = 0;
+
+    for (const { n, rank } of scored) {
+      if (clusters.length >= options.maxClusters || inspected >= options.maxInspect) {
+        break;
+      }
+      inspected++;
+      if (visited.has(n.id)) {
+        continue;
+      }
+      if (rank > options.minRank) {
+        continue;
+      }
+      const neighbors = this.collectSimilarNeighbors(n.id, options.similarityThreshold).filter(
+        (id) => !visited.has(id)
+      );
+      const clusterIds = [n.id, ...neighbors];
+      if (clusterIds.length < options.minClusterSize) {
+        continue;
+      }
+      for (const id of clusterIds) {
+        visited.add(id);
+      }
+      const anchorId = this.pickClusterAnchor(clusterIds);
+      const anchorNode = anchorId ? this.nodes.get(anchorId) : undefined;
+      if (!anchorId || !anchorNode) {
+        continue;
+      }
+      const beforeRank = this.rank(anchorNode);
+      const texts = clusterIds
+        .map((id) => this.nodes.get(id))
+        .filter((node): node is BaseNode => Boolean(node?.text || node?.summary))
+        .map((node) => node.summary ?? node.text ?? '')
+        .filter((t) => t.trim().length > 0);
+      const summaryRaw = texts.length > 0 ? state.summarizer.summarize(texts, { maxLength: options.summaryMaxLength }) : '';
+      const summary = summaryRaw && summaryRaw.trim().length > 0 ? summaryRaw.trim() : texts[0] ?? '';
+      const mergeIds = clusterIds.filter((id) => id !== anchorId);
+      const { removed, afterRank } = this.consolidateCluster(anchorId, mergeIds, summary);
+      if (removed.length === 0) {
+        continue;
+      }
+      freedCapacity += removed.length;
+      clusters.push({
+        anchorId,
+        mergedNodeIds: removed,
+        summary,
+        beforeRank,
+        afterRank,
+        freedNodes: removed.length,
+      });
+    }
+
+    state.lastRun[options.trigger] = now;
+    if (options.trigger !== 'interval') {
+      state.lastRun.interval = now;
+    }
+    return {
+      trigger: options.trigger,
+      clusters,
+      freedCapacity,
+      inspected,
+      timestamp: now,
+    };
+  }
+
+  private collectSimilarNeighbors(nodeId: string, threshold: number) {
+    const out = new Set<string>();
+    for (const e of this.edges.values()) {
+      if (e.type !== 'similar_to' || e.weight < threshold) {
+        continue;
+      }
+      if (e.from === nodeId) {
+        out.add(e.to);
+      } else if (e.to === nodeId) {
+        out.add(e.from);
+      }
+    }
+    return [...out];
+  }
+
+  private pickClusterAnchor(ids: string[]) {
+    let anchorId: string | null = null;
+    let bestRank = -Infinity;
+    for (const id of ids) {
+      const node = this.nodes.get(id);
+      if (!node) {
+        continue;
+      }
+      const r = this.rank(node);
+      if (r > bestRank) {
+        anchorId = id;
+        bestRank = r;
+      }
+    }
+    return anchorId;
+  }
+
+  private consolidateCluster(anchorId: string, mergeIds: string[], summary: string) {
+    const anchor = this.nodes.get(anchorId);
+    if (!anchor) {
+      return { removed: [] as string[], afterRank: 0 };
+    }
+    const removed: string[] = [];
+    const sourceSet = new Set<string>(anchor.sourceNodeIds ?? [anchorId]);
+    const now = Date.now();
+    for (const mergeId of mergeIds) {
+      const node = this.nodes.get(mergeId);
+      if (!node) {
+        continue;
+      }
+      sourceSet.add(mergeId);
+      anchor.weights.repeat += node.weights.repeat;
+      anchor.weights.feedback += node.weights.feedback;
+      anchor.lastAccess = Math.max(anchor.lastAccess, node.lastAccess);
+      anchor.createdAt = Math.min(anchor.createdAt, node.createdAt);
+      const edgesToTransfer = [...this.edges.values()].filter(
+        (e) => e.from === mergeId || e.to === mergeId
+      );
+      for (const edge of edgesToTransfer) {
+        this.removeEdge(edge.id);
+        const other = edge.from === mergeId ? edge.to : edge.from;
+        if (other === anchorId) {
+          continue;
+        }
+        const from = edge.from === mergeId ? anchorId : edge.from;
+        const to = edge.to === mergeId ? anchorId : edge.to;
+        this.link(from, to, edge.type, edge.weight);
+      }
+      this.unindexNode(mergeId, node.text, node.canonicalKey);
+      this.nodes.delete(mergeId);
+      removed.push(mergeId);
+    }
+    if (summary.trim()) {
+      anchor.summary = summary.trim();
+    }
+    anchor.sourceNodeIds = [...sourceSet];
+    anchor.lastAccess = Math.max(anchor.lastAccess, now);
+    this.dirty = true;
+    const afterRank = this.rank(anchor);
+    return { removed, afterRank };
   }
 
   stats() {

@@ -81,4 +81,50 @@ describe('GraphStore', () => {
     );
     expect({ nodes, edgeTypeCounts }).toMatchSnapshot();
   });
+
+  test('sleep cycle consolidates similar queries and preserves canonical metadata', () => {
+    const g = new GraphStore(cfg, new SimpleEmbedding());
+    g.configureSleepCycle({
+      summarizer: {
+        summarize(texts, _opts) {
+          return texts.join(' / ').slice(0, 120);
+        },
+      },
+      defaults: {
+        similarityThreshold: 0.7,
+        minRank: 1,
+        maxClusters: 4,
+        minClusterSize: 2,
+        cooldownMs: 0,
+      },
+    });
+
+    const base = g.upsertQuery('수면 주기 정리 루틴 설계');
+    const similar = g.upsertQuery('수면주기 정리 루틴 설계 구체화');
+    const distinct = g.upsertQuery('테스트 케이스 문서화 전략');
+
+    expect(base).not.toBe(similar);
+    expect(base).not.toBe(distinct);
+
+    g.link(base, similar, 'similar_to', 0.92);
+
+    const report = g.runSleepCycle({ trigger: 'interval', force: true });
+    expect(report).not.toBeNull();
+    expect(report?.freedCapacity).toBeGreaterThanOrEqual(1);
+    expect(report?.clusters.length).toBeGreaterThan(0);
+
+    const snap = g.toSnapshot();
+    const queries = (snap.graph.nodes as Array<Record<string, unknown>>).filter(
+      (n) => n.type === 'query'
+    );
+    const consolidated = queries.find(
+      (n) => Array.isArray(n.sourceNodeIds) && (n.sourceNodeIds as string[]).length >= 2
+    );
+    expect(consolidated).toBeTruthy();
+    expect(consolidated?.summary).toContain('수면');
+    const ids = new Set((consolidated?.sourceNodeIds as string[]) ?? []);
+    expect(ids.has(base)).toBe(true);
+    expect(ids.has(similar)).toBe(true);
+    expect(ids.has(distinct)).toBe(false);
+  });
 });

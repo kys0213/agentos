@@ -23,6 +23,20 @@ This guide describes the personalized memory subsystem for AgentOS Core: a sessi
 - Feedback: `recordFeedback(qId, 'up'|'down'|'retry')` and `adjustWeights()` for promotion carry.
 - Snapshots: embedding as `[[i,v], ...]`, plus `embedderState` and `canonicalMeta` for reproducibility.
 
+## Sleep-cycle Consolidation
+
+- `configureSleepCycle` equips each `GraphStore` with an on-device summarizer and thresholds for cluster size, rank cutoff, and
+  similarity, keeping a cooldown per trigger to amortize consolidation work.
+- Triggers:
+  - **Interval** — invoked implicitly during write paths (e.g. `upsertQuery`) once the cooldown expires.
+  - **Eviction** — executed before rank/LRU deletion; if consolidation cannot free enough capacity the fallback eviction still
+    removes the lowest-ranked nodes.
+  - **Session Finalize** — forced run during `MemoryOrchestrator.finalizeSession(...)` whenever `sleepCycle.runOnFinalize !== false`.
+- Consolidation merges low-rank query clusters into the highest-ranked anchor, transfers edges, and stores the summarizer output
+  in `node.summary` while tracking provenance via `node.sourceNodeIds`.
+- Each pass returns a `SleepCycleReport` describing clusters, freed capacity, and trigger metadata; use `sleepCycle.emit(scope,
+  report)` to surface telemetry per session/agent scope.
+
 ## Configuration Hints
 
 - Session(default): `maxNodes ~ 1000`, `tauDup ~ 0.96`, `enableInvertedIndex: false` initially.
