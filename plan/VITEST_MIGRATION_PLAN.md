@@ -6,7 +6,7 @@
 
 ### 성공 조건
 
-- [ ] 모든 패키지(core, lang, cli, gui, agent-slack-bot)의 유닛 테스트가 Vitest에서 통과한다.
+- [ ] 모든 패키지(core, lang, cli, gui, slack-bot)의 유닛 테스트가 Vitest에서 통과한다.
 - [x] GUI 테스트는 jsdom(렌더러)와 node(메인) 환경을 파일 경로로 분리하여 동시에 실행 가능하다.
 - [ ] 커버리지(text, lcov)가 Vitest(v8)로 생성되고 CI에서 수집된다.
 - [ ] Jest/ts-jest 의존성과 jest.config.\* 파일을 제거한다(최종 단계).
@@ -72,7 +72,7 @@ export default defineConfig({
 - [x] 루트 devDependencies 추가: `vitest`, `@vitest/coverage-v8`, `@testing-library/jest-dom`, `reflect-metadata`
 - [x] 루트에 `vitest.setup.ts` 생성(jest→vi 셰임 및 RTL 매처, 타이머 셰임 포함)
 - [x] 패키지별 `vitest.config.ts` 추가 및 타임아웃 설정
-  - [x] packages/core, packages/lang, apps/cli, apps/agent-slack-bot: node 환경 + 커버리지 + 타임아웃
+  - [x] packages/core, packages/lang, apps/cli, apps/slack-bot: node 환경 + 커버리지 + 타임아웃
   - [x] apps/gui: jsdom/node 분기 + 커버리지 + 타임아웃
 - [x] `package.json` 스크립트 추가: `test:vitest`(Non-watch). `test:watch` 전면 제거
 - [x] CI에 Vitest 잡 추가(`.github/workflows/test-vitest.yml`): `pnpm -r test:vitest` (Non-watch)
