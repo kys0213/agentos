@@ -37,7 +37,10 @@ export class LlmTagExtractor implements TagExtractor {
   private readonly separator: string;
   private readonly defaultMax: number;
 
-  constructor(private readonly llm: LlmBridge, options?: LlmTagExtractorOptions) {
+  constructor(
+    private readonly llm: LlmBridge,
+    options?: LlmTagExtractorOptions
+  ) {
     this.systemPrompt = options?.systemPrompt ?? DEFAULT_SYSTEM_PROMPT;
     this.separator = options?.joinSeparator ?? '\n';
     this.defaultMax = options?.maxTags ?? 8;
@@ -111,4 +114,3 @@ function extractText(resp: { content: { contentType: string; value: unknown } })
   }
   return String(resp.content.value ?? '');
 }
-

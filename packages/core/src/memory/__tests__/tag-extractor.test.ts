@@ -38,4 +38,3 @@ describe('LlmTagExtractor', () => {
     expect(tags).toEqual(['Project']);
   });
 });
-

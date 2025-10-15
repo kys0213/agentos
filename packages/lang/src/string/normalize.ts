@@ -28,10 +28,7 @@ export function normalizeText(text: string, options: NormalizeTextOptions = {}):
   return normalized.trim();
 }
 
-export function tokenizeNormalized(
-  text: string,
-  options: NormalizeTextOptions = {}
-): string[] {
+export function tokenizeNormalized(text: string, options: NormalizeTextOptions = {}): string[] {
   const normalized = normalizeText(text, options);
   if (!normalized) {
     return [];

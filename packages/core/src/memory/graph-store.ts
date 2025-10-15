@@ -1,13 +1,6 @@
 import fs from 'fs/promises';
 import { tokenizeNormalized } from '@agentos/lang/string';
-import {
-  BaseNode,
-  Edge,
-  EdgeType,
-  EmbeddingProvider,
-  GraphConfig,
-  NodeGeneration,
-} from './types';
+import { BaseNode, Edge, EdgeType, EmbeddingProvider, GraphConfig, NodeGeneration } from './types';
 import { SimpleEmbedding, SparseVec } from './embedding/simple-embedding';
 import { cosineSparse } from './utils/cosine-sparse';
 import { canonicalKey, defaultCanonicalMeta } from './utils/canonical-key';
@@ -156,10 +149,7 @@ export class GraphStore {
     return id;
   }
 
-  upsertTag(
-    tag: string,
-    opts?: { generation?: NodeGeneration; carryWeights?: boolean }
-  ) {
+  upsertTag(tag: string, opts?: { generation?: NodeGeneration; carryWeights?: boolean }) {
     const now = Date.now();
     const canonical = canonicalTagKey(tag);
     const existing = this.byCanonical.get(canonical);
@@ -389,13 +379,15 @@ export class GraphStore {
 
   getEdges(filter: { from?: string; to?: string; type?: EdgeType }) {
     return [...this.edges.values()]
-      .filter((e) =>
-        (filter.from ? e.from === filter.from : true) &&
-        (filter.to ? e.to === filter.to : true) &&
-        (filter.type ? e.type === filter.type : true)
+      .filter(
+        (e) =>
+          (filter.from ? e.from === filter.from : true) &&
+          (filter.to ? e.to === filter.to : true) &&
+          (filter.type ? e.type === filter.type : true)
       )
       .map((e) => ({ ...e }));
   }
+
   private touchNeighbors(nodeId: string, ts: number) {
     for (const e of this.edges.values()) {
       if (e.from === nodeId || e.to === nodeId) {
