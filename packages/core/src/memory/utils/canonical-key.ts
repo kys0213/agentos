@@ -1,4 +1,4 @@
-import { normalize } from '../../memory/embedding/simple-embedding';
+import { normalizeText } from '@agentos/lang/string';
 
 export interface CanonicalMeta {
   normVersion: string;
@@ -22,7 +22,7 @@ export const defaultCanonicalMeta: CanonicalMeta = {
 };
 
 export function canonicalKey(text: string, meta: CanonicalMeta = defaultCanonicalMeta) {
-  const t = normalize(text);
+  const t = normalizeText(text);
   const h = Math.abs(hash64(t, meta.seed)).toString(36);
   return `ck:${meta.normVersion}:${meta.hashAlgo}:${h}`;
 }

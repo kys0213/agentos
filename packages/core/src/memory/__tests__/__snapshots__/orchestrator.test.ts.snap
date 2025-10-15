@@ -5,7 +5,7 @@ exports[`MemoryOrchestrator > hybrid search dedupes by canonicalKey across sessi
   {
     "canonicalKey": "ck:nfc_v1:fnv1a64_demo:i8y8gt",
     "from": "session",
-    "score": 0.57,
+    "score": 0.54,
     "text": "AgentOS MVP 설계",
   },
 ]

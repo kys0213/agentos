@@ -1,14 +1,7 @@
+import { normalizeText } from '@agentos/lang/string';
 import type { EmbeddingProvider } from '../../memory/types';
 
 export type SparseVec = Map<number, number>;
-
-const NF = (s: string) => s.normalize('NFC');
-export function normalize(text: string) {
-  return NF(text.toLowerCase())
-    .replace(/[^\p{L}\p{N}\s.@/_-]/gu, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
 
 function ngrams(s: string, minN = 3, maxN = 5): string[] {
   const out: string[] = [];
@@ -61,7 +54,7 @@ export class SimpleEmbedding implements EmbeddingProvider {
   }
 
   embed(text: string): SparseVec {
-    const t = normalize(text);
+    const t = normalizeText(text);
     const vec = new Map<number, number>();
     const grams = ngrams(t, this.minN, this.maxN);
     for (const g of grams) {

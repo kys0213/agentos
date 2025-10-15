@@ -4,61 +4,61 @@ exports[`Inverted index on/off yields consistent results > top-k results overlap
 {
   "off": [
     {
-      "score": 0.31,
+      "score": 0.28,
       "text": "제품A 리그레이션 테스트",
     },
     {
-      "score": 0.5,
+      "score": 0.47,
       "text": "제품A 테스트 케이스 작성",
     },
     {
-      "score": 0.73,
+      "score": 0.7,
       "text": "제품A 테스트케이스 작성",
     },
     {
-      "score": 0.3,
+      "score": 0.27,
       "text": "제품B 테스트 케이스 작성",
     },
     {
-      "score": 0.52,
+      "score": 0.49,
       "text": "제품B 테스트케이스 조회",
     },
     {
-      "score": 0.43,
+      "score": 0.4,
       "text": "제품C 테스트 케이스 검색",
     },
     {
-      "score": 0.26,
+      "score": 0.23,
       "text": "테스트 케이스 초안 만들기",
     },
     {
-      "score": 0.45,
+      "score": 0.42,
       "text": "테스트케이스 템플릿 생성",
     },
   ],
   "on": [
     {
-      "score": 0.31,
+      "score": 0.28,
       "text": "제품A 리그레이션 테스트",
     },
     {
-      "score": 0.5,
+      "score": 0.47,
       "text": "제품A 테스트 케이스 작성",
     },
     {
-      "score": 0.73,
+      "score": 0.7,
       "text": "제품A 테스트케이스 작성",
     },
     {
-      "score": 0.52,
+      "score": 0.49,
       "text": "제품B 테스트케이스 조회",
     },
     {
-      "score": 0.43,
+      "score": 0.4,
       "text": "제품C 테스트 케이스 검색",
     },
     {
-      "score": 0.45,
+      "score": 0.42,
       "text": "테스트케이스 템플릿 생성",
     },
   ],

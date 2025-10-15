@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import { GraphStore } from './graph-store';
 import { GraphConfig, BaseNode, Edge } from './types';
 import { SimpleEmbedding } from './embedding/simple-embedding';
+import { TagExtractor } from './tag-extractor';
 
 export type Scope = 'agent' | 'session';
 
@@ -12,18 +13,29 @@ export interface OrchestratorCfg {
   promotion: { minRank: number; maxPromotions: number; minDegree?: number; carryWeights?: boolean };
   checkpoint: { outDir: string; topK: number; pretty?: boolean };
   searchBiasSessionFirst?: number;
+  tagging?: {
+    window: number;
+    maxTagsPerBatch?: number;
+    extractor?: TagExtractor;
+  };
 }
 
 export class MemoryOrchestrator {
   private embedder = new SimpleEmbedding();
   private agentStore: GraphStore;
   private sessions = new Map<string, GraphStore>();
+  private tagBuffers = new Map<string, string[]>();
+  private tagExtractor?: TagExtractor;
+  private pendingTagging = new Map<string, Promise<void>>();
 
   constructor(
     private agentId: string,
     private cfg: OrchestratorCfg
   ) {
     this.agentStore = new GraphStore({ ...cfg.agentGraph }, this.embedder);
+    if (cfg.tagging) {
+      this.tagExtractor = cfg.tagging.extractor;
+    }
   }
 
   getSessionStore(sessionId: string) {
@@ -40,7 +52,9 @@ export class MemoryOrchestrator {
   }
 
   upsertQuery(sessionId: string, text: string) {
-    return this.getSessionStore(sessionId).upsertQuery(text);
+    const id = this.getSessionStore(sessionId).upsertQuery(text);
+    this.trackQueryForTagging(sessionId, id);
+    return id;
   }
   recordFeedback(sessionId: string, qId: string, label: 'up' | 'down' | 'retry', note?: string) {
     return this.getSessionStore(sessionId).recordFeedback(qId, label, note);
@@ -120,8 +134,18 @@ export class MemoryOrchestrator {
       return;
     }
 
+    if (this.cfg.tagging) {
+      const pending = this.tagBuffers.get(sessionId);
+      if (pending?.length) {
+        this.scheduleTagGeneration(sessionId, [...pending]);
+        pending.length = 0;
+      }
+    }
+
+    await this.flushTagging(sessionId);
+
     if (promote) {
-      const promoted = this.promoteHotspotsFromSession(sessionId, {
+      const promoted = await this.promoteHotspotsFromSession(sessionId, {
         carryWeights: this.cfg.promotion.carryWeights,
       });
       if (promoted > 0) {
@@ -172,32 +196,58 @@ export class MemoryOrchestrator {
       );
     }
     this.sessions.delete(sessionId);
+    this.tagBuffers.delete(sessionId);
+    this.pendingTagging.delete(sessionId);
   }
 
-  promoteHotspotsFromSession(sessionId: string, opts?: { carryWeights?: boolean }) {
+  async promoteHotspotsFromSession(sessionId: string, opts?: { carryWeights?: boolean }) {
     const s = this.sessions.get(sessionId);
     if (!s) {
       return 0;
     }
-    const snap = s.toSnapshot();
+
+    await this.flushTagging(sessionId);
     const top = this.pickTopQueries(
-      this.normalizeNodes(
-        snap.graph.nodes as Array<Omit<BaseNode, 'embedding'> & { embedding: unknown }>
-      ),
+      s.listNodes(),
       this.cfg.promotion.minRank,
       this.cfg.promotion.maxPromotions,
       this.cfg.promotion.minDegree ?? 0,
       this.cfg.sessionGraph.halfLifeMin
     );
     let count = 0;
+    const tagCache = new Map<string, string>();
     for (const n of top) {
       if (n.type !== 'query' || !n.text) {
         continue;
       }
-      const id = this.agentStore.upsertQuery(n.text);
-      if (opts?.carryWeights) {
-        const delta = (n.weights?.feedback ?? 0) + (n.weights?.repeat ?? 0) * 0.2;
-        this.agentStore.adjustWeights(id, { feedbackDelta: delta });
+      const tagEdges = s.getEdges({ from: n.id, type: 'refers_to_entity' });
+      const detached = s.detachNode(n.id);
+      if (!detached) {
+        continue;
+      }
+      const { id } = this.agentStore.adoptNode(detached, {
+        generation: 'old',
+        carryWeights: opts?.carryWeights,
+      });
+      this.agentStore.promoteGeneration(id, 'old');
+      for (const edge of tagEdges) {
+        const tagNode = s.getNode(edge.to);
+        if (!tagNode?.text) {
+          continue;
+        }
+        const cached = tagCache.get(tagNode.text);
+        let tagId: string | undefined = cached;
+        if (!tagId) {
+          const { id: adoptedTagId } = this.agentStore.upsertTag(tagNode.text, {
+            generation: 'old',
+            carryWeights: opts?.carryWeights,
+          });
+          tagCache.set(tagNode.text, adoptedTagId);
+          tagId = adoptedTagId;
+        }
+        if (tagId) {
+          this.agentStore.linkTagToQuery(tagId, id, edge.weight);
+        }
       }
       count++;
     }
@@ -227,7 +277,90 @@ export class MemoryOrchestrator {
       } else {
         embedding = undefined;
       }
-      return { ...n, embedding } as BaseNode;
+      const enriched = { ...n, embedding } as BaseNode;
+      if (!enriched.generation) {
+        enriched.generation = 'young';
+      }
+      if (typeof enriched.generationUpdatedAt !== 'number') {
+        enriched.generationUpdatedAt = enriched.lastAccess ?? enriched.createdAt;
+      }
+      return enriched;
     });
+  }
+
+  private trackQueryForTagging(sessionId: string, queryId: string) {
+    if (!this.tagExtractor || !this.cfg.tagging) {
+      return;
+    }
+    const buf = this.tagBuffers.get(sessionId) ?? [];
+    buf.push(queryId);
+    if (buf.length >= this.cfg.tagging.window) {
+      this.scheduleTagGeneration(sessionId, [...buf]);
+      buf.length = 0;
+    }
+    this.tagBuffers.set(sessionId, buf);
+  }
+
+  async waitForTagging(sessionId: string) {
+    await this.flushTagging(sessionId);
+  }
+
+  private scheduleTagGeneration(sessionId: string, queryIds: string[]) {
+    if (!this.tagExtractor || !this.cfg.tagging) {
+      return;
+    }
+    const runner = async () => {
+      try {
+        await this.generateTagsForBatch(sessionId, queryIds);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.warn(`[MemoryOrchestrator] tag generation failed: ${message}`);
+      }
+    };
+    const prev = this.pendingTagging.get(sessionId) ?? Promise.resolve();
+    const next = prev.then(runner, runner);
+    const wrapped = next.finally(() => {
+      const current = this.pendingTagging.get(sessionId);
+      if (current === wrapped) {
+        this.pendingTagging.delete(sessionId);
+      }
+    });
+    this.pendingTagging.set(sessionId, wrapped);
+  }
+
+  private async generateTagsForBatch(sessionId: string, queryIds: string[]) {
+    if (!this.tagExtractor || !this.cfg.tagging) {
+      return;
+    }
+    const store = this.getSessionStore(sessionId);
+    const nodes = queryIds
+      .map((id) => store.getNode(id))
+      .filter((n): n is BaseNode => Boolean(n && n.text && n.type === 'query'));
+    if (!nodes.length) {
+      return;
+    }
+    const existingTags = store
+      .listNodes()
+      .filter((n) => n.type === 'entity' && typeof n.text === 'string')
+      .map((n) => n.text as string);
+    const maxTags = this.cfg.tagging.maxTagsPerBatch ?? 3;
+    const tags = await this.tagExtractor.extract({
+      texts: nodes.map((n) => n.text ?? ''),
+      existing: existingTags,
+      maxTags,
+    });
+    for (const tag of tags) {
+      const { id: tagId } = store.upsertTag(tag, { generation: 'young' });
+      for (const node of nodes) {
+        store.linkTagToQuery(tagId, node.id);
+      }
+    }
+  }
+
+  private async flushTagging(sessionId: string) {
+    const pending = this.pendingTagging.get(sessionId);
+    if (pending) {
+      await pending;
+    }
   }
 }

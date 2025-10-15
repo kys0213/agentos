@@ -44,5 +44,8 @@ describe('Promotion carries weights into agent store', () => {
     expect(after.length).toBeGreaterThan(0);
     // Score improvement expected after carryWeights
     expect(after[0].score ?? 0).toBeGreaterThanOrEqual(before[0]?.score ?? 0);
+    const adopted = o.getAgentStore().getNode(q);
+    expect(adopted?.weights.feedback ?? 0).toBeGreaterThan(0);
+    expect(adopted?.generation).toBe('old');
   });
 });
