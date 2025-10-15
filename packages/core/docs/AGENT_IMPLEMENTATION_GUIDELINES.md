@@ -44,4 +44,4 @@ This document provides guidance for implementing agent functionality in the `@ag
 
 - [AGENT_ARCHITECTURE.md](./AGENT_ARCHITECTURE.md)
 - [CORE_AGENT_SESSION_PLAN.md](./CORE_AGENT_SESSION_PLAN.md)
-- [IPC_EVENT_SPEC.md](./IPC_EVENT_SPEC.md)
+- [Electron IPC Spec](../../../apps/gui/docs/rpc/SPEC_FULL.md)

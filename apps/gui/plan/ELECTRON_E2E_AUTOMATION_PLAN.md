@@ -114,7 +114,7 @@ test.describe('Electron Dashboard Smoke', () => {
 ## Notes
 
 - 디자인 시안(Figma)과 `apps/gui/design/` 샌드박스는 UI/UX의 단일 SSOT로 유지하며, Electron E2E 시나리오도 해당 참조에 맞춰 검증 항목을 정의한다.
-- Electron 공식 문서([Automated Testing](https://www.electronjs.org/docs/latest/tutorial/automated-testing))는 WebDriver 계열, Playwright, 커스텀 드라이버 3축으로 E2E 전략을 제시한다. 본 계획은 Playwright의 `_electron` 지원을 주 실행기로 채택하되, 실험적 표기와 장기 지원 리스크를 비교 문서에 기록하고 보조 실행기(예: WebDriver) 검토 내역을 남긴다.
+- Electron 공식 문서([Automated Testing](https://github.com/electron/electron/blob/main/docs/tutorial/automated-testing.md))는 WebDriver 계열, Playwright, 커스텀 드라이버 3축으로 E2E 전략을 제시한다. 본 계획은 Playwright의 `_electron` 지원을 주 실행기로 채택하되, 실험적 표기와 장기 지원 리스크를 비교 문서에 기록하고 보조 실행기(예: WebDriver) 검토 내역을 남긴다.
 - Playwright Electron 실행은 앱 번들 경로 지정이 중요하므로, `electron-builder` 산출물을 직접 지정할지 혹은 개발 번들을 쓰는지 결정 후 macOS 개발 환경 기준 경로부터 확정하고, 타 OS 경로는 후속 스프린트에서 확장한다.
 - 기본 `pnpm test:e2e` 명령이 Electron Playwright를 실행하도록 전환하되, 브라우저 기반 Playwright 명령(`test:e2e:browser`)은 비교/백업 용도로 한시 유지하고 제거 일정을 QA/문서에 명시한다.
 - 실행기 결정 및 리스크/백업 전략은 `apps/gui/docs/e2e-electron-decision.md`에서 SSOT로 관리한다.
