@@ -500,7 +500,7 @@ export class GraphStore {
         ...(raw as Record<string, unknown>),
         embedding: deserializeSparse(raw.embedding),
       } as BaseNode;
-      if (!('generation' in n)) {
+      if (!('generation' in raw)) {
         n.generation = 'young';
       }
       if (typeof n.generationUpdatedAt !== 'number' || Number.isNaN(n.generationUpdatedAt)) {

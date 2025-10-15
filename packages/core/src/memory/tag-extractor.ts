@@ -1,4 +1,4 @@
-import { LlmBridge, UserMessage } from 'llm-bridge-spec';
+import { LlmBridge, Message } from 'llm-bridge-spec';
 import { parseJsonArray } from '@agentos/lang/json';
 
 import { canonicalTagKey } from './utils/tag-key';
@@ -70,7 +70,7 @@ export class LlmTagExtractor implements TagExtractor {
       `위 맥락을 대표하는 새로운 태그를 최대 ${limit}개까지 추출하세요. ` +
       '기존 태그와 의미가 매우 유사하면 중복 생성하지 마세요.';
 
-    const messages: UserMessage[] = [
+    const messages: Message[] = [
       {
         role: 'system',
         content: [{ contentType: 'text', value: this.systemPrompt }],
