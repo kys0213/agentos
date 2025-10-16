@@ -184,6 +184,6 @@ When adding new RPC methods:
 
 ## Related Documentation
 
-- [Architecture Overview](./ARCHITECTURE.md)
-- [RPC System Design](./RPC_DESIGN.md)
-- [GUI Design V2 Alignment Plan](../plan/GUI_DESIGN_V2_ALIGNMENT_PLAN.md)
+- [Frontend Architecture & Patterns](./frontend/patterns.md)
+- [RPC & Streaming Guide](./RPC_AND_STREAMING_GUIDE.md)
+- [Frontend Implementation Roadmap](./frontend/roadmap.md)

@@ -18,6 +18,10 @@ describe('GraphStore', () => {
     const b = g.upsertQuery('agentos mvp 설계'); // normalization -> same canonicalKey
     expect(b).toBe(a);
     expect(g.stats().nodes).toBe(1);
+    expect(g.stats().generations.young).toBe(1);
+    g.promoteGeneration(a, 'old');
+    expect(g.getNode(a)?.generation).toBe('old');
+    expect(g.stats().generations.old).toBe(1);
   });
 
   test('snapshot round-trip preserves searchable results', () => {
@@ -34,6 +38,7 @@ describe('GraphStore', () => {
     // Compare top canonicalKey/text identity
     expect(after[0].canonicalKey).toBe(before[0].canonicalKey);
     expect(after[0].text).toBe(before[0].text);
+    expect(g2.getNode(q1)?.generation).toBe('young');
   });
 
   test('graph snapshot structure is stable (sanitized) [snapshot]', () => {
@@ -80,5 +85,20 @@ describe('GraphStore', () => {
       {} as Record<string, number>
     );
     expect({ nodes, edgeTypeCounts }).toMatchSnapshot();
+  });
+
+  test('tag upsert deduplicates and links queries', () => {
+    const g = new GraphStore(cfg, new SimpleEmbedding());
+    const q1 = g.upsertQuery('프로젝트 일정 공유');
+    const q2 = g.upsertQuery('프로젝트 일정 점검');
+    const { id: tagId, created } = g.upsertTag('프로젝트 일정');
+    expect(created).toBe(true);
+    g.linkTagToQuery(tagId, q1);
+    g.linkTagToQuery(tagId, q2);
+    const edges = g.getEdges({ to: tagId, type: 'refers_to_entity' });
+    expect(edges.length).toBe(2);
+    const second = g.upsertTag('프로젝트 일정');
+    expect(second.id).toBe(tagId);
+    expect(g.getNode(tagId)?.weights.repeat).toBeGreaterThan(0);
   });
 });

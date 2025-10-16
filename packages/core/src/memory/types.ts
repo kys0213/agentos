@@ -1,6 +1,8 @@
 export type NodeType = 'query' | 'answer' | 'feedback' | 'entity';
 export type EdgeType = 'similar_to' | 'responded_with' | 'has_feedback' | 'refers_to_entity';
 
+export type NodeGeneration = 'young' | 'old';
+
 export interface BaseNode {
   id: string;
   type: NodeType;
@@ -12,6 +14,8 @@ export interface BaseNode {
   weights: { repeat: number; feedback: number };
   degree: number;
   pinned?: boolean;
+  generation: NodeGeneration;
+  generationUpdatedAt: number;
 }
 
 export interface Edge {

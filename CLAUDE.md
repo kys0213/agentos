@@ -13,7 +13,7 @@ AGENTS.md에는 다음과 같은 핵심 내용이 포함되어 있습니다:
 - 컴포넌트 문서 구조: `<apps|packages>/<name>/docs`와 `<apps|packages>/<name>/plan`
   - `plan/`에는 요구사항 분석과 TODO를 작성하고, 완료 후 내용을 `docs/`에 통합한 뒤 계획서는 삭제합니다.
   - 문서를 추가할 때는 기존 문서와의 중복 여부를 확인하고 가능한 한 통합합니다.
-- **[Git Workflow Guide](docs/GIT_WORKFLOW_GUIDE.md) (절대 필수)**
+- **[Git Workflow Guide](docs/40-process-policy/git-workflow.md) (절대 필수)**
 
 ## 🔍 기존 작업 확인 필수
 

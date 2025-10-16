@@ -15,7 +15,7 @@ sessions and presets.
 - ✅ **Multi-Environment Support**: Electron, Web, Extension compatibility
 - ✅ **Mock-First Development**: Independent from @packages/core
 
-📖 **Migration Details**: [Figma Migration Cleanup](docs/FIGMA_MIGRATION_DOCS_CLEANUP.md)
+📖 **Migration Details**: [Frontend Implementation Roadmap](docs/frontend/roadmap.md)
 
 ## 🎯 Next Development Priorities
 

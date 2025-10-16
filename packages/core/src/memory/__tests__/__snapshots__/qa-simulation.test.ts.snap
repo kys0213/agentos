@@ -5,42 +5,42 @@ exports[`QA agent scenario simulation > builds a meaningful graph and promotions
   "sRes": [
     {
       "from": "session",
-      "score": 0.51,
+      "score": 0.48,
       "text": "리그레션 테스트 수행",
     },
     {
       "from": "session",
-      "score": 0.78,
+      "score": 0.75,
       "text": "리그레이션 테스트 수행",
     },
     {
       "from": "session",
-      "score": 0.39,
+      "score": 0.36,
       "text": "제품B 결제 테스트 케이스 생성",
     },
     {
       "from": "session",
-      "score": 0.69,
+      "score": 0.66,
       "text": "제품B 리그레이션 테스트 수행",
     },
     {
       "from": "session",
-      "score": 0.39,
+      "score": 0.36,
       "text": "제품B 리팩토링 리그레이션 필요",
     },
     {
       "from": "session",
-      "score": 0.39,
+      "score": 0.36,
       "text": "제품B 테스트 증적 확인",
     },
     {
       "from": "session",
-      "score": 0.53,
+      "score": 0.5,
       "text": "제품B 회귀 테스트 실행",
     },
     {
       "from": "session",
-      "score": 0.62,
+      "score": 0.59,
       "text": "회귀 테스트 실행",
     },
   ],
@@ -222,28 +222,32 @@ exports[`QA agent scenario simulation > builds a meaningful graph and promotions
 {
   "aRes": [
     {
-      "score": 0.51,
+      "score": 0.53,
       "text": "작성된 테스트케이스 조회",
     },
     {
-      "score": 0.34,
+      "score": 0.38,
       "text": "제품A 로그인 테스트 케이스 작성",
     },
     {
-      "score": 0.51,
+      "score": 0.53,
       "text": "제품A 테스트 증적 검토",
     },
     {
-      "score": 0.51,
+      "score": 0.54,
       "text": "테스트케이스 작성",
     },
     {
-      "score": 0.44,
+      "score": 0.47,
       "text": "테스트케이스 템플릿 생성",
     },
   ],
   "agentStats": {
-    "edges": 1,
+    "edges": 0,
+    "generations": {
+      "old": 15,
+      "young": 0,
+    },
     "nodes": 15,
   },
 }

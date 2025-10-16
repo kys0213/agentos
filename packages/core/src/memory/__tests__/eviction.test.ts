@@ -20,5 +20,24 @@ describe('Eviction respects maxNodes/maxEdges', () => {
     expect(stats.nodes).toBeLessThanOrEqual(30);
     expect(stats.edges).toBeLessThanOrEqual(200);
   });
+
+  test('old generation nodes are evicted last', () => {
+    const cfg: GraphConfig = {
+      maxNodes: 3,
+      maxEdges: 20,
+      halfLifeMin: 10,
+      tauDup: 0.2,
+      tauSim: 0.1,
+      protectMinDegree: 1,
+      enableInvertedIndex: false,
+    };
+    const g = new GraphStore(cfg, new SimpleEmbedding());
+    const anchors = ['alpha', 'beta', 'gamma'].map((t) => g.upsertQuery(t));
+    g.promoteGeneration(anchors[0], 'old');
+    g.upsertQuery('delta');
+    expect(g.stats().nodes).toBeLessThanOrEqual(3);
+    expect(g.getNode(anchors[0])).toBeDefined();
+    expect(g.stats().generations.old).toBe(1);
+  });
 });
 import type { GraphConfig } from '../types';

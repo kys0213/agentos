@@ -1,9 +1,11 @@
 import fs from 'fs/promises';
-import { BaseNode, Edge, EdgeType, EmbeddingProvider, GraphConfig } from './types';
-import { SimpleEmbedding, SparseVec, normalize } from './embedding/simple-embedding';
+import { tokenizeNormalized } from '@agentos/lang/string';
+import { BaseNode, Edge, EdgeType, EmbeddingProvider, GraphConfig, NodeGeneration } from './types';
+import { SimpleEmbedding, SparseVec } from './embedding/simple-embedding';
 import { cosineSparse } from './utils/cosine-sparse';
 import { canonicalKey, defaultCanonicalMeta } from './utils/canonical-key';
 import { serializeSparse, deserializeSparse } from './utils/serialize-sparse';
+import { canonicalTagKey } from './utils/tag-key';
 
 export class GraphStore {
   private nodes = new Map<string, BaseNode>();
@@ -11,6 +13,10 @@ export class GraphStore {
   private byCanonical = new Map<string, string>();
   private inverted?: Map<string, Set<string>>;
   private dirty = false;
+  private generationIndex: Record<NodeGeneration, Set<string>> = {
+    young: new Set(),
+    old: new Set(),
+  };
 
   constructor(
     private cfg: GraphConfig,
@@ -28,7 +34,7 @@ export class GraphStore {
     if (!this.inverted || !text) {
       return;
     }
-    const grams = normalize(text).split(' ');
+    const grams = tokenizeNormalized(text);
     for (const g of grams) {
       if (!g) {
         continue;
@@ -37,6 +43,50 @@ export class GraphStore {
       set.add(id);
       this.inverted.set(g, set);
     }
+  }
+
+  private unindexNode(id: string, text?: string, canonical?: string) {
+    if (canonical && this.byCanonical.get(canonical) === id) {
+      this.byCanonical.delete(canonical);
+    }
+    if (!this.inverted || !text) {
+      return;
+    }
+    const grams = tokenizeNormalized(text);
+    for (const g of grams) {
+      if (!g) {
+        continue;
+      }
+      const set = this.inverted.get(g);
+      if (!set) {
+        continue;
+      }
+      set.delete(id);
+      if (set.size === 0) {
+        this.inverted.delete(g);
+      } else {
+        this.inverted.set(g, set);
+      }
+    }
+  }
+
+  private trackGeneration(node: BaseNode) {
+    this.generationIndex[node.generation].add(node.id);
+  }
+
+  private untrackGeneration(node: BaseNode) {
+    this.generationIndex[node.generation].delete(node.id);
+  }
+
+  private setGeneration(node: BaseNode, next: NodeGeneration, updatedAt: number) {
+    if (node.generation === next) {
+      node.generationUpdatedAt = updatedAt;
+      return;
+    }
+    this.untrackGeneration(node);
+    node.generation = next;
+    node.generationUpdatedAt = updatedAt;
+    this.trackGeneration(node);
   }
 
   upsertQuery(text: string) {
@@ -81,9 +131,12 @@ export class GraphStore {
       lastAccess: now,
       degree: 0,
       weights: { repeat: 0, feedback: 0 },
+      generation: 'young',
+      generationUpdatedAt: now,
     };
     this.nodes.set(id, q);
     this.indexNode(id, text, ck);
+    this.trackGeneration(q);
     for (const c of cand.slice(0, 10)) {
       if (c.sim >= this.cfg.tauSim) {
         this.link(id, c.id, 'similar_to', c.sim);
@@ -94,6 +147,45 @@ export class GraphStore {
     this.dirty = true;
     this.evictIfNeeded();
     return id;
+  }
+
+  upsertTag(tag: string, opts?: { generation?: NodeGeneration; carryWeights?: boolean }) {
+    const now = Date.now();
+    const canonical = canonicalTagKey(tag);
+    const existing = this.byCanonical.get(canonical);
+    if (existing) {
+      const node = this.nodes.get(existing);
+      if (node) {
+        const targetGeneration = opts?.generation ?? node.generation;
+        this.setGeneration(node, targetGeneration, now);
+        node.lastAccess = Math.max(node.lastAccess, now);
+        if (opts?.carryWeights) {
+          node.weights.repeat += 0.2;
+        } else {
+          node.weights.repeat += 0.05;
+        }
+        this.dirty = true;
+        return { id: node.id, created: false };
+      }
+    }
+    const id = `tag_${now}_${Math.random().toString(36).slice(2, 8)}`;
+    const node: BaseNode = {
+      id,
+      type: 'entity',
+      text: tag,
+      canonicalKey: canonical,
+      createdAt: now,
+      lastAccess: now,
+      degree: 0,
+      weights: { repeat: 0, feedback: 0 },
+      generation: opts?.generation ?? 'young',
+      generationUpdatedAt: now,
+    };
+    this.nodes.set(id, node);
+    this.indexNode(id, tag, canonical);
+    this.trackGeneration(node);
+    this.dirty = true;
+    return { id, created: true };
   }
 
   recordFeedback(targetQueryId: string, label: 'up' | 'down' | 'retry', note?: string) {
@@ -107,8 +199,11 @@ export class GraphStore {
       lastAccess: now,
       degree: 0,
       weights: { repeat: 0, feedback: 0 },
+      generation: 'young',
+      generationUpdatedAt: now,
     };
     this.nodes.set(id, f);
+    this.trackGeneration(f);
     this.link(targetQueryId, id, 'has_feedback', 1.0);
     if (label === 'up') {
       this.bump(targetQueryId, +1.0);
@@ -139,6 +234,72 @@ export class GraphStore {
     this.dirty = true;
   }
 
+  getNode(id: string) {
+    return this.nodes.get(id);
+  }
+
+  listNodes() {
+    return [...this.nodes.values()].map((n) => ({ ...n }));
+  }
+
+  promoteGeneration(id: string, target: NodeGeneration = 'old', opts?: { touchedAt?: number }) {
+    const node = this.nodes.get(id);
+    if (!node) {
+      return false;
+    }
+    const at = opts?.touchedAt ?? Date.now();
+    this.setGeneration(node, target, at);
+    node.lastAccess = Math.max(node.lastAccess, at);
+    this.dirty = true;
+    return true;
+  }
+
+  detachNode(id: string) {
+    const node = this.nodes.get(id);
+    if (!node) {
+      return undefined;
+    }
+    for (const e of [...this.edges.values()]) {
+      if (e.from === id || e.to === id) {
+        this.removeEdge(e.id);
+      }
+    }
+    this.nodes.delete(id);
+    this.unindexNode(id, node.text, node.canonicalKey);
+    this.untrackGeneration(node);
+    node.degree = 0;
+    this.dirty = true;
+    return node;
+  }
+
+  adoptNode(node: BaseNode, opts?: { generation?: NodeGeneration; carryWeights?: boolean }) {
+    const now = Date.now();
+    const targetGeneration = opts?.generation ?? 'old';
+    const canonicalId = node.canonicalKey ? this.byCanonical.get(node.canonicalKey) : undefined;
+    if (canonicalId) {
+      const existing = this.nodes.get(canonicalId);
+      if (existing) {
+        if (opts?.carryWeights) {
+          const delta = (node.weights?.feedback ?? 0) + (node.weights?.repeat ?? 0) * 0.2;
+          this.adjustWeights(existing.id, { feedbackDelta: delta });
+        }
+        existing.lastAccess = Math.max(existing.lastAccess, node.lastAccess, now);
+        this.setGeneration(existing, targetGeneration, now);
+        this.dirty = true;
+        return { id: existing.id, merged: true };
+      }
+    }
+    if (this.nodes.has(node.id)) {
+      throw new Error(`Cannot adopt node ${node.id}; id already exists in target store`);
+    }
+    this.setGeneration(node, targetGeneration, now);
+    node.lastAccess = Math.max(node.lastAccess, now);
+    this.nodes.set(node.id, node);
+    this.indexNode(node.id, node.text, node.canonicalKey);
+    this.dirty = true;
+    return { id: node.id, merged: false };
+  }
+
   link(from: string, to: string, type: EdgeType, weight: number) {
     const now = Date.now();
     if (!this.nodes.has(from) || !this.nodes.has(to)) {
@@ -166,13 +327,25 @@ export class GraphStore {
     this.edges.set(key, e);
   }
 
+  linkTagToQuery(tagId: string, queryId: string, weight = 1) {
+    const tag = this.nodes.get(tagId);
+    const query = this.nodes.get(queryId);
+    if (!tag || !query) {
+      return;
+    }
+    if (tag.type !== 'entity' || query.type !== 'query') {
+      return;
+    }
+    this.link(queryId, tagId, 'refers_to_entity', weight);
+  }
+
   searchSimilarQueries(text: string, k = 5) {
     const emb = this.embedder.embed(text) as SparseVec;
     const out: { id: string; sim: number; score: number; text?: string; canonicalKey?: string }[] =
       [];
     const ids = new Set<string>();
     if (this.inverted) {
-      const grams = normalize(text).split(' ');
+      const grams = tokenizeNormalized(text);
       for (const g of grams) {
         for (const id of this.inverted.get(g) ?? []) {
           ids.add(id);
@@ -203,6 +376,18 @@ export class GraphStore {
     n.weights.feedback += delta;
     n.lastAccess = Date.now();
   }
+
+  getEdges(filter: { from?: string; to?: string; type?: EdgeType }) {
+    return [...this.edges.values()]
+      .filter(
+        (e) =>
+          (filter.from ? e.from === filter.from : true) &&
+          (filter.to ? e.to === filter.to : true) &&
+          (filter.type ? e.type === filter.type : true)
+      )
+      .map((e) => ({ ...e }));
+  }
+
   private touchNeighbors(nodeId: string, ts: number) {
     for (const e of this.edges.values()) {
       if (e.from === nodeId || e.to === nodeId) {
@@ -216,13 +401,15 @@ export class GraphStore {
     const recency = Math.exp(-Math.log(2) * (ageMin / this.cfg.halfLifeMin));
     const repeat = Math.tanh((n.weights.repeat ?? 0) / 5);
     const fb = Math.tanh((n.weights.feedback ?? 0) / 5);
-    return 0.5 * recency + 0.3 * repeat + 0.2 * fb;
+    const gen = n.generation === 'old' ? 0.1 : 0;
+    return 0.4 * recency + 0.3 * repeat + 0.2 * fb + gen;
   }
   private evictIfNeeded() {
     const { maxNodes, maxEdges, protectMinDegree } = this.cfg;
     const overN = this.nodes.size - maxNodes;
     if (overN > 0) {
-      const cand: BaseNode[] = [];
+      const young: BaseNode[] = [];
+      const old: BaseNode[] = [];
       for (const n of this.nodes.values()) {
         if (n.pinned) {
           continue;
@@ -230,11 +417,18 @@ export class GraphStore {
         if ((n.degree ?? 0) >= protectMinDegree) {
           continue;
         }
-        cand.push(n);
+        if (n.generation === 'old') {
+          old.push(n);
+        } else {
+          young.push(n);
+        }
       }
-      cand.sort((a, b) => this.rank(a) - this.rank(b));
-      for (let i = 0; i < overN && i < cand.length; i++) {
-        this.removeNode(cand[i].id);
+      const pickOrder = [
+        ...young.sort((a, b) => this.rank(a) - this.rank(b)),
+        ...old.sort((a, b) => this.rank(a) - this.rank(b)),
+      ];
+      for (let i = 0; i < overN && i < pickOrder.length; i++) {
+        this.removeNode(pickOrder[i].id);
       }
     }
     const overE = this.edges.size - maxEdges;
@@ -248,19 +442,7 @@ export class GraphStore {
     }
   }
   private removeNode(id: string) {
-    const n = this.nodes.get(id);
-    if (!n) {
-      return;
-    }
-    for (const e of [...this.edges.values()]) {
-      if (e.from === id || e.to === id) {
-        this.removeEdge(e.id);
-      }
-    }
-    this.nodes.delete(id);
-    if (n.canonicalKey) {
-      this.byCanonical.delete(n.canonicalKey);
-    }
+    this.detachNode(id);
   }
   private removeEdge(id: string) {
     const e = this.edges.get(id);
@@ -279,7 +461,14 @@ export class GraphStore {
   }
 
   stats() {
-    return { nodes: this.nodes.size, edges: this.edges.size };
+    return {
+      nodes: this.nodes.size,
+      edges: this.edges.size,
+      generations: {
+        young: this.generationIndex.young.size,
+        old: this.generationIndex.old.size,
+      },
+    };
   }
 
   toSnapshot() {
@@ -301,6 +490,8 @@ export class GraphStore {
     this.nodes.clear();
     this.edges.clear();
     this.byCanonical.clear();
+    this.generationIndex.young.clear();
+    this.generationIndex.old.clear();
     if (this.inverted) {
       this.inverted.clear();
     }
@@ -309,8 +500,15 @@ export class GraphStore {
         ...(raw as Record<string, unknown>),
         embedding: deserializeSparse(raw.embedding),
       } as BaseNode;
+      if (!('generation' in raw)) {
+        n.generation = 'young';
+      }
+      if (typeof n.generationUpdatedAt !== 'number' || Number.isNaN(n.generationUpdatedAt)) {
+        n.generationUpdatedAt = typeof n.lastAccess === 'number' ? n.lastAccess : n.createdAt;
+      }
       this.nodes.set(n.id, n);
       this.indexNode(n.id, n.text, n.canonicalKey);
+      this.trackGeneration(n);
     }
     for (const e of s.graph.edges) {
       this.edges.set(e.id, e);
