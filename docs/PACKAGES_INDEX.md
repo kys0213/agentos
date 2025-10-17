@@ -8,7 +8,7 @@
   - 주요 문서: `apps/gui/docs/README.md` (있다면)
   - 테스트/설정: `docs/30-developer-guides/testing.md`, 프론트엔드 가이드는 레포 가이드 참조
 - apps/cli: CLI 앱 (WIP)
-- apps/agent-slack-bot: Slack Bot (WIP)
+- apps/slack-bot: Slack Bot (WIP)
 
 ## Packages (재사용 모듈)
 

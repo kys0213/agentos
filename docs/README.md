@@ -5,6 +5,7 @@
 ## Start Here
 
 - README: 레포 철학/방향/구조 요약 (루트 `README.md`)
+- Knowledge Summary (for AI agents): `docs/00-start-here/AGENTOS_KNOWLEDGE_SUMMARY.md`
 - Project Direction Review: `docs/00-start-here/PROJECT_DIRECTION_REVIEW.md`
 - Roadmap (Draft): `docs/00-start-here/ROADMAP.md`
 
@@ -46,7 +47,7 @@
 - Apps
   - GUI: Electron + React (로컬 퍼스트)
   - CLI: 커맨드라인 인터페이스
-  - Slack Bot: 서버형 봇
+  - Slack Bot: 서버형 봇 (`apps/slack-bot/docs/README.md`)
 - Packages
   - core: 에이전트/오케스트레이션/메모리/지식 등 핵심 모듈
   - lang: 언어 유틸/타입/도우미
@@ -59,3 +60,4 @@ Notes
 
 - 문서의 단일 출처는 `docs/` 입니다(SSOT). 구현 후에는 `plan/` 문서를 정리하여 `docs/`로 승격하세요.
 - 기존 문서를 업데이트하고 교차 링크를 추가해 중복과 스프롤을 최소화하세요.
+- 외부 공유용 번들 문서가 필요하면 `pnpm docs:bundle`을 실행해 `exports/doc-bundles/` 폴더에 최신 산출물을 생성하세요.

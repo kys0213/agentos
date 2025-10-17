@@ -41,7 +41,7 @@ LLM은 `llm-bridge-spec`(프로토콜/타입) + `llm-bridge-loader`(브릿지 �
 apps/
 ├── gui/                 # Electron + React GUI (사용자 상호작용, 로컬 우선)
 ├── cli/                 # 커맨드라인 앱 (진행 중)
-└── agent-slack-bot/     # Slack Bot (진행 중)
+└── slack-bot/           # Slack Bot (진행 중)
 
 packages/
 ├── core/                # 에이전트/메모리/오케스트레이션 등 핵심 모듈

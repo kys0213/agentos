@@ -1,6 +1,6 @@
 # Testing Guide
 
-Unit tests use **Jest** with `ts-jest`. Test files live under `__tests__` directories.
+Unit tests use **Vitest** with native ESM support. Test files live under `__tests__/` directories (or `*.test.ts` / `*.spec.ts`).
 
 Run all tests from the repository root:
 
@@ -8,10 +8,10 @@ Run all tests from the repository root:
 pnpm test
 ```
 
-For watch mode during development:
+For package-scoped watch mode during development:
 
 ```bash
-pnpm dev
+pnpm --filter <workspace> test -- --watch
 ```
 
 ## 테스트 철학 (Testing Philosophy)
@@ -55,7 +55,7 @@ packages/core/src/
 apps/
 ├── cli/            # CLI 애플리케이션
 ├── gui/            # GUI 애플리케이션
-└── agent-slack-bot/ # 슬랙봇 애플리케이션
+└── slack-bot/      # 슬랙봇 애플리케이션
 ```
 
 - **사용자 시나리오** 기반 통합 테스트
@@ -143,7 +143,7 @@ describe('McpMetadataRegistry', () => {
 
 ## 🔧 Mock 패턴 가이드라인
 
-### 1. jest-mock-extended 활용
+### 1. vitest-mock-extended 활용
 
 **인터페이스 Mock 생성**
 
@@ -192,23 +192,23 @@ export class MockMcpToolRepository implements McpToolRepository {
 
 #### Service Layer
 
-- **Jest Function Mock**: 단순한 jest.fn() Mock 활용
+- **Vitest Function Mock**: 단순한 vi.fn() Mock 활용
 - **기본 동작 설정**: 필요한 경우에만 mockResolvedValue 등으로 설정
 
 ```typescript
 const createMockMcpRegistry = () => ({
-  register: jest.fn(),
-  unregister: jest.fn(),
-  get: jest.fn().mockResolvedValue(null),
-  getAll: jest.fn().mockResolvedValue([]),
-  isRegistered: jest.fn().mockReturnValue(false),
+  register: vi.fn(),
+  unregister: vi.fn(),
+  get: vi.fn().mockResolvedValue(null),
+  getAll: vi.fn().mockResolvedValue([]),
+  isRegistered: vi.fn().mockReturnValue(false),
   // ...
 });
 ```
 
 #### Protocol Layer
 
-- **External Library Mock**: 외부 라이브러리는 jest-mock-extended 활용
+- **External Library Mock**: 외부 라이브러리는 vitest-mock-extended 활용
 - **최소 구현**: 테스트에 필요한 메서드만 Mock
 
 ## 📝 테스트 작성 패턴
@@ -217,7 +217,7 @@ const createMockMcpRegistry = () => ({
 
 ```typescript
 // 1. Import 섹션
-import { mock } from 'jest-mock-extended';
+import { mock } from 'vitest-mock-extended';
 import { Subject } from './subject-to-test';
 import { Dependency } from './dependency';
 import { MockRepository } from './fixture'; // Fixture 활용
@@ -234,7 +234,7 @@ const createMockDependency = (): Dependency => {
 // 3. 테스트 Suite
 describe('Subject', () => {
   let subject: Subject;
-  let mockDependency: jest.Mocked<Dependency>;
+  let mockDependency: MockProxy<Dependency>;
 
   beforeEach(async () => {
     mockDependency = createMockDependency();
@@ -352,8 +352,8 @@ it('should handle connection failure gracefully', async () => {
 
 - Test files must end with `.test.ts`
 - Test files live under `__tests__` directories
-- Use **Jest** with `ts-jest` configuration
-- Use **jest-mock-extended** for creating type-safe mocks
+- Use **Vitest** with the workspace `vitest.config.ts`
+- Use **vitest-mock-extended** for creating type-safe mocks
 - Write deterministic unit tests using mocks
 
 ### 2. 코어 모듈 테스트 작성
@@ -405,10 +405,10 @@ describe('Mcp', () => {
     // Reset all mocks
     vi.clearAllMocks();
 
-    // Setup mock client using jest-mock-extended
+    // Setup mock client using vitest-mock-extended
     mockClient = mock<Client>();
 
-    // Setup mock transport using jest-mock-extended
+    // Setup mock transport using vitest-mock-extended
     mockTransport = mock<Transport>();
 
     // Create Mcp instance
@@ -438,14 +438,14 @@ describe('Mcp', () => {
 ```typescript
 // packages/core/src/chat/file/__tests__/file-based-chat-session.test.ts
 import { promises as fs } from 'fs';
-import { MockProxy } from 'jest-mock-extended';
+import { MockProxy } from 'vitest-mock-extended';
 
 vi.mock('fs/promises');
 const mockFs = vi.mocked(fs);
 
 describe('FileBasedChatSession', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should save session to file', async () => {
@@ -568,7 +568,7 @@ src/
 - [ ] 테스트 간 격리가 보장됨
 - [ ] 의미 있는 테스트 이름 사용
 - [ ] Given-When-Then 패턴 적용
-- [ ] jest-mock-extended 활용한 타입 안전 Mock
+- [ ] vitest-mock-extended 활용한 타입 안전 Mock
 
 ## ✨ 베스트 프랙티스
 
@@ -751,7 +751,7 @@ pnpm test --maxWorkers=4
 
 - **비결정적 테스트**: 외부 의존성 mocking 확인
 - **테스트 간 간섭**: beforeEach/afterEach에서 상태 초기화
-- **타이밍 이슈**: jest.useFakeTimers() 사용
+- **타이밍 이슈**: vi.useFakeTimers() 사용
 
 ### 2. 디버깅 팁
 
