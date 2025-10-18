@@ -9,6 +9,7 @@ import { Skeleton } from '../ui/skeleton';
 import { Alert, AlertDescription } from '../ui/alert';
 import { ServiceContainer } from '../../../shared/di/service-container';
 import { AlertCircle } from 'lucide-react';
+import type { BridgeSummary } from '../../rpc/adapters/bridge.adapter';
 
 export interface BridgeModelSettingsProps {
   config: Preset['llmBridgeConfig'] | undefined;
@@ -20,6 +21,7 @@ export interface BridgeModelSettingsProps {
 interface BridgeInfo {
   id: string;
   manifest: LlmManifest;
+  summary: BridgeSummary;
 }
 
 export const BridgeModelSettings: React.FC<BridgeModelSettingsProps> = ({
@@ -41,12 +43,12 @@ export const BridgeModelSettings: React.FC<BridgeModelSettingsProps> = ({
     queryKey: ['bridges', 'list'],
     queryFn: async (): Promise<BridgeInfo[]> => {
       const bridgeService = ServiceContainer.getOrThrow('bridge');
-      const bridgeIds = await bridgeService.getBridgeIds();
+      const summaries = await bridgeService.listBridges();
 
       const bridgesWithConfig = await Promise.all(
-        bridgeIds.map(async (id) => {
-          const manifest = await bridgeService.getBridgeConfig(id);
-          return manifest ? { id, manifest } : null;
+        summaries.map(async (summary) => {
+          const manifest = await bridgeService.getBridgeConfig(summary.id);
+          return manifest ? { id: summary.id, manifest, summary } : null;
         })
       );
 
@@ -192,6 +194,11 @@ export const BridgeModelSettings: React.FC<BridgeModelSettingsProps> = ({
         {selectedBridge && selectedBridge.manifest.description && (
           <p className="text-sm text-muted-foreground mt-1">
             {selectedBridge.manifest.description}
+          </p>
+        )}
+        {selectedBridge?.summary.configured === false && (
+          <p className="text-xs text-amber-600 mt-1">
+            Additional configuration required before activation.
           </p>
         )}
       </div>

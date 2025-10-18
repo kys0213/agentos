@@ -79,12 +79,12 @@
   },
   "devDependencies": {
     "@types/node": "^20.17.30",
-    "llm-bridge-loader": "0.0.6",
-    "llm-bridge-spec": "^1.0.6",
+    "llm-bridge-loader": "0.0.8",
+    "llm-bridge-spec": "^1.0.7",
     "typescript": "^5.3.3"
   },
   "peerDependencies": {
-    "llm-bridge-loader": "0.0.6",
+    "llm-bridge-loader": "0.0.8",
     "llm-bridge-spec": "^1"
   },
   "volta": {

@@ -105,7 +105,18 @@ describe('useDashboardStats', () => {
       getAllAgentMetadatas: async (): Promise<ReadonlyAgentMetadata[]> => [m1, m2],
     });
     const bridge = new BridgeServiceAdapter({} as BridgeClient);
-    Object.assign(bridge, { getBridgeIds: async (): Promise<string[]> => ['b1'] });
+    Object.assign(bridge, {
+      listBridges: async () => [
+        {
+          id: 'b1',
+          name: 'Bridge 1',
+          description: 'desc',
+          language: 'ts',
+          configured: true,
+          available: true,
+        },
+      ],
+    });
     const manifest: LlmManifest = {
       schemaVersion: '1.0',
       name: 'dummy',

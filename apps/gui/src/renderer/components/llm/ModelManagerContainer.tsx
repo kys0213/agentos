@@ -38,12 +38,13 @@ export const ModelManagerContainer: React.FC<ModelManagerContainerProps> = ({ re
   };
   const items: ModelManagerItem[] = useMemo(
     () =>
-      installed.map(({ id, manifest }) => ({
-        id,
+      installed.map(({ summary, manifest }) => ({
+        id: summary.id,
         name: manifest.name,
-        provider: manifest.language ?? id,
-        isActive: current?.id === id,
+        provider: manifest.language ?? summary.id,
+        isActive: current?.id === summary.id,
         capabilities: toCapabilityLabels(manifest),
+        configured: summary.configured,
       })),
     [installed, current?.id]
   );

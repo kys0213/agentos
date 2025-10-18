@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ServiceContainer } from '../../../shared/di/service-container';
 import type { LlmManifest } from 'llm-bridge-spec';
+import type { BridgeSummary } from '../../rpc/adapters/bridge.adapter';
 
 // Query Keys
 export const BRIDGE_QK = {
@@ -67,19 +68,20 @@ export const useBridgeConfig = (bridgeId: string) => {
 export const useInstalledBridges = () => {
   const bridgeService = ServiceContainer.getOrThrow('bridge');
 
-  return useQuery<{ id: string; manifest: LlmManifest }[]>({
+  return useQuery<{ summary: BridgeSummary; manifest: LlmManifest }[]>({
     queryKey: BRIDGE_QK.bridgeList,
     queryFn: async () => {
-      const ids = await bridgeService.getBridgeIds();
-      const manifests = await Promise.all(ids.map((id) => bridgeService.getBridgeConfig(id)));
-      const list: { id: string; manifest: LlmManifest }[] = [];
-      for (let i = 0; i < ids.length; i++) {
-        const m = manifests[i];
-        if (m) {
-          list.push({ id: ids[i], manifest: m });
-        }
-      }
-      return list;
+      const summaries = await bridgeService.listBridges();
+      const manifests = await Promise.all(
+        summaries.map(async (summary) => ({
+          summary,
+          manifest: await bridgeService.getBridgeConfig(summary.id),
+        }))
+      );
+
+      return manifests.filter(
+        (item): item is { summary: BridgeSummary; manifest: LlmManifest } => item.manifest !== null
+      );
     },
     staleTime: 300000,
   });

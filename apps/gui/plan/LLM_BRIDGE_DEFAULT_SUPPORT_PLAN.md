@@ -65,10 +65,13 @@ async listBundled() {
 - [ ] `llm-bridge-loader`를 GUI(Electron 메인) 의존성에 추가하고 DependencyBridgeLoader를 사용할 수 있도록 빌드 환경에 포함 (현 로컬 개발 경로: `/Users/irene/Documents/llm-bridge/packages`)
 - [ ] DependencyBridgeLoader.scan 을 활용해 `package.json` 의 `*-llm-bridge` 의존성을 자동 탐색하고, 개발/배포 환경별 `cwd` 지정 방식을 확정
 - [ ] `FileBasedLlmBridgeRegistry`에 번들 브리지 자동 등록 로직 추가 (중복 설치 방지, 활성화 기본값 설정)
+  - [x] Ollama 브리지 기본 구성 및 자동 등록 (2025-10-13)
 - [ ] Electron 시드/CLI가 번들 브리지를 사용하는 서비스 API로 전환 (설치 절차 제거)
 - [ ] 메인 프로세스에 `llm.bridge.*` RPC/IPC 엔드포인트 추가, 렌더러는 API만 소비하도록 수정 (렌더러는 브리지 존재 자체를 몰라도 됨)
 - [ ] GUI 설정 화면에 브리지 목록/키 입력 UI 추가 및 상태 표시
 - [ ] 테스트: 번들 로딩 단위 테스트 + Electron End-to-End 시나리오 업데이트
+  - [x] 번들 로딩 단위 테스트 (2025-10-13)
+  - [x] Ollama 번들 E2E 플로우 검증 (E2E_OLLAMA=true, 2025-10-13)
 - [ ] 문서: README, docs/frontend/testing.md, CLI/GUI 사용자 가이드 업데이트
 
 ## 작업 순서

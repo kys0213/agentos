@@ -1,9 +1,11 @@
+import type { BridgeLoader } from 'llm-bridge-loader';
 import type { LlmManifest } from 'llm-bridge-spec';
 import z from 'zod';
 import { FileBasedLlmBridgeRegistry } from '../file-based-llm-bridge-registry';
 import path from 'node:path';
 import { LlmBridgeLoader } from './__mocks__/llm-bridge-loader';
 import { DummyBridge } from './__mocks__/dummy-bridge';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // In-memory file store to mock @agentos/lang/fs layer deterministically
 const store = new Map<string, string>();
@@ -155,5 +157,94 @@ describe('FileBasedLlmBridgeRegistry (mocked FS)', () => {
 
     const bridgeById = await reloaded.getBridge('persisted-bridge');
     expect(bridgeById).toBeInstanceOf(DummyBridge);
+  });
+
+  it('listSummaries reflects configured state and hides missing dependencies', async () => {
+    const baseDir = '/tmp/agentos-core-summary';
+    const loader = new LlmBridgeLoader();
+    const reg = new FileBasedLlmBridgeRegistry(baseDir, loader);
+
+    await reg.ensureManifestRecord(makeManifest('pending-bridge'));
+    await reg.loadBridge('ready-bridge');
+    await reg.register(makeManifest('ready-bridge'), {});
+
+    const summaries = await reg.listSummaries();
+    expect(summaries).toHaveLength(2);
+    const pending = summaries.find((s) => s.id === 'pending-bridge');
+    const ready = summaries.find((s) => s.id === 'ready-bridge');
+    expect(pending?.configured).toBe(false);
+    expect(ready?.configured).toBe(true);
+
+    const failingLoader = new LlmBridgeLoader();
+    const originalLoad = failingLoader.load.bind(failingLoader);
+    failingLoader.load = async (name: string) => {
+      if (name === 'pending-bridge') {
+        throw new Error('missing');
+      }
+      return originalLoad(name);
+    };
+
+    const regWithMissing = new FileBasedLlmBridgeRegistry(baseDir, failingLoader);
+    const filtered = await regWithMissing.listSummaries();
+    expect(filtered.map((s) => s.id)).toEqual(['ready-bridge']);
+  });
+
+  it('uses static create factory when bridge exposes it', async () => {
+    const baseDir = '/tmp/agentos-core-factory';
+    const createSpy = vi.fn();
+
+    const manifest = {
+      ...makeManifest('factory-bridge'),
+      configSchema: z.object({ model: z.string() }),
+    };
+
+    interface FactoryConfig {
+      model: string;
+    }
+
+    class FactoryBridge {
+      private static readonly MARKER = Symbol('factory');
+
+      static manifest() {
+        return manifest;
+      }
+
+      static create(config: FactoryConfig) {
+        createSpy(config);
+        return new FactoryBridge(FactoryBridge.MARKER, config);
+      }
+
+      constructor(private readonly marker: symbol, private readonly config: FactoryConfig) {
+        if (marker !== FactoryBridge.MARKER) {
+          throw new Error('constructor invoked directly');
+        }
+      }
+
+      async invoke(): Promise<any> {
+        return { content: { type: 'text', text: `model:${this.config.model}` } };
+      }
+
+      async getMetadata(): Promise<any> {
+        return { name: 'factory-bridge' };
+      }
+    }
+
+    const loader: BridgeLoader = {
+      scan: vi.fn().mockResolvedValue([]),
+      load: vi.fn().mockResolvedValue({
+        ctor: FactoryBridge as unknown as new (config: FactoryConfig) => unknown,
+        manifest,
+        configSchema: manifest.configSchema,
+      }),
+    };
+
+    const registry = new FileBasedLlmBridgeRegistry(baseDir, loader);
+    const bridgeId = await registry.register(manifest, { model: 'llama3.2' });
+
+    expect(bridgeId).toBe('factory-bridge');
+    expect(createSpy).toHaveBeenCalledWith({ model: 'llama3.2' });
+
+    const bridge = await registry.getBridge(bridgeId);
+    expect(bridge).toBeInstanceOf(FactoryBridge);
   });
 });

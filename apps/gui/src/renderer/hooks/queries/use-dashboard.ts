@@ -50,18 +50,18 @@ export function useDashboardStats() {
             return null;
           }
           try {
-            const ids = await bridge.getBridgeIds();
+            const summaries = await bridge.listBridges();
             let modelCount = 0;
-            for (const id of ids) {
+            for (const summary of summaries) {
               try {
-                const cfg = await bridge.getBridgeConfig(id as string);
+                const cfg = await bridge.getBridgeConfig(summary.id);
                 const models = (cfg as { models?: unknown[] } | undefined)?.models;
                 modelCount += Array.isArray(models) ? models.length : 0;
               } catch {
                 // ignore per-bridge errors
               }
             }
-            return { ids, modelCount };
+            return { summaries, modelCount };
           } catch {
             return null;
           }
@@ -135,7 +135,7 @@ export function useDashboardStats() {
         ? agentsRes.filter((a) => (a as { status?: string }).status === 'active').length
         : null;
 
-      const bridgesTotal = bridgesRes ? bridgesRes.ids.length : null;
+      const bridgesTotal = bridgesRes ? bridgesRes.summaries.length : null;
       const modelsTotal = bridgesRes ? bridgesRes.modelCount : null;
 
       const presetsTotal = presetsRes ? presetsRes.length : null;
