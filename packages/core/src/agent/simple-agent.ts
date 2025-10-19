@@ -73,6 +73,7 @@ export class SimpleAgent implements Agent {
 
     try {
       const buffer: Message[] = Array.from(messages);
+      const baselineLength = buffer.length;
 
       const tools = await this.getEnabledTools();
 
@@ -84,7 +85,7 @@ export class SimpleAgent implements Agent {
       });
 
       return {
-        messages: buffer,
+        output: buffer.slice(baselineLength),
         sessionId: chatSession.sessionId,
       };
     } finally {
@@ -257,6 +258,8 @@ export class SimpleAgent implements Agent {
         if (chatSession) {
           await chatSession.appendMessage(toolMessage);
         }
+
+        messages.push(toolMessage);
       }
 
       const llmResponse = await this.llmBridge.invoke({ messages: messages }, { tools });

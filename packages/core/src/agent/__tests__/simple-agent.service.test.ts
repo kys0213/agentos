@@ -185,8 +185,9 @@ describe('SimpleAgentService', () => {
     chatMgr.create.mockResolvedValue(chatSession);
 
     const svc = new SimpleAgentService(llmReg, mcpReg, chatMgr, repo);
-    const result = await svc.execute('a1', [], {});
+    const result = await svc.execute('a1', [{ role: 'user', content: [{ contentType: 'text', value: 'hi' }] }], {});
     expect(result.sessionId).toBe('s-1');
-    expect(Array.isArray(result.messages)).toBe(true);
+    expect(result.output).toHaveLength(1);
+    expect(result.output[0]?.role).toBe('assistant');
   });
 });

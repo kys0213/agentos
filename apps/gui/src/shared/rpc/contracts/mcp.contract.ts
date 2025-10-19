@@ -31,17 +31,46 @@ export const ToolInvokeResponseSchema = z.discriminatedUnion('success', [
 ]);
 
 // Concrete event schema for usage streaming
+const LegacyUsageLogEvent = z.object({
+  type: z.literal('mcp.usage.log.created'),
+  payload: McpUsageLogSchema,
+  ts: z.number().optional(),
+});
+const LegacyUsageStatsEvent = z.object({
+  type: z.literal('mcp.usage.stats.updated'),
+  payload: McpUsageStatsSchema,
+  ts: z.number().optional(),
+});
+const ModernUsageLogEvent = z.object({
+  type: z.literal('usage-logged'),
+  clientName: z.string(),
+  timestamp: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
+  newLog: McpUsageLogSchema,
+});
+const ModernMetadataUpdatedEvent = z.object({
+  type: z.literal('metadata-updated'),
+  clientName: z.string(),
+  timestamp: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
+  metadata: z.record(z.string(), z.unknown()),
+});
+const ModernConnectionChangedEvent = z.object({
+  type: z.literal('connection-changed'),
+  clientName: z.string(),
+  timestamp: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
+  connectionStatus: z.union([
+    z.literal('connected'),
+    z.literal('disconnected'),
+    z.literal('error'),
+    z.literal('pending'),
+  ]),
+});
+
 export const McpUsageUpdateEventSchema = z.union([
-  z.object({
-    type: z.literal('mcp.usage.log.created'),
-    payload: McpUsageLogSchema,
-    ts: z.number().optional(),
-  }),
-  z.object({
-    type: z.literal('mcp.usage.stats.updated'),
-    payload: McpUsageStatsSchema,
-    ts: z.number().optional(),
-  }),
+  LegacyUsageLogEvent,
+  LegacyUsageStatsEvent,
+  ModernUsageLogEvent,
+  ModernMetadataUpdatedEvent,
+  ModernConnectionChangedEvent,
 ]);
 
 export const McpContract = defineContract({

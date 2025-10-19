@@ -1,6 +1,7 @@
 import { Message, UserMessage } from 'llm-bridge-spec';
 import { AgentMetadata, ReadonlyAgentMetadata } from './agent-metadata';
 import type { AgentSession } from './agent-session';
+import type { MessageHistory } from '../chat/chat-session';
 
 /**
  * Agent 상태 타입
@@ -96,7 +97,20 @@ export interface Agent {
   endSession(sessionId: string): Promise<void>;
 }
 
-export type AgentChatResult = {
-  messages: Message[];
+export interface AgentChatResult {
+  /**
+   * Newly generated messages produced by the agent during this invocation.
+   * Typically assistant/tool responses for the current turn.
+   */
+  output: Message[];
+
+  /**
+   * Identifier of the associated chat session.
+   */
   sessionId: string;
-};
+
+  /**
+   * Optional snapshot of the session history after this invocation.
+   */
+  history?: MessageHistory[];
+}

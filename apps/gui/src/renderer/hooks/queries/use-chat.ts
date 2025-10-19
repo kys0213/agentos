@@ -117,7 +117,7 @@ export const useSendChatMessage = (
         content: { contentType: string; value: unknown }[];
       } & Record<string, unknown>;
 
-      const assistantMessages: Readonly<MessageHistory>[] = result.messages.map(
+      const assistantMessages: Readonly<MessageHistory>[] = (result.output ?? []).map(
         (m: BridgeMsg, idx) => {
           const serverMsgId =
             typeof m['messageId'] === 'string' ? (m['messageId'] as string) : undefined;
