@@ -23,12 +23,6 @@ export interface UsageLogQueryOptions {
   sortOrder?: 'desc' | 'asc';
 }
 
-/**
- * 사용량 업데이트 이벤트
- * Main Process에서 Renderer Process로 전송되는 실시간 이벤트
- */
-export type McpUsageUpdateEvent = z.infer<typeof McpUsageUpdateEventSchema>;
-
 const BaseEvent = z.object({
   clientName: z.string(),
   timestamp: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
@@ -87,6 +81,12 @@ export const McpUsageUpdateEventSchema = z.discriminatedUnion('type', [
   MetadataUpdatedEvent,
   ConnectionChangedEvent,
 ]);
+
+/**
+ * 사용량 업데이트 이벤트
+ * Main Process에서 Renderer Process로 전송되는 실시간 이벤트
+ */
+export type McpUsageUpdateEvent = z.infer<typeof McpUsageUpdateEventSchema>;
 
 const LegacyUsageLogPayload = ContractUsageLogSchema.extend({
   clientName: z.string().optional(),
