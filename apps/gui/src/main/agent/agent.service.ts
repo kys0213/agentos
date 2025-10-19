@@ -55,8 +55,9 @@ export class AgentSessionService {
 
       try {
         for (const exec of coordinatorResult.executions) {
-          for (let i = 0; i < exec.result.messages.length; i++) {
-            const baseMessage = exec.result.messages[i];
+          const outputs = exec.result.output ?? [];
+          for (let i = 0; i < outputs.length; i++) {
+            const baseMessage = outputs[i];
             aggregatedMessages.push(baseMessage);
 
             const messageHistory: MessageHistory = {
@@ -73,7 +74,7 @@ export class AgentSessionService {
             );
           }
 
-          const last: Message | undefined = exec.result.messages[exec.result.messages.length - 1];
+          const last: Message | undefined = outputs[outputs.length - 1];
           if (last) {
             this.events.publishSessionMessage(exec.result.sessionId, last);
           }
@@ -85,7 +86,7 @@ export class AgentSessionService {
 
       return {
         sessionId: coordinatorResult.sessionId,
-        messages: aggregatedMessages,
+        output: aggregatedMessages,
       };
     } catch (error) {
       console.error('[AgentSessionService.chat] failed', error);

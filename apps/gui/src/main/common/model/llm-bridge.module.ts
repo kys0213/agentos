@@ -14,7 +14,7 @@ import { loadBundledBridges } from './load-bundled-bridges';
         const loader = new DependencyBridgeLoader();
         const registry = new FileBasedLlmBridgeRegistry(env.userDataPath, loader);
 
-        const scanRoot = env.appPath ?? process.cwd();
+        const scanRoot = env.appPath ?? '.';
         await loadBundledBridges(registry, loader, scanRoot);
 
         return registry;

@@ -11,8 +11,9 @@ const BridgeMessageSchema = z.object({
 
 // Agent chat result
 const AgentChatResultSchema = z.object({
-  messages: z.array(BridgeMessageSchema),
+  output: z.array(BridgeMessageSchema),
   sessionId: z.string(),
+  history: z.array(BridgeMessageSchema).optional(),
 });
 
 // Options passed over transport (AbortSignal omitted)
