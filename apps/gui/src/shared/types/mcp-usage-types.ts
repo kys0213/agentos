@@ -108,7 +108,10 @@ const LegacyUsageStatsEvent = z.object({
 
 export const LegacyMcpUsageEventSchema = z.union([LegacyUsageLogEvent, LegacyUsageStatsEvent]);
 export type LegacyMcpUsageEvent = z.infer<typeof LegacyMcpUsageEventSchema>;
-export const LegacyMcpUsageEventOrModernSchema = z.union([LegacyMcpUsageEventSchema, McpUsageUpdateEventSchema]);
+export const LegacyMcpUsageEventOrModernSchema = z.union([
+  LegacyMcpUsageEventSchema,
+  McpUsageUpdateEventSchema,
+]);
 
 const coerceDate = (value: unknown, fallback?: Date): Date => {
   if (value instanceof Date) {

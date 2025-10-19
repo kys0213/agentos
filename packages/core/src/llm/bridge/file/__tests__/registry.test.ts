@@ -1,5 +1,5 @@
 import type { BridgeLoader } from 'llm-bridge-loader';
-import type { LlmManifest } from 'llm-bridge-spec';
+import type { LlmBridgePrompt, LlmBridgeResponse, LlmManifest, LlmMetadata } from 'llm-bridge-spec';
 import z from 'zod';
 import { FileBasedLlmBridgeRegistry } from '../file-based-llm-bridge-registry';
 import path from 'node:path';
@@ -17,35 +17,39 @@ vi.mock('@agentos/lang/fs', () => {
   const ok = (result: unknown) => ({ success: true as const, result });
   const fail = (reason: unknown) => ({ success: false as const, reason });
 
-  class MockJsonFileHandler {
-    constructor(private filePath: string) {}
-    static create(filePath: string) {
-      return new MockJsonFileHandler(filePath);
-    }
-    async read(options: { useDefaultOnError?: boolean; defaultValue?: unknown } = {}) {
-      const content = store.get(this.filePath);
-      if (!content) {
-        if (options.useDefaultOnError && options.defaultValue !== undefined) {
-          return ok(options.defaultValue);
+  const createMockJsonFileHandler = (filePath: string) => {
+    return {
+      async read(options: { useDefaultOnError?: boolean; defaultValue?: unknown } = {}) {
+        const content = store.get(filePath);
+        if (!content) {
+          if (options.useDefaultOnError && options.defaultValue !== undefined) {
+            return ok(options.defaultValue);
+          }
+          return fail(new Error('Empty JSON file'));
         }
-        return fail(new Error('Empty JSON file'));
-      }
-      try {
-        const data = JSON.parse(content);
-        return ok(data);
-      } catch (e) {
-        return fail(e);
-      }
-    }
-    async write(data: unknown) {
-      try {
-        store.set(this.filePath, JSON.stringify(data));
-        return ok(undefined);
-      } catch (e) {
-        return fail(e);
-      }
-    }
-  }
+        try {
+          const data = JSON.parse(content);
+          return ok(data);
+        } catch (e) {
+          return fail(e);
+        }
+      },
+      async write(data: unknown) {
+        try {
+          store.set(filePath, JSON.stringify(data));
+          return ok(undefined);
+        } catch (e) {
+          return fail(e);
+        }
+      },
+    };
+  };
+
+  const JsonFileHandler = {
+    create(filePath: string) {
+      return createMockJsonFileHandler(filePath);
+    },
+  };
 
   const FileUtils = {
     async ensureDir(_dirPath: string) {
@@ -86,7 +90,7 @@ vi.mock('@agentos/lang/fs', () => {
     },
   };
 
-  return { FileUtils, JsonFileHandler: MockJsonFileHandler };
+  return { FileUtils, JsonFileHandler };
 });
 
 const makeManifest = (name: string): LlmManifest => ({
@@ -203,36 +207,38 @@ describe('FileBasedLlmBridgeRegistry (mocked FS)', () => {
     }
 
     class FactoryBridge {
-      private static readonly MARKER = Symbol('factory');
-
       static manifest() {
         return manifest;
       }
 
       static create(config: FactoryConfig) {
         createSpy(config);
-        return new FactoryBridge(FactoryBridge.MARKER, config);
+        return new FactoryBridge(config);
       }
 
-      constructor(private readonly marker: symbol, private readonly config: FactoryConfig) {
-        if (marker !== FactoryBridge.MARKER) {
-          throw new Error('constructor invoked directly');
-        }
+      constructor(private readonly config: FactoryConfig) {}
+
+      async invoke(_prompt: LlmBridgePrompt): Promise<LlmBridgeResponse> {
+        return {
+          content: { contentType: 'text', value: `model:${this.config.model}` },
+        };
       }
 
-      async invoke(): Promise<any> {
-        return { content: { type: 'text', text: `model:${this.config.model}` } };
-      }
-
-      async getMetadata(): Promise<any> {
-        return { name: 'factory-bridge' };
+      async getMetadata(): Promise<LlmMetadata> {
+        return {
+          name: 'factory-bridge',
+          description: 'Factory bridge for tests',
+          model: this.config.model,
+          contextWindow: 0,
+          maxTokens: 0,
+        };
       }
     }
 
     const loader: BridgeLoader = {
       scan: vi.fn().mockResolvedValue([]),
       load: vi.fn().mockResolvedValue({
-        ctor: FactoryBridge as unknown as new (config: FactoryConfig) => unknown,
+        ctor: FactoryBridge,
         manifest,
         configSchema: manifest.configSchema,
       }),

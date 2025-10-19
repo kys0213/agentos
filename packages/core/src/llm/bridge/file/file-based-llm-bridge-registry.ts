@@ -14,6 +14,11 @@ import {
   isInstalledBridgeRecord,
 } from '../types';
 
+type BridgeConstructor<Cfg> = new (config: Cfg) => LlmBridge;
+type BridgeConstructorWithFactory<Cfg> = BridgeConstructor<Cfg> & {
+  create?: (cfg: Cfg) => LlmBridge;
+};
+
 /**
  * File-based registry implementation.
  * - Stores each bridge record as `${baseDir}/bridges/<id>.json`
@@ -158,13 +163,13 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
     const { ctor, manifest: loadedManifest } = loadedResult;
     const parsedConfig = loadedManifest.configSchema.parse(config ?? {});
 
+    const typedCtor: BridgeConstructorWithFactory<typeof parsedConfig> =
+      ctor as BridgeConstructorWithFactory<typeof parsedConfig>;
+
     const bridge =
-      typeof (ctor as unknown as { create?: (cfg: typeof parsedConfig) => LlmBridge }).create ===
-      'function'
-        ? (ctor as unknown as { create: (cfg: typeof parsedConfig) => LlmBridge }).create(
-            parsedConfig
-          )
-        : new ctor(parsedConfig);
+      typeof typedCtor.create === 'function'
+        ? typedCtor.create(parsedConfig)
+        : new typedCtor(parsedConfig);
 
     this.createdBridges.set(id, bridge);
 

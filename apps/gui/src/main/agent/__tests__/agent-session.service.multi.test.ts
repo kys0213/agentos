@@ -14,16 +14,12 @@ import {
   type CreateAgentMetadata,
 } from '@agentos/core';
 import type { UserMessage } from 'llm-bridge-spec';
-import type { DependencyBridgeLoader as DependencyBridgeLoaderType } from 'llm-bridge-loader';
+import { DependencyBridgeLoader } from 'llm-bridge-loader';
 import { NoopCompressor } from '../../NoopCompressor';
 import { AgentEventBridge } from '../events/agent-event-bridge';
 import { OutboundChannel } from '../../common/event/outbound-channel';
 import { AgentSessionService } from '../agent.service';
 import type { ChatService } from '../../chat/chat.service';
-
-const { DependencyBridgeLoader } = require('llm-bridge-loader') as {
-  DependencyBridgeLoader: new () => DependencyBridgeLoaderType;
-};
 
 class StubChatService implements Pick<ChatService, 'appendMessageToSession'> {
   public appended: { sessionId: string; agentId: string; message: MessageHistory }[] = [];
