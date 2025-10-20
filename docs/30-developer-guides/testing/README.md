@@ -59,6 +59,5 @@ pnpm test --coverage
 
 ## 📖 관련 문서
 
-- [기존 Testing Guide](../testing.md) - 레거시 문서 (통합 예정)
 - [TypeScript Typing Guidelines](../typescript-typing-guidelines.md)
 - [Code Style](../code-style.md)

@@ -623,5 +623,5 @@ describe('Test', () => {
 ## 참고 문서
 
 - [Unit Test Convention](./unit-test.md)
-- [Testing Guide](../../../docs/30-developer-guides/testing.md)
-- [vitest-mock-extended](https://github.com/marchaos/vitest-mock-extended)
+- [Testing Guide](./README.md)
+- [vitest-mock-extended](https://www.npmjs.com/package/vitest-mock-extended)

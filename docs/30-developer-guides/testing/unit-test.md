@@ -625,4 +625,4 @@ pnpm --filter @agentos/core test -- --coverage
 ## 참고 문서
 
 - [Fixture/Mock 작성 가이드](./fixture-mock.md)
-- [Testing Guide](../../../docs/30-developer-guides/testing.md)
+- [Testing Guide](./README.md)

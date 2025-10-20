@@ -456,5 +456,5 @@ Electron E2E 테스트 작성 시:
 ## 참고 문서
 
 - [E2E Test Convention](./e2e-test.md)
-- [Testing Guide](../../../docs/30-developer-guides/testing.md)
+- [Testing Guide](./README.md)
 - [Playwright for Electron](https://playwright.dev/docs/api/class-electron)

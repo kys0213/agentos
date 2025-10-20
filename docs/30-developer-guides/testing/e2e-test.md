@@ -462,5 +462,5 @@ E2E 테스트 작성 시 확인사항:
 ## 참고 문서
 
 - [Playwright 공식 문서](https://playwright.dev)
-- [Testing Guide](../../../docs/30-developer-guides/testing.md)
+- [Testing Guide](./README.md)
 - [Electron E2E Test](./electron-e2e-test.md)
