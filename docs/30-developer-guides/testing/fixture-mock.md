@@ -624,4 +624,4 @@ describe('Test', () => {
 
 - [Unit Test Convention](./unit-test.md)
 - [Testing Guide](./README.md)
-- [vitest-mock-extended](https://www.npmjs.com/package/vitest-mock-extended)
+- [vitest-mock-extended](https://github.com/eratio08/vitest-mock-extended)
