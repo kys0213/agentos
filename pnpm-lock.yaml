@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  llm-bridge-loader: 0.0.8
+  llm-bridge-loader: 0.0.9
 
 importers:
 
@@ -79,8 +79,8 @@ importers:
         specifier: ^11.1.0
         version: 11.1.0
       llm-bridge-loader:
-        specifier: 0.0.8
-        version: 0.0.8(llm-bridge-spec@1.0.7(zod@4.1.0))(zod@4.1.0)
+        specifier: 0.0.9
+        version: 0.0.9(llm-bridge-spec@1.0.7(zod@4.1.0))(zod@4.1.0)
     devDependencies:
       '@types/node':
         specifier: ^20.11.19
@@ -224,8 +224,8 @@ importers:
         specifier: ^1.4.2
         version: 1.4.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       llm-bridge-loader:
-        specifier: 0.0.8
-        version: 0.0.8(llm-bridge-spec@1.0.7(zod@4.1.0))(zod@4.1.0)
+        specifier: 0.0.9
+        version: 0.0.9(llm-bridge-spec@1.0.7(zod@4.1.0))(zod@4.1.0)
       llm-bridge-spec:
         specifier: ^1.0.7
         version: 1.0.7(zod@4.1.0)
@@ -389,8 +389,8 @@ importers:
         specifier: ^20.17.30
         version: 20.19.11
       llm-bridge-loader:
-        specifier: 0.0.8
-        version: 0.0.8(llm-bridge-spec@1.0.7(zod@4.1.0))(zod@4.1.0)
+        specifier: 0.0.9
+        version: 0.0.9(llm-bridge-spec@1.0.7(zod@4.1.0))(zod@4.1.0)
       llm-bridge-spec:
         specifier: ^1.0.7
         version: 1.0.7(zod@4.1.0)
@@ -4106,8 +4106,8 @@ packages:
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
 
-  llm-bridge-loader@0.0.8:
-    resolution: {integrity: sha512-tHQ51C8jZ8N43lDxDg6bACdkCFjrRVQKkSn0YR0bhLf0E8QKnZcJN7XCHcNQrfzggzyY6iAZ1wnQ3ujP/e1CaA==}
+  llm-bridge-loader@0.0.9:
+    resolution: {integrity: sha512-mml+Vaeb3kBjVaOThJhxTmOf3vFFc4525yhZA0Kev2GudRIkFagsjRdzatnHaE23a78ASfeAM5YNTOUqtQkewg==}
     peerDependencies:
       llm-bridge-spec: 1.0.7
       zod: ^4.0.5
@@ -9933,7 +9933,7 @@ snapshots:
 
   lines-and-columns@1.2.4: {}
 
-  llm-bridge-loader@0.0.8(llm-bridge-spec@1.0.7(zod@4.1.0))(zod@4.1.0):
+  llm-bridge-loader@0.0.9(llm-bridge-spec@1.0.7(zod@4.1.0))(zod@4.1.0):
     dependencies:
       llm-bridge-spec: 1.0.7(zod@4.1.0)
       zod: 4.1.0

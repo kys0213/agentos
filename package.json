@@ -16,7 +16,7 @@
       "esbuild"
     ],
     "overrides": {
-      "llm-bridge-loader": "0.0.8"
+      "llm-bridge-loader": "0.0.9"
     }
   },
   "devDependencies": {

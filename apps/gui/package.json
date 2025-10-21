@@ -106,7 +106,7 @@
     "cmdk": "^1.1.1",
     "electron": "^37.2.4",
     "input-otp": "^1.4.2",
-    "llm-bridge-loader": "0.0.8",
+    "llm-bridge-loader": "0.0.9",
     "llm-bridge-spec": "^1.0.7",
     "lucide-react": "^0.536.0",
     "ollama-llm-bridge": "^0.0.8",
