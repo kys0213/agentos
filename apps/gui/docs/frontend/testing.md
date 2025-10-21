@@ -2,6 +2,20 @@
 
 Canonical location. Index: `apps/gui/docs/frontend/README.md`
 
+본 문서는 **GUI 앱 전용** 테스팅 가이드입니다.
+
+## 📚 범용 테스트 가이드
+
+일반적인 테스트 작성은 [Testing Guide](../../../../docs/30-developer-guides/testing/) 참조:
+- [Unit Test](../../../../docs/30-developer-guides/testing/unit-test.md) - Vitest 기반 유닛 테스트
+- [E2E Test](../../../../docs/30-developer-guides/testing/e2e-test.md) - Playwright 웹 E2E
+- [Electron E2E Test](../../../../docs/30-developer-guides/testing/electron-e2e-test.md) - Electron 앱 E2E
+- [Fixture & Mock](../../../../docs/30-developer-guides/testing/fixture-mock.md) - Mock 작성 가이드
+
+---
+
+## GUI 전용: IPC Mock & Renderer Testing
+
 본 문서는 GUI 테스트에서 IPC 경계를 다루고, MockIpcChannel을 통해 결정적 테스트를 구성하는 방법을 안내합니다.
 
 ## IpcChannel 주입
@@ -106,10 +120,6 @@ pnpm --filter @agentos/apps-gui typecheck
 ## Playwright MCP 도구 (Manual QA)
 
 - Model Context Protocol 기반 도구로, 브라우저를 직접 제어하며 수동 QA/디버깅에 활용합니다.
-- 실행 예시:
-  ```bash
-  npx -y @playwright/mcp@latest
-  ```
 - 제공 기능: `browser_click`, `browser_close`, `browser_console_messages`, `browser_drag`, `browser_evaluate`,
   `browser_file_upload`, `browser_fill_form`, `browser_handle_dialog`, `browser_hover`, `browser_install`,
   `browser_navigate`, `browser_navigate_back`, `browser_network_requests`, `browser_press_key`,
