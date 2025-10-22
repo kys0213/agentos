@@ -10,6 +10,10 @@ export class ElectronAppEnvironment {
     return this.app.getPath('userData');
   }
 
+  get appPath() {
+    return this.app.getAppPath();
+  }
+
   get name() {
     return this.app.getName();
   }

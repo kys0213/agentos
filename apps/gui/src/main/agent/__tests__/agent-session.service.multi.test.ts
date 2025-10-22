@@ -118,7 +118,7 @@ describe('AgentSessionService multi-agent integration (SimpleAgentService)', () 
       betaMeta.id,
     ]);
 
-    const assistantMessages = result.messages.filter((msg) => msg.role === 'assistant');
+    const assistantMessages = result.output.filter((msg) => msg.role === 'assistant');
     expect(assistantMessages.length).toBeGreaterThanOrEqual(2);
 
     const texts = assistantMessages.flatMap((msg) => {

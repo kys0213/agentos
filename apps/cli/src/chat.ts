@@ -76,22 +76,31 @@ export async function interactiveChat(manager: ChatManager, llmBridge: LlmBridge
         role: 'user',
         content: [{ contentType: 'text', value: input }],
       };
-      const { messages } = await agent.chat([userMessage]);
-      const assistantMessage = messages[messages.length - 1];
-      let first: MultiModalContent | undefined;
-      if (Array.isArray(assistantMessage.content)) {
-        first = assistantMessage.content[0];
-      } else if (
-        typeof assistantMessage.content === 'object' &&
-        assistantMessage.content &&
-        'contentType' in assistantMessage.content
-      ) {
-        first = assistantMessage.content as MultiModalContent;
-      } else {
-        first = undefined;
+      const { output } = await agent.chat([userMessage]);
+      if (!output || output.length === 0) {
+        console.log('Assistant: [no response]');
+        return;
       }
-      const text = first?.contentType === 'text' ? first.value : '[non-text]';
-      console.log('Assistant:', text);
+      for (const message of output) {
+        let first: MultiModalContent | undefined;
+        if (Array.isArray(message.content)) {
+          first = message.content[0];
+        } else if (
+          typeof message.content === 'object' &&
+          message.content &&
+          'contentType' in message.content
+        ) {
+          first = message.content as MultiModalContent;
+        } else {
+          first = undefined;
+        }
+        const text = first?.contentType === 'text' ? first.value : '[non-text]';
+        const label =
+          message.role === 'tool'
+            ? `Tool(${(message as { name?: string }).name ?? 'unknown'})`
+            : 'Assistant';
+        console.log(`${label}:`, text);
+      }
     });
 
   const stream = builder.build();

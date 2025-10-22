@@ -140,4 +140,44 @@ describe('BridgeController', () => {
     const err = await ctrlErr.switch('id');
     expect(err.success).toBe(false);
   });
+
+  it('list returns available bridge summaries', async () => {
+    const registry = {
+      listSummaries: vi.fn().mockResolvedValue([
+        {
+          id: 'openai-llm-bridge',
+          name: 'openai-llm-bridge',
+          description: 'OpenAI bridge',
+          language: 'typescript',
+          configured: false,
+          available: true,
+        },
+      ]),
+      register: vi.fn(),
+      unregister: vi.fn(),
+      setActiveId: vi.fn(),
+      getActiveId: vi.fn(),
+      getManifest: vi.fn(),
+    };
+
+    const mod = await Test.createTestingModule({
+      controllers: [BridgeController],
+      providers: [{ provide: LLM_BRIDGE_REGISTRY_TOKEN, useValue: registry }],
+    }).compile();
+
+    const ctrl = mod.get(BridgeController);
+    const result = await ctrl.list();
+
+    expect(result).toEqual([
+      {
+        id: 'openai-llm-bridge',
+        name: 'openai-llm-bridge',
+        description: 'OpenAI bridge',
+        language: 'typescript',
+        configured: false,
+        available: true,
+      },
+    ]);
+    expect(registry.listSummaries).toHaveBeenCalled();
+  });
 });

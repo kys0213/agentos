@@ -1,6 +1,15 @@
 import type { LlmManifest } from 'llm-bridge-spec';
 import { BridgeClient } from '../gen/bridge.client';
 
+export interface BridgeSummary {
+  id: string;
+  name: string;
+  description: string;
+  language: string;
+  configured: boolean;
+  available: boolean;
+}
+
 export class BridgeServiceAdapter {
   constructor(private readonly client: BridgeClient) {}
 
@@ -27,8 +36,20 @@ export class BridgeServiceAdapter {
     return { id: cur.id, config: cur.manifest as LlmManifest };
   }
 
-  async getBridgeIds(): Promise<string[]> {
+  async listBridges(): Promise<BridgeSummary[]> {
     const list = await this.client.list();
+    return list.map((item) => ({
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      language: item.language,
+      configured: item.configured,
+      available: item.available,
+    }));
+  }
+
+  async getBridgeIds(): Promise<string[]> {
+    const list = await this.listBridges();
     return list.map((x) => x.id);
   }
 

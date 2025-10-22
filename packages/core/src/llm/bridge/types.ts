@@ -29,6 +29,8 @@ export interface InstalledBridgeSummary {
   name: string;
   description: string;
   language: string;
+  configured: boolean;
+  available: boolean;
 }
 
 /**

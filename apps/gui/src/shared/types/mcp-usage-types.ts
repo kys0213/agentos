@@ -23,12 +23,6 @@ export interface UsageLogQueryOptions {
   sortOrder?: 'desc' | 'asc';
 }
 
-/**
- * 사용량 업데이트 이벤트
- * Main Process에서 Renderer Process로 전송되는 실시간 이벤트
- */
-export type McpUsageUpdateEvent = z.infer<typeof McpUsageUpdateEventSchema>;
-
 const BaseEvent = z.object({
   clientName: z.string(),
   timestamp: z.preprocess((v) => (typeof v === 'string' ? new Date(v) : v), z.date()),
@@ -88,6 +82,12 @@ export const McpUsageUpdateEventSchema = z.discriminatedUnion('type', [
   ConnectionChangedEvent,
 ]);
 
+/**
+ * 사용량 업데이트 이벤트
+ * Main Process에서 Renderer Process로 전송되는 실시간 이벤트
+ */
+export type McpUsageUpdateEvent = z.infer<typeof McpUsageUpdateEventSchema>;
+
 const LegacyUsageLogPayload = ContractUsageLogSchema.extend({
   clientName: z.string().optional(),
 });
@@ -108,6 +108,10 @@ const LegacyUsageStatsEvent = z.object({
 
 export const LegacyMcpUsageEventSchema = z.union([LegacyUsageLogEvent, LegacyUsageStatsEvent]);
 export type LegacyMcpUsageEvent = z.infer<typeof LegacyMcpUsageEventSchema>;
+export const LegacyMcpUsageEventOrModernSchema = z.union([
+  LegacyMcpUsageEventSchema,
+  McpUsageUpdateEventSchema,
+]);
 
 const coerceDate = (value: unknown, fallback?: Date): Date => {
   if (value instanceof Date) {
@@ -148,6 +152,15 @@ export function convertLegacyMcpUsageEvent(event: LegacyMcpUsageEvent): McpUsage
   // Stats 이벤트는 전역 정보만 가지고 있으므로 GUI 실시간 업데이트로 변환할 데이터가 없음
   // (대시보드 요청 시 재조회하므로 여기서는 무시)
   return null;
+}
+
+export function normalizeMcpUsageEvent(
+  event: LegacyMcpUsageEvent | McpUsageUpdateEvent
+): McpUsageUpdateEvent | null {
+  if ('payload' in event && ('clientName' in event.payload || 'operation' in event.payload)) {
+    return convertLegacyMcpUsageEvent(event as LegacyMcpUsageEvent);
+  }
+  return event as McpUsageUpdateEvent;
 }
 
 /**

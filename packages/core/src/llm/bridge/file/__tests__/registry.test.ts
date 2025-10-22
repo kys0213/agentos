@@ -1,9 +1,11 @@
-import type { LlmManifest } from 'llm-bridge-spec';
+import type { BridgeLoader } from 'llm-bridge-loader';
+import type { LlmBridgePrompt, LlmBridgeResponse, LlmManifest, LlmMetadata } from 'llm-bridge-spec';
 import z from 'zod';
 import { FileBasedLlmBridgeRegistry } from '../file-based-llm-bridge-registry';
 import path from 'node:path';
 import { LlmBridgeLoader } from './__mocks__/llm-bridge-loader';
 import { DummyBridge } from './__mocks__/dummy-bridge';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // In-memory file store to mock @agentos/lang/fs layer deterministically
 const store = new Map<string, string>();
@@ -15,35 +17,39 @@ vi.mock('@agentos/lang/fs', () => {
   const ok = (result: unknown) => ({ success: true as const, result });
   const fail = (reason: unknown) => ({ success: false as const, reason });
 
-  class MockJsonFileHandler {
-    constructor(private filePath: string) {}
-    static create(filePath: string) {
-      return new MockJsonFileHandler(filePath);
-    }
-    async read(options: { useDefaultOnError?: boolean; defaultValue?: unknown } = {}) {
-      const content = store.get(this.filePath);
-      if (!content) {
-        if (options.useDefaultOnError && options.defaultValue !== undefined) {
-          return ok(options.defaultValue);
+  const createMockJsonFileHandler = (filePath: string) => {
+    return {
+      async read(options: { useDefaultOnError?: boolean; defaultValue?: unknown } = {}) {
+        const content = store.get(filePath);
+        if (!content) {
+          if (options.useDefaultOnError && options.defaultValue !== undefined) {
+            return ok(options.defaultValue);
+          }
+          return fail(new Error('Empty JSON file'));
         }
-        return fail(new Error('Empty JSON file'));
-      }
-      try {
-        const data = JSON.parse(content);
-        return ok(data);
-      } catch (e) {
-        return fail(e);
-      }
-    }
-    async write(data: unknown) {
-      try {
-        store.set(this.filePath, JSON.stringify(data));
-        return ok(undefined);
-      } catch (e) {
-        return fail(e);
-      }
-    }
-  }
+        try {
+          const data = JSON.parse(content);
+          return ok(data);
+        } catch (e) {
+          return fail(e);
+        }
+      },
+      async write(data: unknown) {
+        try {
+          store.set(filePath, JSON.stringify(data));
+          return ok(undefined);
+        } catch (e) {
+          return fail(e);
+        }
+      },
+    };
+  };
+
+  const JsonFileHandler = {
+    create(filePath: string) {
+      return createMockJsonFileHandler(filePath);
+    },
+  };
 
   const FileUtils = {
     async ensureDir(_dirPath: string) {
@@ -84,7 +90,7 @@ vi.mock('@agentos/lang/fs', () => {
     },
   };
 
-  return { FileUtils, JsonFileHandler: MockJsonFileHandler };
+  return { FileUtils, JsonFileHandler };
 });
 
 const makeManifest = (name: string): LlmManifest => ({
@@ -155,5 +161,96 @@ describe('FileBasedLlmBridgeRegistry (mocked FS)', () => {
 
     const bridgeById = await reloaded.getBridge('persisted-bridge');
     expect(bridgeById).toBeInstanceOf(DummyBridge);
+  });
+
+  it('listSummaries reflects configured state and hides missing dependencies', async () => {
+    const baseDir = '/tmp/agentos-core-summary';
+    const loader = new LlmBridgeLoader();
+    const reg = new FileBasedLlmBridgeRegistry(baseDir, loader);
+
+    await reg.ensureManifestRecord(makeManifest('pending-bridge'));
+    await reg.loadBridge('ready-bridge');
+    await reg.register(makeManifest('ready-bridge'), {});
+
+    const summaries = await reg.listSummaries();
+    expect(summaries).toHaveLength(2);
+    const pending = summaries.find((s) => s.id === 'pending-bridge');
+    const ready = summaries.find((s) => s.id === 'ready-bridge');
+    expect(pending?.configured).toBe(false);
+    expect(ready?.configured).toBe(true);
+
+    const failingLoader = new LlmBridgeLoader();
+    const originalLoad = failingLoader.load.bind(failingLoader);
+    failingLoader.load = async (name: string) => {
+      if (name === 'pending-bridge') {
+        throw new Error('missing');
+      }
+      return originalLoad(name);
+    };
+
+    const regWithMissing = new FileBasedLlmBridgeRegistry(baseDir, failingLoader);
+    const filtered = await regWithMissing.listSummaries();
+    expect(filtered.map((s) => s.id)).toEqual(['ready-bridge']);
+  });
+
+  it('uses static create factory when bridge exposes it', async () => {
+    const baseDir = '/tmp/agentos-core-factory';
+    const createSpy = vi.fn();
+
+    const manifest = {
+      ...makeManifest('factory-bridge'),
+      configSchema: z.object({ model: z.string() }),
+    };
+
+    interface FactoryConfig {
+      model: string;
+    }
+
+    class FactoryBridge {
+      static manifest() {
+        return manifest;
+      }
+
+      static create(config: FactoryConfig) {
+        createSpy(config);
+        return new FactoryBridge(config);
+      }
+
+      constructor(private readonly config: FactoryConfig) {}
+
+      async invoke(_prompt: LlmBridgePrompt): Promise<LlmBridgeResponse> {
+        return {
+          content: { contentType: 'text', value: `model:${this.config.model}` },
+        };
+      }
+
+      async getMetadata(): Promise<LlmMetadata> {
+        return {
+          name: 'factory-bridge',
+          description: 'Factory bridge for tests',
+          model: this.config.model,
+          contextWindow: 0,
+          maxTokens: 0,
+        };
+      }
+    }
+
+    const loader: BridgeLoader = {
+      scan: vi.fn().mockResolvedValue([]),
+      load: vi.fn().mockResolvedValue({
+        ctor: FactoryBridge,
+        manifest,
+        configSchema: manifest.configSchema,
+      }),
+    };
+
+    const registry = new FileBasedLlmBridgeRegistry(baseDir, loader);
+    const bridgeId = await registry.register(manifest, { model: 'llama3.2' });
+
+    expect(bridgeId).toBe('factory-bridge');
+    expect(createSpy).toHaveBeenCalledWith({ model: 'llama3.2' });
+
+    const bridge = await registry.getBridge(bridgeId);
+    expect(bridge).toBeInstanceOf(FactoryBridge);
   });
 });

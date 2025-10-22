@@ -38,6 +38,7 @@ export interface ModelManagerItem {
   isActive: boolean;
   capabilities: string[];
   status?: ModelStatus;
+  configured?: boolean;
   language?: string;
   description?: string;
   tags?: string[];
@@ -166,6 +167,9 @@ const LANGUAGE_TONES: Record<string, string> = {
 const deriveStatus = (item: ModelManagerItem): ModelStatus => {
   if (item.status) {
     return item.status;
+  }
+  if (item.configured === false) {
+    return 'paused';
   }
   return item.isActive ? 'connected' : 'standby';
 };

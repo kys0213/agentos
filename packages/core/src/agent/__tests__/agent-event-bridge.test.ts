@@ -66,7 +66,7 @@ const makeEventfulAgent = (): Agent & {
     async activate() {},
     async inactive() {},
     async chat(_messages: UserMessage[]): Promise<AgentChatResult> {
-      return { messages: [], sessionId: 's-1' };
+      return { output: [], sessionId: 's-1' };
     },
     async createSession(_options?: {
       sessionId?: string;
@@ -158,7 +158,7 @@ describe('AgentEventBridge', () => {
       listAgents: async () => ({ items: [], nextCursor: '', hasMore: false }),
       searchAgents: async () => ({ items: [], nextCursor: '', hasMore: false }),
       createSession: async () => makeSession('s-x'),
-      execute: async () => ({ messages: [], sessionId: 's-x' }),
+      execute: async () => ({ output: [], sessionId: 's-x' }),
     };
     const publisher = makePublisher();
     const bridge = new AgentEventBridge(manager, publisher);

@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { DependencyBridgeLoader } from 'llm-bridge-loader';
 import { ElectronAppEnvironment } from '../../electron/electron-app.environment';
 import { LLM_BRIDGE_REGISTRY_TOKEN } from './constants';
+import { loadBundledBridges } from './load-bundled-bridges';
 
 @Module({
   providers: [
@@ -11,8 +12,12 @@ import { LLM_BRIDGE_REGISTRY_TOKEN } from './constants';
       inject: [ElectronAppEnvironment],
       useFactory: async (env: ElectronAppEnvironment) => {
         const loader = new DependencyBridgeLoader();
+        const registry = new FileBasedLlmBridgeRegistry(env.userDataPath, loader);
 
-        return new FileBasedLlmBridgeRegistry(env.userDataPath, loader);
+        const scanRoot = env.appPath ?? '.';
+        await loadBundledBridges(registry, loader, scanRoot);
+
+        return registry;
       },
     },
   ],
