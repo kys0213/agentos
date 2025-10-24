@@ -1,5 +1,7 @@
 # Frontend Architecture Notes (2025-10)
 
+Canonical location. Index: `docs/apps/gui/frontend/README.md`
+
 ## Updated Hooks
 
 - `useAppData`: React Query 기반으로 에이전트 목록을 `['agents']` 캐시에 저장합니다.

@@ -180,7 +180,7 @@ GitHub PR 템플릿(`.github/pull_request_template.md`)을 기반으로 작성:
 
 ## Docs
 - Plan→Docs 승격: ✅ 완료
-- 경로: `docs/frontend/command-palette.md`
+- 경로: `docs/apps/gui/frontend/command-palette.md`
 - 기존 문서 병합: N/A
 
 ## Risks/Notes

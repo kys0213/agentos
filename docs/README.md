@@ -45,9 +45,9 @@
 
 - Packages overview: `docs/PACKAGES_INDEX.md`
 - Apps
-  - GUI: Electron + React (로컬 퍼스트)
-  - CLI: 커맨드라인 인터페이스
-  - Slack Bot: 서버형 봇 (`apps/slack-bot/docs/README.md`)
+  - GUI: Electron + React (로컬 퍼스트) — `docs/apps/gui/README.md`
+  - CLI: 커맨드라인 인터페이스 — `docs/apps/cli/README.md`
+  - Slack Bot: 서버형 봇 — `docs/apps/slack-bot/README.md`
 - Packages
   - core: 에이전트/오케스트레이션/메모리/지식 등 핵심 모듈
   - lang: 언어 유틸/타입/도우미
