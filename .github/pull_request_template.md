@@ -29,7 +29,7 @@
 - [x] 내부 링크 무결성 검사 CI 추가 및 통과
 - [x] 기존 경로 → 새 경로로 교차 링크 교정
 - [x] Start-Here/Architecture/Specs 허브에서 3클릭 내 주요 문서 도달 가능
-- [x] 문서 이동 로그(현재 섹션) 및 계획서(plan/DOCS_RESTRUCTURE_PLAN.md) 포함
+- [x] 문서 이동 로그(현재 섹션)와 상세 변경 내역 요약
 
 # Breaking Changes
 
