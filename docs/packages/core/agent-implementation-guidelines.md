@@ -1,6 +1,6 @@
 # Agent Implementation Guidelines
 
-This document provides guidance for implementing agent functionality in the `@agentos/core` package while following the architecture outlined in `AGENT_ARCHITECTURE.md`.
+This document provides guidance for implementing agent functionality in the `@agentos/core` package while following the architecture outlined in [`agent-architecture.md`](./agent-architecture.md).
 
 ## Objectives
 
@@ -42,6 +42,6 @@ This document provides guidance for implementing agent functionality in the `@ag
 
 ## References
 
-- [AGENT_ARCHITECTURE.md](./AGENT_ARCHITECTURE.md)
-- [CORE_AGENT_SESSION_PLAN.md](./CORE_AGENT_SESSION_PLAN.md)
+- [`agent-architecture.md`](./agent-architecture.md)
+- [`agent-session-plan.md`](./plans/agent-session-plan.md)
 - [Electron IPC Spec](../../../apps/gui/docs/rpc/SPEC_FULL.md)
