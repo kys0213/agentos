@@ -19,7 +19,7 @@
 - [x] Define `CoreContent/CoreMessage` and normalizers (`toCoreContentArray`, `normalizeToCoreContentArray`)
 - [x] Handle `Buffer`/`Readable` inputs in normalizer
 - [x] Tests: single/array/string/number/circular/multimodal/buffer/readable
-- [x] Usage audit doc with impact checklist (`CORE_CONTENT_USAGE_AUDIT.md`)
+- [x] Usage audit doc with impact checklist (`../content-usage-audit.md`)
 
 ### Phase 2 — Agent/Session (Core)
 
@@ -57,5 +57,5 @@
 
 ## References
 
-- `CORE_CONTENT_STANDARDIZATION_PLAN.md`
-- `CORE_CONTENT_USAGE_AUDIT.md`
+- [`content-standardization.md`](../content-standardization.md)
+- [`content-usage-audit.md`](../content-usage-audit.md)
