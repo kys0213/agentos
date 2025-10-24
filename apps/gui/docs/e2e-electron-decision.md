@@ -28,7 +28,7 @@ Playwright의 `_electron` 런처를 기본 E2E 실행기로 채택한다. 기존
 
 ## Follow-up Actions
 
-1. `apps/gui/plan/ELECTRON_E2E_AUTOMATION_PLAN.md`의 Todo #1을 완료 처리하고, 나머지 단계(런처 구성, 시나리오 포팅)를 진행한다.
+1. Electron E2E Automation 작업 기록의 Todo #1을 완료 처리하고, 나머지 단계(런처 구성, 시나리오 포팅)를 진행한다.
 2. `playwright.config.ts`를 Electron 전용 프로젝트로 재구성하고, 브라우저 모드는 `test:e2e:browser` 스크립트로 분리한다.
 3. `package.json`과 개발자 문서에 `pnpm --filter @agentos/apps-gui test:e2e`가 Electron 테스트를 실행한다는 사실을 반영한다.
 4. 백엔드 서비스(NestJS/MCP) 기동/종료 및 시드 데이터를 포함한 오케스트레이션 스크립트를 작성해 전체 스택이 한 번에 실행되도록 한다.

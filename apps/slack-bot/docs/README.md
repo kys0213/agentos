@@ -1,6 +1,6 @@
 # Slack Bot Overview (WIP)
 
-> Slack Bot 서버 패키지의 현재 상태와 향후 작업 로드맵을 요약한 문서입니다. 구현은 진행 중이며, 자세한 계획은 `apps/slack-bot/plan/SLACK_BOT_SERVER_PLAN.md`를 참고하세요.
+> Slack Bot 서버 패키지의 현재 상태와 향후 작업 로드맵을 요약한 문서입니다. 구현은 진행 중이며, 세부 일정과 Backlog 는 이 문서와 레포지터리 이슈/PR에서 추적합니다.
 
 ## Status & Scope
 
@@ -47,7 +47,6 @@ apps/slack-bot/
 │   │   └── slack.decorators.ts # 이벤트/커맨드/액션/파라미터 데코레이터
 │   └── __tests__/
 │       └── slack.decorators.test.ts # 메타데이터/파라미터 주입 유닛 테스트
-├── plan/SLACK_BOT_SERVER_PLAN.md    # 상세 기능 계획 (미구현 항목 다수)
 ├── tsconfig.json / tsconfig.tests.json
 └── vitest.config.ts
 ```
@@ -100,7 +99,7 @@ apps/slack-bot/
 
 ## Roadmap / Next Steps
 
-아래 항목은 `SLACK_BOT_SERVER_PLAN.md` 기준 주요 남은 작업 요약입니다.
+아래 항목은 Slack Bot 패키지에서 우선 검토 중인 남은 작업을 요약한 것입니다.
 
 - ChatConnector/AgentPipeline
   - `ChatEvent`, `OutgoingMessage`, `ChatConnector` 제네릭 인터페이스 도입
@@ -114,6 +113,5 @@ apps/slack-bot/
 
 ## 참고 자료
 
-- 계획서: `apps/slack-bot/plan/SLACK_BOT_SERVER_PLAN.md`
 - Core 서비스: `docs/packages/core/index.md`
 - 테스트 가이드: `docs/30-developer-guides/testing.md`
