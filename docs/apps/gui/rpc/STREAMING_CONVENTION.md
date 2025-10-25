@@ -16,6 +16,6 @@ Guidelines
 
 Related docs
 
-- `apps/gui/docs/rpc/GUIDE.md`
-- `apps/gui/docs/rpc/SPEC_FULL.md`
-- `apps/gui/docs/rpc/ELECTRON_MCP_IPC_SPEC.md`
+- `docs/apps/gui/rpc/GUIDE.md`
+- `docs/apps/gui/rpc/SPEC_FULL.md`
+- `docs/apps/gui/rpc/ELECTRON_MCP_IPC_SPEC.md`

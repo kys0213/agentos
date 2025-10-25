@@ -72,5 +72,5 @@ close();
 
 ## 참고
 
-- RPC 가이드(SSOT): `apps/gui/docs/rpc/GUIDE.md`
+- RPC 가이드(SSOT): `docs/apps/gui/rpc/GUIDE.md`
 - 스트리밍 서버 컨벤션: `apps/gui/plan/RPC_STREAMING_SERVER_CONVENTION_PLAN.md`

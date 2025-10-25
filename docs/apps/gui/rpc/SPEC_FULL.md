@@ -1,10 +1,10 @@
 # Electron Reactive RPC 아키텍처 문서 (v0.2)
 
-Moved full spec. SSOT summary: `apps/gui/docs/rpc/SPEC.md`. Index: `apps/gui/docs/rpc/README.md`.
+Moved full spec. SSOT summary: `docs/apps/gui/rpc/SPEC.md`. Index: `docs/apps/gui/rpc/README.md`.
 
 Note: This spec is interface-first. It defines contracts (methods, payloads, frames, error policies). Code-level implementation details are non‑normative and provided only as examples. Canonical types live under `apps/gui/src/shared/types/*`.
 
-> 공용 용어/채널 정의: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`
+> 공용 용어/채널 정의: `docs/apps/gui/rpc/TERMS.md`
 
 이 문서는 **Electron(Main: NestJS Microservice + RxJS / Renderer: React + RxJS)** 기반 앱에서 **postMessage 스타일 공통 RPC 레이어**로 단발/RPC와 스트림을 일관 처리하는 스펙을 정의합니다. Electron/Web(Service Worker)/Chrome Extension 등으로 **Transport 교체만으로 재사용** 가능하도록 설계되었습니다. 본 v0.2는 packages/core의 타입/이벤트 스펙에 맞춰 구체 타입과 에러 정책, 이벤트 연계를 강화하며, 전송계층과 서비스 계층을 분리한 **채널 기반 Transport + 타입 안전 서비스 레이어**를 권장합니다.
 
@@ -39,7 +39,7 @@ Note: This spec is interface-first. It defines contracts (methods, payloads, fra
 
 ## 2.1 서비스 네임스페이스 개요 (인터페이스 요약)
 
-최신 채널/페이로드 규약은 `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`를 기준으로 합니다. 아래는 대표 채널과 요약입니다.
+최신 채널/페이로드 규약은 `docs/apps/gui/rpc/TERMS.md`를 기준으로 합니다. 아래는 대표 채널과 요약입니다.
 
 - agent.\*: `agent.chat`, `agent.endSession`, `agent.getMetadata`, `agent.getAllMetadatas`, `agent.update`, `agent.create`, `agent.delete`
 - bridge.\*: `bridge.register`, `bridge.unregister`, `bridge.switch`, `bridge.get-current`, `bridge.list`, `bridge.get-config`
@@ -461,7 +461,7 @@ export const mergedGlobal$ = merge(snap$, global$);
 
 ## 11. 보안 가이드 (Contract summary)
 
-- **Preload 최소 API**만 노출 (`start`, `post`) — 차기에는 `electronBridge.on`, `rpc.request`로 확장 (자세한 용어/채널: `apps/gui/docs/IPC_TERMS_AND_CHANNELS.md`)
+- **Preload 최소 API**만 노출 (`start`, `post`) — 차기에는 `electronBridge.on`, `rpc.request`로 확장 (자세한 용어/채널: `docs/apps/gui/rpc/TERMS.md`)
 - **메시지 검증**: `method`/`payload` zod 스키마 검증
 - **권한**: `meta`에 토큰/역할 포함, 서버에서 검증
 - **대용량 전송**: Transferable(ArrayBuffer) 사용 권장

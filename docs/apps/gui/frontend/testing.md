@@ -1,6 +1,6 @@
 # GUI Testing Guide (IPC + Mock)
 
-Canonical location. Index: `apps/gui/docs/frontend/README.md`
+Canonical location. Index: `docs/apps/gui/frontend/README.md`
 
 본 문서는 **GUI 앱 전용** 테스팅 가이드입니다.
 
@@ -87,7 +87,7 @@ pnpm --filter @agentos/apps-gui typecheck
 - 위치: `apps/gui/electron-e2e/`
 - 런처: Playwright `_electron` API (`runner/electronHarness.ts`)
 - 역할: 시각적 회귀와 핵심 사용자 플로우(대시보드, Chat, Agent/MCP/Tool 생성)를 Electron 런타임에서 자동 검증
-- 결정 근거: `apps/gui/docs/e2e-electron-decision.md` 참고 (Playwright 인터페이스 재사용, UI 시나리오 이식 용이성)
+- 결정 근거: `docs/apps/gui/e2e-electron-decision.md` 참고 (Playwright 인터페이스 재사용, UI 시나리오 이식 용이성)
 - 실행 명령
   - 로컬 기본: `pnpm --filter @agentos/apps-gui test:e2e`
     - 내부적으로 `scripts/run-electron-e2e.mjs`가 실행되어 `tsc` → `vite build` → `dist/main/__tests__/seed-backend.cli.js`(TS 원본: `src/main/__tests__/seed-backend.cli.ts`) → Playwright `_electron` 테스트를 순차 수행한다.

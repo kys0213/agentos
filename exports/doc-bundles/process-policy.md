@@ -24,7 +24,7 @@
 ## 디렉토리 구조 원칙
 
 - 도메인별 하위 폴더로 응집
-  - 예: `apps/gui/docs/rpc/`(GUIDE/SPEC/TERMS/recipes), `apps/gui/docs/frontend/`(code-style/patterns/testing/roadmap)
+  - 예: `docs/apps/gui/rpc/`(GUIDE/SPEC/TERMS/recipes), `docs/apps/gui/frontend/`(code-style/patterns/testing/roadmap)
 - Deprecated 디렉토리 금지. 오래된 문서는 즉시 대체/삭제하며, 필요시 단기 스텁만 유지
 - Archive 정책: 장기 보관을 지양. 필요 시 PR 본문/릴리스 노트로 이관 후 파일은 제거
 
@@ -67,8 +67,8 @@
 
 ## 예시(앱: GUI)
 
-- RPC: `apps/gui/docs/rpc/{GUIDE.md,SPEC.md,TERMS.md,recipes.md}`
-- Frontend: `apps/gui/docs/frontend/{code-style.md,patterns.md,testing.md,roadmap.md}`
+- RPC: `docs/apps/gui/rpc/{GUIDE.md,SPEC.md,TERMS.md,recipes.md}`
+- Frontend: `docs/apps/gui/frontend/{code-style.md,patterns.md,testing.md,roadmap.md}`
 - Plan 통합: `apps/gui/plan/RPC_AND_STREAMING_CONSOLIDATED_PLAN.md`
 
 보조 문서

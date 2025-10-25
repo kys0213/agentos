@@ -1,6 +1,6 @@
 # GUI Electron RPC 공용 용어/채널 정의
 
-Moved full terms list. SSOT anchor: `apps/gui/docs/rpc/TERMS.md`. Index: `apps/gui/docs/rpc/README.md`.
+Moved full terms list. SSOT anchor: `docs/apps/gui/rpc/TERMS.md`. Index: `docs/apps/gui/rpc/README.md`.
 
 본 문서는 GUI 메인↔렌더러 간 RPC/이벤트 스트림의 공통 용어와 채널 네임스페이스를 정의합니다. 계획서/가이드는 본 문서를 참조해 중복을 줄입니다.
 

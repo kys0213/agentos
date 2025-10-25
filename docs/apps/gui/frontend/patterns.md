@@ -1,6 +1,6 @@
 # GUI Implementation Patterns (Required)
 
-Canonical location. Index: `apps/gui/docs/frontend/README.md`
+Canonical location. Index: `docs/apps/gui/frontend/README.md`
 
 This document defines mandatory patterns for GUI implementation to keep the codebase consistent, testable, and type-safe.
 

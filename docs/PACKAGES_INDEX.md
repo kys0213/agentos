@@ -5,10 +5,13 @@
 ## Apps (애플리케이션)
 
 - apps/gui: Electron + React GUI
-  - 주요 문서: `apps/gui/docs/README.md` (있다면)
-  - 테스트/설정: `docs/30-developer-guides/testing.md`, 프론트엔드 가이드는 레포 가이드 참조
+  - 주요 문서: `docs/apps/gui/README.md`
+  - 프론트엔드 로드맵/가이드: `docs/apps/gui/frontend/README.md`, `docs/apps/gui/frontend/roadmap.md`
 - apps/cli: CLI 앱 (WIP)
+  - 문서 허브: `docs/apps/cli/README.md`
+  - 계획/백로그: `docs/apps/cli/plans/*.md`
 - apps/slack-bot: Slack Bot (WIP)
+  - 개요: `docs/apps/slack-bot/README.md`
 
 ## Packages (재사용 모듈)
 

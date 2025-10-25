@@ -45,9 +45,9 @@
 
 ## GUI (apps/gui) Architecture & Roadmap
 
-- **Patterns**: strict container vs presentational split, React Query key registry, IPC/service access only in containers, consistent loading/error/empty props, and zero `any` tolerated. Hooks normalize contracts and invalidate minimal caches ([apps/gui/docs/frontend/patterns.md](../../apps/gui/docs/frontend/patterns.md)).
-- **Testing & tooling**: Playwright E2E for GUI, unit tests prefer deterministic mocks, devtools gated via `VITE_DEVTOOLS=true`. Reference instructions in [apps/gui/docs/frontend/testing.md](../../apps/gui/docs/frontend/testing.md).
-- **Roadmap status**: Week-N mock alignment ticked off for typography, sidebar, cards, chips, transcripts, composer, and devtools toggling. Upcoming polish covers spacing, accessibility, and visual QA ([apps/gui/docs/frontend/roadmap.md](../../apps/gui/docs/frontend/roadmap.md)).
+- **Patterns**: strict container vs presentational split, React Query key registry, IPC/service access only in containers, consistent loading/error/empty props, and zero `any` tolerated. Hooks normalize contracts and invalidate minimal caches ([docs/apps/gui/frontend/patterns.md](../apps/gui/frontend/patterns.md)).
+- **Testing & tooling**: Playwright E2E for GUI, unit tests prefer deterministic mocks, devtools gated via `VITE_DEVTOOLS=true`. Reference instructions in [docs/apps/gui/frontend/testing.md](../apps/gui/frontend/testing.md).
+- **Roadmap status**: Week-N mock alignment ticked off for typography, sidebar, cards, chips, transcripts, composer, and devtools toggling. Upcoming polish covers spacing, accessibility, and visual QA ([docs/apps/gui/frontend/roadmap.md](../apps/gui/frontend/roadmap.md)).
 - **Delivery phases**: Type safety → preset data normalization → chat flow restoration → controllers → legacy/doc cleanup → quality (stream cancel tests, pipeline hardening).
 
 ## Development Workflow & Quality Gates
@@ -86,7 +86,7 @@
 | Core Architecture      | [docs/packages/core/index.md](../packages/core/index.md), linked module docs                                                                                                               |
 | Specs                  | [docs/20-specs/README.md](../20-specs/README.md)                                                                                                                                           |
 | Workflow & Policy      | [AGENTS.md](../../AGENTS.md), [docs/40-process-policy/git-workflow.md](../40-process-policy/git-workflow.md), [docs/40-process-policy/docs-policy.md](../40-process-policy/docs-policy.md) |
-| GUI                    | [apps/gui/docs/README.md](../../apps/gui/docs/README.md), [apps/gui/docs/frontend/README.md](../../apps/gui/docs/frontend/README.md)                                                       |
+| GUI                    | [docs/apps/gui/README.md](../apps/gui/README.md), [docs/apps/gui/frontend/README.md](../apps/gui/frontend/README.md)                                                       |
 | Templates              | [docs/90-templates/PLAN_TEMPLATE.md](../90-templates/PLAN_TEMPLATE.md)                                                                                                                     |
 
 Maintain this table when adding or relocating source material.

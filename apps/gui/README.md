@@ -15,7 +15,7 @@ sessions and presets.
 - ✅ **Multi-Environment Support**: Electron, Web, Extension compatibility
 - ✅ **Mock-First Development**: Independent from @packages/core
 
-📖 **Migration Details**: [Frontend Implementation Roadmap](docs/frontend/roadmap.md)
+📖 **Migration Details**: [Frontend Implementation Roadmap](../../docs/apps/gui/frontend/roadmap.md)
 
 ## 🎯 Next Development Priorities
 

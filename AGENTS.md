@@ -45,7 +45,7 @@ Root-level `docs/` contains shared conventions, 철학, 테스트 가이드, Git
 **모든 GUI/프론트엔드 관련 작업 시에는:**
 
 1. **[Frontend Architect](.claude/agents/frontend-architect.md) 에이전트 사용 필수**
-2. **[Frontend Implementation Roadmap](apps/gui/docs/frontend/roadmap.md)** - 전체 계획 및 진행상황 확인
+2. **[Frontend Implementation Roadmap](docs/apps/gui/frontend/roadmap.md)** - 전체 계획 및 진행상황 확인
 3. **Week 1에서 구축된 현대적 아키텍처 기반으로 점진적 개선**
 
 ## 문제 해결 원칙 (Problem-Solving Principles)

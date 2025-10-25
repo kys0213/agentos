@@ -1,6 +1,6 @@
 # GUI RPC & Streaming Guide
 
-Canonical location. Index: `apps/gui/docs/rpc/README.md`
+Canonical location. Index: `docs/apps/gui/rpc/README.md`
 
 See also: `SPEC.md`, `TERMS.md`, `recipes.md`.
 본 문서는 GUI의 계약(contracts) → 코드 생성(codegen) → 어댑터(adapters) → 스트리밍(streaming)까지의 최신/안정 가이드를 통합합니다. 세부 구현 계획과 진행 관리는 `apps/gui/plan/RPC_AND_STREAMING_CONSOLIDATED_PLAN.md`를 참고하세요.
@@ -97,6 +97,6 @@ await close(); // can 프레임 전송 → 서버 구독 해제
 
 ## 8) 참고
 
-- IPC/프레임 상세: `apps/gui/docs/ELECTRON_MCP_IPC_SPEC.md`
+- IPC/프레임 상세: `docs/apps/gui/rpc/ELECTRON_MCP_IPC_SPEC.md`
 - 통합 계획(진행 관리): `apps/gui/plan/RPC_AND_STREAMING_CONSOLIDATED_PLAN.md`
 - 생성 클라이언트 예시: `apps/gui/src/renderer/rpc/gen/*.client.ts`
