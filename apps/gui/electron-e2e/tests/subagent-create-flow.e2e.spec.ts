@@ -72,6 +72,12 @@ test('SubAgent 생성 마법사를 완료한다', async () => {
 
     await expect(harness.window.getByText(agentName)).toBeVisible();
 
+    const backToChat = harness.window.getByRole('button', { name: /Back to Chat/i });
+    if ((await backToChat.count()) > 0) {
+      await backToChat.first().click();
+    }
+
+    await openManagementView(harness.window);
     const navDashboard = harness.window.getByTestId('nav-dashboard').first();
     await expect(navDashboard).toBeVisible();
     await navDashboard.click();
