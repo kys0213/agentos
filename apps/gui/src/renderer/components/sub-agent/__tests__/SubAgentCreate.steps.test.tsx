@@ -43,9 +43,15 @@ describe('SubAgentCreate wizard flow', () => {
 
   const noop = () => {};
 
-  const setup = () =>
+  const setup = (overrides: Partial<React.ComponentProps<typeof SubAgentCreate>> = {}) =>
     render(
-      withProviders(<SubAgentCreate onBack={noop} onCreate={noop} presetTemplate={basePreset} />)
+      withProviders(
+        <SubAgentCreate
+          onBack={noop}
+          onCreate={overrides.onCreate ?? noop}
+          presetTemplate={basePreset}
+        />
+      )
     );
 
   it('allows tab navigation between steps', async () => {
@@ -58,24 +64,37 @@ describe('SubAgentCreate wizard flow', () => {
     expect(screen.getByText('Step 1 of 4')).toBeInTheDocument();
   });
 
-  it('keeps the create action disabled until all required fields are valid', async () => {
+  it('alerts and focuses the first invalid step when required fields are missing', async () => {
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
     setup();
 
     const headerCreateButton = screen.getByRole('button', { name: 'Create Agent' });
-    expect(headerCreateButton).toBeDisabled();
+    expect(headerCreateButton).not.toBeDisabled();
+
+    await userEvent.click(headerCreateButton);
+
+    expect(alertSpy).toHaveBeenCalledWith('Agent name is required.');
+    expect(screen.getByText('Agent name is required.')).toBeInTheDocument();
+    expect(screen.getByText('Step 1 of 4')).toBeInTheDocument();
+
+    alertSpy.mockRestore();
+  });
+
+  it('submits once all required fields are filled', async () => {
+    const onCreate = vi.fn();
+    setup({ onCreate });
 
     await userEvent.type(screen.getByLabelText(/Agent Name/i), 'Ready Agent');
     await userEvent.type(screen.getByLabelText(/Description/i), 'Fully configured agent');
 
     await userEvent.click(screen.getByRole('button', { name: 'Next: Category' }));
-    await userEvent.click(
-      screen.getByRole('button', {
-        name: /General Purpose/i,
-      })
-    );
+    await userEvent.click(screen.getByRole('button', { name: /General Purpose/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'Next: AI Config' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Next: Agent Settings' }));
 
-    // After Overview + Category + preset defaults, validations are satisfied
-    expect(headerCreateButton).not.toBeDisabled();
+    await userEvent.click(screen.getByTestId('btn-submit-agent'));
+
+    expect(onCreate).toHaveBeenCalledTimes(1);
   });
 
   it('notifies parent when step changes in controlled mode', async () => {
