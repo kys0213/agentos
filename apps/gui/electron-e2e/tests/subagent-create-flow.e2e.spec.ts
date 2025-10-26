@@ -71,6 +71,15 @@ test('SubAgent 생성 마법사를 완료한다', async () => {
     await finalButton.click();
 
     await expect(harness.window.getByText(agentName)).toBeVisible();
+
+    const navDashboard = harness.window.getByTestId('nav-dashboard').first();
+    await expect(navDashboard).toBeVisible();
+    await navDashboard.click();
+    await expect(
+      harness.window.getByRole('heading', { name: 'Dashboard' }).first()
+    ).toBeVisible({ timeout: 10_000 });
+
+    await expect(harness.window.getByText(agentName).first()).toBeVisible({ timeout: 10_000 });
   } finally {
     await closeElectronHarness(harness);
   }
