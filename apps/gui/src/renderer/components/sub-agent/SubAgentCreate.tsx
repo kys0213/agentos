@@ -352,12 +352,30 @@ export function SubAgentCreate({
     [overview, status, presetState, bridgeConfig, bridgeId, systemPrompt, selectedMcpIds]
   );
 
-  const isSubmissionReady = STEP_ORDER.every((key) => validators[key]() === null);
+  const focusFirstInvalidStep = () => {
+    for (const step of STEP_ORDER) {
+      const message = validators[step]();
+      if (message) {
+        applyStepError(step, message);
+        if (step !== currentStepId) {
+          updateCurrentStep(step);
+        }
+        if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+          window.alert(message);
+        }
+        return false;
+      }
+      clearStepError(step);
+    }
+    return true;
+  };
 
   const handleCreate = () => {
+    if (!focusFirstInvalidStep()) {
+      return;
+    }
     const payload = buildAgentPayload();
     if (!payload) {
-      ensureStepValid(currentStepId);
       return;
     }
     onCreate(payload);
@@ -474,7 +492,7 @@ export function SubAgentCreate({
       badge={stepBadge}
       onAction={handleCreate}
       actionLabel={headerActionLabel}
-      actionDisabled={!isSubmissionReady || isSubmitting}
+      actionDisabled={isSubmitting}
     >
       <StepperTabContent stepId="overview">
         <div className="max-w-4xl mx-auto space-y-6">
@@ -946,7 +964,7 @@ export function SubAgentCreate({
               <Button
                 data-testid="btn-submit-agent"
                 onClick={handleCreate}
-                disabled={!isSubmissionReady || isSubmitting}
+                disabled={isSubmitting}
                 className="gap-2"
               >
                 <Wand2 className="w-4 h-4" />

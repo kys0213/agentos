@@ -2,6 +2,13 @@ import { expect, test } from '@playwright/test';
 import { launchElectronHarness, closeElectronHarness } from '../runner/electronHarness';
 import { openManagementView } from '../support/openManagementView';
 
+const sleep = async (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(true);
+    }, ms);
+  });
+
 test('SubAgent 생성 마법사를 완료한다', async () => {
   const harness = await launchElectronHarness();
 
@@ -45,7 +52,9 @@ test('SubAgent 생성 마법사를 완료한다', async () => {
       timeout: 15000,
     });
     const bridgeSelect = harness.window.getByTestId('select-llm-bridge').first();
+    await sleep(5000);
     await bridgeSelect.click();
+
     await harness.window.getByRole('option', { name: /e2e/i }).first().click();
 
     await harness.window.waitForSelector('[data-testid="select-llm-model"]', {
@@ -53,6 +62,8 @@ test('SubAgent 생성 마법사를 완료한다', async () => {
       timeout: 15000,
     });
     const modelSelect = harness.window.getByTestId('select-llm-model').first();
+
+    await sleep(5000);
     await modelSelect.click();
     await harness.window.getByRole('option').first().click();
 
@@ -60,6 +71,9 @@ test('SubAgent 생성 마법사를 완료한다', async () => {
     const activeCard = harness.window
       .getByRole('button', { name: /Auto-participate in conversations/i })
       .first();
+
+    await sleep(5000);
+
     await activeCard.click();
     await expect(activeCard).toHaveClass(/bg-primary\/5/, { timeout: 5000 });
     const finalButton = harness.window.getByTestId('btn-submit-agent');
@@ -68,6 +82,8 @@ test('SubAgent 생성 마법사를 완료한다', async () => {
       console.log('[e2e-debug] body snippet before final submit:', finalSnippet.slice(0, 800));
     }
     await expect(finalButton).toBeEnabled({ timeout: 10000 });
+
+    await sleep(5000);
     await finalButton.click();
 
     await expect(harness.window.getByText(agentName)).toBeVisible();
@@ -81,11 +97,13 @@ test('SubAgent 생성 마법사를 완료한다', async () => {
     const navDashboard = harness.window.getByTestId('nav-dashboard').first();
     await expect(navDashboard).toBeVisible();
     await navDashboard.click();
-    await expect(
-      harness.window.getByRole('heading', { name: 'Dashboard' }).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(harness.window.getByRole('heading', { name: 'Dashboard' }).first()).toBeVisible({
+      timeout: 10_000,
+    });
 
     await expect(harness.window.getByText(agentName).first()).toBeVisible({ timeout: 10_000 });
+
+    await sleep(5000);
   } finally {
     await closeElectronHarness(harness);
   }
