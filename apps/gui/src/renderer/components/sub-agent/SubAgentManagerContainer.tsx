@@ -4,9 +4,10 @@ import { SubAgentManager, type ChatOpenOptions } from './SubAgentManager';
 import { ServiceContainer } from '../../../shared/di/service-container';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
-import type { AgentStatus } from '@agentos/core';
+import type { AgentStatus, CreateAgentMetadata, ReadonlyPreset } from '@agentos/core';
 import { AGENTS_QUERY_KEY, fetchAgents } from '../../hooks/useAppData';
 import { CHAT_QUERY_KEYS } from '../../hooks/queries/use-chat';
+import { serializeAgent, tryParseAgentExport, applyAgentExport } from '../../utils/agent-export';
 
 export interface SubAgentManagerContainerProps {
   onCreateAgent?: () => void;
@@ -33,15 +34,77 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
     staleTime: 5 * 60 * 1000,
   });
 
+  const invalidateAgentData = React.useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: AGENTS_QUERY_KEY });
+    queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.mentionableAgents });
+    queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.activeAgents });
+  }, [queryClient]);
+
   const mutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: AgentStatus }) =>
       ServiceContainer.getOrThrow('agent').updateAgent(id, { status }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: AGENTS_QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.mentionableAgents });
-      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.activeAgents });
+      invalidateAgentData();
     },
   });
+
+  const handleExportAgent = React.useCallback(
+    async (agentId: string) => {
+      const agent = agents.find((item) => item.id === agentId);
+      if (!agent) {
+        throw new Error('Agent not found.');
+      }
+      const exportPayload = {
+        name: agent.name,
+        description: agent.description ?? '',
+        status: (agent.status ?? 'inactive') as CreateAgentMetadata['status'],
+        icon: agent.icon,
+        keywords: Array.isArray(agent.keywords) ? agent.keywords : [],
+        preset: agent.preset as ReadonlyPreset,
+      } as CreateAgentMetadata;
+
+      const json = JSON.stringify(serializeAgent(exportPayload), null, 2);
+      return json;
+    },
+    [agents]
+  );
+
+  const handleImportAgent = React.useCallback(
+    async (agentId: string, json: string) => {
+      const parsed = tryParseAgentExport(json);
+      if (!parsed) {
+        throw new Error('Invalid agent JSON format. Please verify the contents and try again.');
+      }
+
+      const agent = agents.find((item) => item.id === agentId);
+      const base: Partial<CreateAgentMetadata> = agent
+        ? {
+            name: agent.name,
+            description: agent.description ?? '',
+            status: agent.status ?? 'inactive',
+            icon: agent.icon,
+            keywords: Array.isArray(agent.keywords) ? agent.keywords : [],
+            preset: agent.preset as ReadonlyPreset,
+          }
+        : {};
+
+      const updated = applyAgentExport(base, parsed);
+      const patch = Object.fromEntries(
+        Object.entries({
+          name: updated.name,
+          description: updated.description,
+          status: updated.status,
+          icon: updated.icon,
+          keywords: updated.keywords,
+          preset: updated.preset,
+        }).filter(([, value]) => value !== undefined)
+      );
+
+      await ServiceContainer.getOrThrow('agent').updateAgent(agentId, patch);
+      invalidateAgentData();
+    },
+    [agents, invalidateAgentData]
+  );
 
   if (status === 'pending') {
     return (
@@ -70,6 +133,8 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
       onOpenChat={onOpenChat}
       onCreateAgent={onCreateAgent}
       onUpdateAgentStatus={(id, status) => mutation.mutate({ id, status })}
+      onExportAgent={handleExportAgent}
+      onImportAgent={handleImportAgent}
       forceEmptyState={forceEmptyState}
       onToggleEmptyState={onToggleEmptyState}
     />

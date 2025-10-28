@@ -157,7 +157,7 @@ describe('SubAgentCreate wizard flow', () => {
     groupEndSpy.mockRestore();
   });
 
-  it('should treat null bridge id as invalid without throwing', async () => {
+  it('should ignore null bridge id updates without breaking validation', async () => {
     setup();
 
     await userEvent.type(screen.getByLabelText(/Agent Name/i), 'Null Bridge Agent');
@@ -173,11 +173,11 @@ describe('SubAgentCreate wizard flow', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Next: Agent Settings' }));
     expect(
-      await screen.findByText('Select an LLM bridge before continuing.', {}, { timeout: 1000 })
-    ).toBeInTheDocument();
+      screen.queryByText('Select an LLM bridge before continuing.')
+    ).not.toBeInTheDocument();
   });
 
-  it('should treat undefined bridge id as invalid when config omits bridgeId', async () => {
+  it('should keep previous bridge id when bridge config omits bridgeId', async () => {
     setup();
 
     await userEvent.type(screen.getByLabelText(/Agent Name/i), 'Undefined Bridge Agent');
@@ -191,8 +191,8 @@ describe('SubAgentCreate wizard flow', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Next: Agent Settings' }));
     expect(
-      await screen.findByText('Select an LLM bridge before continuing.', {}, { timeout: 1000 })
-    ).toBeInTheDocument();
+      screen.queryByText('Select an LLM bridge before continuing.')
+    ).not.toBeInTheDocument();
   });
 
   it('should normalize bridge name when llmBridgeName contains whitespace', async () => {
