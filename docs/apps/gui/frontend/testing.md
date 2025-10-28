@@ -109,6 +109,13 @@ pnpm --filter @agentos/apps-gui typecheck
 - 실패 아티팩트
   - 스크린샷: `electron-e2e/artifacts/screenshots`
   - 콘솔 로그/트레이스: `electron-e2e/artifacts/logs`
+- LLM 브리지 검증 디버깅
+  - `ELECTRON_RPC_TRACE=true pnpm --filter @agentos/apps-gui test:e2e -- --grep "SubAgent"`로 실행하면 메인 프로세스에서 RPC 요청/응답 로그가 출력된다.
+  - 렌더러 콘솔에서는 `[subagent-bridge]` 프리픽스를 가진 로그로 상태를 추적할 수 있다.
+    - `validation-fail`: 브리지 검증 실패 시 (`cause`, `bridgeId`, `bridgeConfig`, `effectiveBridgeConfig` 포함)
+    - `state-change`: 내부 상태(`bridgeId`, `bridgeConfig`)가 변경될 때마다 출력
+    - `onChange:set-bridge-from-config`: `BridgeModelSettings`의 `llmBridgeConfig` 업데이트 시 (정규화된 설정 내용 포함)
+    - `onChange:set-bridge-name`: 브리지 이름(`llmBridgeName`) 변경 시 출력
 - CI 모드(`process.env.CI === 'true'`)에서는 `*.e2e.spec.ts`/`*.e2e.test.ts` 파일이 자동 제외되며, `pnpm --filter @agentos/apps-gui test:ci` 명령으로 Vitest 스위트만 실행합니다.
 - 새 시나리오 작성 절차
   1. `electron-e2e/tests/`에 `{feature}.e2e.spec.ts` 파일 생성

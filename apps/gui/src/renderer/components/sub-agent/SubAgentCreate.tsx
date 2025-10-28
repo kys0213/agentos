@@ -50,6 +50,44 @@ const STEP_LABELS: Record<StepKey, string> = {
   settings: 'Settings',
 };
 
+const isBridgeDebugEnabled = () => process.env.NODE_ENV !== 'production';
+
+const BRIDGE_DEBUG_EVENTS = {
+  VALIDATION_FAIL: 'validation-fail',
+  STATE_CHANGE: 'state-change',
+  SET_FROM_CONFIG: 'onChange:set-bridge-from-config',
+  SET_NAME: 'onChange:set-bridge-name',
+} as const;
+
+const BRIDGE_DEBUG_CAUSES = {
+  MISSING_BRIDGE_ID: 'missing-bridge-id',
+} as const;
+
+const bridgeDebug = (label: string, snapshot: Record<string, unknown>) => {
+  if (!isBridgeDebugEnabled()) {
+    return;
+  }
+  try {
+    console.group(`[subagent-bridge] ${label}`);
+    for (const [key, value] of Object.entries(snapshot)) {
+      console.debug(key, value);
+    }
+    console.groupEnd();
+  } catch (error) {
+    console.warn('[subagent-bridge] failed to log snapshot', error);
+  }
+};
+
+const normalizeBridgeId = (value: string | null | undefined) => value?.trim() ?? '';
+
+const normalizeBridgeConfig = (config: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(config).map(([key, value]) => [
+      key,
+      typeof value === 'string' ? value.trim() : value,
+    ])
+  );
+
 const STEP_NEXT_COPY: Partial<Record<StepKey, string>> = {
   overview: 'Category',
   category: 'AI Config',
@@ -134,10 +172,11 @@ export function SubAgentCreate({
   const [status, setStatus] = useState<'active' | 'idle' | 'inactive'>('active');
   const [presetState, setPresetState] = useState<ReadonlyPreset>(presetTemplate);
 
-  const initialBridgeId =
+  const initialBridgeId = normalizeBridgeId(
     (presetTemplate.llmBridgeConfig?.bridgeId as string | undefined) ??
-    presetTemplate.llmBridgeName ??
-    '';
+      presetTemplate.llmBridgeName ??
+      ''
+  );
 
   const initialBridgeConfig = useMemo(() => {
     const cfg = { ...(presetTemplate.llmBridgeConfig ?? {}) } as Record<string, unknown>;
@@ -226,8 +265,13 @@ export function SubAgentCreate({
       if (!systemPrompt.trim()) {
         return 'System prompt cannot be empty.';
       }
-      if (!bridgeId) {
-        // review: 지금 실제 pnpm dev 로 실행한 electorn 에서는 이 지점에서 오류 발생중. llm bridge 를 선택했는데도 발생하여 확인 필요함.
+      if (!bridgeId?.trim()) {
+        bridgeDebug(BRIDGE_DEBUG_EVENTS.VALIDATION_FAIL, {
+          cause: BRIDGE_DEBUG_CAUSES.MISSING_BRIDGE_ID,
+          bridgeId,
+          bridgeConfig,
+          effectiveBridgeConfig,
+        });
         return 'Select an LLM bridge before continuing.';
       }
       return null;
@@ -324,17 +368,18 @@ export function SubAgentCreate({
     if (!overview.name.trim() || !overview.description.trim()) {
       return null;
     }
+    const normalizedBridgeId = normalizeBridgeId(bridgeId);
     const mergedBridgeConfig: Record<string, unknown> = {
       ...(presetState.llmBridgeConfig ?? {}),
       ...bridgeConfig,
     };
-    if (bridgeId) {
-      mergedBridgeConfig.bridgeId = bridgeId;
+    if (normalizedBridgeId) {
+      mergedBridgeConfig.bridgeId = normalizedBridgeId;
     }
 
     const mergedPreset: ReadonlyPreset = {
       ...presetState,
-      llmBridgeName: bridgeId || presetState.llmBridgeName,
+      llmBridgeName: normalizedBridgeId || presetState.llmBridgeName,
       llmBridgeConfig: mergedBridgeConfig,
       systemPrompt,
       enabledMcps: Array.from(selectedMcpIds).map((name) => ({
@@ -436,6 +481,15 @@ export function SubAgentCreate({
     merged.bridgeId = bridgeId;
     return merged;
   }, [bridgeConfig, bridgeId]);
+
+  useEffect(() => {
+    const derivedConfig = { ...normalizeBridgeConfig(bridgeConfig), bridgeId };
+    bridgeDebug(BRIDGE_DEBUG_EVENTS.STATE_CHANGE, {
+      bridgeId,
+      bridgeConfig,
+      effectiveBridgeConfig: derivedConfig,
+    });
+  }, [bridgeId, bridgeConfig]);
 
   const handleExport = () => {
     const payload = buildAgentPayload();
@@ -746,13 +800,30 @@ export function SubAgentCreate({
                   const cfg = updates.llmBridgeConfig as Record<string, unknown>;
                   const { bridgeId: nextBridgeId, ...rest } = cfg;
                   if (typeof nextBridgeId === 'string') {
-                    setBridgeId(nextBridgeId);
+                    const trimmed = nextBridgeId.trim();
+                    setBridgeId(trimmed);
+                    bridgeDebug(BRIDGE_DEBUG_EVENTS.SET_FROM_CONFIG, {
+                      nextBridgeId: trimmed,
+                    });
+                  } else if (nextBridgeId == null) {
+                    setBridgeId('');
+                    bridgeDebug(BRIDGE_DEBUG_EVENTS.SET_FROM_CONFIG, {
+                      nextBridgeId: '',
+                    });
                   }
-                  setBridgeConfig((prev) => ({ ...prev, ...rest }));
+                  const normalizedRest = normalizeBridgeConfig(rest);
+                  setBridgeConfig(normalizedRest);
+                  bridgeDebug(BRIDGE_DEBUG_EVENTS.SET_FROM_CONFIG, {
+                    bridgeConfig: normalizedRest,
+                  });
                   clearStepError('ai-config');
                 }
                 if (updates.llmBridgeName) {
-                  setBridgeId(updates.llmBridgeName);
+                  const trimmed = String(updates.llmBridgeName).trim();
+                  setBridgeId(trimmed);
+                  bridgeDebug(BRIDGE_DEBUG_EVENTS.SET_NAME, {
+                    nextBridgeId: trimmed,
+                  });
                   clearStepError('ai-config');
                 }
               }}
