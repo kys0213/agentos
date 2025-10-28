@@ -2,12 +2,18 @@ import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { ReadonlyPreset } from '@agentos/core';
+import type { CreateAgentMetadata, ReadonlyPreset } from '@agentos/core';
 import { withProviders } from '../../../../test/test-utils';
 import { SubAgentCreate } from '../SubAgentCreate';
+import type { BridgeModelSettingsProps } from '../../preset/BridgeModelSettings';
+
+const bridgePropsRef: { current?: BridgeModelSettingsProps } = {};
 
 vi.mock('../../preset/BridgeModelSettings', () => ({
-  default: () => <div data-testid="mock-bridge-settings" />,
+  default: (props: BridgeModelSettingsProps) => {
+    bridgePropsRef.current = props;
+    return <div data-testid="mock-bridge-settings" />;
+  },
 }));
 
 vi.mock('../../../hooks/queries/use-mcp', () => ({
@@ -43,8 +49,9 @@ describe('SubAgentCreate wizard flow', () => {
 
   const noop = () => {};
 
-  const setup = (overrides: Partial<React.ComponentProps<typeof SubAgentCreate>> = {}) =>
-    render(
+  const setup = (overrides: Partial<React.ComponentProps<typeof SubAgentCreate>> = {}) => {
+    bridgePropsRef.current = undefined;
+    return render(
       withProviders(
         <SubAgentCreate
           onBack={noop}
@@ -53,6 +60,7 @@ describe('SubAgentCreate wizard flow', () => {
         />
       )
     );
+  };
 
   it('allows tab navigation between steps', async () => {
     setup();
@@ -95,6 +103,58 @@ describe('SubAgentCreate wizard flow', () => {
     await userEvent.click(screen.getByTestId('btn-submit-agent'));
 
     expect(onCreate).toHaveBeenCalledTimes(1);
+  });
+
+  it('trims bridge id and submits payload with normalized bridge name', async () => {
+    const onCreate = vi.fn();
+    setup({ onCreate });
+
+    await userEvent.type(screen.getByLabelText(/Agent Name/i), 'Bridge Agent');
+    await userEvent.type(screen.getByLabelText(/Description/i), 'Uses trimmed bridge ID');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next: Category' }));
+    await userEvent.click(screen.getByRole('button', { name: /General Purpose/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'Next: AI Config' }));
+
+    expect(bridgePropsRef.current).toBeDefined();
+    bridgePropsRef.current?.onChange?.({
+      llmBridgeConfig: { bridgeId: '  ollama  ', model: 'llama3' },
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next: Agent Settings' }));
+    await userEvent.click(screen.getByTestId('btn-submit-agent'));
+
+    expect(onCreate).toHaveBeenCalledTimes(1);
+    const payload = onCreate.mock.calls[0][0] as CreateAgentMetadata;
+    expect(payload.preset.llmBridgeName).toBe('ollama');
+    expect(payload.preset.llmBridgeConfig?.bridgeId).toBe('ollama');
+  });
+
+  it('logs validation failure when bridge id is empty after trimming', async () => {
+    const groupSpy = vi.spyOn(console, 'group').mockImplementation(() => undefined);
+    const groupEndSpy = vi.spyOn(console, 'groupEnd').mockImplementation(() => undefined);
+
+    setup();
+
+    await userEvent.type(screen.getByLabelText(/Agent Name/i), 'Invalid Bridge Agent');
+    await userEvent.type(screen.getByLabelText(/Description/i), 'Bridge id will be blank');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next: Category' }));
+    await userEvent.click(screen.getByRole('button', { name: /General Purpose/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'Next: AI Config' }));
+
+    bridgePropsRef.current?.onChange?.({ llmBridgeConfig: { bridgeId: '   ' } });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next: Agent Settings' }));
+
+    expect(screen.getByText('Select an LLM bridge before continuing.')).toBeInTheDocument();
+    const hasValidationLog = groupSpy.mock.calls.some(
+      ([label]) => label === '[subagent-bridge] validation-fail'
+    );
+    expect(hasValidationLog).toBe(true);
+
+    groupSpy.mockRestore();
+    groupEndSpy.mockRestore();
   });
 
   it('notifies parent when step changes in controlled mode', async () => {
