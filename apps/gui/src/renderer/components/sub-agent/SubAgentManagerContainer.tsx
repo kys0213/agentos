@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { SubAgentManager } from './SubAgentManager';
+import { SubAgentManager, type ChatOpenOptions } from './SubAgentManager';
 import { ServiceContainer } from '../../../shared/di/service-container';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -10,12 +10,14 @@ import { CHAT_QUERY_KEYS } from '../../hooks/queries/use-chat';
 
 export interface SubAgentManagerContainerProps {
   onCreateAgent?: () => void;
+  onOpenChat?: (agentId: string, options?: ChatOpenOptions) => void;
   forceEmptyState?: boolean;
   onToggleEmptyState?: () => void;
 }
 
 export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> = ({
   onCreateAgent,
+  onOpenChat,
   forceEmptyState = false,
   onToggleEmptyState,
 }) => {
@@ -65,7 +67,7 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
   return (
     <SubAgentManager
       agents={agents}
-      onOpenChat={() => {}}
+      onOpenChat={onOpenChat}
       onCreateAgent={onCreateAgent}
       onUpdateAgentStatus={(id, status) => mutation.mutate({ id, status })}
       forceEmptyState={forceEmptyState}

@@ -87,6 +87,11 @@ const CATEGORY_DESCRIPTIONS: Record<GuiAgentCategory, string> = {
   customer_support: 'Customer service, support, and engagement',
 };
 
+// review: mcp 를 전달받고 preset 은 생성하지 않음. 또한 preset 은 import/export 시에 직렬화된 스펙이라고 가정해야함.
+// review: 전반적으로 코드가 너무 길고 리펙토링이 필요해보임. 가독성이 떨어짐.
+// review: export, import 는 여기서 노출할게 아니라 상단에 import 가 있어야함.
+// review: export 는 agent 메뉴에서 export 버튼이 있어야함.
+// review: preset 은 직렬화된 agent 스펙이므로 유저가 입력한 정보들을 바탕으로 preset 을 생성하고 agent 생성시 주입하여 적절하게 로드될 수 있게 해야함.
 export function SubAgentCreate({
   onBack,
   onCreate,
@@ -124,6 +129,7 @@ export function SubAgentCreate({
     icon: '',
     keywords: [] as string[],
   });
+
   const [selectedCategory, setSelectedCategory] = useState<GuiAgentCategory | undefined>();
   const [status, setStatus] = useState<'active' | 'idle' | 'inactive'>('active');
   const [presetState, setPresetState] = useState<ReadonlyPreset>(presetTemplate);
@@ -132,6 +138,7 @@ export function SubAgentCreate({
     (presetTemplate.llmBridgeConfig?.bridgeId as string | undefined) ??
     presetTemplate.llmBridgeName ??
     '';
+
   const initialBridgeConfig = useMemo(() => {
     const cfg = { ...(presetTemplate.llmBridgeConfig ?? {}) } as Record<string, unknown>;
     delete cfg.bridgeId;
@@ -220,6 +227,7 @@ export function SubAgentCreate({
         return 'System prompt cannot be empty.';
       }
       if (!bridgeId) {
+        // review: 지금 실제 pnpm dev 로 실행한 electorn 에서는 이 지점에서 오류 발생중. llm bridge 를 선택했는데도 발생하여 확인 필요함.
         return 'Select an LLM bridge before continuing.';
       }
       return null;
@@ -352,12 +360,41 @@ export function SubAgentCreate({
     [overview, status, presetState, bridgeConfig, bridgeId, systemPrompt, selectedMcpIds]
   );
 
-  const isSubmissionReady = STEP_ORDER.every((key) => validators[key]() === null);
+  const focusFirstInvalidStep = () => {
+    for (const step of STEP_ORDER) {
+      const message = validators[step]();
+      if (message) {
+        applyStepError(step, message);
+        if (step !== currentStepId) {
+          updateCurrentStep(step);
+        }
+        if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+          if (typeof document !== 'undefined') {
+            try {
+              const bodyHtml = document.body?.outerHTML ?? '';
+              console.group('[subagent-create] alert triggered');
+              console.info('message:', message);
+              console.info('body.outerHTML:', bodyHtml);
+              console.groupEnd();
+            } catch (error) {
+              console.warn('[subagent-create] failed to log body snapshot', error);
+            }
+          }
+          window.alert(message);
+        }
+        return false;
+      }
+      clearStepError(step);
+    }
+    return true;
+  };
 
   const handleCreate = () => {
+    if (!focusFirstInvalidStep()) {
+      return;
+    }
     const payload = buildAgentPayload();
     if (!payload) {
-      ensureStepValid(currentStepId);
       return;
     }
     onCreate(payload);
@@ -474,7 +511,7 @@ export function SubAgentCreate({
       badge={stepBadge}
       onAction={handleCreate}
       actionLabel={headerActionLabel}
-      actionDisabled={!isSubmissionReady || isSubmitting}
+      actionDisabled={isSubmitting}
     >
       <StepperTabContent stepId="overview">
         <div className="max-w-4xl mx-auto space-y-6">
@@ -946,7 +983,7 @@ export function SubAgentCreate({
               <Button
                 data-testid="btn-submit-agent"
                 onClick={handleCreate}
-                disabled={!isSubmissionReady || isSubmitting}
+                disabled={isSubmitting}
                 className="gap-2"
               >
                 <Wand2 className="w-4 h-4" />
