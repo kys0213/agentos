@@ -15,7 +15,7 @@ interface DashboardProps {
   currentAgents: AgentMetadata[];
   mentionableAgents: ReadonlyAgentMetadata[];
   activeAgents: ReadonlyAgentMetadata[];
-  onOpenChat?: (agentId: string) => void;
+  onOpenChat?: (agentId: string, options?: { mode?: 'navigate' | 'preview' }) => void;
   loading: boolean;
   onCreateAgent: () => void;
   onManageTools?: () => void;
@@ -184,7 +184,7 @@ export function Dashboard({
       icon: MessageSquare,
       action: () => {
         if (bestAgent) {
-          onOpenChat?.(bestAgent.id);
+          onOpenChat?.(bestAgent.id, { mode: 'navigate' });
         }
       },
       color: 'bg-blue-500',

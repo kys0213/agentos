@@ -34,10 +34,12 @@ import {
 } from '../../../shared/constants/agent-categories';
 import { EmptyState } from '../layout/EmptyState';
 
+export type ChatOpenOptions = { mode?: 'navigate' | 'preview' };
+
 export interface SubAgentManagerProps {
   agents: ReadonlyAgentMetadata[];
   onUpdateAgentStatus: (agentId: string, newStatus: AgentStatus) => void;
-  onOpenChat: (agentId: string) => void;
+  onOpenChat?: (agentId: string, options?: ChatOpenOptions) => void;
   onCreateAgent?: () => void;
   forceEmptyState?: boolean;
   onToggleEmptyState?: () => void;
@@ -46,7 +48,7 @@ export interface SubAgentManagerProps {
 export function SubAgentManager({
   agents,
   onUpdateAgentStatus,
-  onOpenChat,
+  onOpenChat = () => undefined,
   onCreateAgent,
   forceEmptyState = false,
   onToggleEmptyState,
@@ -126,10 +128,13 @@ export function SubAgentManager({
     const matchesSearch =
       agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       agent.description.toLowerCase().includes(searchQuery.toLowerCase());
+
     const matchesCategory =
       selectedCategory === 'all' ||
       agent.keywords.some((kw) => GuiCategoryKeywordsMap[selectedCategory]?.includes(kw));
+
     const matchesStatus = selectedStatus === 'all' || agent.status === selectedStatus;
+
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
@@ -447,7 +452,8 @@ export function SubAgentManager({
                                   variant="outline"
                                   size="sm"
                                   className="flex-1 h-7 text-xs hover:bg-blue-50 hover:border-blue-200"
-                                  onClick={() => onOpenChat(agent.id)}
+                                  data-testid={`agent-card-chat-${agent.id}`}
+                                  onClick={() => onOpenChat(agent.id, { mode: 'preview' })}
                                 >
                                   <MessageSquare className="w-3 h-3 mr-1" />
                                   Chat

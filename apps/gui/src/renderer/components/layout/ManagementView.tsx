@@ -32,6 +32,7 @@ import SubAgentCreateContainer from '../sub-agent/SubAgentCreateContainer';
 import { ToolBuilderCreate } from '../tool/ToolBuilderCreate';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePresets } from '../../hooks/queries/use-presets';
+import { ServiceContainer } from '../../../shared/di/service-container';
 
 interface ManagementViewProps {
   navigation: UseAppNavigationReturn;
@@ -108,16 +109,30 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
     return tool;
   };
 
-  const handleOpenChat = (agentId: string) => {
-    // Convert to DesignAgent format for new hooks (like NewAppLayout)
+  const handleOpenChat = async (
+    agentId: string,
+    options: { mode?: 'navigate' | 'preview' } = {}
+  ): Promise<void> => {
+    let agent = currentAgents.find((item) => item.id === agentId);
 
-    const agent = currentAgents.find((agent) => agent.id === agentId);
+    if (!agent) {
+      const agentService = ServiceContainer.get('agent');
+      if (agentService) {
+        try {
+          agent = await agentService.getAgentMetadata(agentId);
+        } catch (error) {
+          console.warn('[management-view] failed to fetch agent metadata', error);
+        }
+      }
+    }
 
     if (agent) {
       handleOpenChatFromHook(agent);
     }
 
-    handleBackToChat();
+    if ((options.mode ?? 'navigate') === 'navigate') {
+      handleBackToChat();
+    }
   };
 
   const handleNavigateToTools = () => {
@@ -206,6 +221,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
         return (
           <SubAgentManagerContainer
             onCreateAgent={handleStartCreateAgent}
+            onOpenChat={(agentId, opts) => handleOpenChat(agentId, opts)}
             forceEmptyState={showEmptyState}
             onToggleEmptyState={() => setShowEmptyState(!showEmptyState)}
           />
@@ -352,7 +368,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
       {/* Floating Chat Interface */}
       {activeChatAgent && (
         <div className="fixed bottom-4 right-4 z-50 w-[360px]">
-          <Card className="shadow-xl border bg-card">
+          <Card className="shadow-xl border bg-card" data-testid="active-chat-preview">
             <div className="flex items-start justify-between p-4 border-b">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-50 to-blue-100 flex items-center justify-center">
@@ -414,10 +430,7 @@ const ManagementView: React.FC<ManagementViewProps> = ({ navigation }) => {
               <Button
                 size="sm"
                 className="gap-2"
-                onClick={() => {
-                  handleOpenChat(activeChatAgent.id);
-                  handleBackToChat();
-                }}
+                onClick={() => handleOpenChat(activeChatAgent.id, { mode: 'navigate' })}
               >
                 <MessageSquare className="w-4 h-4" />
                 Open Chat

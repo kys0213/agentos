@@ -64,6 +64,7 @@ export const SubAgentCreateContainer: React.FC<SubAgentCreateContainerProps> = (
     );
   }
 
+  // review: 프리셋이 아니라 연결된 MCP 목록을 노출해야함.
   const fallbackPreset = (): ReadonlyPreset => ({
     id: 'fallback-template',
     name: 'Default Assistant Template',

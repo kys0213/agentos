@@ -1,19 +1,38 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { launchElectronHarness, closeElectronHarness } from '../runner/electronHarness';
 import { openManagementView } from '../support/openManagementView';
 
-const sleep = async (ms: number) =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(true);
-    }, ms);
-  });
+const ensureManagementView = async (window: Page): Promise<void> => {
+  const navSubagents = window.getByTestId('nav-subagents');
+  if ((await navSubagents.count()) > 0) {
+    await expect(navSubagents.first()).toBeVisible({ timeout: 15000 });
+    return;
+  }
+
+  const manageAgentsButton = window.getByRole('button', { name: /Manage Agents/i });
+  if ((await manageAgentsButton.count()) > 0) {
+    await manageAgentsButton.first().click();
+    await expect(navSubagents.first()).toBeVisible({ timeout: 15000 });
+    return;
+  }
+
+  const manageAgentsText = window.getByText('Manage Agents', { exact: true });
+  if ((await manageAgentsText.count()) > 0) {
+    await manageAgentsText.first().click();
+    await expect(navSubagents.first()).toBeVisible({ timeout: 15000 });
+    return;
+  }
+
+  await openManagementView(window);
+  await expect(navSubagents.first()).toBeVisible({ timeout: 15000 });
+};
 
 test('SubAgent 생성 마법사를 완료한다', async () => {
   const harness = await launchElectronHarness();
 
   try {
-    await openManagementView(harness.window);
+    await ensureManagementView(harness.window);
 
     const navSubagents = harness.window.getByTestId('nav-subagents');
     await expect(navSubagents.first()).toBeVisible();
@@ -52,7 +71,7 @@ test('SubAgent 생성 마법사를 완료한다', async () => {
       timeout: 15000,
     });
     const bridgeSelect = harness.window.getByTestId('select-llm-bridge').first();
-    await sleep(5000);
+    await expect(bridgeSelect).toBeEnabled({ timeout: 15000 });
     await bridgeSelect.click();
 
     await harness.window.getByRole('option', { name: /e2e/i }).first().click();
@@ -62,8 +81,7 @@ test('SubAgent 생성 마법사를 완료한다', async () => {
       timeout: 15000,
     });
     const modelSelect = harness.window.getByTestId('select-llm-model').first();
-
-    await sleep(5000);
+    await expect(modelSelect).toBeEnabled({ timeout: 15000 });
     await modelSelect.click();
     await harness.window.getByRole('option').first().click();
 
@@ -72,8 +90,7 @@ test('SubAgent 생성 마법사를 완료한다', async () => {
       .getByRole('button', { name: /Auto-participate in conversations/i })
       .first();
 
-    await sleep(5000);
-
+    await expect(activeCard).toBeVisible({ timeout: 10000 });
     await activeCard.click();
     await expect(activeCard).toHaveClass(/bg-primary\/5/, { timeout: 5000 });
     const finalButton = harness.window.getByTestId('btn-submit-agent');
@@ -82,8 +99,6 @@ test('SubAgent 생성 마법사를 완료한다', async () => {
       console.log('[e2e-debug] body snippet before final submit:', finalSnippet.slice(0, 800));
     }
     await expect(finalButton).toBeEnabled({ timeout: 10000 });
-
-    await sleep(5000);
     await finalButton.click();
 
     await expect(harness.window.getByText(agentName).first()).toBeVisible();
@@ -106,8 +121,6 @@ test('SubAgent 생성 마법사를 완료한다', async () => {
     });
 
     await expect(harness.window.getByText(agentName).first()).toBeVisible({ timeout: 10_000 });
-
-    await sleep(5000);
   } finally {
     await closeElectronHarness(harness);
   }
@@ -117,7 +130,7 @@ test('필수 입력 없이 제출 시 단계별 오류 알림을 보여준다', 
   const harness = await launchElectronHarness();
 
   try {
-    await openManagementView(harness.window);
+    await ensureManagementView(harness.window);
 
     const navSubagents = harness.window.getByTestId('nav-subagents');
     await expect(navSubagents.first()).toBeVisible();
@@ -133,10 +146,8 @@ test('필수 입력 없이 제출 시 단계별 오류 알림을 보여준다', 
 
     await harness.window.evaluate(() => {
       (window as unknown as { __agentAlerts?: string[] }).__agentAlerts = [];
-      const original = window.alert;
       window.alert = (message?: string) => {
         (window as unknown as { __agentAlerts: string[] }).__agentAlerts.push(String(message ?? ''));
-        original?.(message ?? '');
       };
     });
 

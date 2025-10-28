@@ -15,6 +15,8 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
 
   private readonly subscriptions = new Map<string, Subscription>();
 
+  private readonly traceEnabled = process.env.ELECTRON_RPC_TRACE === 'true';
+
   private readonly localHandlers = new Map<
     string,
     ((
@@ -29,6 +31,30 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
   constructor(private readonly ipcMain: IpcMain) {
     super();
     this.onIncomingFrame = this.createIncomingFrameHandler();
+  }
+
+  private trace(direction: 'recv' | 'send', frame: RpcFrame, extra: Record<string, unknown>) {
+    if (!this.traceEnabled) {
+      return;
+    }
+    try {
+      const base = {
+        direction,
+        method: frame?.kind === 'req' || frame?.kind === 'nxt' ? frame.method : undefined,
+        kind: frame?.kind,
+        cid: frame?.cid,
+        ...extra,
+      };
+      const payloadField = frame?.kind === 'req' ? { payload: frame.payload } : {};
+      const resultField = frame?.kind === 'res' ? { result: frame.result } : {};
+      const errorField = frame?.kind === 'err'
+        ? { error: { message: frame.message, code: frame.code, details: frame.details } }
+        : {};
+      const nextField = frame?.kind === 'nxt' ? { data: frame.data } : {};
+      console.log('[electron-rpc]', JSON.stringify({ ...base, ...payloadField, ...resultField, ...errorField, ...nextField }));
+    } catch (error) {
+      console.log('[electron-rpc]', direction, frame?.method, extra, error);
+    }
   }
 
   /**
@@ -69,6 +95,7 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
   private createIncomingFrameHandler() {
     return async (frame: RpcFrame, senderId: number) => {
       try {
+        this.trace('recv', frame, { senderId });
         if (frame?.kind === 'can') {
           const sub = this.subscriptions.get(frame.cid);
           sub?.unsubscribe();
@@ -98,8 +125,8 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
         const out = await handler(frame.payload, { senderId });
 
         const send = broadcast
-          ? (frame: RpcFrame) => this.sendToAll(frame)
-          : (frame: RpcFrame) => this.sendTo(senderId, frame);
+          ? (nextFrame: RpcFrame) => this.sendToAll(nextFrame)
+          : (nextFrame: RpcFrame) => this.sendTo(senderId, nextFrame);
 
         if (isObservable(out)) {
           this.handleByObservable(out, frame, send);
@@ -181,6 +208,7 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
   }
 
   private sendToAll(frame: RpcFrame) {
+    this.trace('send', frame, { target: 'broadcast' });
     for (const w of BrowserWindow.getAllWindows()) {
       if (!w.isDestroyed()) {
         w.webContents.send('bridge:frame', frame);
@@ -190,6 +218,7 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
 
   // 외부(Transport)에서 호출하도록 export
   private sendTo(wcId: number, frame: RpcFrame) {
+    this.trace('send', frame, { target: wcId });
     const win = BrowserWindow.fromId(wcId);
 
     if (win && !win.isDestroyed()) {
