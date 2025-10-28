@@ -38,22 +38,27 @@ export class ElectronEventTransport extends Server implements CustomTransportStr
       return;
     }
     try {
+      const method = extractMethod(frame);
       const base = {
         direction,
-        method: frame?.kind === 'req' || frame?.kind === 'nxt' ? frame.method : undefined,
+        method,
         kind: frame?.kind,
         cid: frame?.cid,
         ...extra,
       };
       const payloadField = frame?.kind === 'req' ? { payload: frame.payload } : {};
       const resultField = frame?.kind === 'res' ? { result: frame.result } : {};
-      const errorField = frame?.kind === 'err'
-        ? { error: { message: frame.message, code: frame.code, details: frame.details } }
-        : {};
+      const errorField =
+        frame?.kind === 'err'
+          ? { error: { message: frame.message, code: frame.code, details: frame.details } }
+          : {};
       const nextField = frame?.kind === 'nxt' ? { data: frame.data } : {};
-      console.log('[electron-rpc]', JSON.stringify({ ...base, ...payloadField, ...resultField, ...errorField, ...nextField }));
+      console.log(
+        '[electron-rpc]',
+        JSON.stringify({ ...base, ...payloadField, ...resultField, ...errorField, ...nextField })
+      );
     } catch (error) {
-      console.log('[electron-rpc]', direction, frame?.method, extra, error);
+      console.log('[electron-rpc]', direction, extractMethod(frame), extra, error);
     }
   }
 
@@ -233,6 +238,19 @@ function isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
     value != null &&
     typeof (value as { [Symbol.asyncIterator]?: unknown })[Symbol.asyncIterator] === 'function'
   );
+}
+
+function extractMethod(frame: RpcFrame | undefined): string | undefined {
+  if (!frame) {
+    return undefined;
+  }
+  if (frame.kind === 'req') {
+    return frame.method;
+  }
+  if (frame.kind === 'nxt') {
+    return frame.method;
+  }
+  return undefined;
 }
 
 function getErrorMessage(e: unknown): string {
