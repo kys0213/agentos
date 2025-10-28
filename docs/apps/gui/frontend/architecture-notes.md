@@ -5,7 +5,8 @@ Canonical location. Index: `docs/apps/gui/frontend/README.md`
 ## Updated Hooks
 
 - `useAppData`: React Query 기반으로 에이전트 목록을 `['agents']` 캐시에 저장합니다.
-  - `mentionableAgents`/`activeAgents` 파생 데이터가 함께 제공되며, SubAgent/Chat/Dashboard가 동일한 데이터를 공유합니다.
+- `mentionableAgents`/`activeAgents` 파생 데이터가 함께 제공되며, SubAgent/Chat/Dashboard가 동일한 데이터를 공유합니다.
+- SubAgent Manager 카드에서는 액션 메뉴(⋯)를 통해 각 에이전트의 Export/Import 버튼을 제공하며, `serializeAgent`/`applyAgentExport` 유틸을 재사용합니다.
   - 에이전트 상태 변경이나 신규 생성 후에는 `invalidateAgentQueries()`를 통해 `['agents']`, `['chat','mentionableAgents']`, `['chat','activeAgents']`가 모두 새로고침됩니다.
 
 - `useChatState` + `ChatViewContainer`:

@@ -27,7 +27,6 @@ import {
   GuiCategoryKeywordsMap,
 } from '../../../shared/constants/agent-categories';
 import { useMcpTools } from '../../hooks/queries/use-mcp';
-import { applyAgentExport, serializeAgent, tryParseAgentExport } from '../../utils/agent-export';
 import { Alert, AlertDescription } from '../ui/alert';
 import StepperTabs, { StepperTabContent } from '../common/StepperTabs';
 
@@ -190,10 +189,6 @@ export function SubAgentCreate({
   const [selectedMcpIds, setSelectedMcpIds] = useState<Set<string>>(
     () => new Set((presetTemplate.enabledMcps ?? []).map((m) => m.name).filter(Boolean) as string[])
   );
-
-  const [exportJson, setExportJson] = useState('');
-  const [importJson, setImportJson] = useState('');
-  const [importError, setImportError] = useState('');
 
   const [stepErrors, setStepErrors] = useState<Partial<Record<StepKey, string | null>>>({});
 
@@ -491,56 +486,6 @@ export function SubAgentCreate({
     });
   }, [bridgeId, bridgeConfig]);
 
-  const handleExport = () => {
-    const payload = buildAgentPayload();
-    if (!payload) {
-      ensureStepValid(currentStepId);
-      return;
-    }
-    const serialized = serializeAgent(payload);
-    setExportJson(JSON.stringify(serialized, null, 2));
-  };
-
-  const handleApplyImport = () => {
-    const parsed = tryParseAgentExport(importJson);
-    if (!parsed) {
-      setImportError('Invalid JSON format. Please check the contents and try again.');
-      return;
-    }
-    const updated = applyAgentExport({ preset: presetState }, parsed);
-    setOverview((prev) => ({
-      ...prev,
-      name: updated.name ?? prev.name,
-      description: updated.description ?? prev.description,
-      icon: updated.icon ?? prev.icon,
-      keywords: updated.keywords ? Array.from(updated.keywords) : prev.keywords,
-    }));
-    if (updated.status === 'active' || updated.status === 'idle' || updated.status === 'inactive') {
-      setStatus(updated.status);
-    }
-    if (updated.preset) {
-      setPresetState(updated.preset);
-      setSystemPrompt(updated.preset.systemPrompt ?? '');
-      const importedBridgeId =
-        (updated.preset.llmBridgeConfig?.bridgeId as string | undefined) ??
-        updated.preset.llmBridgeName ??
-        '';
-      setBridgeId(importedBridgeId);
-      const cfg = { ...(updated.preset.llmBridgeConfig ?? {}) } as Record<string, unknown>;
-      delete cfg.bridgeId;
-      setBridgeConfig(cfg);
-      setSelectedMcpIds(
-        new Set(
-          Array.from(updated.preset.enabledMcps ?? [])
-            .map((m) => m.name)
-            .filter(Boolean) as string[]
-        )
-      );
-    }
-    setImportError('');
-    updateCurrentStep('settings');
-  };
-
   const stepBadge = {
     label: `Step ${currentStepIndex + 1} of ${totalSteps}`,
     icon: <Clock className="w-3 h-3" />,
@@ -805,11 +750,6 @@ export function SubAgentCreate({
                     bridgeDebug(BRIDGE_DEBUG_EVENTS.SET_FROM_CONFIG, {
                       nextBridgeId: trimmed,
                     });
-                  } else if (nextBridgeId == null) {
-                    setBridgeId('');
-                    bridgeDebug(BRIDGE_DEBUG_EVENTS.SET_FROM_CONFIG, {
-                      nextBridgeId: '',
-                    });
                   }
                   const normalizedRest = normalizeBridgeConfig(rest);
                   setBridgeConfig(normalizedRest);
@@ -921,62 +861,6 @@ export function SubAgentCreate({
                   <p className="text-xs text-muted-foreground mt-2">{option.helper}</p>
                 </button>
               ))}
-            </div>
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Export / Import</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm">Export Agent as JSON</Label>
-                <div className="mt-2 flex gap-2">
-                  <Button variant="outline" onClick={handleExport} className="gap-2">
-                    <Wand2 className="w-4 h-4" />
-                    Generate JSON
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => navigator.clipboard.writeText(exportJson)}
-                    disabled={!exportJson}
-                  >
-                    Copy
-                  </Button>
-                </div>
-                <Textarea
-                  value={exportJson}
-                  onChange={(e) => setExportJson(e.target.value)}
-                  placeholder="Generated JSON will appear here"
-                  className="mt-3 h-40 font-mono"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm">Import Agent JSON</Label>
-                <Textarea
-                  value={importJson}
-                  onChange={(e) => {
-                    setImportJson(e.target.value);
-                    setImportError('');
-                  }}
-                  placeholder="Paste exported agent JSON here"
-                  className="mt-3 h-40 font-mono"
-                />
-                {importError && <p className="text-xs text-red-600 mt-2">{importError}</p>}
-                <div className="flex gap-2 mt-3">
-                  <Button variant="outline" onClick={handleApplyImport} className="gap-2">
-                    Apply
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setImportJson('');
-                      setImportError('');
-                    }}
-                  >
-                    Clear
-                  </Button>
-                </div>
-              </div>
             </div>
           </Card>
 
