@@ -21,6 +21,7 @@ export async function openManagementView(window: Page): Promise<void> {
     window.getByRole('button', { name: /Manage Agents/i }),
     window.getByRole('button', { name: /Explore Features/i }),
     window.getByRole('button', { name: /Create First Agent/i }),
+    window.getByRole('button', { name: /Open Agent Manager/i }),
     window.getByRole('button', { name: /Go to Dashboard/i }),
   ];
 

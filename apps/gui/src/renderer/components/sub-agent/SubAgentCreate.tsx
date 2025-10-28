@@ -52,6 +52,17 @@ const STEP_LABELS: Record<StepKey, string> = {
 
 const isBridgeDebugEnabled = () => process.env.NODE_ENV !== 'production';
 
+const BRIDGE_DEBUG_EVENTS = {
+  VALIDATION_FAIL: 'validation-fail',
+  STATE_CHANGE: 'state-change',
+  SET_FROM_CONFIG: 'onChange:set-bridge-from-config',
+  SET_NAME: 'onChange:set-bridge-name',
+} as const;
+
+const BRIDGE_DEBUG_CAUSES = {
+  MISSING_BRIDGE_ID: 'missing-bridge-id',
+} as const;
+
 const bridgeDebug = (label: string, snapshot: Record<string, unknown>) => {
   if (!isBridgeDebugEnabled()) {
     return;
@@ -68,6 +79,14 @@ const bridgeDebug = (label: string, snapshot: Record<string, unknown>) => {
 };
 
 const normalizeBridgeId = (value: string | null | undefined) => value?.trim() ?? '';
+
+const normalizeBridgeConfig = (config: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(config).map(([key, value]) => [
+      key,
+      typeof value === 'string' ? value.trim() : value,
+    ])
+  );
 
 const STEP_NEXT_COPY: Partial<Record<StepKey, string>> = {
   overview: 'Category',
@@ -247,8 +266,8 @@ export function SubAgentCreate({
         return 'System prompt cannot be empty.';
       }
       if (!bridgeId?.trim()) {
-        bridgeDebug('validation-fail', {
-          cause: 'missing-bridge-id',
+        bridgeDebug(BRIDGE_DEBUG_EVENTS.VALIDATION_FAIL, {
+          cause: BRIDGE_DEBUG_CAUSES.MISSING_BRIDGE_ID,
           bridgeId,
           bridgeConfig,
           effectiveBridgeConfig,
@@ -464,12 +483,13 @@ export function SubAgentCreate({
   }, [bridgeConfig, bridgeId]);
 
   useEffect(() => {
-    bridgeDebug('state-change', {
+    const derivedConfig = { ...normalizeBridgeConfig(bridgeConfig), bridgeId };
+    bridgeDebug(BRIDGE_DEBUG_EVENTS.STATE_CHANGE, {
       bridgeId,
       bridgeConfig,
-      effectiveBridgeConfig,
+      effectiveBridgeConfig: derivedConfig,
     });
-  }, [bridgeId, bridgeConfig, effectiveBridgeConfig]);
+  }, [bridgeId, bridgeConfig]);
 
   const handleExport = () => {
     const payload = buildAgentPayload();
@@ -782,18 +802,26 @@ export function SubAgentCreate({
                   if (typeof nextBridgeId === 'string') {
                     const trimmed = nextBridgeId.trim();
                     setBridgeId(trimmed);
-                    bridgeDebug('onChange:set-bridge-from-config', {
+                    bridgeDebug(BRIDGE_DEBUG_EVENTS.SET_FROM_CONFIG, {
                       nextBridgeId: trimmed,
                     });
+                  } else if (nextBridgeId == null) {
+                    setBridgeId('');
+                    bridgeDebug(BRIDGE_DEBUG_EVENTS.SET_FROM_CONFIG, {
+                      nextBridgeId: '',
+                    });
                   }
-                  setBridgeConfig(rest);
-                  bridgeDebug('onChange:set-config', rest);
+                  const normalizedRest = normalizeBridgeConfig(rest);
+                  setBridgeConfig(normalizedRest);
+                  bridgeDebug(BRIDGE_DEBUG_EVENTS.SET_FROM_CONFIG, {
+                    bridgeConfig: normalizedRest,
+                  });
                   clearStepError('ai-config');
                 }
                 if (updates.llmBridgeName) {
                   const trimmed = String(updates.llmBridgeName).trim();
                   setBridgeId(trimmed);
-                  bridgeDebug('onChange:set-bridge-name', {
+                  bridgeDebug(BRIDGE_DEBUG_EVENTS.SET_NAME, {
                     nextBridgeId: trimmed,
                   });
                   clearStepError('ai-config');
