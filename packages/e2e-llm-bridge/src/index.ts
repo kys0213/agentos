@@ -180,3 +180,14 @@ class E2ELlmBridge implements LlmBridge {
 
 export default E2ELlmBridge;
 export { E2ELlmBridge };
+
+// Ensure CommonJS consumers get the bridge class directly
+declare const module: { exports?: unknown } | undefined;
+if (typeof module !== 'undefined' && module?.exports) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(module.exports as any) = E2ELlmBridge;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(module.exports as any).default = E2ELlmBridge;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(module.exports as any).E2ELlmBridge = E2ELlmBridge;
+}

@@ -4,6 +4,15 @@ import { defineContract } from './defineContract';
 // Note: LlmManifest는 외부 스펙이므로 여기서는 구조를 구체화하지 않고 unknown으로 둡니다.
 const LlmManifestSchema = z.unknown();
 
+const BridgeListItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  language: z.string(),
+  configured: z.boolean(),
+  available: z.boolean(),
+});
+
 export const BridgeContract = defineContract({
   namespace: 'bridge',
   methods: {
@@ -36,7 +45,7 @@ export const BridgeContract = defineContract({
     },
     list: {
       channel: 'bridge.list',
-      response: z.array(z.object({ id: z.string() })),
+      response: z.array(BridgeListItemSchema),
     },
     'get-config': {
       channel: 'bridge.get-config',

@@ -21,11 +21,11 @@
     "@agentos/lang": "workspace:*",
     "chalk": "^4.1.2",
     "commander": "^11.1.0",
-    "llm-bridge-loader": "0.0.6"
+    "llm-bridge-loader": "0.0.9"
   },
   "devDependencies": {
     "@types/node": "^20.11.19",
-    "llm-bridge-spec": "^1.0.6",
+    "llm-bridge-spec": "^1.0.7",
     "typescript": "^5.3.3"
   }
 }

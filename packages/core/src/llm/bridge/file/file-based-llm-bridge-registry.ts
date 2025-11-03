@@ -14,6 +14,11 @@ import {
   isInstalledBridgeRecord,
 } from '../types';
 
+type BridgeConstructor<Cfg> = new (config: Cfg) => LlmBridge;
+type BridgeConstructorWithFactory<Cfg> = BridgeConstructor<Cfg> & {
+  create?: (cfg: Cfg) => LlmBridge;
+};
+
 /**
  * File-based registry implementation.
  * - Stores each bridge record as `${baseDir}/bridges/<id>.json`
@@ -83,11 +88,18 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
       if (!rec) {
         continue;
       }
+      const available = await this.ensureDependencyAvailable(rec.manifest.name);
+      if (!available) {
+        // Skip summaries whose underlying package is no longer installed
+        continue;
+      }
       items.push({
         id: rec.id,
         name: rec.manifest.name,
         description: rec.manifest.description,
         language: rec.manifest.language,
+        configured: rec.config !== undefined,
+        available,
       });
     }
     return items;
@@ -100,6 +112,38 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
 
   async getBridge(id: BridgeId): Promise<LlmBridge | null> {
     return await this.ensureBridgeInstance(id);
+  }
+
+  /**
+   * Persist a manifest without instantiating a bridge.
+   * Useful for bootstrap flows where configuration will be provided later.
+   * Returns the id that was used (existing or newly written).
+   */
+  async ensureManifestRecord(manifest: LlmManifest, opts?: { id?: BridgeId }): Promise<BridgeId> {
+    const targetId = opts?.id ?? manifest.name;
+
+    const existingById = await this.readRecord(targetId);
+    if (existingById) {
+      return targetId;
+    }
+
+    const ids = await this.listIds();
+    for (const id of ids) {
+      const record = await this.readRecord(id);
+      if (record?.manifest.name === manifest.name) {
+        return record.id;
+      }
+    }
+
+    const record: InstalledBridgeRecord = {
+      id: targetId,
+      manifest,
+      installedAt: new Date(),
+      config: undefined,
+    };
+
+    await this.writeRecord(record);
+    return targetId;
   }
 
   async register(
@@ -118,7 +162,14 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
 
     const { ctor, manifest: loadedManifest } = loadedResult;
     const parsedConfig = loadedManifest.configSchema.parse(config ?? {});
-    const bridge = new ctor(parsedConfig);
+
+    const typedCtor: BridgeConstructorWithFactory<typeof parsedConfig> =
+      ctor as BridgeConstructorWithFactory<typeof parsedConfig>;
+
+    const bridge =
+      typeof typedCtor.create === 'function'
+        ? typedCtor.create(parsedConfig)
+        : new typedCtor(parsedConfig);
 
     this.createdBridges.set(id, bridge);
 
@@ -242,6 +293,24 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
         error
       );
       return null;
+    }
+  }
+
+  private async ensureDependencyAvailable(manifestName: string): Promise<boolean> {
+    if (this.loadedBridges.has(manifestName)) {
+      return true;
+    }
+
+    try {
+      const loaded = await this.llmBridgeLoader.load(manifestName);
+      this.loadedBridges.set(loaded.manifest.name, loaded);
+      return true;
+    } catch (error) {
+      console.warn(
+        `[llm-bridge-registry] dependency ${manifestName} unavailable during summary scan:`,
+        error
+      );
+      return false;
     }
   }
 }

@@ -17,8 +17,12 @@
       "esbuild"
     ],
     "overrides": {
-      "llm-bridge-loader": "0.0.6"
-    }
+      "llm-bridge-loader": "0.0.9"
+    },
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "sqlite3"
+    ]
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",

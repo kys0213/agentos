@@ -68,7 +68,14 @@ export class GeneratedBridgeController {
   @EventPattern('bridge.list')
   async list(): Promise<z.output<(typeof C.methods)['list']['response']>> {
     const list = await this.registry.listSummaries();
-    return list.map((x) => ({ id: x.id }));
+    return list.map((item) => ({
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      language: item.language,
+      configured: item.configured,
+      available: item.available,
+    }));
   }
 
   @EventPattern('bridge.get-config')

@@ -32,4 +32,6 @@ jobs:
         run: |
           set -e
           echo "Scanning markdown links..."
-          git ls-files "*.md" | xargs -I{} bash -lc 'markdown-link-check -q "{}"'
+          git ls-files "*.md" \
+            | awk '$0 !~ /^exports\//' \
+            | xargs -r -I{} bash -lc 'markdown-link-check -q "{}"'

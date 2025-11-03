@@ -23,7 +23,7 @@ class StubAgent implements Agent {
   async chat(messages: UserMessage[]): Promise<AgentChatResult> {
     return {
       sessionId: `${this.id}-session`,
-      messages: messages.map((msg) => ({
+      output: messages.map((msg) => ({
         ...msg,
         role: 'assistant',
         content: msg.content,

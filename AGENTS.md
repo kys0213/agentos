@@ -15,7 +15,7 @@ Welcome to the AgentOS repository. This file summarizes key resources and comman
 
 1. [Code Style Guide](docs/30-developer-guides/code-style.md)
 2. [Interface Specifications](docs/30-developer-guides/interface-spec.md)
-3. [Testing Guide](docs/30-developer-guides/testing.md)
+3. [Testing Guide](docs/30-developer-guides/testing/README.md)
 4. [Documentation Standards](docs/40-process-policy/documentation-standards.md)
 5. [TypeScript Typing Guidelines](docs/30-developer-guides/typescript-typing-guidelines.md)
 6. **[Frontend Architect Guide](.claude/agents/frontend-architect.md)** ⭐ **프론트엔드 작업 필수**
