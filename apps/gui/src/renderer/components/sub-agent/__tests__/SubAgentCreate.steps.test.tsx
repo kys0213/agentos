@@ -118,7 +118,7 @@ describe('SubAgentCreate wizard flow', () => {
 
     expect(bridgePropsRef.current).toBeDefined();
     bridgePropsRef.current?.onChange?.({
-      llmBridgeConfig: { bridgeId: '  ollama  ', model: 'llama3' },
+      llmBridgeConfig: { bridgeId: '  ollama-llm-bridge  ', model: 'llama3' },
     });
 
     await userEvent.click(screen.getByRole('button', { name: 'Next: Agent Settings' }));
@@ -126,8 +126,40 @@ describe('SubAgentCreate wizard flow', () => {
 
     expect(onCreate).toHaveBeenCalledTimes(1);
     const payload = onCreate.mock.calls[0][0] as CreateAgentMetadata;
-    expect(payload.preset.llmBridgeName).toBe('ollama');
-    expect(payload.preset.llmBridgeConfig?.bridgeId).toBe('ollama');
+    expect(payload.preset.llmBridgeName).toBe('ollama-llm-bridge');
+    expect(payload.preset.llmBridgeConfig?.bridgeId).toBe('ollama-llm-bridge');
+  });
+
+  it('should allow creation when only an ollama bridge is configured', async () => {
+    const onCreate = vi.fn();
+    const ollamaPreset: ReadonlyPreset = {
+      ...basePreset,
+      llmBridgeName: '',
+      llmBridgeConfig: {},
+    };
+    setup({ onCreate, presetTemplate: ollamaPreset });
+
+    await userEvent.type(screen.getByLabelText(/Agent Name/i), 'Ollama Only Agent');
+    await userEvent.type(screen.getByLabelText(/Description/i), 'Uses only the ollama bridge');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next: Category' }));
+    await userEvent.click(screen.getByRole('button', { name: /General Purpose/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'Next: AI Config' }));
+
+    expect(bridgePropsRef.current).toBeDefined();
+    bridgePropsRef.current?.onChange?.({
+      llmBridgeConfig: { bridgeId: 'ollama-llm-bridge', model: 'llama3' },
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next: Agent Settings' }));
+    expect(screen.queryByText('Select an LLM bridge before continuing.')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByTestId('btn-submit-agent'));
+
+    expect(onCreate).toHaveBeenCalledTimes(1);
+    const payload = onCreate.mock.calls[0][0] as CreateAgentMetadata;
+    expect(payload.preset.llmBridgeConfig?.bridgeId).toBe('ollama-llm-bridge');
+    expect(payload.preset.llmBridgeName).toBe('ollama-llm-bridge');
   });
 
   it('should log validation failure when trimmed bridge id is empty', async () => {
@@ -172,9 +204,7 @@ describe('SubAgentCreate wizard flow', () => {
     ).not.toThrow();
 
     await userEvent.click(screen.getByRole('button', { name: 'Next: Agent Settings' }));
-    expect(
-      screen.queryByText('Select an LLM bridge before continuing.')
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Select an LLM bridge before continuing.')).not.toBeInTheDocument();
   });
 
   it('should keep previous bridge id when bridge config omits bridgeId', async () => {
@@ -190,9 +220,7 @@ describe('SubAgentCreate wizard flow', () => {
     bridgePropsRef.current?.onChange?.({ llmBridgeConfig: { model: 'gpt-4' } });
 
     await userEvent.click(screen.getByRole('button', { name: 'Next: Agent Settings' }));
-    expect(
-      screen.queryByText('Select an LLM bridge before continuing.')
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Select an LLM bridge before continuing.')).not.toBeInTheDocument();
   });
 
   it('should normalize bridge name when llmBridgeName contains whitespace', async () => {
@@ -206,13 +234,13 @@ describe('SubAgentCreate wizard flow', () => {
     await userEvent.click(screen.getByRole('button', { name: /General Purpose/i }));
     await userEvent.click(screen.getByRole('button', { name: 'Next: AI Config' }));
 
-    bridgePropsRef.current?.onChange?.({ llmBridgeName: '  ollama  ' });
+    bridgePropsRef.current?.onChange?.({ llmBridgeName: '  ollama-llm-bridge  ' });
 
     await userEvent.click(screen.getByRole('button', { name: 'Next: Agent Settings' }));
     await userEvent.click(screen.getByTestId('btn-submit-agent'));
 
     const payload = onCreate.mock.calls[0][0] as CreateAgentMetadata;
-    expect(payload.preset.llmBridgeName).toBe('ollama');
+    expect(payload.preset.llmBridgeName).toBe('ollama-llm-bridge');
   });
 
   it('should notify parent when step changes in controlled mode', async () => {

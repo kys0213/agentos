@@ -284,7 +284,13 @@ export class FileBasedLlmBridgeRegistry implements LlmBridgeRegistry {
       this.loadedBridges.set(loaded.manifest.name, loaded);
 
       const parsedConfig = loaded.manifest.configSchema.parse(rec.config ?? {});
-      const bridge = new loaded.ctor(parsedConfig);
+      const typedCtor: BridgeConstructorWithFactory<typeof parsedConfig> =
+        loaded.ctor as BridgeConstructorWithFactory<typeof parsedConfig>;
+
+      const bridge =
+        typeof typedCtor.create === 'function'
+          ? typedCtor.create(parsedConfig)
+          : new typedCtor(parsedConfig);
       this.createdBridges.set(id, bridge);
       return bridge;
     } catch (error) {
