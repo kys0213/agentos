@@ -1,6 +1,7 @@
+import type { ChildProcess } from 'node:child_process';
 import net from 'node:net';
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ShimmyError } from '../errors';
 import { ShimmyProcessManagerImpl } from '../process-manager';
@@ -66,5 +67,26 @@ describe('ShimmyProcessManagerImpl (utility behaviour)', () => {
     Reflect.set(manager, 'state', 'idle');
 
     await expect(manager.ensureReady(100)).rejects.toBeInstanceOf(ShimmyError);
+  });
+
+  it('skips killing when the child never spawned', async () => {
+    const manager = new ShimmyProcessManagerImpl();
+    const kill = vi.fn(() => {
+      throw new Error('kill should not be called');
+    });
+
+    const fakeChild: Partial<ChildProcess> & Pick<ChildProcess, 'kill'> = {
+      pid: undefined,
+      killed: false,
+      exitCode: null,
+      signalCode: null,
+      kill,
+    };
+
+    Reflect.set(manager, 'child', fakeChild);
+    Reflect.set(manager, 'state', 'starting');
+
+    await expect(manager.stop()).resolves.toBeUndefined();
+    expect(kill).not.toHaveBeenCalled();
   });
 });

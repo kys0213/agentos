@@ -400,7 +400,12 @@ export class ShimmyProcessManagerImpl extends EventEmitter implements ShimmyProc
   }
 
   private isChildAlive(): boolean {
-    return Boolean(this.child && this.child.exitCode === null && this.child.signalCode === null);
+    return Boolean(
+      this.child &&
+        this.child.pid !== undefined &&
+        this.child.exitCode === null &&
+        this.child.signalCode === null
+    );
   }
 
   private async stopChild(): Promise<void> {
@@ -411,7 +416,7 @@ export class ShimmyProcessManagerImpl extends EventEmitter implements ShimmyProc
       return;
     }
 
-    if (child.exitCode !== null || child.signalCode !== null) {
+    if (child.exitCode !== null || child.signalCode !== null || child.pid === undefined) {
       this.child = null;
       this.state = 'idle';
       this.port = null;
@@ -422,7 +427,7 @@ export class ShimmyProcessManagerImpl extends EventEmitter implements ShimmyProc
 
     await new Promise<void>((resolve) => {
       const timer = setTimeout(() => {
-        child.kill('SIGKILL');
+        this.safeKill(child, 'SIGKILL');
       }, ShimmyProcessDefaults.TERMINATE_GRACE_MS);
 
       child.once('exit', () => {
@@ -430,12 +435,28 @@ export class ShimmyProcessManagerImpl extends EventEmitter implements ShimmyProc
         resolve();
       });
 
-      child.kill('SIGTERM');
+      this.safeKill(child, 'SIGTERM');
     });
 
     this.child = null;
     this.port = null;
     this.state = 'idle';
+  }
+
+  private safeKill(child: ChildProcess, signal: NodeJS.Signals): void {
+    if (child.pid === undefined || child.killed) {
+      return;
+    }
+
+    try {
+      child.kill(signal);
+    } catch (error) {
+      const err = error as NodeJS.ErrnoException | undefined;
+      if (err?.code === 'ESRCH') {
+        return;
+      }
+      throw error;
+    }
   }
 
   private async restartAfterExit(): Promise<void> {
