@@ -1,0 +1,43 @@
+{
+  "name": "@agentos/shimmy-manager",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./esm/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "main": "dist/index.js",
+    "module": "esm/index.js",
+    "types": "dist/index.d.ts"
+  },
+  "files": [
+    "dist",
+    "esm"
+  ],
+  "scripts": {
+    "build": "pnpm run build:cjs && pnpm run build:esm",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "dev": "tsc -w",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run",
+    "test:vitest": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist && rm -rf esm"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.17.30",
+    "typescript": "^5.3.3"
+  },
+  "volta": {
+    "node": "22.17.1"
+  }
+}

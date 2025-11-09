@@ -444,6 +444,15 @@ importers:
         specifier: ^5.3.3
         version: 5.9.2
 
+  packages/shimmy-manager:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.17.30
+        version: 20.19.11
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.2
+
 packages:
 
   7zip-bin@5.2.0:
