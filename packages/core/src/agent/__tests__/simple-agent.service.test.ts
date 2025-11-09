@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 import type { ReadonlyAgentMetadata } from '../agent-metadata';
 import { SimpleAgentService } from '../simple-agent.service';
@@ -193,5 +194,47 @@ describe('SimpleAgentService', () => {
     expect(result.sessionId).toBe('s-1');
     expect(result.output).toHaveLength(1);
     expect(result.output[0]?.role).toBe('assistant');
+  });
+
+  it('invalidates cached agents when metadata changes or deletes occur', async () => {
+    const repo = mock<AgentMetadataRepository>();
+    const llmReg = mock<LlmBridgeRegistry>();
+    const mcpReg = mock<McpRegistry>();
+    const chatMgr = mock<ChatManager>();
+    const m1 = meta('a1');
+
+    repo.get.mockResolvedValue(m1);
+    repo.getOrThrow.mockResolvedValue(m1);
+
+    const llmFirst = mock<LlmBridge>();
+    const llmSecond = mock<LlmBridge>();
+    llmReg.getBridgeByName
+      .mockResolvedValueOnce(llmFirst)
+      .mockResolvedValue(llmSecond);
+
+    const listeners: Partial<Record<'changed' | 'deleted', (payload: { id: string }) => void>> = {};
+    repo.on = vi.fn((event, handler) => {
+      listeners[event] = handler;
+      return () => {
+        if (listeners[event] === handler) {
+          delete listeners[event];
+        }
+      };
+    });
+
+    const svc = new SimpleAgentService(llmReg, mcpReg, chatMgr, repo);
+
+    await svc.getAgent('a1');
+    await svc.getAgent('a1');
+    expect(llmReg.getBridgeByName).toHaveBeenCalledTimes(1);
+
+    listeners['changed']?.({ id: 'a1' });
+
+    await svc.getAgent('a1');
+    expect(llmReg.getBridgeByName).toHaveBeenCalledTimes(2);
+
+    listeners['deleted']?.({ id: 'a1' });
+    await svc.getAgent('a1');
+    expect(llmReg.getBridgeByName).toHaveBeenCalledTimes(3);
   });
 });

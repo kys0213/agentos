@@ -29,7 +29,22 @@ export class SimpleAgentService implements AgentService {
     private readonly mcpRegistry: McpRegistry,
     private readonly chatManager: ChatManager,
     private readonly agentMetadataRepository: AgentMetadataRepository
-  ) {}
+  ) {
+    this.setupMetadataInvalidation();
+  }
+
+  private setupMetadataInvalidation() {
+    if (typeof this.agentMetadataRepository.on !== 'function') {
+      return;
+    }
+
+    const invalidate = ({ id }: { id: string }) => {
+      this.agents.delete(id);
+    };
+
+    this.agentMetadataRepository.on('changed', invalidate);
+    this.agentMetadataRepository.on('deleted', invalidate);
+  }
 
   async createAgent(metadata: CreateAgentMetadata): Promise<Agent> {
     const llmBridge = await this.llmBridgeRegistry.getBridgeOrThrow(metadata.preset.llmBridgeName);
