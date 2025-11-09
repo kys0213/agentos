@@ -62,12 +62,15 @@ jobs:
             **/coverage/**
 
       - name: Upload to Codecov
-        if: always()
+        if: ${{ always() && secrets.CODECOV_TOKEN != '' }}
         uses: codecov/codecov-action@v4
         with:
-          files: packages/**/coverage/lcov.info
-          fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+      - name: Skip Codecov upload (token not configured)
+        if: ${{ always() && secrets.CODECOV_TOKEN == '' }}
+        run: echo "Skipping Codecov upload because CODECOV_TOKEN is not set."
 
       - name: Success
         run: echo "✅ CI passed successfully"
