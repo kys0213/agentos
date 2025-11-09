@@ -87,6 +87,39 @@ const normalizeBridgeConfig = (config: Record<string, unknown>) =>
     ])
   );
 
+const logWizardSnapshot = (
+  label: string,
+  details: Record<string, unknown>,
+  snapshot: {
+    step: StepKey;
+    overview: {
+      name: string;
+      description: string;
+      keywords: string[];
+    };
+    status: string;
+    bridgeId: string;
+    bridgeConfig: Record<string, unknown>;
+    systemPromptLength: number;
+    selectedMcpIds: string[];
+    presetBridge: string | undefined;
+  }
+) => {
+  if (!isBridgeDebugEnabled()) {
+    return;
+  }
+  try {
+    console.group(`[subagent-create] ${label}`);
+    for (const [key, value] of Object.entries(details)) {
+      console.debug(key, value);
+    }
+    console.debug('snapshot', snapshot);
+    console.groupEnd();
+  } catch (error) {
+    console.warn('[subagent-create] failed to log snapshot', error);
+  }
+};
+
 const STEP_NEXT_COPY: Partial<Record<StepKey, string>> = {
   overview: 'Category',
   category: 'AI Config',
@@ -223,9 +256,20 @@ export function SubAgentCreate({
   };
 
   useEffect(() => {
+    const hasInitialBridgeConfig = Object.keys(initialBridgeConfig).length > 0;
     setPresetState(presetTemplate);
-    setBridgeId(initialBridgeId);
-    setBridgeConfig(initialBridgeConfig);
+    setBridgeId((prev) => {
+      if (initialBridgeId) {
+        return initialBridgeId;
+      }
+      return prev;
+    });
+    setBridgeConfig((prev) => {
+      if (hasInitialBridgeConfig) {
+        return initialBridgeConfig;
+      }
+      return prev;
+    });
     setSystemPrompt(presetTemplate.systemPrompt ?? '');
     setSelectedMcpIds(
       new Set((presetTemplate.enabledMcps ?? []).map((m) => m.name).filter(Boolean) as string[])
@@ -409,17 +453,27 @@ export function SubAgentCreate({
           updateCurrentStep(step);
         }
         if (typeof window !== 'undefined' && typeof window.alert === 'function') {
-          if (typeof document !== 'undefined') {
-            try {
-              const bodyHtml = document.body?.outerHTML ?? '';
-              console.group('[subagent-create] alert triggered');
-              console.info('message:', message);
-              console.info('body.outerHTML:', bodyHtml);
-              console.groupEnd();
-            } catch (error) {
-              console.warn('[subagent-create] failed to log body snapshot', error);
+          logWizardSnapshot(
+            'alert triggered',
+            {
+              message,
+              failingStep: step,
+            },
+            {
+              step: currentStepId,
+              overview: {
+                name: overview.name,
+                description: overview.description,
+                keywords: overview.keywords,
+              },
+              status,
+              bridgeId,
+              bridgeConfig,
+              systemPromptLength: systemPrompt.length,
+              selectedMcpIds: Array.from(selectedMcpIds),
+              presetBridge: presetState.llmBridgeName,
             }
-          }
+          );
           window.alert(message);
         }
         return false;
