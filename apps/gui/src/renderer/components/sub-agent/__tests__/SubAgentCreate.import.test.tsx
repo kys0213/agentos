@@ -1,22 +1,12 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ReadonlyAgentMetadata, ReadonlyPreset } from '@agentos/core';
 import { withProviders } from '../../../../test/test-utils';
-import type { CreateAgentMetadata, ReadonlyPreset } from '@agentos/core';
-import { SubAgentCreate } from '../SubAgentCreate';
+import { SubAgentManager } from '../SubAgentManager';
 
-vi.mock('../../preset/BridgeModelSettings', () => ({
-  default: () => <div data-testid="mock-bridge-settings" />,
-}));
-
-vi.mock('../../../hooks/queries/use-mcp', () => ({
-  useMcpTools: () => ({ data: { items: [] }, isLoading: false }),
-}));
-
-describe('SubAgentCreate Import JSON', () => {
-  const noop = () => {};
-  const onCreate: (agent: CreateAgentMetadata) => void = () => {};
+describe('SubAgentManager export/import actions', () => {
   const basePreset: ReadonlyPreset = {
     id: 'preset-1',
     name: 'Default Assistant',
@@ -36,93 +26,114 @@ describe('SubAgentCreate Import JSON', () => {
     category: [],
   };
 
-  const bootstrapWizard = async () => {
+  const agent: ReadonlyAgentMetadata = {
+    id: 'agent-1',
+    name: 'Agent One',
+    description: 'Example agent',
+    status: 'active',
+    icon: '😀',
+    keywords: ['general'],
+    preset: basePreset,
+    usageCount: 0,
+    sessionCount: 0,
+    lastUsed: new Date('2024-01-01T00:00:00Z'),
+  } as ReadonlyAgentMetadata;
+
+  const originalClipboard = navigator.clipboard;
+  const originalResizeObserver = global.ResizeObserver;
+  const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+
+  beforeAll(() => {
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: vi.fn().mockResolvedValue(undefined),
+      },
+    });
+    if (typeof globalThis.ResizeObserver === 'undefined') {
+      const ResizeObserverMock = class {
+        observe(): void {}
+        unobserve(): void {}
+        disconnect(): void {}
+      };
+      Object.defineProperty(globalThis, 'ResizeObserver', {
+        configurable: true,
+        writable: true,
+        value: ResizeObserverMock,
+      });
+    }
+  });
+
+  afterAll(() => {
+    alertSpy.mockRestore();
+    Object.assign(navigator, { clipboard: originalClipboard });
+    if (originalResizeObserver) {
+      Object.defineProperty(globalThis, 'ResizeObserver', {
+        configurable: true,
+        writable: true,
+        value: originalResizeObserver,
+      });
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+    }
+  });
+
+  it('should trigger export callback when selecting Export JSON', async () => {
+    const onExportAgent = vi.fn().mockResolvedValue('{"name":"Agent"}');
+
     render(
       withProviders(
-        <SubAgentCreate onBack={noop} onCreate={onCreate} presetTemplate={basePreset} />
+        <SubAgentManager
+          agents={[agent]}
+          onUpdateAgentStatus={() => undefined}
+          onExportAgent={onExportAgent}
+        />
       )
     );
 
-    await userEvent.clear(await screen.findByLabelText(/Agent Name/i));
-    await userEvent.type(await screen.findByLabelText(/Agent Name/i), 'Agent X');
-    await userEvent.type(await screen.findByLabelText(/Description/i), 'Description');
+    await userEvent.click(screen.getByRole('button', { name: /agent actions/i }));
+    await userEvent.click(screen.getByRole('menuitem', { name: /export json/i }));
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Next: Category' }));
-    await userEvent.click(
-      await screen.findByRole('button', {
-        name: /General Purpose/i,
-      })
-    );
-    await userEvent.click(await screen.findByRole('button', { name: 'Next: AI Config' }));
-  };
+    expect(onExportAgent).toHaveBeenCalledWith('agent-1');
+  });
 
-  it('blocks advancing when required fields are missing', async () => {
+  it('should open import dialog and submit JSON payload', async () => {
+    const onImportAgent = vi.fn().mockResolvedValue(undefined);
+
     render(
       withProviders(
-        <SubAgentCreate onBack={noop} onCreate={onCreate} presetTemplate={basePreset} />
+        <SubAgentManager
+          agents={[agent]}
+          onUpdateAgentStatus={() => undefined}
+          onImportAgent={onImportAgent}
+        />
       )
     );
 
-    // Attempt to move forward without filling name/description
-    await userEvent.click(screen.getByRole('button', { name: 'Next: Category' }));
-    expect(await screen.findByText(/Agent name is required/i)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /agent actions/i }));
+    await userEvent.click(screen.getByRole('menuitem', { name: /import json/i }));
 
-    await userEvent.type(await screen.findByLabelText(/Agent Name/i), 'Wizard');
-    await userEvent.type(await screen.findByLabelText(/Description/i), 'Desc');
-    await userEvent.click(screen.getByRole('button', { name: 'Next: Category' }));
-    await userEvent.click(screen.getByRole('button', { name: /General Purpose/i }));
-    await userEvent.click(screen.getByRole('button', { name: 'Next: AI Config' }));
-
-    // Clear system prompt and try to proceed
-    const promptArea = await screen.findByPlaceholderText(/guides your agent's behavior/i);
-    await userEvent.clear(promptArea);
-    await userEvent.click(screen.getByRole('button', { name: 'Next: Agent Settings' }));
-    expect(await screen.findByText(/System prompt cannot be empty/i)).toBeInTheDocument();
-  });
-
-  it('shows error for invalid JSON', async () => {
-    await bootstrapWizard();
-    await userEvent.click(await screen.findByRole('button', { name: 'Next: Agent Settings' }));
-    await userEvent.click(await screen.findByRole('tab', { name: /settings/i }));
-
-    const textarea = await screen.findByPlaceholderText(/Paste exported agent JSON here/i);
-    await userEvent.clear(textarea);
-    fireEvent.change(textarea, { target: { value: 'not a json' } });
-
-    await userEvent.click(screen.getByRole('button', { name: /apply/i }));
-
-    // Error message should appear
-    expect(screen.getByText(/invalid json/i)).toBeInTheDocument();
-  });
-
-  it('applies valid JSON and updates system prompt', async () => {
-    await bootstrapWizard();
-    await userEvent.click(await screen.findByRole('button', { name: 'Next: Agent Settings' }));
-    await userEvent.click(await screen.findByRole('tab', { name: /settings/i }));
-    const importArea = await screen.findByPlaceholderText(/Paste exported agent JSON here/i);
-
-    const json = JSON.stringify({
-      name: 'Agent X',
-      description: 'D',
+    const textarea = await screen.findByPlaceholderText('{"name": "Agent", ...}');
+    const payload = JSON.stringify({
+      name: 'Agent One',
+      description: 'Updated description',
       status: 'active',
       keywords: [],
       preset: {
         name: 'P1',
         description: 'PD',
-        systemPrompt: 'NEW PROMPT',
+        systemPrompt: 'PROMPT',
         enabledMcps: [],
         llmBridgeName: 'bridge',
         llmBridgeConfig: {},
       },
     });
 
-    await userEvent.clear(importArea);
-    fireEvent.change(importArea, { target: { value: json } });
-    await userEvent.click(screen.getByRole('button', { name: /apply/i }));
+    await userEvent.clear(textarea);
+    fireEvent.change(textarea, { target: { value: payload } });
 
-    // After applying import, verify the system prompt in AI Config tab
-    await userEvent.click(await screen.findByRole('tab', { name: /ai config/i }));
-    const systemPromptArea = await screen.findByPlaceholderText(/guides your agent's behavior/i);
-    expect(systemPromptArea).toHaveValue('NEW PROMPT');
+    await userEvent.click(screen.getByRole('button', { name: /import json/i }));
+
+    expect(onImportAgent).toHaveBeenCalledWith('agent-1', payload);
   });
 });

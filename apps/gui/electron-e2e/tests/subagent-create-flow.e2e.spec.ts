@@ -3,6 +3,8 @@ import type { Page } from '@playwright/test';
 import { launchElectronHarness, closeElectronHarness } from '../runner/electronHarness';
 import { openManagementView } from '../support/openManagementView';
 
+const shouldRunOllamaE2E = process.env.E2E_OLLAMA === 'true';
+
 const ensureManagementView = async (window: Page): Promise<void> => {
   const navSubagents = window.getByTestId('nav-subagents');
   if ((await navSubagents.count()) > 0) {
@@ -12,16 +14,41 @@ const ensureManagementView = async (window: Page): Promise<void> => {
 
   const manageAgentsButton = window.getByRole('button', { name: /Manage Agents/i });
   if ((await manageAgentsButton.count()) > 0) {
-    await manageAgentsButton.first().click();
-    await expect(navSubagents.first()).toBeVisible({ timeout: 15000 });
-    return;
+    await manageAgentsButton
+      .first()
+      .waitFor({ state: 'visible', timeout: 15000 })
+      .catch(() => {});
+    if (await manageAgentsButton.first().isVisible()) {
+      await manageAgentsButton.first().click();
+      await expect(navSubagents.first()).toBeVisible({ timeout: 15000 });
+      return;
+    }
   }
 
-  const manageAgentsText = window.getByText('Manage Agents', { exact: true });
+  const manageAgentsLink = window.getByRole('link', { name: /Manage Agents/i });
+  if ((await manageAgentsLink.count()) > 0) {
+    await manageAgentsLink
+      .first()
+      .waitFor({ state: 'visible', timeout: 15000 })
+      .catch(() => {});
+    if (await manageAgentsLink.first().isVisible()) {
+      await manageAgentsLink.first().click();
+      await expect(navSubagents.first()).toBeVisible({ timeout: 15000 });
+      return;
+    }
+  }
+
+  const manageAgentsText = window.getByText(/Manage Agents/i);
   if ((await manageAgentsText.count()) > 0) {
-    await manageAgentsText.first().click();
-    await expect(navSubagents.first()).toBeVisible({ timeout: 15000 });
-    return;
+    await manageAgentsText
+      .first()
+      .waitFor({ state: 'visible', timeout: 15000 })
+      .catch(() => {});
+    if (await manageAgentsText.first().isVisible()) {
+      await manageAgentsText.first().click();
+      await expect(navSubagents.first()).toBeVisible({ timeout: 15000 });
+      return;
+    }
   }
 
   await openManagementView(window);
@@ -121,6 +148,79 @@ test('SubAgent 생성 마법사를 완료한다', async () => {
     });
 
     await expect(harness.window.getByText(agentName).first()).toBeVisible({ timeout: 10_000 });
+  } finally {
+    await closeElectronHarness(harness);
+  }
+});
+
+test('Ollama 브릿지만 활성화된 상태에서 SubAgent 를 생성한다', async () => {
+  test.skip(!shouldRunOllamaE2E, 'Requires local Ollama bridge bundle to be installed.');
+
+  const harness = await launchElectronHarness();
+
+  try {
+    await ensureManagementView(harness.window);
+
+    const navSubagents = harness.window.getByTestId('nav-subagents');
+    await expect(navSubagents.first()).toBeVisible();
+    await navSubagents.first().click();
+
+    const createAgentButton = harness.window.getByTestId('btn-create-agent');
+    if (await createAgentButton.count()) {
+      await createAgentButton.first().click();
+    } else {
+      const emptyStateButton = harness.window.getByRole('button', { name: 'Create Agent' });
+      await emptyStateButton.click();
+    }
+
+    const agentName = `Ollama Only Agent ${Date.now()}`;
+
+    await harness.window.getByLabel(/Agent Name/i).fill(agentName);
+    await harness.window.getByLabel(/Description/i).fill('Agent using only Ollama bridge');
+    await harness.window.getByRole('button', { name: 'Next: Category' }).click();
+
+    await harness.window
+      .getByRole('button', { name: /Development.*software engineering/i })
+      .click();
+    await harness.window.getByRole('button', { name: 'Next: AI Config' }).click();
+
+    await harness.window
+      .getByPlaceholder("Enter the system prompt that guides your agent's behavior...")
+      .fill('You are an Ollama powered specialist.');
+
+    const bridgeSelect = harness.window.getByTestId('select-llm-bridge').first();
+    await expect(bridgeSelect).toBeVisible({ timeout: 15000 });
+    await bridgeSelect.click();
+
+    const bridgeOptions = harness.window.getByRole('option');
+    await expect(bridgeOptions).not.toHaveCount(0, { timeout: 10000 });
+    const ollamaOption = harness.window.getByRole('option', { name: /ollama/i });
+    await expect(ollamaOption).toHaveCount(1, { timeout: 10000 });
+    await ollamaOption.first().click();
+
+    await expect(bridgeSelect).toContainText(/ollama/i, { timeout: 10000 });
+
+    const modelSelect = harness.window.getByTestId('select-llm-model').first();
+    await expect(modelSelect).toBeVisible({ timeout: 15000 });
+    await modelSelect.click();
+
+    const modelOptions = harness.window.getByRole('option');
+    await expect(modelOptions).not.toHaveCount(0, { timeout: 10000 });
+    await modelOptions.first().click();
+
+    await harness.window.getByRole('button', { name: 'Next: Agent Settings' }).click();
+
+    const activateCard = harness.window
+      .getByRole('button', { name: /Auto-participate in conversations/i })
+      .first();
+    await expect(activateCard).toBeVisible({ timeout: 10000 });
+    await activateCard.click();
+
+    const finalButton = harness.window.getByTestId('btn-submit-agent');
+    await expect(finalButton).toBeEnabled({ timeout: 10000 });
+    await finalButton.click();
+
+    await expect(harness.window.getByText(agentName).first()).toBeVisible({ timeout: 20000 });
   } finally {
     await closeElectronHarness(harness);
   }

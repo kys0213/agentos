@@ -4,14 +4,16 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
+  Download,
   HelpCircle,
   Info,
   MessageSquare,
   MinusCircle,
+  MoreHorizontal,
   Plus,
   Search,
-  Settings,
   Sparkles,
+  Upload,
   Users,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -24,6 +26,22 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../ui/dialog';
+import { Textarea } from '../ui/textarea';
+import { Alert, AlertDescription } from '../ui/alert';
 import type { AgentStatus, ReadonlyAgentMetadata } from '@agentos/core';
 import { SubAgentBadge } from './SubAgentBadge';
 import { CategoryIcon } from '../common/CategoryIcon';
@@ -40,6 +58,8 @@ export interface SubAgentManagerProps {
   agents: ReadonlyAgentMetadata[];
   onUpdateAgentStatus: (agentId: string, newStatus: AgentStatus) => void;
   onOpenChat?: (agentId: string, options?: ChatOpenOptions) => void;
+  onExportAgent?: (agentId: string) => Promise<string>;
+  onImportAgent?: (agentId: string, json: string) => Promise<void>;
   onCreateAgent?: () => void;
   forceEmptyState?: boolean;
   onToggleEmptyState?: () => void;
@@ -49,6 +69,8 @@ export function SubAgentManager({
   agents,
   onUpdateAgentStatus,
   onOpenChat = () => undefined,
+  onExportAgent,
+  onImportAgent,
   onCreateAgent,
   forceEmptyState = false,
   onToggleEmptyState,
@@ -58,6 +80,12 @@ export function SubAgentManager({
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [activeTab, setActiveTab] = useState('agents');
   const [showStatusGuide, setShowStatusGuide] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importAgentId, setImportAgentId] = useState<string | null>(null);
+  const [importAgentName, setImportAgentName] = useState('');
+  const [importJson, setImportJson] = useState('');
+  const [importError, setImportError] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
 
   const handleStatusChange = (agentId: string, newStatus: 'active' | 'idle' | 'inactive') => {
     onUpdateAgentStatus(agentId, newStatus);
@@ -66,6 +94,57 @@ export function SubAgentManager({
   const handleCreateAgent = () => {
     if (onCreateAgent) {
       onCreateAgent();
+    }
+  };
+
+  const handleExportAgent = async (agentId: string) => {
+    if (!onExportAgent) {
+      return;
+    }
+    try {
+      const json = await onExportAgent(agentId);
+      try {
+        await navigator.clipboard.writeText(json);
+        window.alert('Agent configuration copied to clipboard.');
+      } catch (clipboardError) {
+        window.prompt('Copy agent JSON', json);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to export agent.';
+      window.alert(message);
+    }
+  };
+
+  const openImportDialog = (agent: ReadonlyAgentMetadata) => {
+    setImportAgentId(agent.id);
+    setImportAgentName(agent.name);
+    setImportJson('');
+    setImportError('');
+    setIsImporting(false);
+    setImportDialogOpen(true);
+  };
+
+  const handleImportSubmit = async () => {
+    if (!importAgentId || !onImportAgent) {
+      setImportError('Import is not available for this agent.');
+      return;
+    }
+    if (!importJson.trim()) {
+      setImportError('Paste exported agent JSON before importing.');
+      return;
+    }
+    try {
+      setIsImporting(true);
+      setImportError('');
+      await onImportAgent(importAgentId, importJson);
+      setImportDialogOpen(false);
+      window.alert('Agent configuration imported successfully.');
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to import agent configuration.';
+      setImportError(message);
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -394,7 +473,43 @@ export function SubAgentManager({
                                   </p>
                                 </div>
                               </div>
-                              <SubAgentBadge status={agent.status} />
+                              <div className="flex items-center gap-2">
+                                <SubAgentBadge status={agent.status} />
+                                {(onExportAgent || onImportAgent) && (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="outline" size="icon" className="h-7 w-7">
+                                        <MoreHorizontal className="w-4 h-4" />
+                                        <span className="sr-only">Agent actions</span>
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      {onExportAgent && (
+                                        <DropdownMenuItem
+                                          onSelect={(event) => {
+                                            event.preventDefault();
+                                            void handleExportAgent(agent.id);
+                                          }}
+                                        >
+                                          <Download className="w-4 h-4 mr-2" />
+                                          Export JSON
+                                        </DropdownMenuItem>
+                                      )}
+                                      {onImportAgent && (
+                                        <DropdownMenuItem
+                                          onSelect={(event) => {
+                                            event.preventDefault();
+                                            openImportDialog(agent);
+                                          }}
+                                        >
+                                          <Upload className="w-4 h-4 mr-2" />
+                                          Import JSON
+                                        </DropdownMenuItem>
+                                      )}
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                )}
+                              </div>
                             </div>
 
                             <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
@@ -457,13 +572,6 @@ export function SubAgentManager({
                                 >
                                   <MessageSquare className="w-3 h-3 mr-1" />
                                   Chat
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-7 px-2 hover:bg-gray-50"
-                                >
-                                  <Settings className="w-3 h-3" />
                                 </Button>
                               </div>
                             </div>
@@ -583,6 +691,56 @@ export function SubAgentManager({
           </Tabs>
         </div>
       </div>
+      <Dialog
+        open={importDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setImportDialogOpen(false);
+            setImportAgentId(null);
+            setImportAgentName('');
+            setImportJson('');
+            setImportError('');
+            setIsImporting(false);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Import Agent Configuration</DialogTitle>
+            <DialogDescription>
+              Paste the JSON exported from another agent. This will overwrite the current
+              configuration for <span className="font-medium">{importAgentName}</span>.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={importJson}
+            onChange={(event) => {
+              setImportJson(event.target.value);
+              setImportError('');
+            }}
+            placeholder='{"name": "Agent", ...}'
+            className="min-h-[200px] font-mono"
+          />
+          {importError && (
+            <Alert variant="destructive" className="mt-3">
+              <AlertDescription>{importError}</AlertDescription>
+            </Alert>
+          )}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setImportDialogOpen(false)}
+              disabled={isImporting}
+            >
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleImportSubmit} disabled={isImporting}>
+              {isImporting ? 'Importing…' : 'Import JSON'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   );
 }

@@ -19,10 +19,12 @@ export async function openManagementView(window: Page): Promise<void> {
     window.getByTestId('btn-open-management'),
     window.getByRole('button', { name: /^Manage$/ }),
     window.getByRole('button', { name: /Manage Agents/i }),
+    window.getByRole('link', { name: /Manage Agents/i }),
     window.getByRole('button', { name: /Explore Features/i }),
     window.getByRole('button', { name: /Create First Agent/i }),
     window.getByRole('button', { name: /Open Agent Manager/i }),
     window.getByRole('button', { name: /Go to Dashboard/i }),
+    window.getByText(/Manage Agents/i),
   ];
 
   for (const candidate of candidates) {
