@@ -57,11 +57,11 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
       const exportPayload = {
         name: agent.name,
         description: agent.description ?? '',
-        status: (agent.status ?? 'inactive') as CreateAgentMetadata['status'],
+        status: agent.status ?? 'inactive',
         icon: agent.icon,
         keywords: Array.isArray(agent.keywords) ? agent.keywords : [],
-        preset: agent.preset as ReadonlyPreset,
-      } as CreateAgentMetadata;
+        preset: agent.preset,
+      };
 
       const json = JSON.stringify(serializeAgent(exportPayload), null, 2);
       return json;
