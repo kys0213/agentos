@@ -3,10 +3,10 @@
 ## Requirements
 
 ### 성공 조건
-- [ ] 타입 안정성: SubAgentManagerContainer의 타입 캐스팅 검증 로직 추가
-- [ ] 테스트 커버리지: SubAgentManager export/import 다이얼로그 단위 테스트 작성
-- [ ] 에러 메시지 표준화: 모든 export/import 에러 메시지 통일
-- [ ] 접근성 개선: Import 다이얼로그에 aria-label 추가
+- [x] 타입 안정성: SubAgentManagerContainer의 타입 캐스팅 검증 로직 추가
+- [x] 테스트 커버리지: SubAgentManager export/import 다이얼로그 단위 테스트 작성
+- [x] 에러 메시지 표준화: 모든 export/import 에러 메시지 통일
+- [x] 접근성 개선: Import 다이얼로그에 aria-label 추가
 - [ ] UX 개선: window.alert() 대신 토스트 알림 시스템 사용 (선택사항)
 
 ### 사용 시나리오
@@ -103,30 +103,30 @@ export const EXPORT_IMPORT_MESSAGES = {
 ## Todo
 
 ### Phase 1: 타입 안정성
-- [ ] `utils/type-guards.ts` 추가 또는 `utils/agent-export.ts` 확장
-- [ ] `SubAgentManagerContainer.tsx`에 타입 검증 로직 추가
-- [ ] 타입 검증 테스트 작성
+- [x] `utils/type-guards.ts` 추가 또는 `utils/agent-export.ts` 확장
+- [x] `SubAgentManagerContainer.tsx`에 타입 검증 로직 추가
+- [x] 타입 검증 테스트 작성
 
 ### Phase 2: 테스트 강화
-- [ ] `SubAgentManager.export.test.tsx` 작성 (export 다이얼로그 UI 테스트)
-- [ ] `SubAgentManager.import.test.tsx` 작성 (import 다이얼로그 UI 테스트)
-- [ ] 실패 시나리오 테스트 추가 (invalid JSON, mutation errors)
-- [ ] 기존 `SubAgentCreate.import.test.tsx` 업데이트 (필요시)
+- [x] `SubAgentManager.export.test.tsx` 작성 (export 다이얼로그 UI 테스트)
+- [x] `SubAgentManager.import.test.tsx` 작성 (import 다이얼로그 UI 테스트)
+- [x] 실패 시나리오 테스트 추가 (invalid JSON, mutation errors)
+- [x] 기존 `SubAgentCreate.import.test.tsx` 업데이트 (필요시)
 
 ### Phase 3: 에러 메시지 표준화
-- [ ] `constants/export-import-messages.ts` 생성
-- [ ] `SubAgentManagerContainer.tsx` 메시지 교체
-- [ ] 모든 관련 파일에서 상수 사용으로 통일
+- [x] `constants/export-import-messages.ts` 생성
+- [x] `SubAgentManagerContainer.tsx` 메시지 교체
+- [x] 모든 관련 파일에서 상수 사용으로 통일
 
 ### Phase 4: 접근성 개선
-- [ ] `SubAgentManager.tsx`의 DialogDescription에 aria-label 추가
-- [ ] Import 버튼에 aria-label 추가
-- [ ] 접근성 테스트 추가 (선택사항)
+- [x] `SubAgentManager.tsx`의 DialogDescription에 aria-label 추가
+- [x] Import 버튼에 aria-label 추가
+- [x] 접근성 테스트 추가 (선택사항)
 
 ### Phase 5: UX 개선 (선택사항)
-- [ ] Toast 컴포넌트 확인 및 설계
-- [ ] `SubAgentManagerContainer.tsx`의 alert() 호출 토스트로 변경
-- [ ] Toast 타이밍 최적화
+- [x] Toast 컴포넌트 확인 및 설계
+- [x] `SubAgentManagerContainer.tsx`의 alert() 호출 토스트로 변경
+- [x] Toast 타이밍 최적화
 
 ### Phase 6: E2E 테스트 안정성
 - [ ] `openManagementView.ts`의 waitFor 로직 일관성 확인

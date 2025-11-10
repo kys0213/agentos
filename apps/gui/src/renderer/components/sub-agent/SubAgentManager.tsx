@@ -4,6 +4,7 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
+  Copy,
   Download,
   HelpCircle,
   Info,
@@ -51,6 +52,8 @@ import {
   type GuiAgentCategory,
 } from '../../../shared/constants/agent-categories';
 import { EmptyState } from '../layout/EmptyState';
+import { EXPORT_IMPORT_MESSAGES } from '../../constants/export-import-messages';
+import { useToast } from '../ui/use-toast';
 
 export type ChatOpenOptions = { mode?: 'navigate' | 'preview' };
 
@@ -86,6 +89,35 @@ export function SubAgentManager({
   const [importJson, setImportJson] = useState('');
   const [importError, setImportError] = useState('');
   const [isImporting, setIsImporting] = useState(false);
+  const importTargetLabel = importAgentName || 'the selected agent';
+  const [exportPreview, setExportPreview] = useState<{
+    open: boolean;
+    agentName: string;
+    json: string;
+  }>({ open: false, agentName: '', json: '' });
+  const { toast } = useToast();
+
+  const closeExportPreview = () => {
+    setExportPreview({ open: false, agentName: '', json: '' });
+  };
+
+  const handleExportDialogCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(exportPreview.json);
+      toast({
+        title: 'Copied JSON',
+        description: EXPORT_IMPORT_MESSAGES.EXPORT_SUCCESS,
+      });
+      closeExportPreview();
+    } catch (error) {
+      console.warn('[SubAgentManager] Copy from dialog failed', error);
+      toast({
+        variant: 'destructive',
+        title: 'Copy failed',
+        description: 'Unable to access the clipboard. Please select and copy manually.',
+      });
+    }
+  };
 
   const handleStatusChange = (agentId: string, newStatus: 'active' | 'idle' | 'inactive') => {
     onUpdateAgentStatus(agentId, newStatus);
@@ -97,27 +129,47 @@ export function SubAgentManager({
     }
   };
 
-  const handleExportAgent = async (agentId: string) => {
+  const handleExportAgent = async (agent: ReadonlyAgentMetadata) => {
     if (!onExportAgent) {
       return;
     }
     try {
-      const json = await onExportAgent(agentId);
+      const json = await onExportAgent(agent.id);
       try {
         await navigator.clipboard.writeText(json);
-        window.alert('Agent configuration copied to clipboard.');
+        toast({
+          title: 'Export ready',
+          description: EXPORT_IMPORT_MESSAGES.EXPORT_SUCCESS,
+        });
       } catch (clipboardError) {
-        window.prompt('Copy agent JSON', json);
+        console.warn('[SubAgentManager] Clipboard write failed', clipboardError);
+        setExportPreview({
+          open: true,
+          agentName: agent.name ?? 'Unnamed agent',
+          json,
+        });
+        toast({
+          variant: 'destructive',
+          title: 'Clipboard unavailable',
+          description: 'Copy the exported JSON manually from the dialog.',
+        });
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to export agent.';
-      window.alert(message);
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : EXPORT_IMPORT_MESSAGES.EXPORT_ERROR;
+      toast({
+        variant: 'destructive',
+        title: 'Export failed',
+        description: message,
+      });
     }
   };
 
   const openImportDialog = (agent: ReadonlyAgentMetadata) => {
     setImportAgentId(agent.id);
-    setImportAgentName(agent.name);
+    setImportAgentName(agent.name ?? '');
     setImportJson('');
     setImportError('');
     setIsImporting(false);
@@ -126,11 +178,11 @@ export function SubAgentManager({
 
   const handleImportSubmit = async () => {
     if (!importAgentId || !onImportAgent) {
-      setImportError('Import is not available for this agent.');
+      setImportError(EXPORT_IMPORT_MESSAGES.IMPORT_UNAVAILABLE);
       return;
     }
     if (!importJson.trim()) {
-      setImportError('Paste exported agent JSON before importing.');
+      setImportError(EXPORT_IMPORT_MESSAGES.IMPORT_EMPTY);
       return;
     }
     try {
@@ -138,11 +190,21 @@ export function SubAgentManager({
       setImportError('');
       await onImportAgent(importAgentId, importJson);
       setImportDialogOpen(false);
-      window.alert('Agent configuration imported successfully.');
+      toast({
+        title: 'Import complete',
+        description: EXPORT_IMPORT_MESSAGES.IMPORT_SUCCESS,
+      });
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : 'Failed to import agent configuration.';
+        error instanceof Error && error.message
+          ? error.message
+          : EXPORT_IMPORT_MESSAGES.IMPORT_ERROR;
       setImportError(message);
+      toast({
+        variant: 'destructive',
+        title: 'Import failed',
+        description: message,
+      });
     } finally {
       setIsImporting(false);
     }
@@ -488,7 +550,7 @@ export function SubAgentManager({
                                         <DropdownMenuItem
                                           onSelect={(event) => {
                                             event.preventDefault();
-                                            void handleExportAgent(agent.id);
+                                            void handleExportAgent(agent);
                                           }}
                                         >
                                           <Download className="w-4 h-4 mr-2" />
@@ -707,9 +769,16 @@ export function SubAgentManager({
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Import Agent Configuration</DialogTitle>
-            <DialogDescription>
+            <DialogDescription aria-live="polite">
               Paste the JSON exported from another agent. This will overwrite the current
-              configuration for <span className="font-medium">{importAgentName}</span>.
+              configuration for{' '}
+              <span
+                className="font-medium"
+                aria-label={`Configuration overwrite target: ${importTargetLabel}`}
+              >
+                {importAgentName || 'the selected agent'}
+              </span>
+              .
             </DialogDescription>
           </DialogHeader>
           <Textarea
@@ -719,6 +788,7 @@ export function SubAgentManager({
               setImportError('');
             }}
             placeholder='{"name": "Agent", ...}'
+            aria-label={`Paste exported agent JSON for ${importTargetLabel}`}
             className="min-h-[200px] font-mono"
           />
           {importError && (
@@ -735,8 +805,43 @@ export function SubAgentManager({
             >
               Cancel
             </Button>
-            <Button type="button" onClick={handleImportSubmit} disabled={isImporting}>
+            <Button
+              type="button"
+              onClick={handleImportSubmit}
+              disabled={isImporting}
+              aria-label={`Import JSON for ${importTargetLabel}`}
+            >
               {isImporting ? 'Importing…' : 'Import JSON'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={exportPreview.open}
+        onOpenChange={(open) => (!open ? closeExportPreview() : null)}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Manual Export Copy</DialogTitle>
+            <DialogDescription aria-live="polite">
+              Clipboard access is unavailable. Copy the JSON below for{' '}
+              <span className="font-medium">{exportPreview.agentName}</span>.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={exportPreview.json}
+            onChange={() => undefined}
+            readOnly
+            aria-label={`Export JSON for ${exportPreview.agentName}`}
+            className="min-h-[200px] font-mono"
+          />
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={closeExportPreview}>
+              Close
+            </Button>
+            <Button type="button" onClick={handleExportDialogCopy}>
+              <Copy className="mr-2 h-4 w-4" />
+              Copy JSON
             </Button>
           </DialogFooter>
         </DialogContent>

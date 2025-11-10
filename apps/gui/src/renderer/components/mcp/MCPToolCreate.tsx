@@ -33,6 +33,7 @@ import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Textarea } from '../ui/textarea';
 import StepperTabs, { StepperTabContent } from '../common/StepperTabs';
+import { useToast } from '../ui/use-toast';
 import type {
   McpConfig,
   SseMcpConfig,
@@ -119,6 +120,7 @@ export function MCPToolCreate({
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [connectionTests, setConnectionTests] = useState<ConnectionTest[]>([]);
   const [finalTestResult, setFinalTestResult] = useState<'success' | 'error' | null>(null);
+  const { toast } = useToast();
 
   // Derived flags/labels to simplify JSX (avoid nested/long ternaries)
   const isWebsocket = formData.type === 'websocket';
@@ -300,6 +302,10 @@ export function MCPToolCreate({
   };
 
   const runConnectionTest = async () => {
+    if (!ensureStepRequirements('testing')) {
+      return;
+    }
+
     setIsTestingConnection(true);
     setFinalTestResult(null);
 
@@ -392,7 +398,7 @@ export function MCPToolCreate({
   };
 
   const handleCreate = () => {
-    if (!isFormValid()) {
+    if (!ensureStepRequirements('create')) {
       return;
     }
 
@@ -466,21 +472,55 @@ export function MCPToolCreate({
     onCreated?.();
   };
 
-  const isFormValid = () => {
-    if (!formData.name || !formData.version) {
-      return false;
+  const requiresConnectionFields = (context: StepKey | 'create') =>
+    context === 'configuration' ||
+    context === 'testing' ||
+    context === 'deployment' ||
+    context === 'create';
+
+  const getMissingFields = (context: StepKey | 'create') => {
+    const missing: string[] = [];
+
+    if (!formData.name.trim()) {
+      missing.push('Tool name');
     }
 
-    switch (formData.type) {
-      case 'stdio':
-        return !!formData.command;
-      case 'streamableHttp':
-      case 'websocket':
-      case 'sse':
-        return !!formData.url;
-      default:
-        return false;
+    if (requiresConnectionFields(context)) {
+      if (formData.type === 'stdio') {
+        if (!formData.command.trim()) {
+          missing.push('Command path');
+        }
+      } else if (!formData.url.trim()) {
+        missing.push('Endpoint URL');
+      }
     }
+
+    return missing;
+  };
+
+  const showMissingFieldsToast = (fields: string[]) => {
+    if (fields.length === 0) {
+      return;
+    }
+    const description =
+      fields.length === 1
+        ? `${fields[0]} is required before continuing.`
+        : `${fields.slice(0, -1).join(', ')} and ${fields[fields.length - 1]} are required before continuing.`;
+
+    toast({
+      variant: 'destructive',
+      title: 'Complete required fields',
+      description,
+    });
+  };
+
+  const ensureStepRequirements = (context: StepKey | 'create') => {
+    const missing = getMissingFields(context);
+    if (missing.length === 0) {
+      return true;
+    }
+    showMissingFieldsToast(missing);
+    return false;
   };
 
   const stepConfigs = STEP_ORDER.map((id) => ({ id, label: STEP_LABELS[id] }));
@@ -517,11 +557,18 @@ export function MCPToolCreate({
       return;
     }
     const targetKey = stepId as StepKey;
+    const targetIndex = STEP_ORDER.indexOf(targetKey);
+    if (targetIndex > currentStepIndex && !ensureStepRequirements(activeStepId)) {
+      return;
+    }
     updateStep(targetKey);
   };
 
   const handleNextStep = () => {
     if (currentStepIndex >= STEP_ORDER.length - 1) {
+      return;
+    }
+    if (!ensureStepRequirements(activeStepId)) {
       return;
     }
     const nextStep = STEP_ORDER[currentStepIndex + 1];
@@ -548,7 +595,7 @@ export function MCPToolCreate({
       badge={stepBadge}
       onAction={handleCreate}
       actionLabel={headerActionLabel}
-      actionDisabled={!isFormValid()}
+      actionDisabled={finalTestResult !== 'success'}
     >
       <StepperTabContent stepId="overview">
         <div className="max-w-4xl mx-auto space-y-6">
@@ -1005,7 +1052,7 @@ export function MCPToolCreate({
               <ArrowLeft className="w-4 h-4" />
               Previous: Connection Type
             </Button>
-            <Button onClick={handleNextStep} disabled={!isFormValid()} className="gap-2">
+            <Button onClick={handleNextStep} className="gap-2">
               Next: Testing
               <ArrowLeft className="w-4 h-4 rotate-180" />
             </Button>
@@ -1022,11 +1069,7 @@ export function MCPToolCreate({
                   Verify your MCP tool configuration and test connectivity before deployment.
                 </p>
               </div>
-              <Button
-                onClick={runConnectionTest}
-                disabled={isTestingConnection || !isFormValid()}
-                className="gap-2"
-              >
+              <Button onClick={runConnectionTest} disabled={isTestingConnection} className="gap-2">
                 {isTestingConnection && <Loader2 className="w-4 h-4 animate-spin" />}
                 {!isTestingConnection && <RefreshCw className="w-4 h-4" />}
                 {isTestingConnection ? 'Testing...' : 'Run Test'}
@@ -1314,7 +1357,7 @@ export function MCPToolCreate({
             </Button>
             <Button
               onClick={handleCreate}
-              disabled={!isFormValid() || finalTestResult !== 'success'}
+              disabled={finalTestResult !== 'success'}
               className="gap-2"
             >
               <Save className="w-4 h-4" />
