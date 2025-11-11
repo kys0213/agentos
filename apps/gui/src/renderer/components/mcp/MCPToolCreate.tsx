@@ -484,6 +484,9 @@ export function MCPToolCreate({
     if (!formData.name.trim()) {
       missing.push('Tool name');
     }
+    if (!formData.version.trim()) {
+      missing.push('Version');
+    }
 
     if (requiresConnectionFields(context)) {
       if (formData.type === 'stdio') {
@@ -675,7 +678,7 @@ export function MCPToolCreate({
 
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="tool-version">Version</Label>
+                  <Label htmlFor="tool-version">Version *</Label>
                   <Input
                     id="tool-version"
                     value={formData.version}

@@ -23,6 +23,24 @@ describe('MCPToolCreate validation toasts', () => {
     await userEvent.click(nextButton);
   });
 
+  it('requires a version before progressing', async () => {
+    renderComponent();
+
+    await userEvent.type(screen.getByLabelText(/Tool Name/i), 'stdio-tool');
+    const versionInput = screen.getByLabelText(/Version/i);
+    await userEvent.clear(versionInput);
+
+    const nextButton = screen.getByRole('button', { name: /Next: Choose Connection Type/i });
+    await userEvent.click(nextButton);
+
+    expect(
+      await screen.findByText('Version is required before continuing.')
+    ).toBeInTheDocument();
+
+    await userEvent.type(versionInput, '0.1.0');
+    await userEvent.click(nextButton);
+  });
+
   it('shows toast when connection command/url is missing', async () => {
     renderComponent();
 
