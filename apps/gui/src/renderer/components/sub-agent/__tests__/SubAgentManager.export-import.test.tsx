@@ -1,10 +1,11 @@
 import React from 'react';
-import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReadonlyAgentMetadata, ReadonlyPreset } from '@agentos/core';
 import { withProviders } from '../../../../test/test-utils';
 import { SubAgentManager } from '../SubAgentManager';
+import { EXPORT_IMPORT_MESSAGES } from '../../../constants/export-import-messages';
 
 describe('SubAgentManager export/import actions', () => {
   const basePreset: ReadonlyPreset = {
@@ -41,12 +42,13 @@ describe('SubAgentManager export/import actions', () => {
 
   const originalClipboard = navigator.clipboard;
   const originalResizeObserver = global.ResizeObserver;
-  const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+  let clipboardWriteMock: ReturnType<typeof vi.fn>;
 
   beforeAll(() => {
+    clipboardWriteMock = vi.fn().mockResolvedValue(undefined);
     Object.assign(navigator, {
       clipboard: {
-        writeText: vi.fn().mockResolvedValue(undefined),
+        writeText: clipboardWriteMock,
       },
     });
     if (typeof globalThis.ResizeObserver === 'undefined') {
@@ -63,8 +65,12 @@ describe('SubAgentManager export/import actions', () => {
     }
   });
 
+  beforeEach(() => {
+    clipboardWriteMock.mockClear();
+    clipboardWriteMock.mockResolvedValue(undefined);
+  });
+
   afterAll(() => {
-    alertSpy.mockRestore();
     Object.assign(navigator, { clipboard: originalClipboard });
     if (originalResizeObserver) {
       Object.defineProperty(globalThis, 'ResizeObserver', {
@@ -78,8 +84,8 @@ describe('SubAgentManager export/import actions', () => {
     }
   });
 
-  it('should trigger export callback when selecting Export JSON', async () => {
-    const onExportAgent = vi.fn().mockResolvedValue('{"name":"Agent"}');
+  it('copies JSON to clipboard and surfaces success toast', async () => {
+    const onExportAgent = vi.fn().mockResolvedValue('{"name":"Agent One"}');
 
     render(
       withProviders(
@@ -95,9 +101,34 @@ describe('SubAgentManager export/import actions', () => {
     await userEvent.click(screen.getByRole('menuitem', { name: /export json/i }));
 
     expect(onExportAgent).toHaveBeenCalledWith('agent-1');
+    expect(clipboardWriteMock).toHaveBeenCalledWith(expect.stringContaining('"Agent One"'));
+    await screen.findByText(EXPORT_IMPORT_MESSAGES.EXPORT_SUCCESS);
   });
 
-  it('should open import dialog and submit JSON payload', async () => {
+  it('opens manual copy dialog when clipboard write fails', async () => {
+    const onExportAgent = vi.fn().mockResolvedValue('{"name":"Agent One"}');
+    clipboardWriteMock.mockRejectedValueOnce(new Error('denied'));
+
+    render(
+      withProviders(
+        <SubAgentManager
+          agents={[agent]}
+          onUpdateAgentStatus={() => undefined}
+          onExportAgent={onExportAgent}
+        />
+      )
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /agent actions/i }));
+    await userEvent.click(screen.getByRole('menuitem', { name: /export json/i }));
+
+    expect(await screen.findByText('Manual Export Copy')).toBeInTheDocument();
+    const exportTextarea = screen.getByLabelText(/Export JSON for/i) as HTMLTextAreaElement;
+    expect(exportTextarea.value).toContain('Agent One');
+    await screen.findByText('Clipboard unavailable');
+  });
+
+  it('submits import payload when valid JSON is provided', async () => {
     const onImportAgent = vi.fn().mockResolvedValue(undefined);
 
     render(
@@ -132,8 +163,56 @@ describe('SubAgentManager export/import actions', () => {
     await userEvent.clear(textarea);
     fireEvent.change(textarea, { target: { value: payload } });
 
-    await userEvent.click(screen.getByRole('button', { name: /import json/i }));
+    const importButton = screen.getByRole('button', { name: /Import JSON for Agent One/i });
+    await userEvent.click(importButton);
 
     expect(onImportAgent).toHaveBeenCalledWith('agent-1', payload);
+    await screen.findByText(EXPORT_IMPORT_MESSAGES.IMPORT_SUCCESS);
+  });
+
+  it('shows validation error when attempting import without payload', async () => {
+    render(
+      withProviders(
+        <SubAgentManager
+          agents={[agent]}
+          onUpdateAgentStatus={() => undefined}
+          onImportAgent={vi.fn().mockResolvedValue(undefined)}
+        />
+      )
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /agent actions/i }));
+    await userEvent.click(screen.getByRole('menuitem', { name: /import json/i }));
+
+    const importButton = screen.getByRole('button', { name: /Import JSON for Agent One/i });
+    await userEvent.click(importButton);
+
+    expect(await screen.findByText(EXPORT_IMPORT_MESSAGES.IMPORT_EMPTY)).toBeInTheDocument();
+  });
+
+  it('surfaces backend error message when import handler rejects', async () => {
+    const onImportAgent = vi.fn().mockRejectedValue(new Error(EXPORT_IMPORT_MESSAGES.INVALID_JSON));
+
+    render(
+      withProviders(
+        <SubAgentManager
+          agents={[agent]}
+          onUpdateAgentStatus={() => undefined}
+          onImportAgent={onImportAgent}
+        />
+      )
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /agent actions/i }));
+    await userEvent.click(screen.getByRole('menuitem', { name: /import json/i }));
+
+    const textarea = await screen.findByPlaceholderText('{"name": "Agent", ...}');
+    fireEvent.change(textarea, { target: { value: '{"invalid": true}' } });
+
+    const importButton = screen.getByRole('button', { name: /Import JSON for Agent One/i });
+    await userEvent.click(importButton);
+
+    const errorMessages = await screen.findAllByText(EXPORT_IMPORT_MESSAGES.INVALID_JSON);
+    expect(errorMessages.length).toBeGreaterThanOrEqual(1);
   });
 });

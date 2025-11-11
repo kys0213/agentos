@@ -29,6 +29,7 @@ import {
 import { useMcpTools } from '../../hooks/queries/use-mcp';
 import { Alert, AlertDescription } from '../ui/alert';
 import StepperTabs, { StepperTabContent } from '../common/StepperTabs';
+import { useToast } from '../ui/use-toast';
 
 interface AgentCreateProps {
   onBack: () => void;
@@ -171,6 +172,7 @@ export function SubAgentCreate({
   currentStepId: currentStepProp,
   onStepChange,
 }: AgentCreateProps) {
+  const { toast } = useToast();
   const stepConfigs = useMemo(() => STEP_ORDER.map((id) => ({ id, label: STEP_LABELS[id] })), []);
   const totalSteps = STEP_ORDER.length;
 
@@ -452,30 +454,32 @@ export function SubAgentCreate({
         if (step !== currentStepId) {
           updateCurrentStep(step);
         }
-        if (typeof window !== 'undefined' && typeof window.alert === 'function') {
-          logWizardSnapshot(
-            'alert triggered',
-            {
-              message,
-              failingStep: step,
+        logWizardSnapshot(
+          'alert triggered',
+          {
+            message,
+            failingStep: step,
+          },
+          {
+            step: currentStepId,
+            overview: {
+              name: overview.name,
+              description: overview.description,
+              keywords: overview.keywords,
             },
-            {
-              step: currentStepId,
-              overview: {
-                name: overview.name,
-                description: overview.description,
-                keywords: overview.keywords,
-              },
-              status,
-              bridgeId,
-              bridgeConfig,
-              systemPromptLength: systemPrompt.length,
-              selectedMcpIds: Array.from(selectedMcpIds),
-              presetBridge: presetState.llmBridgeName,
-            }
-          );
-          window.alert(message);
-        }
+            status,
+            bridgeId,
+            bridgeConfig,
+            systemPromptLength: systemPrompt.length,
+            selectedMcpIds: Array.from(selectedMcpIds),
+            presetBridge: presetState.llmBridgeName,
+          }
+        );
+        toast({
+          variant: 'destructive',
+          title: 'Validation error',
+          description: message,
+        });
         return false;
       }
       clearStepError(step);

@@ -4,10 +4,12 @@ import { SubAgentManager, type ChatOpenOptions } from './SubAgentManager';
 import { ServiceContainer } from '../../../shared/di/service-container';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
-import type { AgentStatus, CreateAgentMetadata, ReadonlyPreset } from '@agentos/core';
+import type { AgentStatus, CreateAgentMetadata } from '@agentos/core';
 import { AGENTS_QUERY_KEY, fetchAgents } from '../../hooks/useAppData';
 import { CHAT_QUERY_KEYS } from '../../hooks/queries/use-chat';
 import { serializeAgent, tryParseAgentExport, applyAgentExport } from '../../utils/agent-export';
+import { EXPORT_IMPORT_MESSAGES } from '../../constants/export-import-messages';
+import { isValidReadonlyPreset } from '../../utils/type-guards';
 
 export interface SubAgentManagerContainerProps {
   onCreateAgent?: () => void;
@@ -54,6 +56,9 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
       if (!agent) {
         throw new Error('Agent not found.');
       }
+      if (!isValidReadonlyPreset(agent.preset)) {
+        throw new Error(EXPORT_IMPORT_MESSAGES.MISSING_PRESET);
+      }
       const exportPayload = {
         name: agent.name,
         description: agent.description ?? '',
@@ -73,7 +78,7 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
     async (agentId: string, json: string) => {
       const parsed = tryParseAgentExport(json);
       if (!parsed) {
-        throw new Error('Invalid agent JSON format. Please verify the contents and try again.');
+        throw new Error(EXPORT_IMPORT_MESSAGES.INVALID_JSON);
       }
 
       const agent = agents.find((item) => item.id === agentId);
@@ -84,7 +89,7 @@ export const SubAgentManagerContainer: React.FC<SubAgentManagerContainerProps> =
             status: agent.status ?? 'inactive',
             icon: agent.icon,
             keywords: Array.isArray(agent.keywords) ? agent.keywords : [],
-            preset: agent.preset as ReadonlyPreset,
+            ...(isValidReadonlyPreset(agent.preset) && { preset: agent.preset }),
           }
         : {};
 

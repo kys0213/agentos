@@ -7,6 +7,7 @@ import { useAppNavigation } from '../hooks/useAppNavigation';
 import { ChatViewContainer } from './chat/ChatViewContainer';
 import ManagementView from './layout/ManagementView';
 import { ThemeProvider } from '../contexts/ThemeContext';
+import { Toaster } from './ui/toaster';
 
 /**
  * New App Layout - 새 디자인 기반으로 완전히 재작성된 버전
@@ -38,6 +39,7 @@ const App: React.FC = () => {
   return (
     <ThemeProvider>
       <NewAppLayout />
+      <Toaster />
     </ThemeProvider>
   );
 };

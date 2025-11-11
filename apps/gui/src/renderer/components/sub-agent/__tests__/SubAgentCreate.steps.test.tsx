@@ -72,8 +72,7 @@ describe('SubAgentCreate wizard flow', () => {
     expect(screen.getByText('Step 1 of 4')).toBeInTheDocument();
   });
 
-  it('should alert overview validation when required fields are missing', async () => {
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+  it('should surface toast when required fields are missing', async () => {
     setup();
 
     const headerCreateButton = screen.getByRole('button', { name: 'Create Agent' });
@@ -81,11 +80,8 @@ describe('SubAgentCreate wizard flow', () => {
 
     await userEvent.click(headerCreateButton);
 
-    expect(alertSpy).toHaveBeenCalledWith('Agent name is required.');
-    expect(screen.getByText('Agent name is required.')).toBeInTheDocument();
+    expect(await screen.findByText('Agent name is required.')).toBeInTheDocument();
     expect(screen.getByText('Step 1 of 4')).toBeInTheDocument();
-
-    alertSpy.mockRestore();
   });
 
   it('should submit agent when required fields are provided', async () => {
